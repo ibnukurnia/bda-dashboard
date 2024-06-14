@@ -8,9 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
-import { GearSix as GearSixIcon } from '@phosphor-icons/react/dist/csr/GearSix';
-import { SignOut as SignOutIcon } from '@phosphor-icons/react/dist/csr/SignOut';
-import { User as UserIcon } from '@phosphor-icons/react/dist/csr/User';
+import { Settings, LogOut, User } from 'react-feather';
 
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
@@ -66,19 +64,19 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
       <MenuList disablePadding sx={{ p: '8px', '& .MuiMenuItem-root': { borderRadius: 1 } }}>
         <MenuItem component={RouterLink} href={paths.dashboard.settings} onClick={onClose}>
           <ListItemIcon>
-            <GearSixIcon fontSize="var(--icon-fontSize-md)" />
+            <Settings fontSize="var(--icon-fontSize-md)" />
           </ListItemIcon>
           Settings
         </MenuItem>
         <MenuItem component={RouterLink} href={paths.dashboard.account} onClick={onClose}>
           <ListItemIcon>
-            <UserIcon fontSize="var(--icon-fontSize-md)" />
+            <User fontSize="var(--icon-fontSize-md)" />
           </ListItemIcon>
           Profile
         </MenuItem>
         <MenuItem onClick={handleSignOut}>
           <ListItemIcon>
-            <SignOutIcon fontSize="var(--icon-fontSize-md)" />
+            <LogOut fontSize="var(--icon-fontSize-md)" />
           </ListItemIcon>
           Sign out
         </MenuItem>

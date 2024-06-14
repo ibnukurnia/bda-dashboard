@@ -13,8 +13,7 @@ import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Eye as EyeIcon } from '@phosphor-icons/react/dist/csr/Eye';
-import { EyeSlash as EyeSlashIcon } from '@phosphor-icons/react/dist/csr/EyeSlash';
+import { Eye, EyeOff } from 'react-feather';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
 
@@ -103,7 +102,7 @@ export function SignInForm(): React.JSX.Element {
                   {...field}
                   endAdornment={
                     showPassword ? (
-                      <EyeIcon
+                      <Eye
                         cursor="pointer"
                         fontSize="var(--icon-fontSize-md)"
                         onClick={(): void => {
@@ -111,7 +110,7 @@ export function SignInForm(): React.JSX.Element {
                         }}
                       />
                     ) : (
-                      <EyeSlashIcon
+                      <EyeOff
                         cursor="pointer"
                         fontSize="var(--icon-fontSize-md)"
                         onClick={(): void => {

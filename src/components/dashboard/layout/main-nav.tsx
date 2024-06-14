@@ -7,10 +7,7 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
-import { Bell as BellIcon } from '@phosphor-icons/react/dist/csr/Bell';
-import { List as ListIcon } from '@phosphor-icons/react/dist/csr/List';
-import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/csr/MagnifyingGlass';
-import { Users as UsersIcon } from '@phosphor-icons/react/dist/csr/Users';
+import { Bell, Search, User, List } from 'react-feather';
 
 import { usePopover } from '@/hooks/use-popover';
 
@@ -46,24 +43,24 @@ export function MainNav(): React.JSX.Element {
               }}
               sx={{ display: { lg: 'none' } }}
             >
-              <ListIcon />
+              <List />
             </IconButton>
             <Tooltip title="Search">
               <IconButton>
-                <MagnifyingGlassIcon />
+                <Search />
               </IconButton>
             </Tooltip>
           </Stack>
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
             <Tooltip title="Contacts">
               <IconButton>
-                <UsersIcon />
+                <User />
               </IconButton>
             </Tooltip>
             <Tooltip title="Notifications">
               <Badge badgeContent={4} color="success" variant="dot">
                 <IconButton>
-                  <BellIcon />
+                  <Bell />
                 </IconButton>
               </Badge>
             </Tooltip>

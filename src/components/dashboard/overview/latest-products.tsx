@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -11,8 +11,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import type { SxProps } from '@mui/material/styles';
-import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/csr/ArrowRight';
-import { DotsThreeVertical as DotsThreeVerticalIcon } from '@phosphor-icons/react/dist/csr/DotsThreeVertical';
+import { ArrowRight, MoreVertical } from 'react-feather';
 import dayjs from 'dayjs';
 
 export interface Product {
@@ -56,7 +55,7 @@ export function LatestProducts({ products = [], sx }: LatestProductsProps): Reac
               secondaryTypographyProps={{ variant: 'body2' }}
             />
             <IconButton edge="end">
-              <DotsThreeVerticalIcon weight="bold" />
+              <MoreVertical fontWeight="bold" />
             </IconButton>
           </ListItem>
         ))}
@@ -65,7 +64,7 @@ export function LatestProducts({ products = [], sx }: LatestProductsProps): Reac
       <CardActions sx={{ justifyContent: 'flex-end' }}>
         <Button
           color="inherit"
-          endIcon={<ArrowRightIcon fontSize="var(--icon-fontSize-md)" />}
+          endIcon={<ArrowRight fontSize="var(--icon-fontSize-md)" />}
           size="small"
           variant="text"
         >

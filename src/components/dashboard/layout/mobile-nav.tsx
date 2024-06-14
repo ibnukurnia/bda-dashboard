@@ -9,8 +9,7 @@ import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { ArrowSquareUpRight as ArrowSquareUpRightIcon } from '@phosphor-icons/react/dist/csr/ArrowSquareUpRight';
-import { CaretUpDown as CaretUpDownIcon } from '@phosphor-icons/react/dist/csr/CaretUpDown';
+import { Check, ArrowUpCircle } from 'react-feather';
 
 import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
@@ -80,7 +79,7 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
               Devias
             </Typography>
           </Box>
-          <CaretUpDownIcon />
+          <Check />
         </Box>
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
@@ -107,7 +106,7 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
         </Box>
         <Button
           component="a"
-          endIcon={<ArrowSquareUpRightIcon fontSize="var(--icon-fontSize-md)" />}
+          endIcon={<ArrowUpCircle fontSize="var(--icon-fontSize-md)" />}
           fullWidth
           href="https://material-kit-pro-react.devias.io/"
           sx={{ mt: 2 }}
@@ -150,11 +149,11 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title }: N
       <Box
         {...(href
           ? {
-              component: external ? 'a' : RouterLink,
-              href,
-              target: external ? '_blank' : undefined,
-              rel: external ? 'noreferrer' : undefined,
-            }
+            component: external ? 'a' : RouterLink,
+            href,
+            target: external ? '_blank' : undefined,
+            rel: external ? 'noreferrer' : undefined,
+          }
           : { role: 'button' })}
         sx={{
           alignItems: 'center',
