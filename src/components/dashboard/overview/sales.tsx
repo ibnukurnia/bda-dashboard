@@ -9,8 +9,8 @@ import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import { alpha, useTheme } from '@mui/material/styles';
 import type { SxProps } from '@mui/material/styles';
-// import { ArrowClockwise as ArrowClockwiseIcon } from '@phosphor-icons/react/dist/ssr/ArrowClockwise';
-// import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
+// import { ArrowClockwise as ArrowClockwiseIcon } from '@phosphor-icons/react/dist/csr/ArrowClockwise';
+// import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/csr/ArrowRight';
 import type { ApexOptions } from 'apexcharts';
 
 import { Chart } from '@/components/core/chart';

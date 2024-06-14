@@ -8,9 +8,9 @@ import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
-import { GearSix as GearSixIcon } from '@phosphor-icons/react/dist/ssr/GearSix';
-import { SignOut as SignOutIcon } from '@phosphor-icons/react/dist/ssr/SignOut';
-import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
+import { GearSix as GearSixIcon } from '@phosphor-icons/react/dist/csr/GearSix';
+import { SignOut as SignOutIcon } from '@phosphor-icons/react/dist/csr/SignOut';
+import { User as UserIcon } from '@phosphor-icons/react/dist/csr/User';
 
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
