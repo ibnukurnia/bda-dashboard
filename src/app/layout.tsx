@@ -1,31 +1,27 @@
-"use client";
-import "jsvectormap/dist/css/jsvectormap.css";
-import "flatpickr/dist/flatpickr.min.css";
-import "@/css/satoshi.css";
-import "@/css/style.css";
-import React, { useEffect, useState } from "react";
-import Loader from "@/components/common/Loader";
+import * as React from 'react';
+import type { Viewport } from 'next';
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+import '@/styles/global.css';
+
+import { UserProvider } from '@/contexts/user-context';
+import { LocalizationProvider } from '@/components/core/localization-provider';
+import { ThemeProvider } from '@/components/core/theme-provider/theme-provider';
+
+export const viewport = { width: 'device-width', initialScale: 1 } satisfies Viewport;
+
+interface LayoutProps {
   children: React.ReactNode;
-}>) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState<boolean>(true);
+}
 
-  // const pathname = usePathname();
-
-  useEffect(() => {
-    setTimeout(() => setLoading(false), 1000);
-  }, []);
-
+export default function Layout({ children }: LayoutProps): React.JSX.Element {
   return (
     <html lang="en">
-      <body suppressHydrationWarning={true}>
-        <div className="dark:bg-boxdark-2 dark:text-bodydark">
-          {loading ? <Loader /> : children}
-        </div>
+      <body>
+        <LocalizationProvider>
+          <UserProvider>
+            <ThemeProvider>{children}</ThemeProvider>
+          </UserProvider>
+        </LocalizationProvider>
       </body>
     </html>
   );
