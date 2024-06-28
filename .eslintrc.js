@@ -71,5 +71,6 @@ module.exports = {
     'react/jsx-fragments': 'off', // personal style
     'react/prop-types': 'off', // TypeScript is used for type checking
     '@next/next/no-img-element': 'off', // Temporary disabled
+    "react/function-component-definition": ["error", "arrow"]
   },
 };

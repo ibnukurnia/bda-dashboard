@@ -1,16 +1,24 @@
 import type { Icon } from 'react-feather';
-import { PieChart as ChartPieIcon } from 'react-feather';
-import { Settings as GearSixIcon } from 'react-feather';
-import { Minus as PlugsConnectedIcon } from 'react-feather';
-import { User as UserIcon } from 'react-feather';
-import { Users as UsersIcon } from 'react-feather';
-import { XOctagon as XSquare } from 'react-feather';
+import {
+  BarChart as ChartPieIcon,
+  Settings as GearSixIcon,
+  Minus as PlugsConnectedIcon,
+  User as UserIcon,
+  Users as UsersIcon,
+  XOctagon as XSquare,
+  Radio,
+  Database,
+  LogOut as Logout,
+} from 'react-feather';
 
-export const navIcons = {
+export const navIcons: Record<string, Icon> = {
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
   'plugs-connected': PlugsConnectedIcon,
   'x-square': XSquare,
+  'log-out': Logout,
+  'radio': Radio,
+  'database': Database,
   user: UserIcon,
   users: UsersIcon,
-} as Record<string, Icon>;
+};
