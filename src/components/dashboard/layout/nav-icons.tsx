@@ -1,16 +1,24 @@
-import type { Icon } from '@phosphor-icons/react/dist/lib/types';
-import { ChartPie as ChartPieIcon } from '@phosphor-icons/react/dist/csr/ChartPie';
-import { GearSix as GearSixIcon } from '@phosphor-icons/react/dist/csr/GearSix';
-import { PlugsConnected as PlugsConnectedIcon } from '@phosphor-icons/react/dist/csr/PlugsConnected';
-import { User as UserIcon } from '@phosphor-icons/react/dist/csr/User';
-import { Users as UsersIcon } from '@phosphor-icons/react/dist/csr/Users';
-import { XSquare } from '@phosphor-icons/react/dist/csr/XSquare';
+import type { Icon } from 'react-feather';
+import {
+  BarChart as ChartPieIcon,
+  Settings as GearSixIcon,
+  Minus as PlugsConnectedIcon,
+  User as UserIcon,
+  Users as UsersIcon,
+  XOctagon as XSquare,
+  Radio,
+  Database,
+  LogOut as Logout,
+} from 'react-feather';
 
-export const navIcons = {
+export const navIcons: Record<string, Icon> = {
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
   'plugs-connected': PlugsConnectedIcon,
   'x-square': XSquare,
+  'log-out': Logout,
+  'radio': Radio,
+  'database': Database,
   user: UserIcon,
   users: UsersIcon,
-} as Record<string, Icon>;
+};

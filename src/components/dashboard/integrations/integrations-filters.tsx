@@ -2,7 +2,7 @@ import * as React from 'react';
 import Card from '@mui/material/Card';
 import InputAdornment from '@mui/material/InputAdornment';
 import OutlinedInput from '@mui/material/OutlinedInput';
-import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/csr/MagnifyingGlass';
+import { Search } from 'react-feather';
 
 export function CompaniesFilters(): React.JSX.Element {
   return (
@@ -13,7 +13,7 @@ export function CompaniesFilters(): React.JSX.Element {
         placeholder="Search integration"
         startAdornment={
           <InputAdornment position="start">
-            <MagnifyingGlassIcon fontSize="var(--icon-fontSize-md)" />
+            <Search fontSize="var(--icon-fontSize-md)" />
           </InputAdornment>
         }
         sx={{ maxWidth: '500px' }}

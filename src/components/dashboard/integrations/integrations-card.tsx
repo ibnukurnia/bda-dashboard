@@ -6,8 +6,7 @@ import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Clock as ClockIcon } from '@phosphor-icons/react/dist/csr/Clock';
-import { Download as DownloadIcon } from '@phosphor-icons/react/dist/csr/Download';
+import { Download, Clock } from 'react-feather';
 import dayjs from 'dayjs';
 
 export interface Integration {
@@ -44,13 +43,13 @@ export function IntegrationCard({ integration }: IntegrationCardProps): React.JS
       <Divider />
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
         <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
-          <ClockIcon fontSize="var(--icon-fontSize-sm)" />
+          <Clock fontSize="var(--icon-fontSize-sm)" />
           <Typography color="text.secondary" display="inline" variant="body2">
             Updated {dayjs(integration.updatedAt).format('MMM D, YYYY')}
           </Typography>
         </Stack>
         <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
-          <DownloadIcon fontSize="var(--icon-fontSize-sm)" />
+          <Download fontSize="var(--icon-fontSize-sm)" />
           <Typography color="text.secondary" display="inline" variant="body2">
             {integration.installs} installs
           </Typography>

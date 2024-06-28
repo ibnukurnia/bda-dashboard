@@ -52,22 +52,38 @@ export function ResetPasswordForm(): React.JSX.Element {
 
   return (
     <Stack spacing={4}>
-      <Typography variant="h5">Reset password</Typography>
+      <Typography variant="h5" color="white">Reset password</Typography>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
-          <Controller
-            control={control}
-            name="email"
-            render={({ field }) => (
-              <FormControl error={Boolean(errors.email)}>
-                <InputLabel>Email address</InputLabel>
-                <OutlinedInput {...field} label="Email address" type="email" />
-                {errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
-              </FormControl>
-            )}
-          />
+        <Controller
+        control={control}
+        name="email"
+        render={({ field }) => (
+          <FormControl error={Boolean(errors.email)} sx={{ '& .MuiOutlinedInput-root': { borderColor: 'white' } }}>
+            <InputLabel sx={{ color: 'white' }}>Email address</InputLabel>
+            <OutlinedInput
+              {...field}
+              label="Email address"
+              type="email"
+              sx={{
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'white', // Change border color to white
+                },
+                color: 'white', // Change text color to white
+              }}
+            />
+            {errors.email ? <FormHelperText sx={{ color: 'white' }}>{errors.email.message}</FormHelperText> : null}
+          </FormControl>
+        )}
+      />
           {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-          <Button disabled={isPending} type="submit" variant="contained">
+          <Button disabled={isPending} type="submit" sx={{
+            backgroundColor: '#F59823',
+            color: 'white', // Ensure the text color contrasts well with the background
+            '&:hover': {
+              backgroundColor: '#e0861e', // Optionally define a hover color
+            },
+          }}>
             Send recovery link
           </Button>
         </Stack>

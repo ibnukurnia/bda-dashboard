@@ -1,133 +1,1493 @@
+'use client'
+
 import * as React from 'react';
 import type { Metadata } from 'next';
-import Grid from '@mui/material/Unstable_Grid2';
-import dayjs from 'dayjs';
+import { Box, Grid, Stack, Typography } from '@mui/material';
+import TabsComponent from '@/components/dashboard/overview/tabs';
+import DropdownButton from '@/components/dashboard/overview/dropdown-button';
+import DatePickerComponent from '@/components/dashboard/overview/date-picker';
+import { CompaniesFilters } from '@/components/dashboard/overview/overview-filters';
+import { useState } from 'react';
+import ImageGrid from '@/components/dashboard/overview/image-grid';
+import {
+  createColumnHelper,
+  Column,
+  ColumnDef,
+  PaginationState,
+  Table,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import LineChartComponent from '@/components/dashboard/overview/line-chart';
+import "../../components/dashboard/overview/table.css";
 
-import { config } from '@/config';
-import { Budget } from '@/components/dashboard/overview/budget';
-import { LatestOrders } from '@/components/dashboard/overview/latest-orders';
-import { LatestProducts } from '@/components/dashboard/overview/latest-products';
-import { Sales } from '@/components/dashboard/overview/sales';
-import { TasksProgress } from '@/components/dashboard/overview/tasks-progress';
-import { TotalCustomers } from '@/components/dashboard/overview/total-customers';
-import { TotalProfit } from '@/components/dashboard/overview/total-profit';
-import { Traffic } from '@/components/dashboard/overview/traffic';
 
-export const metadata = { title: `Overview | Dashboard | ${config.site.name}` } satisfies Metadata;
 
-export default function Page(): React.JSX.Element {
+export default function Page(): React.ReactElement {
+  const options = ["Option 1", "Option 2", "Option 3"];
+
+  const dataChart = {
+    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+    datasets: [
+      {
+        data: [65, 59, 80, 81, 56, 55, 40],
+        fill: false,
+        borderColor: '#FE981C',
+      },
+    ],
+  };
+
+  const optionsChart = {
+    responsive: true,
+    layout: {
+      padding: 20
+    },
+    plugins: {
+      legend: {
+        display: false,
+        labels: {
+          // This more specific font property overrides the global property
+          font: {
+            size: 14
+          }
+        }
+      },
+      title: {
+        display: true,
+        text: 'VM00009MOPB92 - BRIMO - mobile-banking - used_memory',
+        align: 'start' as 'start',  // Explicitly setting the type
+        color: 'white',
+        padding: {
+          top: 10,
+          bottom: 30
+        }
+      },
+    },
+  };
+  interface Person {
+    id: number;
+    createdDate: string;
+    severity: string;
+    status: string;
+    assigne: string;
+    service: string;
+    description: string;
+    totalAlerts: number;
+  }
+
+  const defaultData: Person[] = [
+    {
+      id: 1190,
+      createdDate: "11/01/2024 15:04:22 P.M",
+      severity: "Minor",
+      status: "Solved",
+      assigne: "davin@bri.co.id  +2 others",
+      service: "bridgtl-rsm-notifications",
+      description: "Critical issue affecting production environment.",
+      totalAlerts: 10
+    },
+    {
+      id: 1191,
+      createdDate: "11/01/2024 15:04:22 P.M",
+      severity: "Minor",
+      status: "Open",
+      assigne: "davin@bri.co.id  +2 others",
+      service: "bridgtl-rsm-notifications",
+      description: "Performance degradation reported by users.",
+      totalAlerts: 5
+    },
+    {
+      id: 1192,
+      createdDate: "11/01/2024 15:04:22 P.M",
+      severity: "Minor",
+      status: "On Progress",
+      assigne: "davin@bri.co.id  +2 others",
+      service: "bridgtl-rsm-notifications",
+      description: "Minor bug in user interface.",
+      totalAlerts: 2
+    },
+    {
+      id: 1193,
+      createdDate: "11/01/2024 15:04:22 P.M",
+      severity: "Minor",
+      status: "Open",
+      assigne: "davin@bri.co.id  +2 others",
+      service: "bridgtl-rsm-notifications",
+      description: "Security breach detected in backend server.",
+      totalAlerts: 8
+    },
+    {
+      id: 1194,
+      createdDate: "11/01/2024 15:04:22 P.M",
+      severity: "Minor",
+      status: "Solved",
+      assigne: "davin@bri.co.id  +2 others",
+      service: "bridgtl-rsm-notifications",
+      description: "Database connectivity issue.",
+      totalAlerts: 4
+    },
+    {
+      id: 1195,
+      createdDate: "2024-06-15T11:00:00Z",
+      severity: "Minor",
+      status: "Open",
+      assigne: "davin@bri.co.id  +2 others",
+      service: "bridgtl-rsm-notifications",
+      description: "UI rendering problem on mobile devices.",
+      totalAlerts: 1
+    },
+    {
+      id: 1196,
+      createdDate: "11/01/2024 15:04:22 P.M",
+      severity: "Minor",
+      status: "Open",
+      assigne: "davin@bri.co.id  +2 others",
+      service: "bridgtl-rsm-notifications",
+      description: "Critical application crash on startup.",
+      totalAlerts: 6
+    },
+    {
+      id: 1997,
+      createdDate: "11/01/2024 15:04:22 P.M",
+      severity: "Minor",
+      status: "On Progress",
+      assigne: "davin@bri.co.id  +2 others",
+      service: "bridgtl-rsm-notifications",
+      description: "Payment gateway integration issue.",
+      totalAlerts: 3
+    }
+  ];
+
+  const columnHelper = createColumnHelper<Person>();
+  const [data, _setData] = useState(() => [...defaultData]);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 4,
+  });
+
+  const columns = [
+    columnHelper.accessor("id", {
+      header: "ID",
+    }),
+    columnHelper.accessor("createdDate", {
+      id: "CreatedData",
+      cell: (info) => <i>{info.getValue()}</i>,
+      header: () => <span>Created Date</span>,
+    }),
+    columnHelper.accessor("severity", {
+      header: () => "Severity",
+      cell: (info) => info.renderValue(),
+    }),
+    columnHelper.accessor("status", {
+      header: "Status",
+    }),
+    columnHelper.accessor("assigne", {
+      header: "Assigne",
+    }),
+    columnHelper.accessor("service", {
+      header: "Service",
+    }),
+    columnHelper.accessor("description", {
+      header: "Description",
+    }),
+    columnHelper.accessor("totalAlerts", {
+      header: "Total Alerts",
+    }),
+  ];
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onPaginationChange: setPagination,
+    //no need to pass pageCount or rowCount with client-side pagination as it is calculated automatically
+    state: {
+      pagination,
+    },
+  });
+
+  // State for managing startDate and endDate
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+
+  // Handler functions for date changes
+  const handleStartDateChange = (date: Date | null) => {
+    setStartDate(date);
+  };
+
+  const handleEndDateChange = (date: Date | null) => {
+    setEndDate(date);
+  };
+
+  const tabs = [
+    {
+      id: 'insights',
+      label: 'Insights',
+      content: (
+        <div className='flex flex-col gap-8'>
+          <Stack direction="row" spacing={1}>
+            <DropdownButton
+              buttonText="All Products"
+              options={['Option 1', 'Option 2', 'Option 3']}
+              buttonClassName="md:w-64" // Responsive width
+            />
+            {/* Render DatePickerComponent for startDate */}
+            <DatePickerComponent
+              selectedDate={startDate} // Provide a default date if startDate is null
+              onChange={handleStartDateChange}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+              placeholder="Start Date"
+            />
+
+            {/* Render DatePickerComponent for endDate */}
+            <DatePickerComponent
+              selectedDate={endDate} // Provide a default date if endDate is null
+              onChange={handleEndDateChange}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              minDate={startDate} // Ensure endDate cannot be before startDate
+              placeholder="End Date"
+            />
+          </Stack>
+          <Stack sx={{ display: 'flex', gap: 6, flexDirection: 'row', px: 3 }}>
+            <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div className='inline-flex allign-center gap-3'>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clipPath="url(#clip0_399_120)">
+                    <path d="M8.79 9.24V5.5C8.79 4.12 9.91 3 11.29 3C12.67 3 13.79 4.12 13.79 5.5V9.24C15 8.43 15.79 7.06 15.79 5.5C15.79 3.01 13.78 1 11.29 1C8.8 1 6.79 3.01 6.79 5.5C6.79 7.06 7.58 8.43 8.79 9.24ZM14.29 11.71C14.01 11.57 13.71 11.5 13.4 11.5H12.79V5.5C12.79 4.67 12.12 4 11.29 4C10.46 4 9.79 4.67 9.79 5.5V16.24L6.35 15.52C5.98 15.44 5.59 15.56 5.32 15.83C4.89 16.27 4.89 16.97 5.32 17.41L9.33 21.42C9.71 21.79 10.22 22 10.75 22H16.85C17.85 22 18.69 21.27 18.83 20.28L19.46 15.81C19.58 14.96 19.14 14.12 18.37 13.74L14.29 11.71Z" fill="#FFFFF7" />
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_399_120">
+                      <rect width="24" height="24" fill="white" />
+                    </clipPath>
+                  </defs>
+                </svg>
+                <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                  Total Event Trigerred
+                </Typography>
+              </div>
+              <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
+                2,289<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>events</span>
+              </Typography>
+            </Stack>
+            <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div className='inline-flex allign-center gap-3'>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.47 21.0001H19.53C21.07 21.0001 22.03 19.3301 21.26 18.0001L13.73 4.99005C12.96 3.66005 11.04 3.66005 10.27 4.99005L2.74 18.0001C1.97 19.3301 2.93 21.0001 4.47 21.0001ZM12 14.0001C11.45 14.0001 11 13.5501 11 13.0001V11.0001C11 10.4501 11.45 10.0001 12 10.0001C12.55 10.0001 13 10.4501 13 11.0001V13.0001C13 13.5501 12.55 14.0001 12 14.0001ZM13 18.0001H11V16.0001H13V18.0001Z" fill="#FFFFF7" />
+                </svg>
+                <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                  Total Alerts
+                </Typography>
+              </div>
+              <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
+                558<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>alerts</span>
+              </Typography>
+            </Stack>
+            <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div className='inline-flex allign-center gap-3'>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.47 21.0001H19.53C21.07 21.0001 22.03 19.3301 21.26 18.0001L13.73 4.99005C12.96 3.66005 11.04 3.66005 10.27 4.99005L2.74 18.0001C1.97 19.3301 2.93 21.0001 4.47 21.0001ZM12 14.0001C11.45 14.0001 11 13.5501 11 13.0001V11.0001C11 10.4501 11.45 10.0001 12 10.0001C12.55 10.0001 13 10.4501 13 11.0001V13.0001C13 13.5501 12.55 14.0001 12 14.0001ZM13 18.0001H11V16.0001H13V18.0001Z" fill="#FFFFF7" />
+                </svg>
+                <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                  Total Ongoing
+                </Typography>
+              </div>
+              <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
+                23<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>situation</span>
+              </Typography>
+
+            </Stack>
+            <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div className='inline-flex allign-center gap-3'>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clipPath="url(#clip0_399_120)">
+                    <path d="M8.79 9.24V5.5C8.79 4.12 9.91 3 11.29 3C12.67 3 13.79 4.12 13.79 5.5V9.24C15 8.43 15.79 7.06 15.79 5.5C15.79 3.01 13.78 1 11.29 1C8.8 1 6.79 3.01 6.79 5.5C6.79 7.06 7.58 8.43 8.79 9.24ZM14.29 11.71C14.01 11.57 13.71 11.5 13.4 11.5H12.79V5.5C12.79 4.67 12.12 4 11.29 4C10.46 4 9.79 4.67 9.79 5.5V16.24L6.35 15.52C5.98 15.44 5.59 15.56 5.32 15.83C4.89 16.27 4.89 16.97 5.32 17.41L9.33 21.42C9.71 21.79 10.22 22 10.75 22H16.85C17.85 22 18.69 21.27 18.83 20.28L19.46 15.81C19.58 14.96 19.14 14.12 18.37 13.74L14.29 11.71Z" fill="#FFFFF7" />
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_399_120">
+                      <rect width="24" height="24" fill="white" />
+                    </clipPath>
+                  </defs>
+                </svg>
+                <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                  Average Time Solved
+                </Typography>
+              </div>
+              <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
+                16<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>m</span>
+              </Typography>
+            </Stack>
+          </Stack>
+          <Box sx={{ border: '1px solid #004889', borderRadius: 2, px: 1 }}>
+            <div className='px-3 py-4'>
+              <Typography variant="h5" component="h5" color="white" sx={{ margin: 0 }}>
+                Current Situation
+              </Typography>
+            </div>
+
+            <table id="person">
+              <thead className="table-header-assesment">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <th key={header.id} colSpan={header.colSpan}>
+                          <div
+                            {...{
+                              className: header.column.getCanSort()
+                                ? "cursor-pointer select-none"
+                                : "",
+                              onClick:
+                                header.column.getToggleSortingHandler(),
+                            }}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                            {{
+                              asc: "🔼",
+                              desc: "🔽",
+                            }[header.column.getIsSorted() as string] ?? null}
+                          </div>
+                        </th>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map((row) => {
+                  return (
+                    <tr key={row.id}>
+                      {row.getVisibleCells().map((cell) => {
+                        const cellValue = cell.row.original.status;
+                        let cellClassName = "";
+
+                        if (cell.column.id === 'id') {
+                          cellClassName = 'id-cell';
+                        }
+                        if (cell.column.id === "status") {
+                          switch (cellValue) {
+                            case "Open":
+                              cellClassName = "open-status";
+                              break;
+                            case "Solved":
+                              cellClassName = "solved-status";
+                              break;
+                            case "On Progress":
+                              cellClassName = "on-progress-status";
+                              break;
+                            default:
+                              break;
+                          }
+                        }
+
+                        if (cell.column.id === 'severity') {
+                          // i want to add icon which is the svg in beside text of severity value
+                          //                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          // <path d="M4.47 21.0001H19.53C21.07 21.0001 22.03 19.3301 21.26 18.0001L13.73 4.99005C12.96 3.66005 11.04 3.66005 10.27 4.99005L2.74 18.0001C1.97 19.3301 2.93 21.0001 4.47 21.0001ZM12 14.0001C11.45 14.0001 11 13.5501 11 13.0001V11.0001C11 10.4501 11.45 10.0001 12 10.0001C12.55 10.0001 13 10.4501 13 11.0001V13.0001C13 13.5501 12.55 14.0001 12 14.0001ZM13 18.0001H11V16.0001H13V18.0001Z" fill="#FFFFF7"/>
+                          // </svg>
+                        }
+
+                        return (
+                          <td key={cell.id} className={`${cellClassName}`}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Box>
+        </div>
+      ),
+    },
+    {
+      id: 'team-overview',
+      label: 'Team Overview',
+      content: (
+        <div className='flex flex-row gap-4'>
+          <div className='flex flex-col gap-6 col-span-2'>
+            <Stack direction="row" spacing={1}>
+              <DropdownButton
+                buttonText="All Products"
+                options={['Option 1', 'Option 2', 'Option 3']}
+                buttonClassName="md:w-64" // Responsive width
+              />
+              <DatePickerComponent
+                selectedDate={startDate || new Date()} // Provide a default date if startDate is null
+                onChange={handleStartDateChange}
+                selectsStart
+                startDate={startDate}
+                endDate={endDate}
+              />
+              <DatePickerComponent
+                selectedDate={endDate || new Date()} // Provide a default date if endDate is null
+                onChange={handleEndDateChange}
+                selectsEnd
+                startDate={startDate}
+                endDate={endDate}
+                minDate={startDate} // Ensure endDate cannot be before startDate
+              />
+            </Stack>
+            <Stack sx={{ display: 'flex', gap: 6, flexDirection: 'row', px: 2 }}>
+              <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className='inline-flex align-center gap-1'>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clipPath="url(#clip0_399_120)">
+                      <path d="M8.79 9.24V5.5C8.79 4.12 9.91 3 11.29 3C12.67 3 13.79 4.12 13.79 5.5V9.24C15 8.43 15.79 7.06 15.79 5.5C15.79 3.01 13.78 1 11.29 1C8.8 1 6.79 3.01 6.79 5.5C6.79 7.06 7.58 8.43 8.79 9.24ZM14.29 11.71C14.01 11.57 13.71 11.5 13.4 11.5H12.79V5.5C12.79 4.67 12.12 4 11.29 4C10.46 4 9.79 4.67 9.79 5.5V16.24L6.35 15.52C5.98 15.44 5.59 15.56 5.32 15.83C4.89 16.27 4.89 16.97 5.32 17.41L9.33 21.42C9.71 21.79 10.22 22 10.75 22H16.85C17.85 22 18.69 21.27 18.83 20.28L19.46 15.81C19.58 14.96 19.14 14.12 18.37 13.74L14.29 11.71Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_399_120">
+                        <rect width="24" height="24" fill="white" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    Total Situation Solved
+                  </Typography>
+                </div>
+                <Typography variant="body2" component="p" color="white" sx={{ margin: 0, fontSize: '42px' }}>
+                  387<span style={{ fontSize: '16px', marginLeft: '5px' }}>situation</span>
+                </Typography>
+              </Stack>
+              <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className='inline-flex align-center gap-1'>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.47 21.0001H19.53C21.07 21.0001 22.03 19.3301 21.26 18.0001L13.73 4.99005C12.96 3.66005 11.04 3.66005 10.27 4.99005L2.74 18.0001C1.97 19.3301 2.93 21.0001 4.47 21.0001ZM12 14.0001C11.45 14.0001 11 13.5501 11 13.0001V11.0001C11 10.4501 11.45 10.0001 12 10.0001C12.55 10.0001 13 10.4501 13 11.0001V13.0001C13 13.5501 12.55 14.0001 12 14.0001ZM13 18.0001H11V16.0001H13V18.0001Z" fill="#FFFFF7" />
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    Current In Progress Situation
+                  </Typography>
+                </div>
+                <Typography variant="body2" component="p" color="white" sx={{ margin: 0, fontSize: '42px' }}>
+                  12<span style={{ fontSize: '16px', marginLeft: '5px' }}>situation</span>
+                </Typography>
+              </Stack>
+              <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className='inline-flex align-center gap-1'>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.47 21.0001H19.53C21.07 21.0001 22.03 19.3301 21.26 18.0001L13.73 4.99005C12.96 3.66005 11.04 3.66005 10.27 4.99005L2.74 18.0001C1.97 19.3301 2.93 21.0001 4.47 21.0001ZM12 14.0001C11.45 14.0001 11 13.5501 11 13.0001V11.0001C11 10.4501 11.45 10.0001 12 10.0001C12.55 10.0001 13 10.4501 13 11.0001V13.0001C13 13.5501 12.55 14.0001 12 14.0001ZM13 18.0001H11V16.0001H13V18.0001Z" fill="#FFFFF7" />
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    Total Team Member
+                  </Typography>
+                </div>
+                <Typography variant="body2" component="p" color="white" sx={{ margin: 0, fontSize: '42px' }}>
+                  34<span style={{ fontSize: '16px', marginLeft: '5px' }}>Member</span>
+                </Typography>
+              </Stack>
+
+            </Stack>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <Typography variant="h5" component="h5" color="white" sx={{ margin: 0 }}>
+                On Going Situation
+              </Typography>
+              <div className='grid grid-cols-2 gap-4'>
+                <div className="bg-[#0A1635]  flex flex-col gap-5 rounded-lg p-4">
+                  <div className="flex items-center gap-6">
+                    <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                        <g clipPath="url(#clip0_28_4938)">
+                          <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_28_4938">
+                            <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                      <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                        #1190
+                      </Typography>
+                    </div>
+                    <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                      bridgtl-sms-service
+                    </Typography>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        12min
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Impacted Duration
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Open Issues
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        2
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Contributor
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Alert Attempt
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-[#0A1635]  flex flex-col gap-5 rounded-lg p-4">
+                  <div className="flex items-center gap-6">
+                    <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                        <g clipPath="url(#clip0_28_4938)">
+                          <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_28_4938">
+                            <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                      <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                        #1190
+                      </Typography>
+                    </div>
+                    <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                      bridgtl-sms-service
+                    </Typography>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        12min
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Impacted Duration
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Open Issues
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        2
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Contributor
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Alert Attempt
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-[#0A1635]  flex flex-col gap-5 rounded-lg p-4">
+                  <div className="flex items-center gap-6">
+                    <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                        <g clipPath="url(#clip0_28_4938)">
+                          <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_28_4938">
+                            <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                      <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                        #1190
+                      </Typography>
+                    </div>
+                    <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                      bridgtl-sms-service
+                    </Typography>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        12min
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Impacted Duration
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Open Issues
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        2
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Contributor
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Alert Attempt
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-[#0A1635]  flex flex-col gap-5 rounded-lg p-4">
+                  <div className="flex items-center gap-6">
+                    <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                        <g clipPath="url(#clip0_28_4938)">
+                          <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_28_4938">
+                            <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                      <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                        #1190
+                      </Typography>
+                    </div>
+                    <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                      bridgtl-sms-service
+                    </Typography>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        12min
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Impacted Duration
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Open Issues
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        2
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Contributor
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Alert Attempt
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-[#0A1635]  flex flex-col gap-5 rounded-lg p-4">
+                  <div className="flex items-center gap-6">
+                    <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                        <g clipPath="url(#clip0_28_4938)">
+                          <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_28_4938">
+                            <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                      <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                        #1190
+                      </Typography>
+                    </div>
+                    <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                      bridgtl-sms-service
+                    </Typography>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        12min
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Impacted Duration
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Open Issues
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        2
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Contributor
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Alert Attempt
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-[#0A1635]  flex flex-col gap-5 rounded-lg p-4">
+                  <div className="flex items-center gap-6">
+                    <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                        <g clipPath="url(#clip0_28_4938)">
+                          <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_28_4938">
+                            <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                      <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                        #1190
+                      </Typography>
+                    </div>
+                    <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                      bridgtl-sms-service
+                    </Typography>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        12min
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Impacted Duration
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Open Issues
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        2
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Contributor
+                      </Typography>
+                    </div>
+                    <div className='flex flex-col gap-y-2 items-center text-center'>
+                      <Typography variant="h6" component="h3" color="white" >
+                        3
+                      </Typography>
+                      <Typography variant="body2" component="p" color="white" >
+                        Alert Attempt
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Box>
+          </div>
+          <div className='flex flex-col gap-6 col-span-1 px-3 py-4' style={{ border: '1px solid #004889', borderRadius: 18 }}>
+            <Typography variant="h5" component="h5" color="white">
+              Your Current Project
+            </Typography>
+            <ImageGrid />
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'service-overview',
+      label: 'Service Overview',
+      content: (
+        <div className='flex flex-col gap-8 col-span-2'>
+          <Stack direction="row" spacing={1} justifyContent={'space-between'} >
+            <DropdownButton
+              buttonText="All Products"
+              options={['Option 1', 'Option 2', 'Option 3']}
+              buttonClassName="md:w-64" // Responsive width
+            />
+            <CompaniesFilters />
+          </Stack>
+          <div className='grid grid-cols-2 gap-8'>
+            <div className="bg-[#0A1635] flex flex-col gap-7 rounded-lg p-4">
+              <div className="flex items-center gap-6">
+                <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                  bridgtl-sms-service
+                </Typography>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    12min
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Impacted Duration
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Open Issues
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    2
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Contributor
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Alert Attempt
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="green">
+                    Running
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Current Cond.
+                  </Typography>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[#0A1635] flex flex-col gap-7 rounded-lg p-4">
+              <div className="flex items-center gap-6">
+                <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                  bridgtl-sms-service
+                </Typography>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    12min
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Impacted Duration
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Open Issues
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    2
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Contributor
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Alert Attempt
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="red">
+                    Crash
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Current Cond.
+                  </Typography>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[#0A1635] flex flex-col gap-7 rounded-lg p-4">
+              <div className="flex items-center gap-6">
+                <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                  bridgtl-sms-service
+                </Typography>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    12min
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Impacted Duration
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Open Issues
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    2
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Contributor
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Alert Attempt
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="green">
+                    Running
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Current Cond.
+                  </Typography>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[#0A1635] flex flex-col gap-7 rounded-lg p-4">
+              <div className="flex items-center gap-6">
+                <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                  bridgtl-sms-service
+                </Typography>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    12min
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Impacted Duration
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Open Issues
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    2
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Contributor
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Alert Attempt
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="yellow">
+                    Warning
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Current Cond.
+                  </Typography>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[#0A1635] flex flex-col gap-7 rounded-lg p-4">
+              <div className="flex items-center gap-6">
+                <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                  bridgtl-sms-service
+                </Typography>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    12min
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Impacted Duration
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Open Issues
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    2
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Contributor
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Alert Attempt
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="green">
+                    Running
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Current Cond.
+                  </Typography>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[#0A1635] flex flex-col gap-7 rounded-lg p-4">
+              <div className="flex items-center gap-6">
+                <Typography variant="body1" component="h3" color="white" sx={{ margin: 0 }}>
+                  bridgtl-sms-service
+                </Typography>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+                <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                    <g clipPath="url(#clip0_28_4938)">
+                      <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_28_4938">
+                        <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                    #1190
+                  </Typography>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    12min
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Impacted Duration
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Open Issues
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    2
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Contributor
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="white">
+                    3
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Alert Attempt
+                  </Typography>
+                </div>
+                <div className="flex flex-col gap-y-2  justify-between text-center flex-grow">
+                  <Typography variant="h6" component="h3" color="red">
+                    Crash
+                  </Typography>
+                  <Typography variant="body2" component="p" color="white">
+                    Current Cond.
+                  </Typography>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'metrics',
+      label: 'Metrics',
+      content: (
+        <div className='flex flex-col gap-12 col-span-2'>
+          <Stack direction="row" spacing={1} justifyContent={'space-between'} >
+            <DropdownButton
+              buttonText="All Products"
+              options={['Option 1', 'Option 2', 'Option 3']}
+              buttonClassName="md:w-64" // Responsive width
+            />
+            <CompaniesFilters />
+          </Stack>
+          <div className='flex flex-col gap-8 w-full'>
+            <div className='chart-container' style={{ height: '380px', width: '100%' }}>
+              <LineChartComponent data={dataChart} options={optionsChart} />
+            </div>
+            <div className='chart-container' style={{ height: '380px', width: '100%' }}>
+              <LineChartComponent data={dataChart} options={optionsChart} />
+            </div>
+          </div>
+        </div>
+      ),
+    },
+
+  ];
+
   return (
-    <Grid container spacing={3}>
-      <Grid lg={3} sm={6} xs={12}>
-        <Budget diff={12} trend="up" sx={{ height: '100%' }} value="$24k" />
-      </Grid>
-      <Grid lg={3} sm={6} xs={12}>
-        <TotalCustomers diff={16} trend="down" sx={{ height: '100%' }} value="1.6k" />
-      </Grid>
-      <Grid lg={3} sm={6} xs={12}>
-        <TasksProgress sx={{ height: '100%' }} value={75.5} />
-      </Grid>
-      <Grid lg={3} sm={6} xs={12}>
-        <TotalProfit sx={{ height: '100%' }} value="$15k" />
-      </Grid>
-      <Grid lg={8} xs={12}>
-        <Sales
-          chartSeries={[
-            { name: 'This year', data: [18, 16, 5, 8, 3, 14, 14, 16, 17, 19, 18, 20] },
-            { name: 'Last year', data: [12, 11, 4, 6, 2, 9, 9, 10, 11, 12, 13, 13] },
-          ]}
-          sx={{ height: '100%' }}
-        />
-      </Grid>
-      <Grid lg={4} md={6} xs={12}>
-        <Traffic chartSeries={[63, 15, 22]} labels={['Desktop', 'Tablet', 'Phone']} sx={{ height: '100%' }} />
-      </Grid>
-      <Grid lg={4} md={6} xs={12}>
-        <LatestProducts
-          products={[
-            {
-              id: 'PRD-005',
-              name: 'Soja & Co. Eucalyptus',
-              image: '/assets/product-5.png',
-              updatedAt: dayjs().subtract(18, 'minutes').subtract(5, 'hour').toDate(),
-            },
-            {
-              id: 'PRD-004',
-              name: 'Necessaire Body Lotion',
-              image: '/assets/product-4.png',
-              updatedAt: dayjs().subtract(41, 'minutes').subtract(3, 'hour').toDate(),
-            },
-            {
-              id: 'PRD-003',
-              name: 'Ritual of Sakura',
-              image: '/assets/product-3.png',
-              updatedAt: dayjs().subtract(5, 'minutes').subtract(3, 'hour').toDate(),
-            },
-            {
-              id: 'PRD-002',
-              name: 'Lancome Rouge',
-              image: '/assets/product-2.png',
-              updatedAt: dayjs().subtract(23, 'minutes').subtract(2, 'hour').toDate(),
-            },
-            {
-              id: 'PRD-001',
-              name: 'Erbology Aloe Vera',
-              image: '/assets/product-1.png',
-              updatedAt: dayjs().subtract(10, 'minutes').toDate(),
-            },
-          ]}
-          sx={{ height: '100%' }}
-        />
-      </Grid>
-      <Grid lg={8} md={12} xs={12}>
-        <LatestOrders
-          orders={[
-            {
-              id: 'ORD-007',
-              customer: { name: 'Ekaterina Tankova' },
-              amount: 30.5,
-              status: 'pending',
-              createdAt: dayjs().subtract(10, 'minutes').toDate(),
-            },
-            {
-              id: 'ORD-006',
-              customer: { name: 'Cao Yu' },
-              amount: 25.1,
-              status: 'delivered',
-              createdAt: dayjs().subtract(10, 'minutes').toDate(),
-            },
-            {
-              id: 'ORD-004',
-              customer: { name: 'Alexa Richardson' },
-              amount: 10.99,
-              status: 'refunded',
-              createdAt: dayjs().subtract(10, 'minutes').toDate(),
-            },
-            {
-              id: 'ORD-003',
-              customer: { name: 'Anje Keizer' },
-              amount: 96.43,
-              status: 'pending',
-              createdAt: dayjs().subtract(10, 'minutes').toDate(),
-            },
-            {
-              id: 'ORD-002',
-              customer: { name: 'Clarke Gillebert' },
-              amount: 32.54,
-              status: 'delivered',
-              createdAt: dayjs().subtract(10, 'minutes').toDate(),
-            },
-            {
-              id: 'ORD-001',
-              customer: { name: 'Adam Denisov' },
-              amount: 16.76,
-              status: 'delivered',
-              createdAt: dayjs().subtract(10, 'minutes').toDate(),
-            },
-          ]}
-          sx={{ height: '100%' }}
-        />
-      </Grid>
-    </Grid>
+    <Stack spacing={3}>
+      <TabsComponent tabs={tabs} />
+      {/* <Typography variant="body2" component="p" color="white">
+          Last Updated a minute ago
+        </Typography> */}
+    </Stack>
+
   );
 }

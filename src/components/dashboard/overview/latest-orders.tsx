@@ -12,7 +12,7 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/csr/ArrowRight';
+import { ArrowRight } from 'react-feather';
 import dayjs from 'dayjs';
 
 const statusMap = {
@@ -71,7 +71,7 @@ export function LatestOrders({ orders = [], sx }: LatestOrdersProps): React.JSX.
       <CardActions sx={{ justifyContent: 'flex-end' }}>
         <Button
           color="inherit"
-          endIcon={<ArrowRightIcon fontSize="var(--icon-fontSize-md)" />}
+          endIcon={<ArrowRight fontSize="var(--icon-fontSize-md)" />}
           size="small"
           variant="text"
         >
