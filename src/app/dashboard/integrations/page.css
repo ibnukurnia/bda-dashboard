@@ -17,6 +17,7 @@ table thead tr th {
 
 #person td,
 #person th {
+    padding: 12px;
     text-align: center;
     border-bottom: 1px solid white;
 }

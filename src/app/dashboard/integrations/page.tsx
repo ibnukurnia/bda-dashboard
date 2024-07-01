@@ -23,6 +23,8 @@ import "./page.css"
 import ButtonWithCheckbox from '@/components/dashboard/integrations/button-checkbox';
 import { makeStyles } from '@mui/styles';
 import LineChartComponent from '@/components/dashboard/overview/line-chart';
+import DistributedTimelineChart from '@/components/dashboard/integrations/timeline-charts';
+import TopologyDiagram from '@/components/dashboard/integrations/topology-charts';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -34,7 +36,6 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: '#F59823', // Set the custom indicator color here
   },
 }));
-
 
 
 function CustomTabPanel(props: TabPanelProps) {
@@ -64,9 +65,9 @@ function a11yProps(index: number) {
 export default function Page(): React.JSX.Element {
 
 
-  const classes = useStyles();
-  const options = ["Option 1", "Option 2", "Option 3"];
-  const optionsDropdown = ["Option 1", "Option 2", "Option 3"];
+  // const classes = useStyles();
+  // const options = ["Option 1", "Option 2", "Option 3"];
+  // const optionsDropdown = ["Option 1", "Option 2", "Option 3"];
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [value, setValue] = React.useState(0);
@@ -339,6 +340,7 @@ export default function Page(): React.JSX.Element {
                         if (cell.column.id === 'id') {
                           cellClassName = 'id-cell';
                         }
+                        
                         if (cell.column.id === "status") {
                           switch (cellValue) {
                             case "Open":
@@ -411,59 +413,61 @@ export default function Page(): React.JSX.Element {
           </Box>
         </div>
         <div className='situation-card flex flex-col gap-2'>
-          <div className='p-4 border-b-2'>          <div className="flex items-center gap-6">
-            <Typography variant="h5" component="h5" color="white">
-              Situation Detail
-            </Typography>
-            <div className='bg-[#06AED5] inline-flex gap-2 items-center rounded-xl px-3'>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="10" cy="10" r="10" fill="#06AED5" />
-                <g clipPath="url(#clip0_28_4938)">
-                  <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
-                </g>
-                <defs>
-                  <clipPath id="clip0_28_4938">
-                    <rect width="13" height="13" fill="white" transform="translate(3 3)" />
-                  </clipPath>
-                </defs>
-              </svg>
-              <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
-                #1190
+          <div className='p-4 border-b-2'>
+            <div className="flex items-center gap-6">
+              <Typography variant="h5" component="h5" color="white">
+                Situation Detail
               </Typography>
+              <div className='bg-[#06AED5] inline-flex gap-2 items-center rounded-xl px-3'>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                  <g clipPath="url(#clip0_28_4938)">
+                    <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_28_4938">
+                      <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                    </clipPath>
+                  </defs>
+                </svg>
+                <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                  #1190
+                </Typography>
+              </div>
+              <div className='bg-[#06AED5] inline-flex gap-2 items-center rounded-xl px-3'>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                  <g clipPath="url(#clip0_28_4938)">
+                    <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_28_4938">
+                      <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                    </clipPath>
+                  </defs>
+                </svg>
+                <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                  #1190
+                </Typography>
+              </div>
+              <div className='bg-[#06AED5] inline-flex gap-2 items-center rounded-xl px-3'>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="10" cy="10" r="10" fill="#06AED5" />
+                  <g clipPath="url(#clip0_28_4938)">
+                    <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_28_4938">
+                      <rect width="13" height="13" fill="white" transform="translate(3 3)" />
+                    </clipPath>
+                  </defs>
+                </svg>
+                <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
+                  #1190
+                </Typography>
+              </div>
             </div>
-            <div className='bg-[#06AED5] inline-flex gap-2 items-center rounded-xl px-3'>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="10" cy="10" r="10" fill="#06AED5" />
-                <g clipPath="url(#clip0_28_4938)">
-                  <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
-                </g>
-                <defs>
-                  <clipPath id="clip0_28_4938">
-                    <rect width="13" height="13" fill="white" transform="translate(3 3)" />
-                  </clipPath>
-                </defs>
-              </svg>
-              <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
-                #1190
-              </Typography>
-            </div>
-            <div className='bg-[#06AED5] inline-flex gap-2 items-center rounded-xl px-3'>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="10" cy="10" r="10" fill="#06AED5" />
-                <g clipPath="url(#clip0_28_4938)">
-                  <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
-                </g>
-                <defs>
-                  <clipPath id="clip0_28_4938">
-                    <rect width="13" height="13" fill="white" transform="translate(3 3)" />
-                  </clipPath>
-                </defs>
-              </svg>
-              <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
-                #1190
-              </Typography>
-            </div>
-          </div></div>
+          </div>
 
           <div className='flex flex-col gap-8 p-6'>
             <div className='flex flex-row justify-between gap-12'>
@@ -541,7 +545,7 @@ export default function Page(): React.JSX.Element {
                       <div className='flex flex-row gap-3 '>
                         <div className='inline-flex gap-2'>
                           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0_137_8720)">
+                            <g clipPath="url(#clip0_137_8720)">
                               <path d="M13.5 14.25H4.5C4.0875 14.25 3.75 13.9125 3.75 13.5V4.5C3.75 4.0875 4.0875 3.75 4.5 3.75H8.25C8.6625 3.75 9 3.4125 9 3C9 2.5875 8.6625 2.25 8.25 2.25H3.75C2.9175 2.25 2.25 2.925 2.25 3.75V14.25C2.25 15.075 2.925 15.75 3.75 15.75H14.25C15.075 15.75 15.75 15.075 15.75 14.25V9.75C15.75 9.3375 15.4125 9 15 9C14.5875 9 14.25 9.3375 14.25 9.75V13.5C14.25 13.9125 13.9125 14.25 13.5 14.25ZM10.5 3C10.5 3.4125 10.8375 3.75 11.25 3.75H13.1925L6.345 10.5975C6.0525 10.89 6.0525 11.3625 6.345 11.655C6.6375 11.9475 7.11 11.9475 7.4025 11.655L14.25 4.8075V6.75C14.25 7.1625 14.5875 7.5 15 7.5C15.4125 7.5 15.75 7.1625 15.75 6.75V2.25H11.25C10.8375 2.25 10.5 2.5875 10.5 3Z" fill="#FFFFF7" />
                             </g>
                             <defs>
@@ -556,7 +560,7 @@ export default function Page(): React.JSX.Element {
                         </div>
                         <div className='inline-flex gap-2'>
                           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0_137_8720)">
+                            <g clipPath="url(#clip0_137_8720)">
                               <path d="M13.5 14.25H4.5C4.0875 14.25 3.75 13.9125 3.75 13.5V4.5C3.75 4.0875 4.0875 3.75 4.5 3.75H8.25C8.6625 3.75 9 3.4125 9 3C9 2.5875 8.6625 2.25 8.25 2.25H3.75C2.9175 2.25 2.25 2.925 2.25 3.75V14.25C2.25 15.075 2.925 15.75 3.75 15.75H14.25C15.075 15.75 15.75 15.075 15.75 14.25V9.75C15.75 9.3375 15.4125 9 15 9C14.5875 9 14.25 9.3375 14.25 9.75V13.5C14.25 13.9125 13.9125 14.25 13.5 14.25ZM10.5 3C10.5 3.4125 10.8375 3.75 11.25 3.75H13.1925L6.345 10.5975C6.0525 10.89 6.0525 11.3625 6.345 11.655C6.6375 11.9475 7.11 11.9475 7.4025 11.655L14.25 4.8075V6.75C14.25 7.1625 14.5875 7.5 15 7.5C15.4125 7.5 15.75 7.1625 15.75 6.75V2.25H11.25C10.8375 2.25 10.5 2.5875 10.5 3Z" fill="#FFFFF7" />
                             </g>
                             <defs>
@@ -571,7 +575,7 @@ export default function Page(): React.JSX.Element {
                         </div>
                         <div className='inline-flex gap-2'>
                           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0_137_8720)">
+                            <g clipPath="url(#clip0_137_8720)">
                               <path d="M13.5 14.25H4.5C4.0875 14.25 3.75 13.9125 3.75 13.5V4.5C3.75 4.0875 4.0875 3.75 4.5 3.75H8.25C8.6625 3.75 9 3.4125 9 3C9 2.5875 8.6625 2.25 8.25 2.25H3.75C2.9175 2.25 2.25 2.925 2.25 3.75V14.25C2.25 15.075 2.925 15.75 3.75 15.75H14.25C15.075 15.75 15.75 15.075 15.75 14.25V9.75C15.75 9.3375 15.4125 9 15 9C14.5875 9 14.25 9.3375 14.25 9.75V13.5C14.25 13.9125 13.9125 14.25 13.5 14.25ZM10.5 3C10.5 3.4125 10.8375 3.75 11.25 3.75H13.1925L6.345 10.5975C6.0525 10.89 6.0525 11.3625 6.345 11.655C6.6375 11.9475 7.11 11.9475 7.4025 11.655L14.25 4.8075V6.75C14.25 7.1625 14.5875 7.5 15 7.5C15.4125 7.5 15.75 7.1625 15.75 6.75V2.25H11.25C10.8375 2.25 10.5 2.5875 10.5 3Z" fill="#FFFFF7" />
                             </g>
                             <defs>
@@ -610,7 +614,7 @@ export default function Page(): React.JSX.Element {
                       <div className='flex flex-row gap-3 '>
                         <div className='inline-flex gap-2'>
                           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0_137_8720)">
+                            <g clipPath="url(#clip0_137_8720)">
                               <path d="M13.5 14.25H4.5C4.0875 14.25 3.75 13.9125 3.75 13.5V4.5C3.75 4.0875 4.0875 3.75 4.5 3.75H8.25C8.6625 3.75 9 3.4125 9 3C9 2.5875 8.6625 2.25 8.25 2.25H3.75C2.9175 2.25 2.25 2.925 2.25 3.75V14.25C2.25 15.075 2.925 15.75 3.75 15.75H14.25C15.075 15.75 15.75 15.075 15.75 14.25V9.75C15.75 9.3375 15.4125 9 15 9C14.5875 9 14.25 9.3375 14.25 9.75V13.5C14.25 13.9125 13.9125 14.25 13.5 14.25ZM10.5 3C10.5 3.4125 10.8375 3.75 11.25 3.75H13.1925L6.345 10.5975C6.0525 10.89 6.0525 11.3625 6.345 11.655C6.6375 11.9475 7.11 11.9475 7.4025 11.655L14.25 4.8075V6.75C14.25 7.1625 14.5875 7.5 15 7.5C15.4125 7.5 15.75 7.1625 15.75 6.75V2.25H11.25C10.8375 2.25 10.5 2.5875 10.5 3Z" fill="#FFFFF7" />
                             </g>
                             <defs>
@@ -625,7 +629,7 @@ export default function Page(): React.JSX.Element {
                         </div>
                         <div className='inline-flex gap-2'>
                           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0_137_8720)">
+                            <g clipPath="url(#clip0_137_8720)">
                               <path d="M13.5 14.25H4.5C4.0875 14.25 3.75 13.9125 3.75 13.5V4.5C3.75 4.0875 4.0875 3.75 4.5 3.75H8.25C8.6625 3.75 9 3.4125 9 3C9 2.5875 8.6625 2.25 8.25 2.25H3.75C2.9175 2.25 2.25 2.925 2.25 3.75V14.25C2.25 15.075 2.925 15.75 3.75 15.75H14.25C15.075 15.75 15.75 15.075 15.75 14.25V9.75C15.75 9.3375 15.4125 9 15 9C14.5875 9 14.25 9.3375 14.25 9.75V13.5C14.25 13.9125 13.9125 14.25 13.5 14.25ZM10.5 3C10.5 3.4125 10.8375 3.75 11.25 3.75H13.1925L6.345 10.5975C6.0525 10.89 6.0525 11.3625 6.345 11.655C6.6375 11.9475 7.11 11.9475 7.4025 11.655L14.25 4.8075V6.75C14.25 7.1625 14.5875 7.5 15 7.5C15.4125 7.5 15.75 7.1625 15.75 6.75V2.25H11.25C10.8375 2.25 10.5 2.5875 10.5 3Z" fill="#FFFFF7" />
                             </g>
                             <defs>
@@ -640,7 +644,7 @@ export default function Page(): React.JSX.Element {
                         </div>
                         <div className='inline-flex gap-2'>
                           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0_137_8720)">
+                            <g clipPath="url(#clip0_137_8720)">
                               <path d="M13.5 14.25H4.5C4.0875 14.25 3.75 13.9125 3.75 13.5V4.5C3.75 4.0875 4.0875 3.75 4.5 3.75H8.25C8.6625 3.75 9 3.4125 9 3C9 2.5875 8.6625 2.25 8.25 2.25H3.75C2.9175 2.25 2.25 2.925 2.25 3.75V14.25C2.25 15.075 2.925 15.75 3.75 15.75H14.25C15.075 15.75 15.75 15.075 15.75 14.25V9.75C15.75 9.3375 15.4125 9 15 9C14.5875 9 14.25 9.3375 14.25 9.75V13.5C14.25 13.9125 13.9125 14.25 13.5 14.25ZM10.5 3C10.5 3.4125 10.8375 3.75 11.25 3.75H13.1925L6.345 10.5975C6.0525 10.89 6.0525 11.3625 6.345 11.655C6.6375 11.9475 7.11 11.9475 7.4025 11.655L14.25 4.8075V6.75C14.25 7.1625 14.5875 7.5 15 7.5C15.4125 7.5 15.75 7.1625 15.75 6.75V2.25H11.25C10.8375 2.25 10.5 2.5875 10.5 3Z" fill="#FFFFF7" />
                             </g>
                             <defs>
@@ -678,7 +682,7 @@ export default function Page(): React.JSX.Element {
                       <div className='flex flex-row gap-3 '>
                         <div className='inline-flex gap-2'>
                           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0_137_8720)">
+                            <g clipPath="url(#clip0_137_8720)">
                               <path d="M13.5 14.25H4.5C4.0875 14.25 3.75 13.9125 3.75 13.5V4.5C3.75 4.0875 4.0875 3.75 4.5 3.75H8.25C8.6625 3.75 9 3.4125 9 3C9 2.5875 8.6625 2.25 8.25 2.25H3.75C2.9175 2.25 2.25 2.925 2.25 3.75V14.25C2.25 15.075 2.925 15.75 3.75 15.75H14.25C15.075 15.75 15.75 15.075 15.75 14.25V9.75C15.75 9.3375 15.4125 9 15 9C14.5875 9 14.25 9.3375 14.25 9.75V13.5C14.25 13.9125 13.9125 14.25 13.5 14.25ZM10.5 3C10.5 3.4125 10.8375 3.75 11.25 3.75H13.1925L6.345 10.5975C6.0525 10.89 6.0525 11.3625 6.345 11.655C6.6375 11.9475 7.11 11.9475 7.4025 11.655L14.25 4.8075V6.75C14.25 7.1625 14.5875 7.5 15 7.5C15.4125 7.5 15.75 7.1625 15.75 6.75V2.25H11.25C10.8375 2.25 10.5 2.5875 10.5 3Z" fill="#FFFFF7" />
                             </g>
                             <defs>
@@ -693,7 +697,7 @@ export default function Page(): React.JSX.Element {
                         </div>
                         <div className='inline-flex gap-2'>
                           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0_137_8720)">
+                            <g clipPath="url(#clip0_137_8720)">
                               <path d="M13.5 14.25H4.5C4.0875 14.25 3.75 13.9125 3.75 13.5V4.5C3.75 4.0875 4.0875 3.75 4.5 3.75H8.25C8.6625 3.75 9 3.4125 9 3C9 2.5875 8.6625 2.25 8.25 2.25H3.75C2.9175 2.25 2.25 2.925 2.25 3.75V14.25C2.25 15.075 2.925 15.75 3.75 15.75H14.25C15.075 15.75 15.75 15.075 15.75 14.25V9.75C15.75 9.3375 15.4125 9 15 9C14.5875 9 14.25 9.3375 14.25 9.75V13.5C14.25 13.9125 13.9125 14.25 13.5 14.25ZM10.5 3C10.5 3.4125 10.8375 3.75 11.25 3.75H13.1925L6.345 10.5975C6.0525 10.89 6.0525 11.3625 6.345 11.655C6.6375 11.9475 7.11 11.9475 7.4025 11.655L14.25 4.8075V6.75C14.25 7.1625 14.5875 7.5 15 7.5C15.4125 7.5 15.75 7.1625 15.75 6.75V2.25H11.25C10.8375 2.25 10.5 2.5875 10.5 3Z" fill="#FFFFF7" />
                             </g>
                             <defs>
@@ -708,7 +712,7 @@ export default function Page(): React.JSX.Element {
                         </div>
                         <div className='inline-flex gap-2'>
                           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clip-path="url(#clip0_137_8720)">
+                            <g clipPath="url(#clip0_137_8720)">
                               <path d="M13.5 14.25H4.5C4.0875 14.25 3.75 13.9125 3.75 13.5V4.5C3.75 4.0875 4.0875 3.75 4.5 3.75H8.25C8.6625 3.75 9 3.4125 9 3C9 2.5875 8.6625 2.25 8.25 2.25H3.75C2.9175 2.25 2.25 2.925 2.25 3.75V14.25C2.25 15.075 2.925 15.75 3.75 15.75H14.25C15.075 15.75 15.75 15.075 15.75 14.25V9.75C15.75 9.3375 15.4125 9 15 9C14.5875 9 14.25 9.3375 14.25 9.75V13.5C14.25 13.9125 13.9125 14.25 13.5 14.25ZM10.5 3C10.5 3.4125 10.8375 3.75 11.25 3.75H13.1925L6.345 10.5975C6.0525 10.89 6.0525 11.3625 6.345 11.655C6.6375 11.9475 7.11 11.9475 7.4025 11.655L14.25 4.8075V6.75C14.25 7.1625 14.5875 7.5 15 7.5C15.4125 7.5 15.75 7.1625 15.75 6.75V2.25H11.25C10.8375 2.25 10.5 2.5875 10.5 3Z" fill="#FFFFF7" />
                             </g>
                             <defs>
@@ -736,10 +740,13 @@ export default function Page(): React.JSX.Element {
               </div>
             </CustomTabPanel>
             <CustomTabPanel value={value} index={1}>
-              Timeline
+              <div className="text-white">
+                <h1 className='text-white'>Distributed Timeline Chart</h1>
+                <DistributedTimelineChart />
+              </div>
             </CustomTabPanel>
             <CustomTabPanel value={value} index={2}>
-              Topology
+              {/* <TopologyDiagram /> */}
             </CustomTabPanel>
             <CustomTabPanel value={value} index={3}>
               <div className='chart-container' style={{ height: '380px', width: '100%' }}>

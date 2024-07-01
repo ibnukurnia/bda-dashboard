@@ -20,12 +20,12 @@ const ImageGrid: React.FC = () => {
                 {images.map((image, index) => (
                     <Grid item xs={6} sm={3} key={index}>
                         <Image
+                            className='object-contain h-auto w-full'
                             src={image.src}
                             alt={image.alt}
-                            layout="responsive"
+                            // layout="responsive"
                             width={500}
                             height={500}
-                            objectFit="contain"
                         />
                     </Grid>
                 ))}

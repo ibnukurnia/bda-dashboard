@@ -3,10 +3,11 @@
 import * as React from 'react';
 import { Box, Grid, Stack, Typography, Button } from '@mui/material';
 import { useState } from 'react';
+import { ArrowLeft, ArrowRight } from 'react-feather';
 import DropdownButton from '@/components/dashboard/overview/dropdown-button';
 import DatePickerComponent from '@/components/dashboard/overview/date-picker';
-import { ArrowLeft, ArrowRight } from 'react-feather';
 import DoughnutChartComponent from '@/components/dashboard/customer/doughnut-chart';
+import TabsComponent from '@/components/dashboard/overview/tabs';
 import {
     createColumnHelper,
     Column,
@@ -19,14 +20,16 @@ import {
     getPaginationRowModel,
     getSortedRowModel,
     useReactTable,
-} from "@tanstack/react-table"; import TabsComponent from '@/components/dashboard/overview/tabs';
+} from "@tanstack/react-table";
 import "./page.css"
 
 
 export default function Page(): React.JSX.Element {
-    const options = ["Option 1", "Option 2", "Option 3"];
+    // const options = ["Option 1", "Option 2", "Option 3"];
+    // State for managing startDate and endDate
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
+
 
     const dataChart = {
         labels: ['Red', 'Yellow', 'Silver'],
@@ -206,6 +209,7 @@ export default function Page(): React.JSX.Element {
                                 options={['Option 1', 'Option 2', 'Option 3']}
                                 buttonClassName="md:w-64" // Responsive width
                             />
+                            {/* Render DatePickerComponent for startDate */}
                             <DatePickerComponent
                                 selectedDate={startDate} // Provide a default date if startDate is null
                                 onChange={handleStartDateChange}
@@ -214,6 +218,8 @@ export default function Page(): React.JSX.Element {
                                 endDate={endDate}
                                 placeholder="Start Date"
                             />
+
+                            {/* Render DatePickerComponent for endDate */}
                             <DatePickerComponent
                                 selectedDate={endDate} // Provide a default date if endDate is null
                                 onChange={handleEndDateChange}
