@@ -1,6 +1,6 @@
-const { resolve } = require('node:path');
+const { resolve } = require('node:path')
 
-const project = resolve(__dirname, 'tsconfig.json');
+const project = resolve(__dirname, 'tsconfig.json')
 
 module.exports = {
   root: true,
@@ -71,6 +71,6 @@ module.exports = {
     'react/jsx-fragments': 'off', // personal style
     'react/prop-types': 'off', // TypeScript is used for type checking
     '@next/next/no-img-element': 'off', // Temporary disabled
-    "react/function-component-definition": ["error", "arrow"]
+    'react/function-component-definition': ['error', 'arrow'],
   },
-};
+}
