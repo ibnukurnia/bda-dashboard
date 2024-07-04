@@ -1,0 +1,43 @@
+#person th {
+    font-size: 16px;
+    font-weight: 400;
+    color: white;
+}
+
+#person td {
+    font-family: Poppins;
+    font-size: 14px;
+    font-weight: 400;
+    color: white
+}
+
+.show-pagination {
+    margin-left: 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.pagination-button {
+    background: white;
+    padding: 8px 13px;
+    gap: 10px;
+    border-radius: 5px;
+    opacity: 0px;
+    border: none;
+}
+
+.id-cell {
+    background: #373737;
+}
+
+.open-status {
+    background: #06AED5;
+}
+
+.solved-status {
+    background: #06BA63;
+}
+
+.on-progress-status {
+    background: #F59823;
+}
