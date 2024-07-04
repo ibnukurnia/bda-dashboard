@@ -29,7 +29,7 @@ interface LineChartProps {
 }
 
 const LineChartComponent: React.FC<LineChartProps> = ({ data, options }) => {
-    return <Line data={data} options={options} style={{ background: '#0A1635', borderRadius: "12px", width: '100%' }} />;
+    return <Line data={data} options={options} style={{ background: '#0A1635', borderRadius: "12px" }} />;
 };
 
 export default LineChartComponent;

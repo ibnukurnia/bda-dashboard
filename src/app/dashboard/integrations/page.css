@@ -5,23 +5,6 @@
     border-radius: 12px;
 }
 
-/*Assesment History Table Style*/
-table thead tr th {
-    border-bottom: 1px solid white;
-}
-
-#person {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-#person td,
-#person th {
-    text-align: center;
-    border-bottom: 1px solid white;
-}
-
-
 #person th {
     font-size: 15px;
     font-weight: 400;
@@ -52,45 +35,31 @@ table thead tr th {
 
 .id-cell {
     background: #373737;
-    border-radius: 18px;
-    padding: 5px;
-}
-
-/* Status Cell Styles */
-.open-status,
-.solved-status,
-.on-progress-status {
-    color: white;
-    text-align: center;
-    border-radius: 18px;
-    padding: 5px 10px;
-    /* Adjust padding to fit your design */
-}
-
-.open-status {
-    background: #06AED5;
-    padding: 5px 10px;
 }
 
 .solved-status {
     background: #06BA63;
-    padding: 1px 33px !important;
-    border-radius: 42px !important;
+    place-content: center;
+}
+
+.open-status {
+    background: #06AED5;
+    place-content: center;
 }
 
 .on-progress-status {
     background: #F59823;
+    place-content: center;
 }
 
 .situation-card {
     background: #042543;
-    border-radius: 8px;
 }
 
 .alert-card {
     border: 3px solid #DE1A1A
 }
 
-.alert-card-2{
+.alert-card-2 {
     border: 3px solid #F59823
 }

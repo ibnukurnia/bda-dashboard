@@ -9,7 +9,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'custom-blue': '#06AED5',
+        'custom-blue': '#125D7A',
+        'custom-red': '#4D0717',
+        'custom-yellow': '#F59823',
       },
       boxShadow: {
         'custom-shadow': '0px 4px 4px 0px #00000040',

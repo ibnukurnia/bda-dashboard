@@ -4,6 +4,7 @@ export const typography: TypographyOptions = {
   fontFamily: '"Poppins", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
   body1: { fontSize: '1rem', fontWeight: 400, lineHeight: 1.5, fontFamily: '"Inter", sans-serif' },
   body2: { fontSize: '0.875rem', fontWeight: 500, lineHeight: 1.57, fontFamily: '"Inter", sans-serif' },
+  body3: { fontSize: '1rem', fontWeight: 600, fontFamily: '"Poppins", sans-serif' },
   button: { fontWeight: 500, fontFamily: '"Inter", sans-serif' },
   caption: { fontSize: '0.75rem', fontWeight: 400, lineHeight: 1.66, fontFamily: '"Inter", sans-serif' },
   subtitle1: { fontSize: '1rem', fontWeight: 500, lineHeight: 1.57, fontFamily: '"Poppins", sans-serif' },
