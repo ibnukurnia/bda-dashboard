@@ -44,7 +44,7 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
     } catch (err) {
       logger.error('Sign out error', err);
     }
-  }, [checkSession, router]);
+  }, [router]);
 
   return (
     <Popover

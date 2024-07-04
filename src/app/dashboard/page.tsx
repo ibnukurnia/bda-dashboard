@@ -1,29 +1,36 @@
 'use client'
 
-import * as React from 'react';
+import { useState, useEffect, useContext } from 'react';
 // import type { Metadata } from 'next';
 import { Box, Grid, Stack, Typography } from '@mui/material';
 import { CompaniesFilters } from '@/components/dashboard/overview/overview-filters';
-import { useState } from 'react';
 import TabsComponent from '@/components/dashboard/overview/tabs';
 import DropdownButton from '@/components/dashboard/overview/dropdown-button';
 import DatePickerComponent from '@/components/dashboard/overview/date-picker';
-import ImageGrid from '@/components/dashboard/overview/image-grid';
 import LineChartComponent from '@/components/dashboard/overview/line-chart';
-import {
-  createColumnHelper,
-  Column,
-  ColumnDef,
-  PaginationState,
-  Table,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import "../../components/dashboard/overview/table.css";
+import ImageGrid from '@/components/dashboard/overview/image-grid';
+// import {
+//   createColumnHelper,
+//   Column,
+//   ColumnDef,
+//   PaginationState,
+//   Table,
+//   flexRender,
+//   getCoreRowModel,
+//   getFilteredRowModel,
+//   getPaginationRowModel,
+//   getSortedRowModel,
+//   useReactTable,
+// } from "@tanstack/react-table";
+// import "../../components/dashboard/overview/table.css";
+// import { handleError } from '@/lib/error-handler';
+// import { CurrentSituation, InsightOverviewResponse } from '@/modules/models/overviews';
+// import { GetCurrentSituation } from '@/modules/usecases/overviews';
+import { OverviewContext } from '@/contexts/overview-context';
+import { InsightPanel } from '@/components/dashboard/overview/panels/insight';
+import { TeamOverviewPanel } from '@/components/dashboard/overview/panels/team-overview';
+import { SeviceOverviewPanel } from '@/components/dashboard/overview/panels/service-overview-panel';
+// import second from '@/components/dashboard/overview/table.css'
 
 
 
@@ -308,57 +315,66 @@ export default function Page(): React.ReactElement {
     }
   ];
 
-  const columnHelper = createColumnHelper<Person>();
+  const {
+    insightOverview,
+    teamOverview,
+    serviceOverviews,
+    setLoad
+  } = useContext(OverviewContext)
+
+
   const [data, _setData] = useState(() => [...defaultData]);
+  // const columnHelper = createColumnHelper<CurrentSituation>();
+  // const [overview, setOverview] = useState<InsightOverviewResponse | undefined>(undefined)
+  // const [pagination, setPagination] = useState<PaginationState>({
+  //   pageIndex: 0,
+  //   pageSize: 4,
+  // });
 
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 4,
-  });
+  // const columns = [
+  //   columnHelper.accessor("id", {
+  //     header: "ID",
+  //   }),
+  //   columnHelper.accessor('created_date', {
+  //     id: "created_date",
+  //     cell: (info) => <i>{info.getValue()}</i>,
+  //     header: () => <span>Created Date</span>,
+  //   }),
+  //   columnHelper.accessor("severity", {
+  //     header: () => "Severity",
+  //     cell: (info) => info.renderValue(),
+  //   }),
+  //   columnHelper.accessor("status", {
+  //     header: "Status",
+  //   }),
+  //   columnHelper.accessor('assignees', {
+  //     header: "Assignee",
+  //     // cell: (info) => <span> {renderAssignees(info.getValue())} </span>
+  //   }),
+  //   columnHelper.accessor("service", {
+  //     header: "Service",
+  //   }),
+  //   columnHelper.accessor("description", {
+  //     header: "Description",
+  //   }),
+  //   columnHelper.accessor('total_alerts', {
+  //     header: "Total Alerts",
+  //   }),
+  // ];
 
-  const columns = [
-    columnHelper.accessor("id", {
-      header: "ID",
-    }),
-    columnHelper.accessor("createdDate", {
-      id: "CreatedData",
-      cell: (info) => <i>{info.getValue()}</i>,
-      header: () => <span>Created Date</span>,
-    }),
-    columnHelper.accessor("severity", {
-      header: () => "Severity",
-      cell: (info) => info.renderValue(),
-    }),
-    columnHelper.accessor("status", {
-      header: "Status",
-    }),
-    columnHelper.accessor("assigne", {
-      header: "Assigne",
-    }),
-    columnHelper.accessor("service", {
-      header: "Service",
-    }),
-    columnHelper.accessor("description", {
-      header: "Description",
-    }),
-    columnHelper.accessor("totalAlerts", {
-      header: "Total Alerts",
-    }),
-  ];
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onPaginationChange: setPagination,
-    //no need to pass pageCount or rowCount with client-side pagination as it is calculated automatically
-    state: {
-      pagination,
-    },
-  });
+  // const table = useReactTable<CurrentSituation>({
+  //   data: overview?.current_situations ?? [],
+  //   columns,
+  //   getCoreRowModel: getCoreRowModel(),
+  //   getSortedRowModel: getSortedRowModel(),
+  //   getFilteredRowModel: getFilteredRowModel(),
+  //   getPaginationRowModel: getPaginationRowModel(),
+  //   onPaginationChange: setPagination,
+  //   //no need to pass pageCount or rowCount with client-side pagination as it is calculated automatically
+  //   state: {
+  //     pagination,
+  //   },
+  // });
 
   // State for managing startDate and endDate
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -390,257 +406,7 @@ export default function Page(): React.ReactElement {
             </clipPath>
           </defs>
         </svg>,
-      content: (
-        <div className='flex flex-col gap-10'>
-          <Stack direction="row" spacing={3}>
-            <DropdownButton
-              buttonText="All Products"
-              options={['Option 1', 'Option 2', 'Option 3']}
-              buttonClassName="md:w-64" // Responsive width
-            />
-            {/* Render DatePickerComponent for startDate */}
-            <DatePickerComponent
-              selectedDate={startDate} // Provide a default date if startDate is null
-              onChange={handleStartDateChange}
-              selectsStart
-              startDate={startDate}
-              endDate={endDate}
-              placeholder="Start Date"
-            />
-
-            {/* Render DatePickerComponent for endDate */}
-            <DatePickerComponent
-              selectedDate={endDate} // Provide a default date if endDate is null
-              onChange={handleEndDateChange}
-              selectsEnd
-              startDate={startDate}
-              endDate={endDate}
-              minDate={startDate} // Ensure endDate cannot be before startDate
-              placeholder="End Date"
-            />
-          </Stack>
-          <Stack sx={{ display: 'flex', gap: 6, flexDirection: 'row', px: 3 }}>
-            <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div className='flex flex-col'>
-                <div className='inline-flex allign-center gap-3'>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clipPath="url(#clip0_399_120)">
-                      <path d="M8.79 9.24V5.5C8.79 4.12 9.91 3 11.29 3C12.67 3 13.79 4.12 13.79 5.5V9.24C15 8.43 15.79 7.06 15.79 5.5C15.79 3.01 13.78 1 11.29 1C8.8 1 6.79 3.01 6.79 5.5C6.79 7.06 7.58 8.43 8.79 9.24ZM14.29 11.71C14.01 11.57 13.71 11.5 13.4 11.5H12.79V5.5C12.79 4.67 12.12 4 11.29 4C10.46 4 9.79 4.67 9.79 5.5V16.24L6.35 15.52C5.98 15.44 5.59 15.56 5.32 15.83C4.89 16.27 4.89 16.97 5.32 17.41L9.33 21.42C9.71 21.79 10.22 22 10.75 22H16.85C17.85 22 18.69 21.27 18.83 20.28L19.46 15.81C19.58 14.96 19.14 14.12 18.37 13.74L14.29 11.71Z" fill="#FFFFF7" />
-                    </g>
-                    <defs>
-                      <clipPath id="clip0_399_120">
-                        <rect width="24" height="24" fill="white" />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                  <Typography variant="body1" component="p" color="white">
-                    Total Event Trigerred
-                  </Typography>
-                </div>
-                <div className='inline-flex gap-1 self-end'>
-                  <Typography variant="body2" component="p" color="#06BA63">
-                    +2.1%
-                  </Typography>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clipPath="url(#clip0_547_130)">
-                      <path d="M16.85 6.85L18.29 8.29L13.41 13.17L10.12 9.88C9.73 9.49 9.1 9.49 8.71 9.88L2.71 15.89C2.32 16.28 2.32 16.91 2.71 17.3C3.1 17.69 3.73 17.69 4.12 17.3L9.41 12L12.7 15.29C13.09 15.68 13.72 15.68 14.11 15.29L19.7 9.71L21.14 11.15C21.45 11.46 21.99 11.24 21.99 10.8V6.5C22 6.22 21.78 6 21.5 6H17.21C16.76 6 16.54 6.54 16.85 6.85Z" fill="#06BA63" />
-                    </g>
-                    <defs>
-                      <clipPath id="clip0_547_130">
-                        <rect width="24" height="24" fill="white" />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-              <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
-                2,289<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>events</span>
-              </Typography>
-            </Stack>
-            <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div className='flex flex-col'>
-                <div className='inline-flex allign-center gap-3'>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4.47 21.0001H19.53C21.07 21.0001 22.03 19.3301 21.26 18.0001L13.73 4.99005C12.96 3.66005 11.04 3.66005 10.27 4.99005L2.74 18.0001C1.97 19.3301 2.93 21.0001 4.47 21.0001ZM12 14.0001C11.45 14.0001 11 13.5501 11 13.0001V11.0001C11 10.4501 11.45 10.0001 12 10.0001C12.55 10.0001 13 10.4501 13 11.0001V13.0001C13 13.5501 12.55 14.0001 12 14.0001ZM13 18.0001H11V16.0001H13V18.0001Z" fill="#FFFFF7" />
-                  </svg>
-                  <Typography variant="body1" component="p" color="white">
-                    Total Alerts
-                  </Typography>
-                </div>
-                <div className='inline-flex gap-1 self-end'>
-                  <Typography variant="body2" component="p" color="#06BA63">
-                    -1.02%
-                  </Typography>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clipPath="url(#clip0_547_130)">
-                      <path d="M16.85 6.85L18.29 8.29L13.41 13.17L10.12 9.88C9.73 9.49 9.1 9.49 8.71 9.88L2.71 15.89C2.32 16.28 2.32 16.91 2.71 17.3C3.1 17.69 3.73 17.69 4.12 17.3L9.41 12L12.7 15.29C13.09 15.68 13.72 15.68 14.11 15.29L19.7 9.71L21.14 11.15C21.45 11.46 21.99 11.24 21.99 10.8V6.5C22 6.22 21.78 6 21.5 6H17.21C16.76 6 16.54 6.54 16.85 6.85Z" fill="#06BA63" />
-                    </g>
-                    <defs>
-                      <clipPath id="clip0_547_130">
-                        <rect width="24" height="24" fill="white" />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-              <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
-                558<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>alerts</span>
-              </Typography>
-            </Stack>
-            <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div className='inline-flex allign-center gap-3'>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4.47 21.0001H19.53C21.07 21.0001 22.03 19.3301 21.26 18.0001L13.73 4.99005C12.96 3.66005 11.04 3.66005 10.27 4.99005L2.74 18.0001C1.97 19.3301 2.93 21.0001 4.47 21.0001ZM12 14.0001C11.45 14.0001 11 13.5501 11 13.0001V11.0001C11 10.4501 11.45 10.0001 12 10.0001C12.55 10.0001 13 10.4501 13 11.0001V13.0001C13 13.5501 12.55 14.0001 12 14.0001ZM13 18.0001H11V16.0001H13V18.0001Z" fill="#FFFFF7" />
-                </svg>
-                <Typography variant="body1" component="p" color="white">
-                  Total Ongoing Situation
-                </Typography>
-              </div>
-              <div className='inline-flex gap-1 self-end'>
-                <Typography variant="body2" component="p" color="red">
-                  +12%
-                </Typography>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <g clipPath="url(#clip0_28_4322)">
-                    <path d="M16.85 17.15L18.29 15.71L13.41 10.83L10.12 14.12C9.72998 14.51 9.09998 14.51 8.70998 14.12L2.70998 8.10997C2.31998 7.71997 2.31998 7.08997 2.70998 6.69997C3.09998 6.30997 3.72998 6.30997 4.11998 6.69997L9.40998 12L12.7 8.70997C13.09 8.31997 13.72 8.31997 14.11 8.70997L19.7 14.29L21.14 12.85C21.45 12.54 21.99 12.76 21.99 13.2V17.49C21.99 17.77 21.77 17.99 21.49 17.99H17.2C16.76 18 16.54 17.46 16.85 17.15Z" fill="#DE1A1A" />
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_28_4322">
-                      <rect width="24" height="24" fill="white" />
-                    </clipPath>
-                  </defs>
-                </svg>
-
-              </div>
-              <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
-                23<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>situation</span>
-              </Typography>
-
-            </Stack>
-            <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div className='flex flex-col'><div className='inline-flex allign-center gap-3'>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <g clipPath="url(#clip0_399_120)">
-                    <path d="M8.79 9.24V5.5C8.79 4.12 9.91 3 11.29 3C12.67 3 13.79 4.12 13.79 5.5V9.24C15 8.43 15.79 7.06 15.79 5.5C15.79 3.01 13.78 1 11.29 1C8.8 1 6.79 3.01 6.79 5.5C6.79 7.06 7.58 8.43 8.79 9.24ZM14.29 11.71C14.01 11.57 13.71 11.5 13.4 11.5H12.79V5.5C12.79 4.67 12.12 4 11.29 4C10.46 4 9.79 4.67 9.79 5.5V16.24L6.35 15.52C5.98 15.44 5.59 15.56 5.32 15.83C4.89 16.27 4.89 16.97 5.32 17.41L9.33 21.42C9.71 21.79 10.22 22 10.75 22H16.85C17.85 22 18.69 21.27 18.83 20.28L19.46 15.81C19.58 14.96 19.14 14.12 18.37 13.74L14.29 11.71Z" fill="#FFFFF7" />
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_399_120">
-                      <rect width="24" height="24" fill="white" />
-                    </clipPath>
-                  </defs>
-                </svg>
-                <Typography variant="body1" component="p" color="white">
-                  Average Time Solved
-                </Typography>
-              </div>
-                <div className='inline-flex gap-1 self-end'>
-                  <Typography variant="body2" component="p" color="#06BA63">
-                    -8,5%
-                  </Typography>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clipPath="url(#clip0_547_130)">
-                      <path d="M16.85 6.85L18.29 8.29L13.41 13.17L10.12 9.88C9.73 9.49 9.1 9.49 8.71 9.88L2.71 15.89C2.32 16.28 2.32 16.91 2.71 17.3C3.1 17.69 3.73 17.69 4.12 17.3L9.41 12L12.7 15.29C13.09 15.68 13.72 15.68 14.11 15.29L19.7 9.71L21.14 11.15C21.45 11.46 21.99 11.24 21.99 10.8V6.5C22 6.22 21.78 6 21.5 6H17.21C16.76 6 16.54 6.54 16.85 6.85Z" fill="#06BA63" />
-                    </g>
-                    <defs>
-                      <clipPath id="clip0_547_130">
-                        <rect width="24" height="24" fill="white" />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                </div></div>
-              <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
-                16<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>m</span>
-              </Typography>
-            </Stack>
-          </Stack>
-          <Box sx={{ border: '1px solid #004889', borderRadius: 2, px: 1 }}>
-            <div className='px-3 py-4'>
-              <Typography variant="h5" component="h5" color="white">
-                Current Situation
-              </Typography>
-            </div>
-            <div className="overflow-x-auto w-full">
-              <table id="person" className='table-auto divide-y divide-gray-200'>
-                <thead className="">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <th key={header.id} colSpan={header.colSpan} className='py-3.5 px-4 text-left'>
-                            <div
-                              {...{
-                                className: header.column.getCanSort()
-                                  ? "cursor-pointer select-none"
-                                  : "",
-                                onClick:
-                                  header.column.getToggleSortingHandler(),
-                              }}
-                            >
-                              {flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                              {{
-                                asc: " 🔼",
-                                desc: " 🔽",
-                              }[header.column.getIsSorted() as string] ?? null}
-                            </div>
-                          </th>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody className='divide-y divide-gray-200'>
-                  {table.getRowModel().rows.map((row) => {
-                    return (
-                      <tr key={row.id}>
-                        {row.getVisibleCells().map((cell) => {
-                          const cellValue = cell.row.original.status;
-                          let cellClassName = "";
-
-                          if (cell.column.id === 'id') {
-                            cellClassName = 'id-cell';
-                          }
-
-                          if (cell.column.id === "status") {
-                            switch (cellValue) {
-                              case "Open":
-                                cellClassName = "open-status";
-                                break;
-                              case "Solved":
-                                cellClassName = "solved-status";
-                                break;
-                              case "On Progress":
-                                cellClassName = "on-progress-status";
-                                break;
-                              default:
-                                break;
-                            }
-                          }
-
-                          return (
-                            <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
-                              <div className={`${cellClassName} w-full flex items-center px-3 py-1 rounded-full gap-x-2 `}>
-                                {cell.column.id === 'severity' && (
-                                  <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z" fill="#F59823" />
-                                  </svg>
-                                )}
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                              </div>
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </Box>
-        </div>
-      ),
+      content: <InsightPanel insightOverview={insightOverview} />,
     },
     {
       id: 'team-overview',
@@ -656,154 +422,7 @@ export default function Page(): React.ReactElement {
             </clipPath>
           </defs>
         </svg>,
-      content: (
-        <div className='flex flex-row gap-4'>
-          <div className='flex flex-col gap-8 col-span-2'>
-            <Stack direction="row" spacing={3}>
-              <DropdownButton
-                buttonText="BRIMO"
-                options={['Brimo', 'Brimo', 'Brimo']}
-                buttonClassName="md:w-64" // Responsive width
-              />
-              {/* Render DatePickerComponent for startDate */}
-              <DatePickerComponent
-                selectedDate={startDate} // Provide a default date if startDate is null
-                onChange={handleStartDateChange}
-                selectsStart
-                startDate={startDate}
-                endDate={endDate}
-                placeholder="Start Date"
-              />
-
-              {/* Render DatePickerComponent for endDate */}
-              <DatePickerComponent
-                selectedDate={endDate} // Provide a default date if endDate is null
-                onChange={handleEndDateChange}
-                selectsEnd
-                startDate={startDate}
-                endDate={endDate}
-                minDate={startDate} // Ensure endDate cannot be before startDate
-                placeholder="End Date"
-              />
-            </Stack>
-            <Stack sx={{ display: 'flex', gap: 6, flexDirection: 'row', px: 2 }}>
-              <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <div className='inline-flex align-center gap-2'>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clipPath="url(#clip0_28_4779)">
-                      <path d="M18 16H16V15H8V16H6V15H2V20H22V15H18V16Z" fill="#FFFFF7" />
-                      <path d="M20 8H17V6C17 4.9 16.1 4 15 4H9C7.9 4 7 4.9 7 6V8H4C2.9 8 2 8.9 2 10V14H6V12H8V14H16V12H18V14H22V10C22 8.9 21.1 8 20 8ZM15 8H9V6H15V8Z" fill="#FFFFF7" />
-                    </g>
-                    <defs>
-                      <clipPath id="clip0_28_4779">
-                        <rect width="24" height="24" fill="white" />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                  <Typography variant="body1" component="p" color="white">
-                    Total Situation Solved
-                  </Typography>
-                </div>
-                <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
-                  387<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>situation</span>
-                </Typography>
-              </Stack>
-              <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <div className='inline-flex align-center gap-2'>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clipPath="url(#clip0_28_4805)">
-                      <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM16.54 15.85L15.85 16.54C15.46 16.93 14.83 16.93 14.44 16.54L11.39 13.49C10.17 13.92 8.75 13.66 7.77 12.68C6.66 11.57 6.47 9.89 7.18 8.58L9.53 10.93L10.94 9.52L8.58 7.17C9.9 6.46 11.57 6.65 12.68 7.76C13.66 8.74 13.92 10.16 13.49 11.38L16.54 14.43C16.93 14.82 16.93 15.46 16.54 15.85Z" fill="#FFFFF7" />
-                    </g>
-                    <defs>
-                      <clipPath id="clip0_28_4805">
-                        <rect width="24" height="24" fill="white" />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                  <Typography variant="body1" component="p" color="white">
-                    Current In Progress Situation
-                  </Typography>
-                </div>
-                <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
-                  12<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>situation</span>
-                </Typography>
-              </Stack>
-              <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <div className='inline-flex align-center gap-2'>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clipPath="url(#clip0_28_4914)">
-                      <path d="M19 3H14.82C14.4 1.84 13.3 1 12 1C10.7 1 9.6 1.84 9.18 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM12 3C12.55 3 13 3.45 13 4C13 4.55 12.55 5 12 5C11.45 5 11 4.55 11 4C11 3.45 11.45 3 12 3ZM12 7C13.66 7 15 8.34 15 10C15 11.66 13.66 13 12 13C10.34 13 9 11.66 9 10C9 8.34 10.34 7 12 7ZM18 19H6V17.6C6 15.6 10 14.5 12 14.5C14 14.5 18 15.6 18 17.6V19Z" fill="#FFFFF7" />
-                    </g>
-                    <defs>
-                      <clipPath id="clip0_28_4914">
-                        <rect width="24" height="24" fill="white" />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                  <Typography variant="body1" component="p" color="white">
-                    Total Team Member
-                  </Typography>
-                </div>
-                <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
-                  34<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>Member</span>
-                </Typography>
-              </Stack>
-
-            </Stack>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Typography variant="h5" component="h5" color="white">
-                On Going Situation
-              </Typography>
-              <div className='grid grid-cols-2 gap-8'>
-                {dataCardTeams.map((team, index) => (
-                  <div key={index} className={`bg-[#0A1635] flex flex-col gap-6 rounded-lg p-2`}>
-                    <div className="flex items-center gap-6">
-                      <div className={`bg-${team.bgColor} inline-flex gap-3 items-center rounded-lg px-3 py-1`}>
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="10" cy="10" r="10" fill={team.bgColor === 'custom-blue' ? '#06AED5' : '#DE1A1A'} />
-                          <g clipPath="url(#clip0_28_4938)">
-                            <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
-                          </g>
-                          <defs>
-                            <clipPath id="clip0_28_4938">
-                              <rect width="13" height="13" fill="white" transform="translate(3 3)" />
-                            </clipPath>
-                          </defs>
-                        </svg>
-                        <Typography variant="body1" component="p" color="white">
-                          {team.tags[0]}
-                        </Typography>
-                      </div>
-                      <Typography variant="body1" component="h3" color="white">
-                        {team.title}
-                      </Typography>
-                    </div>
-                    <div className="grid grid-cols-4">
-                      {team.stats.map((stat, index) => (
-                        <div key={index} className='flex flex-col justify-between items-center text-center'>
-                          <Typography variant="h6" component="h3" color="white" >
-                            {stat.label}
-                          </Typography>
-                          <Typography variant="body2" component="p" color="white" >
-                            {stat.description}
-                          </Typography>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-            </Box>
-          </div>
-          <div className='flex flex-col gap-6 col-span-1 px-3 py-4' style={{ border: '1px solid #004889', borderRadius: 18 }}>
-            <Typography variant="h5" component="h5" color="white">
-              Your Current Project
-            </Typography>
-            <ImageGrid />
-          </div>
-        </div>
-      ),
+      content: <TeamOverviewPanel teamOverview={teamOverview} />,
     },
     {
       id: 'service-overview',
@@ -819,59 +438,7 @@ export default function Page(): React.ReactElement {
             </clipPath>
           </defs>
         </svg>,
-      content: (
-        <div className='flex flex-col gap-8 col-span-2'>
-          <Stack direction="row" spacing={1} justifyContent={'space-between'} >
-            <DropdownButton
-              buttonText="All Services"
-              options={['Option 1', 'Option 2', 'Option 3']}
-              buttonClassName="md:w-64" // Responsive width
-            />
-            <CompaniesFilters />
-          </Stack>
-          <div className='grid grid-cols-2 gap-8'>
-            {dataCard.map((item, index) => (
-              <div key={index} className="bg-[#0A1635] flex flex-col gap-7 rounded-lg p-4">
-                <div className="flex items-center gap-6">
-                  <Typography variant="body3" component="h3" color="white">
-                    {item.title}
-                  </Typography>
-                  {item.tags.map((tag, tagIndex) => (
-                    <div key={tagIndex} className={`bg-${item.bgColor} inline-flex gap-2 items-center rounded-lg px-3 py-1`}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="10" cy="10" r="10" fill="#06AED5" />
-                        <g clipPath="url(#clip0_28_4938)">
-                          <path d="M6.25004 10.0417C5.05837 10.0417 4.08337 11.0167 4.08337 12.2083C4.08337 13.4 5.05837 14.375 6.25004 14.375C7.44171 14.375 8.41671 13.4 8.41671 12.2083C8.41671 11.0167 7.44171 10.0417 6.25004 10.0417ZM9.50004 4.625C8.30837 4.625 7.33337 5.6 7.33337 6.79167C7.33337 7.98333 8.30837 8.95833 9.50004 8.95833C10.6917 8.95833 11.6667 7.98333 11.6667 6.79167C11.6667 5.6 10.6917 4.625 9.50004 4.625ZM12.75 10.0417C11.5584 10.0417 10.5834 11.0167 10.5834 12.2083C10.5834 13.4 11.5584 14.375 12.75 14.375C13.9417 14.375 14.9167 13.4 14.9167 12.2083C14.9167 11.0167 13.9417 10.0417 12.75 10.0417Z" fill="#FFFFF7" />
-                        </g>
-                        <defs>
-                          <clipPath id="clip0_28_4938">
-                            <rect width="13" height="13" fill="white" transform="translate(3 3)" />
-                          </clipPath>
-                        </defs>
-                      </svg>
-                      <Typography variant="body1" component="p" color="white">
-                        {tag}
-                      </Typography>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-5 gap-3">
-                  {item.stats.map((stat, statIndex) => (
-                    <div key={statIndex} className="flex flex-col gap-y-2 justify-between text-center flex-grow">
-                      <Typography variant="h6" component="h3" color={stat.color || 'white'}>
-                        {stat.label}
-                      </Typography>
-                      <Typography variant="body2" component="p" color="white">
-                        {stat.description}
-                      </Typography>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ),
+      content: <SeviceOverviewPanel serviceOverviews={serviceOverviews} />
     },
     {
       id: 'metrics',
@@ -910,6 +477,11 @@ export default function Page(): React.ReactElement {
     },
 
   ];
+
+  useEffect(() => {
+    setLoad(true)
+  }, [])
+
 
   return (
     <Stack spacing={3}>
