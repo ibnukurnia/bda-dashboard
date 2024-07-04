@@ -1,10 +1,7 @@
-// DistributedTimelineChart.tsx
-
 import React from 'react';
-import dynamic from 'next/dynamic';
-import { ApexOptions } from 'apexcharts';
+import Chart from 'react-apexcharts'; // Importing directly since 'use client' is used
 
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+import { ApexOptions } from 'apexcharts';
 
 const DistributedTimelineChart: React.FC = () => {
     const series = [
@@ -38,11 +35,17 @@ const DistributedTimelineChart: React.FC = () => {
 
     const options: ApexOptions = {
         chart: {
-            height: 450,
+            height: 450, // Adjust the height of the chart
             type: 'rangeBar',
             zoom: {
                 enabled: false,
             },
+            toolbar: {
+                show: false, // Hide or show the toolbar as needed
+            },
+            parentHeightOffset: 0, // Adjust the parent container's height offset
+            offsetX: 20, // Adjusts the left padding of the chart
+            offsetY: 20, // Adjusts the top padding of the chart
         },
         plotOptions: {
             bar: {
@@ -63,6 +66,10 @@ const DistributedTimelineChart: React.FC = () => {
         xaxis: {
             type: 'datetime',
             labels: {
+                style: {
+                    colors: '#FFFFFF', // Change this to your desired color
+                    fontSize: '12px',
+                },
                 datetimeFormatter: {
                     hour: 'HH:mm',
                 },
@@ -80,14 +87,11 @@ const DistributedTimelineChart: React.FC = () => {
                 format: 'HH:mm',
             },
         },
-        // colors: ['#ffffff'],
     };
 
     return (
         <div id="chart">
-            {typeof window !== 'undefined' && (
-                <Chart options={options} series={series} type="rangeBar" height={450} />
-            )}
+            <Chart options={options} series={series} type="rangeBar" height={450} />
         </div>
     );
 };

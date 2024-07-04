@@ -270,7 +270,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={0}>
       <div className='flex flex-col gap-6'>
         <div className='flex flex-col gap-8 flex-grow p-6 rounded-lg' style={{ border: '1px solid #004889' }}>
-          <Stack direction="row" spacing={1}>
+          <Stack direction="row" spacing={1} alignItems={'center'}>
             <Typography variant="h5" component="h5" color="white" sx={{ lineHeight: 'normal' }}>
               On Going Situation
             </Typography>
@@ -298,40 +298,40 @@ export default function Page(): React.JSX.Element {
             />
           </Stack>
           <Box>
-            <table id="person">
-              <thead className="table-header-assesment">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <th key={header.id} colSpan={header.colSpan}>
-                          <div
-                            {...{
-                              className: header.column.getCanSort()
-                                ? "cursor-pointer select-none"
-                                : "",
-                              onClick:
-                                header.column.getToggleSortingHandler(),
-                            }}
-                          >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                            {{
-                              asc: " 🔼",
-                              desc: " 🔽",
-                            }[header.column.getIsSorted() as string] ?? null}
-                          </div>
-                        </th>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </thead>
-              <tbody>
-                {table.getRowModel().rows.map((row) => {
-                  return (
+            <div className="overflow-x-auto w-full">
+              <table id="person" className='table-auto divide-y divide-gray-200'>
+                <thead className="">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <th key={header.id} colSpan={header.colSpan} className='py-3.5 px-4 text-left'>
+                            <div
+                              {...{
+                                className: header.column.getCanSort()
+                                  ? "cursor-pointer select-none"
+                                  : "",
+                                onClick:
+                                  header.column.getToggleSortingHandler(),
+                              }}
+                            >
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                              {{
+                                asc: " 🔼",
+                                desc: " 🔽",
+                              }[header.column.getIsSorted() as string] ?? null}
+                            </div>
+                          </th>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {table.getRowModel().rows.map((row) => (
                     <tr key={row.id}>
                       {row.getVisibleCells().map((cell) => {
                         const cellValue = cell.row.original.status;
@@ -340,7 +340,7 @@ export default function Page(): React.JSX.Element {
                         if (cell.column.id === 'id') {
                           cellClassName = 'id-cell';
                         }
-                        
+
                         if (cell.column.id === "status") {
                           switch (cellValue) {
                             case "Open":
@@ -358,19 +358,23 @@ export default function Page(): React.JSX.Element {
                         }
 
                         return (
-                          <td key={cell.id} className={`${cellClassName}`}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
+                          <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                            <div className={`${cellClassName} w-full flex items-center px-3 py-1 rounded-full gap-x-2 `}>
+                              {cell.column.id === 'severity' && (
+                                <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z" fill="#F59823" />
+                                </svg>
+                              )}
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </div>
                           </td>
                         );
                       })}
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
               <div className="flex gap-1">
                 <span className='text-white'>Rows per page:</span>
@@ -476,10 +480,10 @@ export default function Page(): React.JSX.Element {
                   Severity
                 </Typography>
                 <div className='inline-flex gap-2 place-items-center'>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="yellow" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="yellow" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4.47 21.0001H19.53C21.07 21.0001 22.03 19.3301 21.26 18.0001L13.73 4.99005C12.96 3.66005 11.04 3.66005 10.27 4.99005L2.74 18.0001C1.97 19.3301 2.93 21.0001 4.47 21.0001ZM12 14.0001C11.45 14.0001 11 13.5501 11 13.0001V11.0001C11 10.4501 11.45 10.0001 12 10.0001C12.55 10.0001 13 10.4501 13 11.0001V13.0001C13 13.5501 12.55 14.0001 12 14.0001ZM13 18.0001H11V16.0001H13V18.0001Z" fill="#FFFFF7" />
                   </svg>
-                  <Typography variant="body2" component="p" color="white" sx={{ lineHeight: 'normal' }}>
+                  <Typography variant="body2" component="p" color="white" sx={{ lineHeight: 'normal', fontSize: '16px' }}>
                     Minor
                   </Typography>
                 </div>
@@ -489,23 +493,23 @@ export default function Page(): React.JSX.Element {
                   Assigne
                 </Typography>
                 <DropdownButton
-                  buttonText="All Products"
+                  buttonText="davin@bankraya.co.id"
                   options={['Option 1', 'Option 2', 'Option 3']}
-                  buttonClassName="w-48" // Responsive width
+                  buttonClassName="w-52 h-10" // Responsive width
                 />
               </div>
               <div className='flex flex-col gap-3'>
                 <Typography variant="h6" component="h6" color="white" sx={{ lineHeight: 'normal' }}>
                   Status
                 </Typography>
-                <div className='flex flex-row gap-4'>
-                  <ButtonWithCheckbox buttonText="Open" />
-                  <ButtonWithCheckbox buttonText="In Progress" />
-                  <ButtonWithCheckbox buttonText="Resolve" />
-                  <ButtonWithCheckbox buttonText="Close" />
+                <div className='flex flex-row gap-2'>
+                  <ButtonWithCheckbox buttonClassName='' buttonText="Open" />
+                  <ButtonWithCheckbox buttonClassName='' buttonText="In Progress" />
+                  <ButtonWithCheckbox buttonClassName='bg-transparent' buttonText="Resolve" />
+                  <ButtonWithCheckbox buttonClassName='bg-transparent' buttonText="Close" />
                 </div>
               </div>
-              <div className='flex flex-col gap-6'>
+              <div className='flex flex-col gap-3'>
                 <Typography variant="h6" component="h6" color="white" sx={{ lineHeight: 'normal' }}>
                   Impacted Time
                 </Typography>
@@ -515,20 +519,72 @@ export default function Page(): React.JSX.Element {
               </div>
             </div>
             <Box >
-              <Tabs value={value} onChange={handleChange} aria-label="basic tabs example" sx={{
-                '& .MuiTabs-indicator': {
-                  backgroundColor: '#F59823', // Remove bottom border color
-                },
-              }}>
-                <Tab label="Alerts" sx={{
-                  padding: '15px 30px', fontSize: 14, color: 'white', fontWeight: 500, textTransform: 'uppercase', '& .MuiTab-textColorPrimary': {
-                    color: 'white', // Remove bottom border color
+              <Tabs
+                value={value}
+                onChange={handleChange}
+                aria-label="basic tabs example"
+                sx={{
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: '#F59823', // Set indicator color
                   },
-                }} {...a11yProps(0)} />
-                <Tab label="Timeline" sx={{ padding: '15px 30px', fontSize: 14, color: 'white', fontWeight: 500, textTransform: 'uppercase' }} {...a11yProps(1)} />
-                <Tab label="Topology" sx={{ padding: '15px 30px', fontSize: 14, color: 'white', fontWeight: 500, textTransform: 'uppercase' }} {...a11yProps(2)} />
-                <Tab label="Metrics" sx={{ padding: '15px 30px', fontSize: 14, color: 'white', fontWeight: 500, textTransform: 'uppercase' }}  {...a11yProps(3)} />
-                <Tab label="Assign Team" sx={{ padding: '15px 30px', fontSize: 14, color: 'white', fontWeight: 500, textTransform: 'uppercase' }} {...a11yProps(4)} />
+                  '& .MuiTab-root': {
+                    color: 'white', // Set default text color
+                    '&.Mui-selected': {
+                      color: 'white', // Set text color for selected tab
+                    },
+                  },
+                }}
+              >
+                <Tab
+                  label="Alerts"
+                  sx={{
+                    padding: '15px 30px',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                  }}
+                  {...a11yProps(0)}
+                />
+                <Tab
+                  label="Timeline"
+                  sx={{
+                    padding: '15px 30px',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                  }}
+                  {...a11yProps(1)}
+                />
+                <Tab
+                  label="Topology"
+                  sx={{
+                    padding: '15px 30px',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                  }}
+                  {...a11yProps(2)}
+                />
+                <Tab
+                  label="Metrics"
+                  sx={{
+                    padding: '15px 30px',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                  }}
+                  {...a11yProps(3)}
+                />
+                <Tab
+                  label="Assign Team"
+                  sx={{
+                    padding: '15px 30px',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                  }}
+                  {...a11yProps(4)}
+                />
               </Tabs>
             </Box>
             <CustomTabPanel value={value} index={0}>
@@ -757,7 +813,6 @@ export default function Page(): React.JSX.Element {
               Assign Team
             </CustomTabPanel>
           </div>
-
         </div>
       </div >
     </Stack >

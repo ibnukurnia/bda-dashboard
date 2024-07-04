@@ -27,7 +27,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
         <div className="relative h-full">
             <button
                 onClick={toggleDropdown}
-                className={`font-bold flex justify-between items-center w-full h-auto p-3 rounded-lg dropdown-button-style text-white ${buttonClassName}`}
+                className={`font-bold flex justify-between items-center p-3 rounded-lg dropdown-button-style text-white ${buttonClassName}`}
             >
                 {buttonText}
                 <ArrowDown size={20} />

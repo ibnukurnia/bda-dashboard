@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react';
-import type { Metadata } from 'next';
+// import type { Metadata } from 'next';
 import { Box, Grid, Stack, Typography } from '@mui/material';
 import { CompaniesFilters } from '@/components/dashboard/overview/overview-filters';
 import { useState } from 'react';
@@ -175,20 +175,21 @@ export default function Page(): React.ReactElement {
   ];
 
   const dataChart = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'Agustus'],
     datasets: [
       {
-        data: [65, 59, 80, 81, 56, 55, 40],
+        data: [65, 59, 80, 81, 56, 55, 40, 23],
         fill: false,
         borderColor: '#FE981C',
       },
     ],
+
   };
 
   const optionsChart = {
     responsive: true,
     layout: {
-      padding: 20
+      padding: 30
     },
     plugins: {
       legend: {
@@ -214,7 +215,7 @@ export default function Page(): React.ReactElement {
   };
 
   interface Person {
-    id: number;
+    id: string;
     createdDate: string;
     severity: string;
     status: string;
@@ -226,7 +227,7 @@ export default function Page(): React.ReactElement {
 
   const defaultData: Person[] = [
     {
-      id: 1190,
+      id: '#1190',
       createdDate: "11/01/2024 15:04:22 P.M",
       severity: "Minor",
       status: "Solved",
@@ -236,7 +237,7 @@ export default function Page(): React.ReactElement {
       totalAlerts: 10
     },
     {
-      id: 1191,
+      id: '#1191',
       createdDate: "11/01/2024 15:04:22 P.M",
       severity: "Minor",
       status: "Open",
@@ -246,7 +247,7 @@ export default function Page(): React.ReactElement {
       totalAlerts: 5
     },
     {
-      id: 1192,
+      id: '#1192',
       createdDate: "11/01/2024 15:04:22 P.M",
       severity: "Minor",
       status: "On Progress",
@@ -256,7 +257,7 @@ export default function Page(): React.ReactElement {
       totalAlerts: 2
     },
     {
-      id: 1193,
+      id: '#1193',
       createdDate: "11/01/2024 15:04:22 P.M",
       severity: "Minor",
       status: "Open",
@@ -266,7 +267,7 @@ export default function Page(): React.ReactElement {
       totalAlerts: 8
     },
     {
-      id: 1194,
+      id: '#1194',
       createdDate: "11/01/2024 15:04:22 P.M",
       severity: "Minor",
       status: "Solved",
@@ -276,7 +277,7 @@ export default function Page(): React.ReactElement {
       totalAlerts: 4
     },
     {
-      id: 1195,
+      id: '#1195',
       createdDate: "2024-06-15T11:00:00Z",
       severity: "Minor",
       status: "Open",
@@ -286,7 +287,7 @@ export default function Page(): React.ReactElement {
       totalAlerts: 1
     },
     {
-      id: 1196,
+      id: '#1196',
       createdDate: "11/01/2024 15:04:22 P.M",
       severity: "Minor",
       status: "Open",
@@ -296,7 +297,7 @@ export default function Page(): React.ReactElement {
       totalAlerts: 6
     },
     {
-      id: 1997,
+      id: '#1997',
       createdDate: "11/01/2024 15:04:22 P.M",
       severity: "Minor",
       status: "On Progress",
@@ -558,85 +559,85 @@ export default function Page(): React.ReactElement {
                 Current Situation
               </Typography>
             </div>
-            <table id="person">
-              <thead className="table-header-assesment">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <th key={header.id} colSpan={header.colSpan}>
-                          <div
-                            {...{
-                              className: header.column.getCanSort()
-                                ? "cursor-pointer select-none"
-                                : "",
-                              onClick:
-                                header.column.getToggleSortingHandler(),
-                            }}
-                          >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                            {{
-                              asc: "🔼",
-                              desc: "🔽",
-                            }[header.column.getIsSorted() as string] ?? null}
-                          </div>
-                        </th>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </thead>
-              <tbody>
-                {table.getRowModel().rows.map((row) => {
-                  return (
-                    <tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => {
-                        const cellValue = cell.row.original.status;
-                        let cellClassName = "";
-
-                        if (cell.column.id === 'id') {
-                          cellClassName = 'id-cell';
-                        }
-                        if (cell.column.id === "status") {
-                          switch (cellValue) {
-                            case "Open":
-                              cellClassName = "open-status";
-                              break;
-                            case "Solved":
-                              cellClassName = "solved-status";
-                              break;
-                            case "On Progress":
-                              cellClassName = "on-progress-status";
-                              break;
-                            default:
-                              break;
-                          }
-                        }
-
-                        if (cell.column.id === 'severity') {
-                          // i want to add icon which is the svg in beside text of severity value
-                          //                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          // <path d="M4.47 21.0001H19.53C21.07 21.0001 22.03 19.3301 21.26 18.0001L13.73 4.99005C12.96 3.66005 11.04 3.66005 10.27 4.99005L2.74 18.0001C1.97 19.3301 2.93 21.0001 4.47 21.0001ZM12 14.0001C11.45 14.0001 11 13.5501 11 13.0001V11.0001C11 10.4501 11.45 10.0001 12 10.0001C12.55 10.0001 13 10.4501 13 11.0001V13.0001C13 13.5501 12.55 14.0001 12 14.0001ZM13 18.0001H11V16.0001H13V18.0001Z" fill="#FFFFF7"/>
-                          // </svg>
-                        }
-
+            <div className="overflow-x-auto w-full">
+              <table id="person" className='table-auto divide-y divide-gray-200'>
+                <thead className="">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
                         return (
-                          <td key={cell.id} className={`${cellClassName}`}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </td>
+                          <th key={header.id} colSpan={header.colSpan} className='py-3.5 px-4 text-left'>
+                            <div
+                              {...{
+                                className: header.column.getCanSort()
+                                  ? "cursor-pointer select-none"
+                                  : "",
+                                onClick:
+                                  header.column.getToggleSortingHandler(),
+                              }}
+                            >
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                              {{
+                                asc: " 🔼",
+                                desc: " 🔽",
+                              }[header.column.getIsSorted() as string] ?? null}
+                            </div>
+                          </th>
                         );
                       })}
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  ))}
+                </thead>
+                <tbody className='divide-y divide-gray-200'>
+                  {table.getRowModel().rows.map((row) => {
+                    return (
+                      <tr key={row.id}>
+                        {row.getVisibleCells().map((cell) => {
+                          const cellValue = cell.row.original.status;
+                          let cellClassName = "";
+
+                          if (cell.column.id === 'id') {
+                            cellClassName = 'id-cell';
+                          }
+
+                          if (cell.column.id === "status") {
+                            switch (cellValue) {
+                              case "Open":
+                                cellClassName = "open-status";
+                                break;
+                              case "Solved":
+                                cellClassName = "solved-status";
+                                break;
+                              case "On Progress":
+                                cellClassName = "on-progress-status";
+                                break;
+                              default:
+                                break;
+                            }
+                          }
+
+                          return (
+                            <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                              <div className={`${cellClassName} w-full flex items-center px-3 py-1 rounded-full gap-x-2 `}>
+                                {cell.column.id === 'severity' && (
+                                  <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z" fill="#F59823" />
+                                  </svg>
+                                )}
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </Box>
         </div>
       ),
@@ -897,10 +898,10 @@ export default function Page(): React.ReactElement {
             <CompaniesFilters />
           </Stack>
           <div className='flex flex-col gap-8 w-full'>
-            <div className='chart-container' style={{ height: '380px', width: '100%' }}>
+            <div className='chart-container' style={{ height: '380px' }}>
               <LineChartComponent data={dataChart} options={optionsChart} />
             </div>
-            <div className='chart-container' style={{ height: '380px', width: '100%' }}>
+            <div className='chart-container' style={{ height: '380px' }}>
               <LineChartComponent data={dataChart} options={optionsChart} />
             </div>
           </div>
