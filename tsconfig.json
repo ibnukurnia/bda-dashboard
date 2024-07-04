@@ -23,7 +23,8 @@
     "paths": {
       "@/*": ["src/*"],
       "@/common/*": ["src/common/*"],
-      "@/models/*": ["src/modules/models/*"]
+      "@/models/*": ["src/modules/models/*"],
+      "@/components/*": ["src/components/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

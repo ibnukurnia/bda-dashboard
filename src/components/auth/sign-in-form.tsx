@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { useCallback, useState } from 'react';
 import RouterLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,66 +17,75 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Eye, EyeOff } from 'react-feather';
 import { Controller, useForm } from 'react-hook-form';
-import { z as zod } from 'zod';
 
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
+import { LoginSchema, LoginValues } from '@/modules/schemas';
+import { LoginUsecase } from '@/modules/usecases/auth';
+import { handleError } from '@/lib/error-handler';
 
-const schema = zod.object({
-  email: zod.string().min(1, { message: 'Email is required' }).email(),
-  password: zod.string().min(1, { message: 'Password is required' }),
-  rememberMe: zod.boolean(), // Add rememberMe field
-});
-
-type Values = zod.infer<typeof schema>;
-
-const defaultValues = { email: 'sofia@devias.io', password: 'Secret1', rememberMe: false } satisfies Values;
-
-export function SignInForm(): React.JSX.Element {
+export function SignInForm() {
   const router = useRouter();
 
   const { checkSession } = useUser();
 
-  const [showPassword, setShowPassword] = React.useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const [isPending, setIsPending] = React.useState<boolean>(false);
+  const [isPending, setIsPending] = useState<boolean>(false);
 
   const {
     control,
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
+  } = useForm<LoginValues>({
+    mode: 'onChange', defaultValues: {
+      pernr: '',
+      password: ''
+    }, resolver: zodResolver(LoginSchema)
+  });
 
-  const onSubmit = React.useCallback(
-    async (values: Values): Promise<void> => {
-      setIsPending(true);
+  const onSubmit = useCallback(async (values: LoginValues): Promise<void> => {
+    setIsPending(true)
 
-      const { error } = await authClient.signInWithPassword(values);
+    try {
+      await LoginUsecase(values)
 
-      if (error) {
-        setError('root', { type: 'server', message: error });
-        setIsPending(false);
-        return;
-      }
+      router.push('/dashboard')
+    } catch (error) {
+      //set to be displayed later
+      const errString = handleError(error)
+      setError('root', { type: 'server', message: errString })
 
-      // Save the rememberMe value in local storage or session storage
-      if (values.rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-      } else {
-        localStorage.removeItem('rememberMe');
-      }
+      return
+    } finally {
+      setIsPending(false)
 
-      // Refresh the auth state
-      await checkSession?.();
+      await checkSession?.()
 
-      // UserProvider, for this case, will not refresh the router
-      // After refresh, GuestGuard will handle the redirect
-      router.refresh();
-    },
-    [checkSession, router, setError]
-  );
+      router.refresh()
+    }
+
+
+
+    // const { error } = await authClient.signInWithPassword(defaultValues);
+
+
+    // // Save the rememberMe value in local storage or session storage
+    // if (values.rememberMe) {
+    //   localStorage.setItem('rememberMe', 'true');
+    // } else {
+    //   localStorage.removeItem('rememberMe');
+    // }
+
+    // // Refresh the auth state
+    // await checkSession?.();
+
+    // // UserProvider, for this case, will not refresh the router
+    // // After refresh, GuestGuard will handle the redirect
+    // router.refresh();
+  }, [checkSession, router, errors])
 
   return (
     <Stack spacing={4}>
@@ -84,6 +93,7 @@ export function SignInForm(): React.JSX.Element {
         <Typography variant="h2" color="white">
           Sign in
         </Typography>
+        {errors.root ? <Alert color="error" severity='error'>{errors.root.message}</Alert> : null}
         {/* <Typography color="white" variant="body2">
           Don&apos;t have an account?{' '}
           <Link component={RouterLink} href={paths.auth.signUp} underline="hover" color="#F59823">
@@ -95,18 +105,18 @@ export function SignInForm(): React.JSX.Element {
         <Stack spacing={2}>
           <Controller
             control={control}
-            name="email"
+            name="pernr"
             render={({ field }) => (
-              <FormControl error={Boolean(errors.email)}>
+              <FormControl error={Boolean(errors.pernr)}>
                 {/* <InputLabel>Email address</InputLabel> */}
                 <OutlinedInput
                   {...field}
-                  label="Email address"
-                  placeholder="Type your email"
-                  type="email"
+                  label="Pern"
+                  placeholder="Type your pernr"
+                  type="text"
                   sx={{ backgroundColor: 'white' }} // Set background color to white
                 />
-                {errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
+                {errors.pernr ? <FormHelperText>{errors.pernr.message}</FormHelperText> : null}
               </FormControl>
             )}
           />
@@ -146,7 +156,7 @@ export function SignInForm(): React.JSX.Element {
               </FormControl>
             )}
           />
-          <Stack spacing={1}>
+          {/* <Stack spacing={1}>
             <Controller
               control={control}
               name="rememberMe"
@@ -168,8 +178,7 @@ export function SignInForm(): React.JSX.Element {
                 />
               )}
             />
-          </Stack>
-          {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
+          </Stack> */}
           <Button
             disabled={isPending}
             type="submit"
@@ -199,18 +208,6 @@ export function SignInForm(): React.JSX.Element {
         >
           Forgot password?
         </Link>
-      </Stack>
-      <Stack>
-        <Alert color="warning">
-          Use{' '}
-          <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
-            sofia@devias.io
-          </Typography>{' '}
-          with password{' '}
-          <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
-            Secret1
-          </Typography>
-        </Alert>
       </Stack>
     </Stack>
   );
