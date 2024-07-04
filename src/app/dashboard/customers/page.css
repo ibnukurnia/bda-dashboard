@@ -6,8 +6,7 @@
 }
 
 /*Assesment History Table Style*/
-.table-header-assesment {
-    /* background-color: transparent; */
+/* .table-header-assesment {
     border-bottom: 1px solid white;
 }
 
@@ -25,7 +24,7 @@ table thead tr th {
     padding: 12px 16px;
     text-align: center;
     border-bottom: 1px solid white;
-}
+} */
 
 #person th {
     font-size: 15px;
@@ -55,8 +54,19 @@ table thead tr th {
     border: none;
 }
 
+/* Status Cell Styles */
+/* .open-status {
+    background: #06AED5;
+}
+
+.solved-status {
+    background: #06BA63;
+}
+
+.on-progress-status {
+    background: #F59823;
+} */
+
 .id-cell {
     background: #373737;
-    border-radius: 18px;
-    padding: 5px;
 }

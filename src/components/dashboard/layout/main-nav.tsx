@@ -82,7 +82,7 @@ export function MainNav(): React.JSX.Element {
     }
 
     return (
-      <div className='inline-flex content-center items-center gap-1 bg-black p-2'>
+      <div className='inline-flex content-center items-center gap-3 bg-black p-2 rounded-xl'>
         <div className='bg-gray-400 px-2 py-1 rounded-2xl'>{alert}</div>
         <Typography variant="h6" component="h2" color="green">
           {alert_description}

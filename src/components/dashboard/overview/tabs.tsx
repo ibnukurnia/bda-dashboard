@@ -4,8 +4,6 @@
 import React, { useState } from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
 
-
-
 interface TabPanelProps {
     children?: React.ReactNode;
     value: number;
@@ -29,8 +27,15 @@ function TabPanel({ children, value, index }: TabPanelProps): React.ReactElement
     );
 }
 
+interface TabItem {
+    id: string;
+    label: string;
+    content: React.ReactNode;
+    icon?: React.ReactNode; // Optional icon prop
+}
+
 interface TabsProps {
-    tabs: { id: string; label: string; content: React.ReactNode }[];
+    tabs: TabItem[];
 }
 
 const TabsComponent: React.FC<TabsProps> = ({ tabs }) => {
@@ -41,27 +46,37 @@ const TabsComponent: React.FC<TabsProps> = ({ tabs }) => {
     };
 
     return (
-        <Box sx={{ p: 0 }}>
-            <Tabs value={value} onChange={handleChange} aria-label="tabs" sx={{
-                backgroundColor: 'transparent',
-                padding: '6px',
-                width: 'fit-content',
-                border: '2px solid #004889',
-                borderRadius: 50,
-                '& .MuiTabs-indicator': {
-                    backgroundColor: 'transparent', // Remove bottom border color
-                },
-            }}>
+        <Box>
+            <Tabs
+                value={value}
+                onChange={handleChange}
+                aria-label="tabs"
+                sx={{
+                    backgroundColor: 'transparent',
+                    padding: '8px',
+                    width: 'fit-content',
+                    border: '2px solid #004889',
+                    borderRadius: 50,
+                    '& .MuiTabs-indicator': {
+                        backgroundColor: 'transparent', // Remove bottom border color
+                    },
+                }}
+            >
                 {tabs.map((tab) => (
                     <Tab
                         key={tab.id}
-                        label={tab.label}
+                        label={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                {tab.icon && <Box component="span">{tab.icon}</Box>}
+                                {tab.label}
+                            </Box>
+                        }
                         id={`tab-${tab.id}`}
                         aria-controls={`tabpanel-${tab.id}`}
                         sx={{
-                            width: '200px',
-                            height: '48px',
-                            padding: '9px 78px',
+                            // width: '200px',
+                            // height: '48px',
+                            padding: '9px 56px',
                             gap: '10px',
                             borderRadius: '50px',
                             background: 'transparent',
@@ -70,7 +85,6 @@ const TabsComponent: React.FC<TabsProps> = ({ tabs }) => {
                                 color: 'white', // Text color when selected
                                 background: 'linear-gradient(99.22deg, #F28E0F 34.1%, #FFFFFF 189.57%)',
                             },
-
                         }}
                     />
                 ))}

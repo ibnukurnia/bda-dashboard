@@ -3,10 +3,11 @@
 import * as React from 'react';
 import { Box, Grid, Stack, Typography, Button } from '@mui/material';
 import { useState } from 'react';
+import { ArrowLeft, ArrowRight } from 'react-feather';
 import DropdownButton from '@/components/dashboard/overview/dropdown-button';
 import DatePickerComponent from '@/components/dashboard/overview/date-picker';
-import { ArrowLeft, ArrowRight } from 'react-feather';
 import DoughnutChartComponent from '@/components/dashboard/customer/doughnut-chart';
+import TabsComponent from '@/components/dashboard/overview/tabs';
 import {
     createColumnHelper,
     Column,
@@ -19,14 +20,16 @@ import {
     getPaginationRowModel,
     getSortedRowModel,
     useReactTable,
-} from "@tanstack/react-table"; import TabsComponent from '@/components/dashboard/overview/tabs';
+} from "@tanstack/react-table";
 import "./page.css"
 
 
 export default function Page(): React.JSX.Element {
-    const options = ["Option 1", "Option 2", "Option 3"];
+    // const options = ["Option 1", "Option 2", "Option 3"];
+    // State for managing startDate and endDate
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
+
 
     const dataChart = {
         labels: ['Red', 'Yellow', 'Silver'],
@@ -60,7 +63,7 @@ export default function Page(): React.JSX.Element {
             },
         },
     }; interface Person {
-        id: number;
+        id: string;
         impactedDate: string;
         severity: string;
         service: string;
@@ -70,7 +73,7 @@ export default function Page(): React.JSX.Element {
 
     const defaultData: Person[] = [
         {
-            id: 1190,
+            id: '#1190',
             impactedDate: "11/01/2024 15:04:22 P.M",
             severity: "Minor",
             service: "bridgtl-rsm-notifications",
@@ -78,7 +81,7 @@ export default function Page(): React.JSX.Element {
             totalAlerts: 10
         },
         {
-            id: 1191,
+            id: '#1191',
             impactedDate: "11/01/2024 15:04:22 P.M",
             severity: "Minor",
             service: "bridgtl-rsm-notifications",
@@ -86,7 +89,7 @@ export default function Page(): React.JSX.Element {
             totalAlerts: 5
         },
         {
-            id: 1192,
+            id: '#1192',
             impactedDate: "11/01/2024 15:04:22 P.M",
             severity: "Minor",
             service: "bridgtl-rsm-notifications",
@@ -94,7 +97,7 @@ export default function Page(): React.JSX.Element {
             totalAlerts: 2
         },
         {
-            id: 1193,
+            id: '#1193',
             impactedDate: "11/01/2024 15:04:22 P.M",
             severity: "Minor",
             service: "bridgtl-rsm-notifications",
@@ -102,7 +105,7 @@ export default function Page(): React.JSX.Element {
             totalAlerts: 8
         },
         {
-            id: 1194,
+            id: '#1194',
             impactedDate: "11/01/2024 15:04:22 P.M",
             severity: "Minor",
             service: "bridgtl-rsm-notifications",
@@ -110,7 +113,7 @@ export default function Page(): React.JSX.Element {
             totalAlerts: 4
         },
         {
-            id: 1195,
+            id: '#1195',
             impactedDate: "2024-06-15T11:00:00Z",
             severity: "Minor",
             service: "bridgtl-rsm-notifications",
@@ -118,7 +121,7 @@ export default function Page(): React.JSX.Element {
             totalAlerts: 1
         },
         {
-            id: 1196,
+            id: '#1196',
             impactedDate: "11/01/2024 15:04:22 P.M",
             severity: "Minor",
             service: "bridgtl-rsm-notifications",
@@ -126,7 +129,7 @@ export default function Page(): React.JSX.Element {
             totalAlerts: 6
         },
         {
-            id: 1997,
+            id: '#1997',
             impactedDate: "11/01/2024 15:04:22 P.M",
             severity: "Minor",
             service: "bridgtl-rsm-notifications",
@@ -147,9 +150,9 @@ export default function Page(): React.JSX.Element {
             header: "ID",
         }),
         columnHelper.accessor("impactedDate", {
-            id: "CreatedData",
+            id: "Impacted Date",
             cell: (info) => <i>{info.getValue()}</i>,
-            header: () => <span>Created Date</span>,
+            header: () => <span>Impacted Date</span>,
         }),
         columnHelper.accessor("severity", {
             header: () => "Severity",
@@ -194,9 +197,22 @@ export default function Page(): React.JSX.Element {
         {
             id: 'insights',
             label: 'Insights',
+            icon:
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clipPath="url(#clip0_28_4313)">
+                        <path d="M21 8C19.55 8 18.74 9.44 19.07 10.51L15.52 14.07C15.22 13.98 14.78 13.98 14.48 14.07L11.93 11.52C12.27 10.45 11.46 9 10 9C8.55 9 7.73 10.44 8.07 11.52L3.51 16.07C2.44 15.74 1 16.55 1 18C1 19.1 1.9 20 3 20C4.45 20 5.26 18.56 4.93 17.49L9.48 12.93C9.78 13.02 10.22 13.02 10.52 12.93L13.07 15.48C12.73 16.55 13.54 18 15 18C16.45 18 17.27 16.56 16.93 15.48L20.49 11.93C21.56 12.26 23 11.45 23 10C23 8.9 22.1 8 21 8Z" fill="#FFFFF7" />
+                        <path d="M15 9L15.94 6.93L18 6L15.94 5.07L15 3L14.08 5.07L12 6L14.08 6.93L15 9Z" fill="#FFFFF7" />
+                        <path d="M3.5 11L4 9L6 8.5L4 8L3.5 6L3 8L1 8.5L3 9L3.5 11Z" fill="#FFFFF7" />
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_28_4313">
+                            <rect width="24" height="24" fill="white" />
+                        </clipPath>
+                    </defs>
+                </svg>,
             content: (
                 <div className='flex flex-row gap-6'>
-                    <div className='flex flex-col gap-8 flex-grow p-6' style={{ border: '1px solid #004889', borderRadius: 2 }}>
+                    <div className='flex flex-col gap-8 p-6' style={{ border: '1px solid #004889', borderRadius: 2 }}>
                         <Typography variant="h5" component="h5" color="white" sx={{ margin: 0 }}>
                             Historical Anomaly Records
                         </Typography>
@@ -206,6 +222,7 @@ export default function Page(): React.JSX.Element {
                                 options={['Option 1', 'Option 2', 'Option 3']}
                                 buttonClassName="md:w-64" // Responsive width
                             />
+                            {/* Render DatePickerComponent for startDate */}
                             <DatePickerComponent
                                 selectedDate={startDate} // Provide a default date if startDate is null
                                 onChange={handleStartDateChange}
@@ -214,6 +231,7 @@ export default function Page(): React.JSX.Element {
                                 endDate={endDate}
                                 placeholder="Start Date"
                             />
+                            {/* Render DatePickerComponent for endDate */}
                             <DatePickerComponent
                                 selectedDate={endDate} // Provide a default date if endDate is null
                                 onChange={handleEndDateChange}
@@ -225,147 +243,140 @@ export default function Page(): React.JSX.Element {
                             />
                         </Stack>
                         <Box>
-                            <table id="person">
-                                <thead className="table-header-assesment">
-                                    {table.getHeaderGroups().map((headerGroup) => (
-                                        <tr key={headerGroup.id}>
-                                            {headerGroup.headers.map((header) => {
+                            <div className="overflow-x-auto w-full">
+                                <div className="min-w-full">
+                                    <table id="person" className="table-auto divide-y divide-gray-200 w-full">
+                                        <thead className="">
+                                            {table.getHeaderGroups().map((headerGroup) => (
+                                                <tr key={headerGroup.id}>
+                                                    {headerGroup.headers.map((header) => (
+                                                        <th key={header.id} colSpan={header.colSpan} className="py-3.5 px-2 text-left">
+                                                            <div
+                                                                className={header.column.getCanSort() ? "cursor-pointer select-none" : ""}
+                                                                onClick={header.column.getToggleSortingHandler()}
+                                                            >
+                                                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                                                {{
+                                                                    asc: " 🔼",
+                                                                    desc: " 🔽",
+                                                                }[header.column.getIsSorted() as string] ?? null}
+                                                            </div>
+                                                        </th>
+                                                    ))}
+                                                </tr>
+                                            ))}
+                                        </thead>
+                                        <tbody className='divide-y divide-gray-200'>
+                                            {table.getRowModel().rows.map((row) => {
                                                 return (
-                                                    <th key={header.id} colSpan={header.colSpan}>
-                                                        <div
-                                                            {...{
-                                                                className: header.column.getCanSort()
-                                                                    ? "cursor-pointer select-none"
-                                                                    : "",
-                                                                onClick:
-                                                                    header.column.getToggleSortingHandler(),
-                                                            }}
-                                                        >
-                                                            {flexRender(
-                                                                header.column.columnDef.header,
-                                                                header.getContext()
-                                                            )}
-                                                            {{
-                                                                asc: " 🔼",
-                                                                desc: " 🔽",
-                                                            }[header.column.getIsSorted() as string] ?? null}
-                                                        </div>
-                                                    </th>
+                                                    <tr key={row.id}>
+                                                        {row.getVisibleCells().map((cell) => {
+                                                            let cellClassName = "";
+
+                                                            if (cell.column.id === 'id') {
+                                                                cellClassName = 'id-cell';
+                                                            }
+
+                                                            return (
+                                                                <td key={cell.id} className={`px-1 py-4 whitespace-nowrap`}>
+                                                                    <div className={`${cellClassName} inline-flex items-center px-3 py-1 rounded-full gap-x-2`}>
+                                                                        {cell.column.id === 'severity' && (
+                                                                            <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                                <path d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z" fill="#F59823" />
+                                                                            </svg>
+                                                                        )}
+                                                                        {flexRender(
+                                                                            cell.column.columnDef.cell,
+                                                                            cell.getContext()
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            );
+                                                        })}
+                                                    </tr>
                                                 );
                                             })}
-                                        </tr>
-                                    ))}
-                                </thead>
-                                <tbody>
-                                    {table.getRowModel().rows.map((row) => {
-                                        return (
-                                            <tr key={row.id}>
-                                                {row.getVisibleCells().map((cell) => {
-                                                    const cellValue = cell.row.original.id;
-                                                    let cellClassName = "";
-
-                                                    if (cell.column.id === 'id') {
-                                                        cellClassName = 'id-cell';
-                                                    }
-
-
-                                                    return (
-                                                        <td key={cell.id} className={`${cellClassName}`}>
-                                                            {flexRender(
-                                                                cell.column.columnDef.cell,
-                                                                cell.getContext()
-                                                            )}
-                                                        </td>
-                                                    );
-                                                })}
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                            <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
-                                <div className="flex gap-1">
-                                    <span className='text-white'>Rows per page:</span>
-                                    <select
-                                        value={table.getState().pagination.pageSize}
-                                        onChange={(e) => {
-                                            table.setPageSize(Number(e.target.value));
-                                        }}
-                                        className="select-button-assesment"
-                                    >
-                                        {[4, 16, 32].map((pageSize) => (
-                                            <option key={pageSize} value={pageSize}>
-                                                {pageSize}
-                                            </option>
-                                        ))}
-                                    </select>
-
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <div className='text-white'>
-                                    {table.getState().pagination.pageIndex + 1} of{' '}
-                                    {table.getState().pagination.pageSize}
-                                </div>
-                                <div className="d-flex">
-                                    <button
-                                        className="bg-transparent text-white p-2"
-                                        onClick={() => table.previousPage()}
-                                        disabled={!table.getCanPreviousPage()}
-                                    >
-                                        <ArrowLeft />
-                                    </button>
-                                    <button
-                                        className="bg-transparent text-white p-2"
-                                        onClick={() => table.nextPage()}
-                                        disabled={!table.getCanNextPage()}
-                                    >
-                                        <ArrowRight />
-                                    </button>
+                                <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
+                                    <div className="flex gap-1">
+                                        <span className='text-white'>Rows per page:</span>
+                                        <select
+                                            value={table.getState().pagination.pageSize}
+                                            onChange={(e) => {
+                                                table.setPageSize(Number(e.target.value));
+                                            }}
+                                            className="select-button-assesment"
+                                        >
+                                            {[4, 16, 32].map((pageSize) => (
+                                                <option key={pageSize} value={pageSize}>
+                                                    {pageSize}
+                                                </option>
+                                            ))}
+                                        </select>
+
+                                    </div>
+                                    <div className='text-white'>
+                                        {table.getState().pagination.pageIndex + 1} of{' '}
+                                        {table.getState().pagination.pageSize}
+                                    </div>
+                                    <div className="d-flex">
+                                        <button
+                                            className="bg-transparent text-white p-2"
+                                            onClick={() => table.previousPage()}
+                                            disabled={!table.getCanPreviousPage()}
+                                        >
+                                            <ArrowLeft />
+                                        </button>
+                                        <button
+                                            className="bg-transparent text-white p-2"
+                                            onClick={() => table.nextPage()}
+                                            disabled={!table.getCanNextPage()}
+                                        >
+                                            <ArrowRight />
+                                        </button>
+                                    </div>
+
                                 </div>
 
                             </div>
                         </Box>
                     </div>
-                    <div className='flex flex-col gap-6 flex-grow'>
-                        <div className='flex flex-col gap-6 card-background-color p-6'>
-                            <Typography variant="h6" component="h6" color="white">
-                                Most Recent Anomaly
-                            </Typography>
-                            <div className='flex flex-row gap-3'>
-                                <img src="/assets/dashboard/donut.png" alt="qodkoqwkd" className='object-contain h-28 w-32' />
-                                <div className='flex flex-col gap-3'>
-                                    <div className='flex flex-row gap-3'>
-                                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="9" cy="9" r="9" fill="#FFAC45" />
-                                        </svg>
-                                        <Typography variant="body2" component="p" color="white">
-                                            Minor
-                                        </Typography>
-                                    </div>
-                                    <div className='flex flex-row gap-3'>
-                                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="9" cy="9" r="9" fill="#FFAC45" />
-                                        </svg>
-                                        <Typography variant="body2" component="p" color="white">
-                                            Minor
-                                        </Typography>
-                                    </div>
-                                    <div className='flex flex-row gap-3'>
-                                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="9" cy="9" r="9" fill="#FFAC45" />
-                                        </svg>
-                                        <Typography variant="body2" component="p" color="white">
-                                            Minor
-                                        </Typography>
-                                    </div>
+                    <div className='flex flex-col gap-12'>
+                        <div className="flex flex-col gap-2 card-background-color p-6 rounded-lg shadow-md">
+                            <h2 className="text-white text-lg font-semibold mb-4">Most Recent Anomaly</h2>
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-white">Pods</span>
+                                    <div className="w-3/4 bg-blue-500 h-2 rounded-full"></div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-white">VM</span>
+                                    <div className="w-2/3 bg-blue-400 h-2 rounded-full"></div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-white">Databases</span>
+                                    <div className="w-1/2 bg-blue-300 h-2 rounded-full"></div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-white">Services</span>
+                                    <div className="w-1/3 bg-gray-300 h-2 rounded-full"></div>
                                 </div>
                             </div>
+                            <div className="flex justify-between mt-4 text-white text-sm">
+                                <span>0</span>
+                                <span>25</span>
+                                <span>50</span>
+                                <span>100</span>
+                            </div>
                         </div>
-                        <div className='flex flex-col gap-8 card-background-color p-6'>
+                        <div className='flex flex-col gap-10 card-background-color p-6'>
                             <Typography variant="h6" component="h6" color="white">
                                 Severity Ration
                             </Typography>
-                            <div className='flex flex-row gap-5'>
-                                <div style={{ width: '140px', height: '150px' }}>
+                            <div className='flex flex-row gap-8'>
+                                <div style={{ width: '130px', height: '150px' }}>
                                     <DoughnutChartComponent data={dataChart} options={optionsChart} />
                                 </div>
                                 <div className='flex flex-col gap-3'>
