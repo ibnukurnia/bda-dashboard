@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'react-feather';
 import DropdownButton from '@/components/dashboard/overview/dropdown-button';
 import DatePickerComponent from '@/components/dashboard/overview/date-picker';
-import DoughnutChartComponent from '@/components/dashboard/customer/doughnut-chart';
+import DoughnutChartComponent from '@/components/dashboard/anomaly/doughnut-chart';
 import TabsComponent from '@/components/dashboard/overview/tabs';
 import {
     createColumnHelper,

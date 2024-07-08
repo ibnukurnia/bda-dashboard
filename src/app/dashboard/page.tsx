@@ -1,15 +1,14 @@
 'use client'
 
-import * as React from 'react';
+import { useState, useEffect, useContext } from 'react';
 // import type { Metadata } from 'next';
 import { Box, Grid, Stack, Typography } from '@mui/material';
 import { CompaniesFilters } from '@/components/dashboard/overview/overview-filters';
-import { useState } from 'react';
 import TabsComponent from '@/components/dashboard/overview/tabs';
 import DropdownButton from '@/components/dashboard/overview/dropdown-button';
 import DatePickerComponent from '@/components/dashboard/overview/date-picker';
 import ImageGrid from '@/components/dashboard/overview/image-grid';
-import LineChartComponent from '@/components/dashboard/overview/line-chart';
+import LineChart from '@/components/dashboard/overview/line-chart';
 import {
   createColumnHelper,
   Column,
@@ -174,46 +173,13 @@ export default function Page(): React.ReactElement {
     },
   ];
 
-  const dataChart = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'Agustus'],
-    datasets: [
-      {
-        data: [65, 59, 80, 81, 56, 55, 40, 23],
-        fill: false,
-        borderColor: '#FE981C',
-      },
-    ],
-
-  };
-
-  const optionsChart = {
-    responsive: true,
-    layout: {
-      padding: 30
+  const series = [
+    {
+      name: 'VM00009MOPB92 - BRIMO - mobile-banking - used_memory',
+      data: [10, 41, 35, 51, 49, 62, 69],
     },
-    plugins: {
-      legend: {
-        display: false,
-        labels: {
-          // This more specific font property overrides the global property
-          font: {
-            size: 14
-          }
-        }
-      },
-      title: {
-        display: true,
-        text: 'VM00009MOPB92 - BRIMO - mobile-banking - used_memory',
-        align: 'start' as 'start',  // Explicitly setting the type
-        color: 'white',
-        padding: {
-          top: 10,
-          bottom: 30
-        }
-      },
-    },
-  };
-
+  ];
+  const categories = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
   interface Person {
     id: string;
     createdDate: string;
@@ -833,7 +799,7 @@ export default function Page(): React.ReactElement {
             {dataCard.map((item, index) => (
               <div key={index} className="bg-[#0A1635] flex flex-col gap-7 rounded-lg p-4">
                 <div className="flex items-center gap-6">
-                  <Typography variant="body3" component="h3" color="white">
+                  <Typography variant="body2" component="h3" color="white">
                     {item.title}
                   </Typography>
                   {item.tags.map((tag, tagIndex) => (
@@ -898,11 +864,25 @@ export default function Page(): React.ReactElement {
             <CompaniesFilters />
           </Stack>
           <div className='flex flex-col gap-8 w-full'>
-            <div className='chart-container' style={{ height: '380px' }}>
-              <LineChartComponent data={dataChart} options={optionsChart} />
+            <div className='chart-container bg-[#0A1635]'>
+              <LineChart
+                series={series}
+                categories={categories}
+                title="VM00009MOPB92 - BRIMO - mobile-banking - used_memory"
+                lineColor="#FE981c"
+                yAxisMin={0}
+                yAxisMax={160}
+              />
             </div>
-            <div className='chart-container' style={{ height: '380px' }}>
-              <LineChartComponent data={dataChart} options={optionsChart} />
+            <div className='chart-container bg-[#0A1635]'>
+              <LineChart
+                series={series}
+                categories={categories}
+                title="VM00009MOPB92 - BRIMO - mobile-banking - used_network"
+                lineColor="#FE981c"
+                yAxisMin={0}
+                yAxisMax={160}
+              />
             </div>
           </div>
         </div>

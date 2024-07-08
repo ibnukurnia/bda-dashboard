@@ -46,10 +46,10 @@ export function MainNav(): React.JSX.Element {
       case '/dashboard':
         title = 'Overview';
         break;
-      case '/dashboard/customers':
+      case '/dashboard/anomaly-prediction':
         title = 'Anomaly Prediction';
         break;
-      case '/dashboard/integrations':
+      case '/dashboard/situation':
         title = 'Situation Room';
         break;
       default:
