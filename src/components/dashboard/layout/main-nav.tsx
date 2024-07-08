@@ -71,11 +71,11 @@ export function MainNav(): React.JSX.Element {
       case '/dashboard':
         alert = 0
         break;
-      case '/dashboard/customers':
-        alert = 0
+      case '/dashboard/anomaly-prediction':
+        alert = 2
         break;
-      case '/situation-room':
-        alert = 0
+      case '/situation':
+        alert = 1
         break;
       default:
         break;
@@ -110,7 +110,7 @@ export function MainNav(): React.JSX.Element {
           sx={{ alignItems: 'center', justifyContent: 'space-between', minHeight: '64px', px: 2, py: 1 }}
         >
           {renderOverviewStack()} {/* Conditionally render the Overview stack */}
-          {renderOverviewAlertStack()} {/* Conditionally render the Overview Alert Box stack */}
+          {renderOverviewAlertStack()} {/* Conditionally render the Alert Box */}
           <Stack sx={{ alignItems: 'right' }} direction="row" spacing={1}>
             <Stack direction="column">
               <Typography variant="h6" component="h2" color="white">
