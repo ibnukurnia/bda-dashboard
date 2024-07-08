@@ -17,6 +17,7 @@ import { MobileNav } from './mobile-nav';
 import { UserPopover } from './user-popover';
 
 export function MainNav(): React.JSX.Element {
+
   const [openNav, setOpenNav] = React.useState<boolean>(false);
   const user = {
     name: 'Davin',
@@ -29,6 +30,7 @@ export function MainNav(): React.JSX.Element {
 
   const userPopover = usePopover<HTMLDivElement>();
   const pathname = usePathname();
+  // console.log(pathname)
 
   const getCurrentDateFormatted = (): string => {
     const now = new Date();
@@ -46,10 +48,10 @@ export function MainNav(): React.JSX.Element {
       case '/dashboard':
         title = 'Overview';
         break;
-      case '/dashboard/customers':
+      case '/dashboard/anomaly-prediction':
         title = 'Anomaly Prediction';
         break;
-      case '/dashboard/integrations':
+      case '/dashboard/situation-room':
         title = 'Situation Room';
         break;
       default:
@@ -71,11 +73,11 @@ export function MainNav(): React.JSX.Element {
       case '/dashboard':
         alert = 0
         break;
-      case '/dashboard/customers':
-        alert = 0
+      case '/dashboard/anomaly-prediction':
+        alert = 3
         break;
-      case '/situation-room':
-        alert = 0
+      case '/situation':
+        alert = 1
         break;
       default:
         break;

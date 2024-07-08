@@ -7,9 +7,9 @@ import { Download, Plus, Upload } from 'react-feather';
 import dayjs from 'dayjs';
 
 import { config } from '@/config';
-import { CustomersFilters } from '@/components/dashboard/customer/customers-filters';
-import { CustomersTable } from '@/components/dashboard/customer/customers-table';
-import type { Customer } from '@/components/dashboard/customer/customers-table';
+import { CustomersFilters } from '@/components/dashboard/anomaly/customers-filters';
+import { CustomersTable } from '@/components/dashboard/anomaly/customers-table';
+import type { Customer } from '@/components/dashboard/anomaly/customers-table';
 
 export const metadata = { title: `Dashboard | ${config.site.name}` } satisfies Metadata;
 

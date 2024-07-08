@@ -3,11 +3,11 @@
 import { useState, useEffect, useContext } from 'react';
 // import type { Metadata } from 'next';
 import { Box, Grid, Stack, Typography } from '@mui/material';
-import { CompaniesFilters } from '@/components/dashboard/overview/overview-filters';
+import { CompaniesFilters } from '@/components/dashboard/overview/old-component/overview-filters';
 import TabsComponent from '@/components/dashboard/overview/tabs';
 import DropdownButton from '@/components/dashboard/overview/dropdown-button';
 import DatePickerComponent from '@/components/dashboard/overview/date-picker';
-import LineChartComponent from '@/components/dashboard/overview/line-chart';
+import LineChart from '@/components/dashboard/overview/line-chart';
 import ImageGrid from '@/components/dashboard/overview/image-grid';
 // import {
 //   createColumnHelper,
@@ -37,189 +37,53 @@ import { SeviceOverviewPanel } from '@/components/dashboard/overview/panels/serv
 export default function Page(): React.ReactElement {
   // const options = ["Option 1", "Option 2", "Option 3"];
 
-  const dataCard = [
+  const series = [
     {
-      title: 'bridgtl-sms-service',
-      tags: ['#1190', '#1190', '#1190'],
-      bgColor: 'custom-blue',
-      stats: [
-        { label: '12min', description: 'Last Impacted' },
-        { label: '3', description: 'Open Issues' },
-        { label: '30', description: 'Team Member' },
-        { label: '23m', description: 'Avg. Time Solved' },
-        { label: 'Running', description: 'Current Cond.', color: '#06BA63' },
-      ],
-    },
-    {
-      title: 'paylater-credit-scoring',
-      tags: [],
-      bgColor: 'custom-blue',
-      stats: [
-        { label: '14min', description: 'Last Impacted' },
-        { label: '3', description: 'Open Issues' },
-        { label: '4', description: 'Team Member' },
-        { label: '58m', description: 'Avg. Time Solved' },
-        { label: 'Running', description: 'Current Cond.', color: '#06BA63' },
-      ],
-    },
-    {
-      title: 'bridgtl-trx-service',
-      tags: ['#2029'],
-      bgColor: 'custom-red',
-      stats: [
-        { label: '2sec', description: 'Last Impacted' },
-        { label: '1', description: 'Open Issues' },
-        { label: '30', description: 'Team Member' },
-        { label: '23m', description: 'Avg. Time Solved' },
-        { label: 'Crash', description: 'Current Cond.', color: '#DE1A1A' },
-      ],
-    },
-    {
-      title: 'cloud-services-AxbYN',
-      tags: ['#1829'],
-      bgColor: 'custom-blue',
-      stats: [
-        { label: '26days', description: 'Last Impacted' },
-        { label: '-', description: 'Open Issues' },
-        { label: '5', description: 'Team Member' },
-        { label: '32m', description: 'Avg. Time Solved' },
-        { label: 'Running', description: 'Current Cond.', color: '#06BA63' },
-      ],
-    },
-    {
-      title: 'mobile-banking',
-      tags: [],
-      bgColor: 'custom-blue',
-      stats: [
-        { label: '6days', description: 'Last Impacted' },
-        { label: '-', description: 'Open Issues' },
-        { label: '64', description: 'Team Member' },
-        { label: '3m', description: 'Avg. Time Solved' },
-        { label: 'Running', description: 'Current Cond.', color: '#06BA63' },
-      ],
-    },
-    {
-      title: 'load-balancer',
-      tags: ['#1888'],
-      bgColor: 'custom-yellow',
-      stats: [
-        { label: '45sec', description: 'Last Impacted' },
-        { label: '1', description: 'Open Issues' },
-        { label: '2', description: 'Team Member' },
-        { label: '23m', description: 'Avg. Time Solved' },
-        { label: 'Warning', description: 'Current Cond.', color: '#F59823' },
-      ],
+      name: 'VM00009MOPB92 - BRIMO - mobile-banking - used_memory',
+      data: [10, 41, 35, 51, 49, 62, 69],
     },
   ];
+  const categories = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
 
-  const dataCardTeams = [
-    {
-      bgColor: 'custom-blue',
-      tags: ['#1190'],
-      title: 'bridgtl-sms-service',
-      stats: [
-        { label: '12min', description: 'Impacted Duration' },
-        { label: '3', description: 'Open Issues' },
-        { label: '2', description: 'Contributor' },
-        { label: '4', description: 'Alert Attempted' },
-      ],
-    },
-    {
-      bgColor: 'custom-red',
-      tags: ['#1190'],
-      title: 'bridgtl-sms-service',
-      stats: [
-        { label: '12min', description: 'Impacted Duration' },
-        { label: '3', description: 'Open Issues' },
-        { label: '2', description: 'Contributor' },
-        { label: '4', description: 'Alert Attempted' },
-      ],
-    },
-    {
-      bgColor: 'custom-blue',
-      tags: ['#1190'],
-      title: 'bridgtl-sms-service',
-      stats: [
-        { label: '12min', description: 'Impacted Duration' },
-        { label: '3', description: 'Open Issues' },
-        { label: '2', description: 'Contributor' },
-        { label: '4', description: 'Alert Attempted' },
-      ],
-    },
-    {
-      bgColor: 'custom-blue',
-      tags: ['#1190'],
-      title: 'bridgtl-sms-service',
-      stats: [
-        { label: '12min', description: 'Impacted Duration' },
-        { label: '3', description: 'Open Issues' },
-        { label: '2', description: 'Contributor' },
-        { label: '4', description: 'Alert Attempted' },
-      ],
-    },
-    {
-      bgColor: 'custom-red',
-      tags: ['#1190'],
-      title: 'bridgtl-sms-service',
-      stats: [
-        { label: '12min', description: 'Impacted Duration' },
-        { label: '3', description: 'Open Issues' },
-        { label: '2', description: 'Contributor' },
-        { label: '4', description: 'Alert Attempted' },
-      ],
-    },
-    {
-      bgColor: 'custom-blue',
-      tags: ['#1190'],
-      title: 'bridgtl-sms-service',
-      stats: [
-        { label: '12min', description: 'Impacted Duration' },
-        { label: '3', description: 'Open Issues' },
-        { label: '2', description: 'Contributor' },
-        { label: '4', description: 'Alert Attempted' },
-      ],
-    },
-  ];
+  // const dataChart = {
+  //   labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'Agustus'],
+  //   datasets: [
+  //     {
+  //       data: [65, 59, 80, 81, 56, 55, 40, 23],
+  //       fill: false,
+  //       borderColor: '#FE981C',
+  //     },
+  //   ],
 
-  const dataChart = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'Agustus'],
-    datasets: [
-      {
-        data: [65, 59, 80, 81, 56, 55, 40, 23],
-        fill: false,
-        borderColor: '#FE981C',
-      },
-    ],
+  // };
 
-  };
-
-  const optionsChart = {
-    responsive: true,
-    layout: {
-      padding: 30
-    },
-    plugins: {
-      legend: {
-        display: false,
-        labels: {
-          // This more specific font property overrides the global property
-          font: {
-            size: 14
-          }
-        }
-      },
-      title: {
-        display: true,
-        text: 'VM00009MOPB92 - BRIMO - mobile-banking - used_memory',
-        align: 'start' as 'start',  // Explicitly setting the type
-        color: 'white',
-        padding: {
-          top: 10,
-          bottom: 30
-        }
-      },
-    },
-  };
+  // const optionsChart = {
+  //   responsive: true,
+  //   layout: {
+  //     padding: 30
+  //   },
+  //   plugins: {
+  //     legend: {
+  //       display: false,
+  //       labels: {
+  //         // This more specific font property overrides the global property
+  //         font: {
+  //           size: 14
+  //         }
+  //       }
+  //     },
+  //     title: {
+  //       display: true,
+  //       text: 'VM00009MOPB92 - BRIMO - mobile-banking - used_memory',
+  //       align: 'start' as 'start',  // Explicitly setting the type
+  //       color: 'white',
+  //       padding: {
+  //         top: 10,
+  //         bottom: 30
+  //       }
+  //     },
+  //   },
+  // };
 
   interface Person {
     id: string;
@@ -466,10 +330,24 @@ export default function Page(): React.ReactElement {
           </Stack>
           <div className='flex flex-col gap-8 w-full'>
             <div className='chart-container' style={{ height: '380px' }}>
-              <LineChartComponent data={dataChart} options={optionsChart} />
+              <LineChart
+                series={series}
+                categories={categories}
+                title="VM00009MOPB92 - BRIMO - mobile-banking - used_memory"
+                lineColor="#FE981c"
+                yAxisMin={0}
+                yAxisMax={160}
+              />
             </div>
             <div className='chart-container' style={{ height: '380px' }}>
-              <LineChartComponent data={dataChart} options={optionsChart} />
+              <LineChart
+                series={series}
+                categories={categories}
+                title="VM00009MOPB92 - BRIMO - mobile-banking - used_memory"
+                lineColor="#FE981c"
+                yAxisMin={0}
+                yAxisMax={160}
+              />
             </div>
           </div>
         </div>

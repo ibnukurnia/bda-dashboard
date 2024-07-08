@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material"
 import { Stack } from "@mui/system"
 import DropdownButton from "../dropdown-button"
-import { CompaniesFilters } from "../overview-filters"
+import { CompaniesFilters } from "../old-component/overview-filters"
 import { ServiceOverviewResponse } from "@/modules/models/overviews"
 
 export const SeviceOverviewPanel = ({ serviceOverviews }: { serviceOverviews: ServiceOverviewResponse[] }) => {

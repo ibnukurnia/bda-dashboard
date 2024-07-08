@@ -23,7 +23,7 @@ export const TeamOverviewPanel = ({ teamOverview }: { teamOverview: TeamOverview
             <div className='flex flex-col gap-6 col-span-2'>
                 <Stack direction="row" spacing={1}>
                     <DropdownButton
-                        buttonText="All Products"
+                        buttonText="All Services"
                         options={['Option 1', 'Option 2', 'Option 3']}
                         buttonClassName="md:w-64" // Responsive width
                     />

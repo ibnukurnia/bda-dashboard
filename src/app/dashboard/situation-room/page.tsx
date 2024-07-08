@@ -20,17 +20,18 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import "./page.css"
-import ButtonWithCheckbox from '@/components/dashboard/integrations/button-checkbox';
+import ButtonWithCheckbox from '@/components/dashboard/situation-room/button-checkbox';
 import { makeStyles } from '@mui/styles';
-import LineChartComponent from '@/components/dashboard/overview/line-chart';
-import DistributedTimelineChart from '@/components/dashboard/integrations/timeline-charts';
-import TopologyDiagram from '@/components/dashboard/integrations/topology-charts';
+import LineChart from '@/components/dashboard/overview/line-chart';
+import DistributedTimelineChart from '@/components/dashboard/situation-room/timeline-charts';
+import TopologyDiagram from '@/components/dashboard/situation-room/topology-charts';
 
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
 }
+
 const useStyles = makeStyles((theme) => ({
   customIndicator: {
     backgroundColor: '#F59823', // Set the custom indicator color here
@@ -75,40 +76,15 @@ export default function Page(): React.JSX.Element {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
-
-  const dataChart = {
-    labels: ['Red', 'Yellow', 'Silver'],
-    datasets: [
-      {
-        label: '# of Votes',
-        data: [12, 19, 10], // Adjust the data to match the three labels
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.2)', // Red
-          'rgba(255, 206, 86, 0.2)', // Yellow
-          'rgba(192, 192, 192, 0.2)', // Silver
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)', // Red
-          'rgba(255, 206, 86, 1)', // Yellow
-          'rgba(192, 192, 192, 1)', // Silver
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const optionsChart = {
-    responsive: true,
-    plugins: {
-      legend: {
-        display: false
-      },
-      tooltip: {
-        enabled: true,
-      },
+  const series = [
+    {
+      name: 'Series 1',
+      data: [10, 41, 35, 51, 49, 62, 69, 91, 148],
     },
+  ];
 
-  };
+  const categories = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
+
   interface Person {
     id: string;
     impactedDate: string;
@@ -472,7 +448,6 @@ export default function Page(): React.JSX.Element {
               </div>
             </div>
           </div>
-
           <div className='flex flex-col gap-8 p-6'>
             <div className='flex flex-row justify-between gap-12'>
               <div className='flex flex-col gap-3'>
@@ -802,12 +777,17 @@ export default function Page(): React.JSX.Element {
               </div>
             </CustomTabPanel>
             <CustomTabPanel value={value} index={2}>
-              {/* <TopologyDiagram /> */}
+              <TopologyDiagram />
             </CustomTabPanel>
             <CustomTabPanel value={value} index={3}>
-              <div className='chart-container' style={{ height: '380px', width: '100%' }}>
-                <LineChartComponent data={dataChart} options={optionsChart} />
-              </div>
+              <LineChart
+                series={series}
+                categories={categories}
+                title="VM00009MOPB92 - BRIMO - mobile-banking - used_memory"
+                lineColor="#FE981c"
+                yAxisMin={0}
+                yAxisMax={160}
+              />
             </CustomTabPanel>
             <CustomTabPanel value={value} index={4}>
               Assign Team
