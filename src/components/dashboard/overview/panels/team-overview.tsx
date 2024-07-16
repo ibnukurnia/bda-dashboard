@@ -1,11 +1,18 @@
+'use client'
+
 import { TeamOverviewResponse } from "@/modules/models/overviews";
 import DropdownButton from "../dropdown-button";
 import DatePickerComponent from "../date-picker";
-import { Box, Stack, Typography } from "@mui/material"
-import { useState } from "react";
 import ImageGrid from "../image-grid";
+import { Box, Stack, Typography } from "@mui/material"
+import { useContext, useEffect, useState } from "react";
+import { OverviewContext } from "@/contexts/overview-context"
 
-export const TeamOverviewPanel = ({ teamOverview }: { teamOverview: TeamOverviewResponse }) => {
+export const TeamOverviewPanel = () => {
+    const { teamOverview, getTeamOverview } = useContext(OverviewContext)
+    const [selectedOption, setSelectedOption] = useState('');
+    const [isError, setError] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
 
@@ -18,14 +25,32 @@ export const TeamOverviewPanel = ({ teamOverview }: { teamOverview: TeamOverview
         setEndDate(date);
     };
 
+    const handleOptionSelection = (option: string) => {
+        setSelectedOption(option); // Set the selected option state
+        console.log('Selected option:', option);
+        getTeamOverview();
+    };
+
+    useEffect(() => {
+        if (teamOverview !== null) {
+            console.log(teamOverview)
+            setIsLoading(false);
+            setError(false);
+        } else {
+            setIsLoading(true);
+            setError(true);
+        }
+    }, [teamOverview]);
+
     return (
         <div className='flex flex-row gap-4'>
             <div className='flex flex-col gap-6 col-span-2'>
                 <Stack direction="row" spacing={1}>
                     <DropdownButton
-                        buttonText="All Products"
+                        buttonText={selectedOption === '' ? 'All Services' : selectedOption}
                         options={['Option 1', 'Option 2', 'Option 3']}
                         buttonClassName="md:w-64" // Responsive width
+                        onSelectOption={handleOptionSelection}
                     />
                     <DatePickerComponent
                         selectedDate={startDate || new Date()} // Provide a default date if startDate is null
@@ -96,9 +121,17 @@ export const TeamOverviewPanel = ({ teamOverview }: { teamOverview: TeamOverview
                     <Typography variant="h5" component="h5" color="white" sx={{ margin: 0 }}>
                         On Going Situation
                     </Typography>
-                    <div className='grid grid-cols-2 gap-4'>
-                        {teamOverview.overviews.map((overview, index) => {
-                            return (
+                    <div className="grid grid-cols-2 gap-8">
+                        {isLoading ? (
+                            <Typography variant="h5" component="h5" color="white">
+                                Loading...
+                            </Typography>
+                        ) : isError ? (
+                            <Typography variant="h5" component="h5" color="white">
+                                Failed To Fetch Data...
+                            </Typography>
+                        ) : (
+                            teamOverview.overviews.map((overview, index) => (
                                 <div className="bg-[#0A1635] flex flex-col gap-5 rounded-lg p-4" key={index}>
                                     <div className="flex items-center gap-6">
                                         <div className='bg-custom-blue inline-flex gap-2 items-center rounded-lg px-3'>
@@ -123,42 +156,43 @@ export const TeamOverviewPanel = ({ teamOverview }: { teamOverview: TeamOverview
                                     </div>
                                     <div className="grid grid-cols-4 gap-2">
                                         <div className='flex flex-col gap-y-2 items-center text-center'>
-                                            <Typography variant="h6" component="h3" color="white" >
+                                            <Typography variant="h6" component="h3" color="white">
                                                 {overview.impacted_duration}
                                             </Typography>
-                                            <Typography variant="body2" component="p" color="white" >
+                                            <Typography variant="body2" component="p" color="white">
                                                 Impacted Duration
                                             </Typography>
                                         </div>
                                         <div className='flex flex-col gap-y-2 items-center text-center'>
-                                            <Typography variant="h6" component="h3" color="white" >
+                                            <Typography variant="h6" component="h3" color="white">
                                                 {overview.open_issues}
                                             </Typography>
-                                            <Typography variant="body2" component="p" color="white" >
+                                            <Typography variant="body2" component="p" color="white">
                                                 Open Issues
                                             </Typography>
                                         </div>
                                         <div className='flex flex-col gap-y-2 items-center text-center'>
-                                            <Typography variant="h6" component="h3" color="white" >
+                                            <Typography variant="h6" component="h3" color="white">
                                                 {overview.contributor}
                                             </Typography>
-                                            <Typography variant="body2" component="p" color="white" >
+                                            <Typography variant="body2" component="p" color="white">
                                                 Contributor
                                             </Typography>
                                         </div>
                                         <div className='flex flex-col gap-y-2 items-center text-center'>
-                                            <Typography variant="h6" component="h3" color="white" >
+                                            <Typography variant="h6" component="h3" color="white">
                                                 {overview.alert_attempt}
                                             </Typography>
-                                            <Typography variant="body2" component="p" color="white" >
+                                            <Typography variant="body2" component="p" color="white">
                                                 Alert Attempt
                                             </Typography>
                                         </div>
                                     </div>
                                 </div>
-                            )
-                        })}
+                            ))
+                        )}
                     </div>
+
                 </Box>
             </div>
             <div className='flex flex-col gap-6 col-span-1 px-3 py-4' style={{ border: '1px solid #004889', borderRadius: 18 }}>

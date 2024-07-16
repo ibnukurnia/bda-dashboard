@@ -33,7 +33,7 @@ export default function NotFound(): React.JSX.Element {
         <Button
           component={RouterLink}
           href={paths.home}
-          startIcon={<ArrowLeft  fontSize="var(--icon-fontSize-md)" />}
+          startIcon={<ArrowLeft fontSize="var(--icon-fontSize-md)" />}
           variant="contained"
         >
           Go back to home

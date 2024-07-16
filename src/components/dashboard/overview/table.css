@@ -2,13 +2,15 @@
     font-size: 16px;
     font-weight: 400;
     color: white;
+    text-align: left;
 }
 
 #person td {
     font-family: Poppins;
     font-size: 14px;
     font-weight: 400;
-    color: white
+    color: white;
+    text-align: left;
 }
 
 .show-pagination {

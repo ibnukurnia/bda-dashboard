@@ -51,40 +51,17 @@ export function SignInForm() {
 
     try {
       await LoginUsecase(values)
-
       router.push('/dashboard')
     } catch (error) {
       //set to be displayed later
       const errString = handleError(error)
       setError('root', { type: 'server', message: errString })
-
       return
     } finally {
       setIsPending(false)
-
       await checkSession?.()
-
       router.refresh()
     }
-
-
-
-    // const { error } = await authClient.signInWithPassword(defaultValues);
-
-
-    // // Save the rememberMe value in local storage or session storage
-    // if (values.rememberMe) {
-    //   localStorage.setItem('rememberMe', 'true');
-    // } else {
-    //   localStorage.removeItem('rememberMe');
-    // }
-
-    // // Refresh the auth state
-    // await checkSession?.();
-
-    // // UserProvider, for this case, will not refresh the router
-    // // After refresh, GuestGuard will handle the redirect
-    // router.refresh();
   }, [checkSession, router, errors])
 
   return (
@@ -94,12 +71,6 @@ export function SignInForm() {
           Sign in
         </Typography>
         {errors.root ? <Alert color="error" severity='error'>{errors.root.message}</Alert> : null}
-        {/* <Typography color="white" variant="body2">
-          Don&apos;t have an account?{' '}
-          <Link component={RouterLink} href={paths.auth.signUp} underline="hover" color="#F59823">
-            Sign up
-          </Link>
-        </Typography> */}
       </Stack>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
@@ -156,29 +127,6 @@ export function SignInForm() {
               </FormControl>
             )}
           />
-          {/* <Stack spacing={1}>
-            <Controller
-              control={control}
-              name="rememberMe"
-              render={({ field }) => (
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      {...field}
-                      sx={{
-                        color: 'white',
-                        '&.Mui-checked': {
-                          color: 'white',
-                        },
-                      }}
-                    />
-                  }
-                  label="Remember me"
-                  sx={{ color: 'white' }}
-                />
-              )}
-            />
-          </Stack> */}
           <Button
             disabled={isPending}
             type="submit"

@@ -33,6 +33,11 @@ export interface ServiceOverviewResponse {
   last_impacted: string
 }
 
+export interface MetricsOverviewResponse {
+  series: { name: string; data: number[] }[],
+  categories: string;
+}
+
 interface Overviews {
   id: number
   service_name: string
