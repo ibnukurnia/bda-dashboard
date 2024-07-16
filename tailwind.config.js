@@ -12,6 +12,7 @@ module.exports = {
         'custom-blue': '#125D7A',
         'custom-red': '#4D0717',
         'custom-yellow': '#F59823',
+        'custom-border': '#004889',
       },
       boxShadow: {
         'custom-shadow': '0px 4px 4px 0px #00000040',
@@ -19,4 +20,4 @@ module.exports = {
     },
   },
   plugins: [],
-};
+}

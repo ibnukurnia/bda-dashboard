@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Box, Tab, Tabs } from '@mui/material';
+import { Box, Tab, Tabs, Typography } from '@mui/material';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -46,55 +46,63 @@ const TabsComponent: React.FC<TabsProps> = ({ tabs }) => {
     };
 
     return (
-        <Box>
-            <Tabs
-                value={value}
-                onChange={handleChange}
-                aria-label="tabs"
-                sx={{
-                    backgroundColor: 'transparent',
-                    padding: '8px',
-                    width: 'fit-content',
-                    border: '2px solid #004889',
-                    borderRadius: 50,
-                    '& .MuiTabs-indicator': {
-                        backgroundColor: 'transparent', // Remove bottom border color
-                    },
-                }}
-            >
-                {tabs.map((tab) => (
-                    <Tab
-                        key={tab.id}
-                        label={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                {tab.icon && <Box component="span">{tab.icon}</Box>}
-                                {tab.label}
-                            </Box>
-                        }
-                        id={`tab-${tab.id}`}
-                        aria-controls={`tabpanel-${tab.id}`}
-                        sx={{
-                            // width: '200px',
-                            // height: '48px',
-                            padding: '9px 56px',
-                            gap: '10px',
-                            borderRadius: '50px',
-                            background: 'transparent',
-                            color: 'white',
-                            '&.Mui-selected': {
-                                color: 'white', // Text color when selected
-                                background: 'linear-gradient(99.22deg, #F28E0F 34.1%, #FFFFFF 189.57%)',
-                            },
-                        }}
-                    />
-                ))}
-            </Tabs>
+
+        <Box >
+            <div className='flex flex-row justify-between'>
+                <Tabs
+                    value={value}
+                    onChange={handleChange}
+                    aria-label="tabs"
+                    sx={{
+                        backgroundColor: 'transparent',
+                        padding: '8px',
+                        width: 'fit-content',
+                        border: '2px solid #004889',
+                        borderRadius: 50,
+                        '& .MuiTabs-indicator': {
+                            backgroundColor: 'transparent', // Remove bottom border color
+                        },
+                    }}
+                >
+                    {tabs.map((tab) => (
+                        <Tab
+                            key={tab.id}
+                            label={
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    {tab.icon && <Box component="span">{tab.icon}</Box>}
+                                    {tab.label}
+                                </Box>
+                            }
+                            id={`tab-${tab.id}`}
+                            aria-controls={`tabpanel-${tab.id}`}
+                            sx={{
+                                // width: '200px',
+                                // height: '48px',
+                                padding: '9px 56px',
+                                gap: '10px',
+                                borderRadius: '50px',
+                                background: 'transparent',
+                                color: 'white',
+                                '&.Mui-selected': {
+                                    color: 'white', // Text color when selected
+                                    background: 'linear-gradient(99.22deg, #F28E0F 34.1%, #FFFFFF 189.57%)',
+                                },
+                            }}
+                        />
+                    ))}
+                </Tabs>
+                <Typography variant="body1" component="h6" color="white" sx={{ alignSelf: 'self-end' }}>
+                    Last Updated: a minute ago
+                </Typography>
+            </div>
             {tabs.map((tab, index) => (
                 <TabPanel key={tab.id} value={value} index={index}>
                     {tab.content}
                 </TabPanel>
             ))}
+
         </Box>
+
     );
 };
 

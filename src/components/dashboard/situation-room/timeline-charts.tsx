@@ -1,9 +1,20 @@
-import React from 'react';
-import Chart from 'react-apexcharts'; // Importing directly since 'use client' is used
+'use client';
 
+import React, { useEffect, useState } from 'react';
 import { ApexOptions } from 'apexcharts';
 
 const DistributedTimelineChart: React.FC = () => {
+    const [Chart, setChart] = useState<any>(null);
+
+    useEffect(() => {
+        const loadChart = async () => {
+            const { default: ChartModule } = await import('react-apexcharts');
+            setChart(() => ChartModule);
+        };
+
+        loadChart();
+    }, []);
+
     const series = [
         {
             name: 'Joe',
@@ -35,39 +46,30 @@ const DistributedTimelineChart: React.FC = () => {
 
     const options: ApexOptions = {
         chart: {
-            height: 450, // Adjust the height of the chart
+            height: 450,
             type: 'rangeBar',
             zoom: {
                 enabled: false,
             },
             toolbar: {
-                show: false, // Hide or show the toolbar as needed
+                show: false,
             },
-            parentHeightOffset: 0, // Adjust the parent container's height offset
-            offsetX: 20, // Adjusts the left padding of the chart
-            offsetY: 20, // Adjusts the top padding of the chart
+            parentHeightOffset: 0,
+            offsetX: 20,
+            offsetY: 20,
         },
         plotOptions: {
             bar: {
                 horizontal: true,
                 distributed: true,
                 barHeight: '75%',
-                // colors: {
-                //     ranges: [
-                //         {
-                //             from: new Date('2022-03-05T13:00:00').getTime(),
-                //             to: new Date('2022-03-05T21:00:00').getTime(),
-                //             color: '#ffffff',
-                //         },
-                //     ],
-                // },
             },
         },
         xaxis: {
             type: 'datetime',
             labels: {
                 style: {
-                    colors: '#FFFFFF', // Change this to your desired color
+                    colors: '#FFFFFF',
                     fontSize: '12px',
                 },
                 datetimeFormatter: {
@@ -91,7 +93,9 @@ const DistributedTimelineChart: React.FC = () => {
 
     return (
         <div id="chart">
-            <Chart options={options} series={series} type="rangeBar" height={450} />
+            {Chart && (
+                <Chart options={options} series={series} type="rangeBar" height={450} />
+            )}
         </div>
     );
 };

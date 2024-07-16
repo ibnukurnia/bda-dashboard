@@ -9,18 +9,25 @@ interface DropdownButtonProps {
     buttonText: string;
     buttonClassName?: string;
     dropdownClassName?: string;
+    onSelectOption: (option: string) => void;
 }
 
 const DropdownButton: React.FC<DropdownButtonProps> = ({
     options,
     buttonText,
     buttonClassName = '',
-    dropdownClassName = ''
+    dropdownClassName = '',
+    onSelectOption
 }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleDropdown: () => void = () => {
         setIsOpen(!isOpen);
+    };
+
+    const handleOptionClick = (option: string) => {
+        onSelectOption(option); // Call parent function with selected option
+        setIsOpen(false); // Close dropdown after selection
     };
 
     return (
@@ -38,6 +45,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
                         <div
                             key={index}
                             className="block px-4 py-2 text-white cursor-pointer transition duration-300 ease-in-out"
+                            onClick={() => handleOptionClick(option)} // Handle option click
                         >
                             {option}
                         </div>

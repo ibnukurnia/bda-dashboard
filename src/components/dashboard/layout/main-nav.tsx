@@ -19,6 +19,7 @@ import { UserPopover } from './user-popover';
 export function MainNav(): React.JSX.Element {
 
   const [openNav, setOpenNav] = React.useState<boolean>(false);
+
   const user = {
     name: 'Davin',
     avatar: '/assets/avatar.png',
@@ -65,6 +66,7 @@ export function MainNav(): React.JSX.Element {
       </Stack>
     );
   };
+
   const renderOverviewAlertStack = (): React.ReactElement => {
     let alert = 0;
     let alert_description = "There is no something wrong or ano.."

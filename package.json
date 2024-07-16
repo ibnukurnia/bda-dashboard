@@ -1,9 +1,7 @@
 {
   "name": "bda-dashboard",
   "version": "1.0.0",
-  "author": "Devias",
   "licence": "MIT",
-  "homepage": "https://devias.io",
   "private": false,
   "scripts": {
     "dev": "next dev",
