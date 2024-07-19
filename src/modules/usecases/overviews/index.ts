@@ -1,6 +1,6 @@
 import { get } from '@/common/api'
 import { ApiResponse } from '@/common/api/type'
-import { InsightOverviewResponse, ServiceOverviewResponse, TeamOverviewResponse } from '@/modules/models/overviews'
+import { InsightOverviewResponse, ServiceOverviewResponse, TeamOverviewResponse, MetricsOverviewResponse } from '@/modules/models/overviews'
 
 const GetCurrentSituation = async (): Promise<ApiResponse<InsightOverviewResponse>> => {
   const response = await get<InsightOverviewResponse>('overview/insights', {
@@ -26,4 +26,12 @@ const GetServiceOverview = async () => {
   return response
 }
 
-export { GetCurrentSituation, GetTeamOverview, GetServiceOverview }
+const GetMetricsOverview = async () => {
+  const response = await get<MetricsOverviewResponse[]>('overview/metrics', {
+    withAuth: true,
+  })
+
+  return response
+}
+
+export { GetCurrentSituation, GetTeamOverview, GetServiceOverview, GetMetricsOverview }

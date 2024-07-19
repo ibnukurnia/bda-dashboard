@@ -16,9 +16,11 @@ import {
 import { CurrentSituation, InsightOverviewResponse } from "@/modules/models/overviews"
 import { GetProducts } from "@/modules/usecases/global/product-usecase"
 import "../table.css"
+import Loading from "@/components/loading-out";
+import ErrorFetchingData from "@/components/error-fetching-data";
 
-export const InsightPanel = ({ insightOverview }: { insightOverview: InsightOverviewResponse }) => {
-    const { getInsightOverview } = useContext(OverviewContext)
+export const InsightPanel = () => {
+    const { insightOverview, getInsightOverview } = useContext(OverviewContext)
     const [selectedOption, setSelectedOption] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -28,10 +30,23 @@ export const InsightPanel = ({ insightOverview }: { insightOverview: InsightOver
     });
     const [products, setProducts] = useState<{ id: number, name: string }[]>([])
 
+
+    useEffect(() => {
+        if (insightOverview !== null) {
+            setIsLoading(false);
+            setError(false);
+        } else {
+            setIsLoading(true);
+            setError(true);
+        }
+    }, [insightOverview]);
+
+
     useEffect(() => {
         // Initial load of products
         fetchProducts();
     }, []);
+
 
     const fetchProducts = () => {
         setIsLoading(true);
@@ -160,13 +175,9 @@ export const InsightPanel = ({ insightOverview }: { insightOverview: InsightOver
                 />
             </Stack>
             {isLoading ? (
-                <Typography variant="h5" component="h5" color="white">
-                    Loading...
-                </Typography>
+                <Loading />
             ) : error ? (
-                <Typography variant="h5" component="h5" color="white">
-                    Failed To Fetch Data...
-                </Typography>
+                <ErrorFetchingData />
             ) : (
                 <Stack sx={{ display: 'flex', gap: 6, flexDirection: 'row', px: 3 }}>
                     <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>

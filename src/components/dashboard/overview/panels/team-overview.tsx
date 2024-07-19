@@ -7,6 +7,8 @@ import ImageGrid from "../image-grid";
 import { Box, Stack, Typography } from "@mui/material"
 import { useContext, useEffect, useState } from "react";
 import { OverviewContext } from "@/contexts/overview-context"
+import Loading from "@/components/loading-out";
+import ErrorFetchingData from "@/components/error-fetching-data";
 
 export const TeamOverviewPanel = () => {
     const { teamOverview, getTeamOverview } = useContext(OverviewContext)
@@ -123,13 +125,9 @@ export const TeamOverviewPanel = () => {
                     </Typography>
                     <div className="grid grid-cols-2 gap-8">
                         {isLoading ? (
-                            <Typography variant="h5" component="h5" color="white">
-                                Loading...
-                            </Typography>
+                            <Loading />
                         ) : isError ? (
-                            <Typography variant="h5" component="h5" color="white">
-                                Failed To Fetch Data...
-                            </Typography>
+                            <ErrorFetchingData />
                         ) : (
                             teamOverview.overviews.map((overview, index) => (
                                 <div className="bg-[#0A1635] flex flex-col gap-5 rounded-lg p-4" key={index}>

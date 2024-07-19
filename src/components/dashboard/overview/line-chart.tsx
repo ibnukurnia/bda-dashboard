@@ -14,12 +14,21 @@ interface LineChartProps {
     height?: number;
     width?: string | number;
     title: string;
-    lineColor?: string;
+    lineColors?: string[];
     yAxisMin?: number;
     yAxisMax?: number;
 }
 
-const LineChart: React.FC<LineChartProps> = ({ series, categories, height = 350, width = '100%', title, lineColor = '#FF5733', yAxisMin = 0, yAxisMax = 160 }) => {
+const LineChart: React.FC<LineChartProps> = ({
+    series,
+    categories,
+    height = 350,
+    width = '100%',
+    title,
+    lineColors = ['#FF5733', '#66DA26', '#546E7A'],
+    yAxisMin = 0,
+    yAxisMax = 160
+}) => {
     const options: ApexOptions = {
         chart: {
             type: 'line',
@@ -48,7 +57,7 @@ const LineChart: React.FC<LineChartProps> = ({ series, categories, height = 350,
         stroke: {
             curve: 'straight',
         },
-        colors: [lineColor],
+        colors: lineColors,
         grid: {
             row: {
                 colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
