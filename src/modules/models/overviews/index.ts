@@ -33,9 +33,14 @@ export interface ServiceOverviewResponse {
   last_impacted: string
 }
 
+export interface Series {
+  name: string;
+  data: number[];
+}
+
 export interface MetricsOverviewResponse {
-  series: { name: string; data: number[] }[],
-  categories: string;
+  series: Series[];
+  categories: string[];
 }
 
 interface Overviews {

@@ -5,6 +5,8 @@ import { CompaniesFilters } from "../old-component/overview-filters"
 // import { ServiceOverviewResponse } from "@/modules/models/overviews"
 import { useContext, useEffect, useState } from "react"
 import { OverviewContext } from "@/contexts/overview-context"
+import Loading from "@/components/loading-out"
+import ErrorFetchingData from "@/components/error-fetching-data"
 
 export const SeviceOverviewPanel = () => {
     const { serviceOverviews, getServiceOverview } = useContext(OverviewContext)
@@ -57,7 +59,7 @@ export const SeviceOverviewPanel = () => {
 
     useEffect(() => {
         if (serviceOverviews.length > 0) {
-            console.log(serviceOverviews)
+            // console.log(serviceOverviews)
             setIsLoading(false);
             setError(false);
         } else {
@@ -79,13 +81,9 @@ export const SeviceOverviewPanel = () => {
             </Stack>
             <div className="grid grid-cols-2 gap-8">
                 {isLoading ? (
-                    <Typography variant="h5" component="h5" color="white">
-                        Loading...
-                    </Typography>
+                    <Loading />
                 ) : isError ? (
-                    <Typography variant="h5" component="h5" color="white">
-                        Failed To Fetch Data...
-                    </Typography>
+                    <ErrorFetchingData />
                 ) : (
                     serviceOverviews.map((overview, index) => (
                         <div key={index} className="bg-[#0A1635] flex flex-col gap-7 rounded-lg p-4">

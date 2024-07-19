@@ -2,7 +2,7 @@
 
 import { handleError } from "@/lib/error-handler"
 import { InsightOverviewResponse, MetricsOverviewResponse, ServiceOverviewResponse, TeamOverviewResponse } from "@/modules/models/overviews"
-import { GetCurrentSituation, GetServiceOverview, GetTeamOverview } from "@/modules/usecases/overviews"
+import { GetCurrentSituation, GetServiceOverview, GetTeamOverview, GetMetricsOverview } from "@/modules/usecases/overviews"
 import { createContext, useEffect, useState, ReactNode, Dispatch, SetStateAction } from "react"
 
 interface OverviewContextProps {
@@ -14,6 +14,7 @@ interface OverviewContextProps {
     getInsightOverview: () => Promise<void> // Add this line
     getServiceOverview: () => Promise<void>
     getTeamOverview: () => Promise<void>
+    getMetricsOverview: () => Promise<void>
 }
 
 const defaultValue: OverviewContextProps = {
@@ -36,6 +37,7 @@ const defaultValue: OverviewContextProps = {
     getInsightOverview: async () => { }, // Add this line
     getServiceOverview: async () => { },
     getTeamOverview: async () => { },
+    getMetricsOverview: async () => { }
 }
 
 const OverviewContext = createContext<OverviewContextProps>(defaultValue)
@@ -74,13 +76,23 @@ const OverviewProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const getMetricsOverview = async () => {
+        try {
+            const response = await GetMetricsOverview();
+            // console.log('Fetched Service Overview:', response.data); // Add this line to debug
+            setOverview(prev => ({ ...prev, metricsOverviews: response.data as MetricsOverviewResponse[] }));
+        } catch (error) {
+            throw handleError(error);
+        }
+    };
+
 
     // for initial state
     useEffect(() => {
-        Promise.all([getInsightOverview(), getTeamOverview(), getServiceOverview()])
+        Promise.all([getInsightOverview(), getTeamOverview(), getServiceOverview(), getMetricsOverview()])
             .catch(console.log)
 
-        setOverview(prev => ({ ...prev, setLoad: setLoad, getInsightOverview, getServiceOverview, getTeamOverview })) // Add getInsightOverview to context value
+        setOverview(prev => ({ ...prev, setLoad: setLoad, getInsightOverview, getServiceOverview, getTeamOverview, getMetricsOverview })) // Add getInsightOverview to context value
         setLoad(false)
     }, [load])
 
