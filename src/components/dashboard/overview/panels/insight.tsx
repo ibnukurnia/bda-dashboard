@@ -148,12 +148,12 @@ export const InsightPanel = () => {
     return (
         <div className='flex flex-col gap-8'>
             <Stack direction="row" spacing={1}>
-                <DropdownButton
+                {/* <DropdownButton
                     buttonText="All Products"
                     options={['Option 1', 'Option 2', 'Option 3']}
                     buttonClassName="md:w-64" // Responsive width
                     onSelectOption={handleOptionSelection}
-                />
+                /> */}
                 {/* Render DatePickerComponent for startDate */}
                 <DatePickerComponent
                     selectedDate={startDate} // Provide a default date if startDate is null
@@ -180,7 +180,7 @@ export const InsightPanel = () => {
                 <ErrorFetchingData />
             ) : (
                 <Stack sx={{ display: 'flex', gap: 6, flexDirection: 'row', px: 3 }}>
-                    <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {/* <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <div className='inline-flex align-center gap-3'>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <g clipPath="url(#clip0_399_120)">
@@ -199,8 +199,8 @@ export const InsightPanel = () => {
                         <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
                             {insightOverview?.event_triggered}<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>events</span>
                         </Typography>
-                    </Stack>
-                    <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    </Stack> */}
+                    <Stack sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <div className='inline-flex align-center gap-3'>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M4.47 21.0001H19.53C21.07 21.0001 22.03 19.3301 21.26 18.0001L13.73 4.99005C12.96 3.66005 11.04 3.66005 10.27 4.99005L2.74 18.0001C1.97 19.3301 2.93 21.0001 4.47 21.0001ZM12 14.0001C11.45 14.0001 11 13.5501 11 13.0001V11.0001C11 10.4501 11.45 10.0001 12 10.0001C12.55 10.0001 13 10.4501 13 11.0001V13.0001C13 13.5501 12.55 14.0001 12 14.0001ZM13 18.0001H11V16.0001H13V18.0001Z" fill="#FFFFF7" />
@@ -213,20 +213,20 @@ export const InsightPanel = () => {
                             {insightOverview?.total_alerts}<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>alerts</span>
                         </Typography>
                     </Stack>
-                    <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Stack sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <div className='inline-flex align-center gap-3'>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M4.47 21.0001H19.53C21.07 21.0001 22.03 19.3301 21.26 18.0001L13.73 4.99005C12.96 3.66005 11.04 3.66005 10.27 4.99005L2.74 18.0001C1.97 19.3301 2.93 21.0001 4.47 21.0001ZM12 14.0001C11.45 14.0001 11 13.5501 11 13.0001V11.0001C11 10.4501 11.45 10.0001 12 10.0001C12.55 10.0001 13 10.4501 13 11.0001V13.0001C13 13.5501 12.55 14.0001 12 14.0001ZM13 18.0001H11V16.0001H13V18.0001Z" fill="#FFFFF7" />
                             </svg>
                             <Typography variant="body1" component="p" color="white" sx={{ margin: 0 }}>
-                                Total Ongoing
+                                Most Anomaly Source
                             </Typography>
                         </div>
                         <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
-                            {insightOverview?.on_going_situation}<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>situation</span>
+                            Log<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>{insightOverview?.total_alerts}</span>
                         </Typography>
                     </Stack>
-                    <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {/* <Stack sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <div className='inline-flex align-center gap-3'>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <g clipPath="url(#clip0_399_120)">
@@ -245,7 +245,7 @@ export const InsightPanel = () => {
                         <Typography variant="h4" component="h4" color="white" sx={{ margin: 0, fontSize: '42px' }}>
                             {insightOverview?.avg_time_solved}<span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>m</span>
                         </Typography>
-                    </Stack>
+                    </Stack> */}
                 </Stack>
             )}
 

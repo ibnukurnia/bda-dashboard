@@ -37,7 +37,7 @@ const MainPageOverview = () => {
                         </clipPath>
                     </defs>
                 </svg>,
-            content: <InsightPanel insightOverview={insightOverview} />,
+            content: <InsightPanel />,
         },
         {
             id: 'team-overview',
@@ -85,7 +85,7 @@ const MainPageOverview = () => {
                         </clipPath>
                     </defs>
                 </svg>,
-            content: <MetricsOverviewPanel metricsOverview={metricsOverviews} />,
+            content: <MetricsOverviewPanel />,
         },
     ];
 
