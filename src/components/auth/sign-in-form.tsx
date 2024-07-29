@@ -27,11 +27,8 @@ import { handleError } from '@/lib/error-handler';
 
 export function SignInForm() {
   const router = useRouter();
-
   const { checkSession } = useUser();
-
   const [showPassword, setShowPassword] = useState<boolean>(false);
-
   const [isPending, setIsPending] = useState<boolean>(false);
 
   const {

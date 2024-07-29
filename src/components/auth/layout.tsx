@@ -47,8 +47,6 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
         </Stack>
       </Box>
       <Box sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column', background: '#122647' }}>
-        {/* <Box sx={{ p: 3 }}>
-        </Box> */}
         <Box sx={{ alignItems: 'center', display: 'flex', flex: '1 1 auto', justifyContent: 'center', p: 3 }}>
           <Box sx={{ maxWidth: '450px', width: '100%' }}>{children}</Box>
         </Box>
