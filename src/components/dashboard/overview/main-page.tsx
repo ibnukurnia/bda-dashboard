@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useContext } from 'react';
-// import type { Metadata } from 'next';
 import { Box, Grid, Stack, Typography } from '@mui/material';
 import TabsComponent from '@/components/dashboard/overview/tabs';
 import { OverviewContext } from '@/contexts/overview-context';
@@ -37,7 +36,7 @@ const MainPageOverview = () => {
                         </clipPath>
                     </defs>
                 </svg>,
-            content: <InsightPanel insightOverview={insightOverview} />,
+            content: <InsightPanel />,
         },
         {
             id: 'team-overview',
@@ -85,7 +84,7 @@ const MainPageOverview = () => {
                         </clipPath>
                     </defs>
                 </svg>,
-            content: <MetricsOverviewPanel metricsOverview={metricsOverviews} />,
+            content: <MetricsOverviewPanel />,
         },
     ];
 

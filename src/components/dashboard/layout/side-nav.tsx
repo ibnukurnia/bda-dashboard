@@ -1,5 +1,3 @@
-// sidenav.tsx
-
 'use client';
 
 import * as React from 'react';
@@ -7,21 +5,21 @@ import RouterLink from 'next/link';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
-// import Typography from '@mui/material/Typography';
-
 import type { NavItemConfig } from '@/types/nav';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
-import { navItems } from './config'; // Importing the updated navItems
+import { navItems } from './config';
 import { navIcons } from './nav-icons';
-// import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { logger } from '@/lib/default-logger';
 import { useUser } from '@/hooks/use-user';
 import { usePathname } from 'next/navigation';
 import router from 'next/dist/client/router';
-// import { LogOut as LogoutIcon } from 'react-feather';
 
-export function SideNav(): React.ReactElement {
+interface SideNavProps {
+  isOpen: boolean;
+}
+
+export function SideNav({ isOpen }: SideNavProps): React.ReactElement {
   const pathname = usePathname();
   const { checkSession } = useUser();
 
@@ -34,10 +32,7 @@ export function SideNav(): React.ReactElement {
         return;
       }
 
-      // Refresh the auth state
       await checkSession?.();
-
-      // Manually refresh the router to update navigation state
       router.reload();
     } catch (err) {
       logger.error('Sign out error', err);
@@ -46,7 +41,6 @@ export function SideNav(): React.ReactElement {
 
   const logoutItem: NavItemConfig = {
     key: 'logout',
-    // title: 'Logout',
     icon: 'log-out',
     onClick: handleSignOut,
   };
@@ -74,18 +68,18 @@ export function SideNav(): React.ReactElement {
         position: 'fixed',
         scrollbarWidth: 'none',
         top: 0,
-        width: 'var(--SideNav-width)',
+        width: isOpen ? 'var(--SideNav-width)' : '0px',
+        overflow: isOpen ? 'visible' : 'hidden',
         zIndex: 'var(--SideNav-zIndex)',
         boxShadow: ' 0px 4px 34.2px 16px #00000040',
+        transition: 'width 0.3s, overflow 0.3s',
         '&::-webkit-scrollbar': { display: 'none' },
       }}
     >
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      {/* Primary Navigation Section */}
       <Box component="nav" sx={{ flex: '1 1 auto', px: '10px', py: '20px' }}>
         {renderNavItems({ pathname, items: navItems })}
       </Box>
-      {/* Logout Section */}
       <Box component="nav" sx={{ alignContent: 'flex-end', flex: '1 1 auto', px: '8px', py: '20px', mt: 'auto' }}>
         {renderNavItems({ pathname, items: [logoutItem] })}
       </Box>
@@ -128,7 +122,7 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, onClick }:
             target: external ? '_blank' : undefined,
             rel: external ? 'noreferrer' : undefined,
           }
-          : { role: 'button', onClick })} // Add onClick handler here
+          : { role: 'button', onClick })}
         sx={{
           alignItems: 'center',
           borderRadius: 1,
@@ -141,7 +135,7 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, onClick }:
           position: 'relative',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
-          justifyContent: 'center', // Center horizontally
+          justifyContent: 'center',
           ...(disabled && {
             bgcolor: 'var(--NavItem-disabled-background)',
             color: 'var(--NavItem-disabled-color)',
@@ -156,7 +150,6 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, onClick }:
         <Box sx={{ alignItems: 'center', display: 'flex', justifyContent: 'center', flex: '0 0 auto' }}>
           {Icon ? <Icon fill={active ? 'var(--NavItem-icon-active-color)' : 'var(--NavItem-icon-color)'} width={32} height={32} /> : null}
         </Box>
-
       </Box>
     </li>
   );
