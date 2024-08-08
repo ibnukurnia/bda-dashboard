@@ -1,0 +1,77 @@
+import React from 'react';
+import dynamic from 'next/dynamic';
+import { ApexOptions } from 'apexcharts';
+// import { ApexCharts } from 'react-apexcharts';
+
+// Dynamically import Chart component to avoid SSR issues
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+
+interface BarChartProps {
+    series: {
+        data: number[];
+    }[];
+    height?: number;
+    width?: string | number;
+}
+
+const BarChart: React.FC<BarChartProps> = ({
+    series,
+    height = 350,
+    width = '100%',
+}) => {
+    // Use the correct ApexCharts type for options
+    const options: ApexOptions = {
+        chart: {
+            type: 'bar',
+            height: 350,
+            // background: '#f5f5f5', // Set the background color here
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 5,
+                borderRadiusApplication: 'end',
+                horizontal: true,
+            },
+        },
+        fill: {
+            colors: ['#034694'], // Set bar color here
+        },
+        dataLabels: {
+            enabled: false,
+        },
+        xaxis: {
+            categories: ['mylta', 'impala', 'pochinkisaldo', 'rozhok'],
+            labels: {
+                style: {
+                    colors: '#FFFFFF', // Color of the x-axis labels
+                    fontSize: '14px', // Font size of the x-axis labels
+
+                },
+            },
+        },
+        yaxis: {
+            labels: {
+                style: {
+                    colors: '#FFFFFF', // Color of the x-axis labels
+                    fontSize: '14px', // Font size of the x-axis labels
+                }
+            },
+        },
+        grid: {
+            row: {
+                colors: ['white'],
+                opacity: 0.8,
+            },
+        },
+    };
+
+    return (
+        <div style={{ width }}>
+            {typeof window !== 'undefined' && (
+                <Chart options={options} series={series} type="bar" height={height} width={width} />
+            )}
+        </div>
+    );
+};
+
+export default BarChart;

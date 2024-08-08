@@ -23,7 +23,6 @@ const ImageGrid: React.FC = () => {
                             className='object-contain h-auto w-full'
                             src={image.src}
                             alt={image.alt}
-                            // layout="responsive"
                             width={500}
                             height={500}
                         />

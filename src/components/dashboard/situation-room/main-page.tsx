@@ -22,7 +22,7 @@ import {
 import './main-page.css'
 import ButtonWithCheckbox from '@/components/dashboard/situation-room/button-checkbox';
 import { makeStyles } from '@mui/styles';
-import LineChart from '@/components/dashboard/overview/line-chart';
+import LineChart from '@/components/dashboard/overview/chart/line-chart';
 import DistributedTimelineChart from '@/components/dashboard/situation-room/timeline-charts';
 import TopologyDiagram from '@/components/dashboard/situation-room/topology-charts';
 

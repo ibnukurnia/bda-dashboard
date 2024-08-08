@@ -2,8 +2,8 @@
 import { Typography } from "@mui/material";
 import { Stack } from "@mui/system";
 import DropdownButton from "../dropdown-button";
-import { CompaniesFilters } from "../old-component/overview-filters";
-import LineChart from '@/components/dashboard/overview/line-chart';
+// import { CompaniesFilters } from "../old-component/overview-filters";
+import LineChart from '@/components/dashboard/overview/chart/line-chart';
 import { useContext, useEffect, useState } from "react";
 import Loading from "@/components/loading-out";
 import ErrorFetchingData from "@/components/error-fetching-data";
@@ -50,7 +50,7 @@ export const MetricsOverviewPanel = () => {
                     buttonClassName="md:w-64" // Responsive width
                     onSelectOption={handleOptionSelection}
                 />
-                <CompaniesFilters />
+                {/* <CompaniesFilters /> */}
             </Stack>
             {isLoading ? (
                 <Loading />

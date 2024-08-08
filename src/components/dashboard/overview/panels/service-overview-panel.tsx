@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material"
 import { Stack } from "@mui/system"
 import DropdownButton from "../dropdown-button"
-import { CompaniesFilters } from "../old-component/overview-filters"
+// import { CompaniesFilters } from "../old-component/overview-filters"
 // import { ServiceOverviewResponse } from "@/modules/models/overviews"
 import { useContext, useEffect, useState } from "react"
 import { OverviewContext } from "@/contexts/overview-context"
@@ -77,7 +77,7 @@ export const SeviceOverviewPanel = () => {
                     buttonClassName="md:w-64" // Responsive width
                     onSelectOption={handleOptionSelection}
                 />
-                <CompaniesFilters />
+                {/* <CompaniesFilters /> */}
             </Stack>
             <div className="grid grid-cols-2 gap-8">
                 {isLoading ? (

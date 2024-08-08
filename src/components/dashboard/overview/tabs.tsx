@@ -3,6 +3,9 @@
 
 import React, { useState } from 'react';
 import { Box, Tab, Tabs, Typography } from '@mui/material';
+import { Anomaly } from '@/types/anomaly';
+import DropdownRange from '@/components/dashboard/dropdownRange';
+import updatedAnomalyData from '@/lib/data/anomaly';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -40,6 +43,10 @@ interface TabsProps {
 
 const TabsComponent: React.FC<TabsProps> = ({ tabs }) => {
     const [value, setValue] = useState(0);
+    const [data, setData] = useState(updatedAnomalyData);
+    const handleFilterChange = (filteredData: Anomaly[]) => {
+        setData(filteredData); // Update table data based on filter
+    };
 
     const handleChange = (event: React.SyntheticEvent, newValue: number): void => {
         setValue(newValue);
@@ -92,7 +99,7 @@ const TabsComponent: React.FC<TabsProps> = ({ tabs }) => {
                     ))}
                 </Tabs>
                 <Typography variant="body1" component="h6" color="white" sx={{ alignSelf: 'self-end' }}>
-                    Last Updated: a minute ago
+                    <DropdownRange AnomalyData={data} onFilterChange={handleFilterChange} />
                 </Typography>
             </div>
             {tabs.map((tab, index) => (
