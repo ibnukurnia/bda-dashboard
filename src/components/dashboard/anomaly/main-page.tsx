@@ -79,19 +79,6 @@ const MainPageAnomaly = () => {
       header: () => <span>Pod</span>,
     }),
   ];
-  // const table = useReactTable({
-  //   data,
-  //   columns,
-  //   getCoreRowModel: getCoreRowModel(),
-  //   getSortedRowModel: getSortedRowModel(),
-  //   getFilteredRowModel: getFilteredRowModel(),
-  //   getPaginationRowModel: getPaginationRowModel(),
-  //   onPaginationChange: setPagination,
-  //   //no need to pass pageCount or rowCount with client-side pagination as it is calculated automatically
-  //   state: {
-  //     pagination,
-  //   },
-  // })
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab)
@@ -282,10 +269,6 @@ const MainPageAnomaly = () => {
             categories={categories} // Pass appropriate categories based on selected log
             anomalyData={mostRecentAnomalyData}
             anomalyCategory={mostRecentAnomalyCategory}
-          // data={data}
-          // columns={columns}
-          // pagination={pagination}
-          // setPagination={setPagination}
           />
         )}
 
