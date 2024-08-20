@@ -26,12 +26,17 @@
     background: linear-gradient(99.22deg, #F28E0F 34.1%, #FFFFFF 189.57%);
 }
 
+.container-button .dropdown-button {
+    color: black !important;
+    background: transparent;
+    padding: 12px 44px;
+    gap: 10px;
+    border-radius: 50px;
+    border: 1px;
+}
+
 .card-style {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
     background: #0A1635;
-    padding: 24px;
     border: 1px solid #373737;
     box-shadow: 0px 4px 4px 0px #00000040;
     border-radius: 20px;

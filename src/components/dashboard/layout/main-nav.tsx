@@ -1,35 +1,31 @@
 'use client';
 
 import * as React from 'react';
-import { usePathname } from 'next/navigation'; // Import usePathname from Next.js
-// import Tooltip from '@mui/material/Tooltip';
-// import { Bell, List, Search, User } from 'react-feather';
-import { Typography } from '@mui/material';
-import Avatar from '@mui/material/Avatar';
-// import Badge from '@mui/material/Badge';
-import Box from '@mui/material/Box';
-// import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
-
-import { usePopover } from '@/hooks/use-popover';
-
 import { MobileNav } from './mobile-nav';
-import { UserPopover } from './user-popover';
+import { usePathname } from 'next/navigation'; // Import usePathname from Next.js
+import { Button, Typography } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+interface MainNavProps {
+  toggleSideNav: () => void;
+}
 
-export function MainNav(): React.JSX.Element {
+export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
 
   const [openNav, setOpenNav] = React.useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState<boolean>(false);
 
   const user = {
-    name: 'Davin',
+    name: 'Fadhli',
     avatar: '/assets/avatar.png',
-    jobTitle: 'Senior Developer',
-    country: 'USA',
-    city: 'Los Angeles',
+    jobTitle: 'Data Scientist',
+    country: 'Indonesia',
+    city: 'Jakarta',
     timezone: 'GTM-7',
   } as const;
 
-  const userPopover = usePopover<HTMLDivElement>();
+  // const userPopover = usePopover<HTMLDivElement>();
   const pathname = usePathname();
   // console.log(pathname)
 
@@ -61,7 +57,7 @@ export function MainNav(): React.JSX.Element {
 
     return (
       <Stack>
-        <Typography variant="h2" component="h2" color="white">{title}</Typography>
+        <Typography variant="h3" component="h3" color="white">{title}</Typography>
         <Typography variant="body2" component="p" color="white">{description}</Typography>
       </Stack>
     );
@@ -95,6 +91,11 @@ export function MainNav(): React.JSX.Element {
     );
   };
 
+  const handleToggleSideNav = () => {
+    toggleSideNav();
+    setIsSidebarOpen(prevState => !prevState);
+  };
+
 
   return (
     <React.Fragment>
@@ -106,15 +107,19 @@ export function MainNav(): React.JSX.Element {
           position: 'sticky',
           top: 0,
           zIndex: 'var(--mui-zIndex-appBar)',
-          padding: 2
+          paddingTop: 3,
+          paddingBottom: 3
         }}
       >
         <Stack
           direction="row"
-          sx={{ alignItems: 'center', justifyContent: 'space-between', minHeight: '64px', px: 2, py: 1 }}
+          sx={{ alignItems: 'center', justifyContent: 'space-between', minHeight: '64px' }}
         >
           {renderOverviewStack()} {/* Conditionally render the Overview stack */}
           {renderOverviewAlertStack()} {/* Conditionally render the Overview Alert Box stack */}
+          <button onClick={handleToggleSideNav} className='text-sm md:text-md lg:text-lg text-blue-400 hover:text-blue-600'>
+            {isSidebarOpen ? 'Open Sidebar' : 'Close Sidebar'}
+          </button>
           <Stack sx={{ alignItems: 'right' }} direction="row" spacing={1}>
             <Stack direction="column">
               <Typography variant="h6" component="h2" color="white">
@@ -125,15 +130,15 @@ export function MainNav(): React.JSX.Element {
               </Typography>
             </Stack>
             <Avatar
-              onClick={userPopover.handleOpen}
-              ref={userPopover.anchorRef}
+
               src="/assets/avatar.png"
               sx={{ cursor: 'pointer' }}
             />
           </Stack>
+
         </Stack>
       </Box>
-      <UserPopover anchorEl={userPopover.anchorRef.current} onClose={userPopover.handleClose} open={userPopover.open} />
+      {/* <UserPopover anchorEl={userPopover.anchorRef.current} onClose={userPopover.handleClose} open={userPopover.open} /> */}
       <MobileNav
         onClose={() => {
           setOpenNav(false);

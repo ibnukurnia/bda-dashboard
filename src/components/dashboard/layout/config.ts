@@ -13,3 +13,5 @@ export const navItems: NavItemConfig[] = [
 ];
 
 export const logoutItem: NavItemConfig = { key: 'logout', href: paths.auth.signIn, icon: 'log-out' };
+
+// the nav config

@@ -24,6 +24,7 @@ import { useUser } from '@/hooks/use-user';
 import { LoginSchema, LoginValues } from '@/modules/schemas';
 import { LoginUsecase } from '@/modules/usecases/auth';
 import { handleError } from '@/lib/error-handler';
+import { IconButton, InputAdornment } from '@mui/material';
 
 export function SignInForm() {
   const router = useRouter();
@@ -48,6 +49,7 @@ export function SignInForm() {
 
     try {
       await LoginUsecase(values)
+      console.log(values)
       router.push('/dashboard')
     } catch (error) {
       //set to be displayed later
@@ -76,13 +78,12 @@ export function SignInForm() {
             name="pernr"
             render={({ field }) => (
               <FormControl error={Boolean(errors.pernr)}>
-                {/* <InputLabel>Email address</InputLabel> */}
                 <OutlinedInput
                   {...field}
                   label="Pern"
                   placeholder="Type your pernr"
                   type="text"
-                  sx={{ backgroundColor: 'white' }} // Set background color to white
+                  sx={{ backgroundColor: 'white' }}
                 />
                 {errors.pernr ? <FormHelperText>{errors.pernr.message}</FormHelperText> : null}
               </FormControl>
@@ -93,32 +94,27 @@ export function SignInForm() {
             name="password"
             render={({ field }) => (
               <FormControl error={Boolean(errors.password)}>
-                {/* <InputLabel>Password</InputLabel> */}
                 <OutlinedInput
                   {...field}
+                  sx={{ backgroundColor: 'white' }}
                   endAdornment={
-                    showPassword ? (
-                      <Eye
-                        cursor="pointer"
-                        fontSize="var(--icon-fontSize-md)"
-                        onClick={(): void => {
-                          setShowPassword(false);
-                        }}
-                      />
-                    ) : (
-                      <EyeOff
-                        cursor="pointer"
-                        fontSize="var(--icon-fontSize-md)"
-                        onClick={(): void => {
-                          setShowPassword(true);
-                        }}
-                      />
-                    )
+                    <InputAdornment position="end" sx={{ backgroundColor: '#E8F0FE' }}>
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        style={{ color: '' }}
+                      >
+                        {showPassword ? (
+                          <Eye fontSize="var(--icon-fontSize-md)" />
+                        ) : (
+                          <EyeOff fontSize="var(--icon-fontSize-md)" />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
                   }
                   label="Password"
                   placeholder="Type your password"
                   type={showPassword ? 'text' : 'password'}
-                  sx={{ backgroundColor: 'white' }} // Set background color to white
                 />
                 {errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
               </FormControl>
@@ -145,14 +141,14 @@ export function SignInForm() {
           justifyContent: 'center', // Center vertically
         }}
       >
-        <Link
+        {/* <Link
           component={RouterLink}
           href={paths.auth.resetPassword}
           variant="subtitle2"
           sx={{ color: 'white' }} // Set text color to white
         >
           Forgot password?
-        </Link>
+        </Link> */}
       </Stack>
     </Stack>
   );

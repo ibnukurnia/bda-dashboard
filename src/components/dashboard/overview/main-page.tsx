@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useContext } from 'react';
-// import type { Metadata } from 'next';
 import { Box, Grid, Stack, Typography } from '@mui/material';
 import TabsComponent from '@/components/dashboard/overview/tabs';
 import { OverviewContext } from '@/contexts/overview-context';
