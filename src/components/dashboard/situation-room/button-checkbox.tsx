@@ -1,21 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface ButtonWithCheckboxProps {
+    id: string;
     buttonText: string;
+    isChecked: boolean;
+    onCheckboxChange: (id: string, checked: boolean) => void;
     buttonClassName: string;
+    type?: string; // Add the 'type' property to the props
 }
 
-const ButtonWithCheckbox: React.FC<ButtonWithCheckboxProps> = ({ buttonText, buttonClassName = '' }) => {
-    const [isChecked, setIsChecked] = useState(false);
-
+const ButtonWithCheckbox: React.FC<ButtonWithCheckboxProps> = ({
+    id,
+    buttonText,
+    isChecked,
+    onCheckboxChange,
+    buttonClassName = '',
+    type, // Destructure the 'type' prop
+}) => {
     const handleButtonClick = () => {
-        setIsChecked(!isChecked);
+        onCheckboxChange(id, !isChecked);
     };
 
     return (
         <button
             onClick={handleButtonClick}
-            className={`${buttonClassName} flex items-center space-x-2 px-4 py-2 bg-[#004889] border border-gray-300 rounded text-white w-40`}
+            className={`${buttonClassName} flex items-center space-x-3 px-4 py-2 bg-[#004889] border border-gray-300 rounded text-white`}
         >
             <input
                 type="checkbox"
@@ -24,6 +33,8 @@ const ButtonWithCheckbox: React.FC<ButtonWithCheckboxProps> = ({ buttonText, but
                 className="form-checkbox"
             />
             <span>{buttonText}</span>
+            {/* Optionally, render the type or use it in conditional rendering */}
+            {type && <span className="ml-2 text-sm text-gray-400">({type})</span>}
         </button>
     );
 };

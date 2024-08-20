@@ -1,12 +1,55 @@
-export interface HistoricalAnomalyResponse {
-  id: number
-  impacted_date: string
-  severity: string
+export interface HistoricalAnomalyLogApmResponse {
+  timestamp: string
+  service_name: string
+  tps_apm: string
+  max_rt: string
+  count_success_200: number
+  count_errors_400: number
+  count_errors_500: number
+}
+
+export interface TimeRangeOption {
+  label: string;
+  value: number;
+}
+
+export interface Column {
+  name: string;
+  type: string;
+  comment: string;
+}
+
+export interface CheckboxOptionResponse {
+  columns: Column[];  // This represents the array of columns in the response
+}
+
+export interface HistoricalAnomalyLogBrimoResponse {
+  timestamp: string
   service: string
-  description: string
+  response_code: string
+  trx_type: string
+  response_desc: string
+}
+
+export interface HistoricalAnomalyUtilizationResponse {
+  event_triggered: number
   total_alerts: number
-  // status: string
-  // assignees: string
+  on_going_situation: number
+  avg_time_solved: number
+}
+
+export interface HistoricalAnomalyNetworkResponse {
+  event_triggered: number
+  total_alerts: number
+  on_going_situation: number
+  avg_time_solved: number
+
+}
+export interface HistoricalAnomalySecurityResponse {
+  event_triggered: number
+  total_alerts: number
+  on_going_situation: number
+  avg_time_solved: number
 }
 
 export interface MostRecentAnomalyResponse {
@@ -14,7 +57,7 @@ export interface MostRecentAnomalyResponse {
   total: number
 }
 
-export interface SeverityRationRepsonse {
-  severity: string
-  percentage: number
-}
+// export interface SeverityRationRepsonse {
+//   severity: string
+//   percentage: number
+// }

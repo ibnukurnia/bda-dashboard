@@ -1,46 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Anomaly } from '@/types/anomaly';
-import moment from 'moment-timezone';
 
-interface DropdownProps {
-    AnomalyData: Anomaly[];
-    onFilterChange: (filteredData: Anomaly[]) => void; // Callback to pass filtered data
+interface DropdownRangeProps {
+    timeRanges: Record<string, number>;
+    onRangeChange: (rangeKey: string) => void;
 }
 
-const timeRanges = {
-    'Last 5 minutes': 5,
-    'Last 10 minutes': 10,
-    'Last 15 minutes': 15,
-    'Last 30 minutes': 30,
-    'Last 1 hour': 60,
-    'Last 3 hours': 180,
-    'Last 12 hours': 720,
-} as const;
-
-type TimeRangeKey = keyof typeof timeRanges;
-
-const Dropdown: React.FC<DropdownProps> = ({ AnomalyData, onFilterChange }) => {
+const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedRange, setSelectedRange] = useState<TimeRangeKey | ''>('');
+    const [selectedRange, setSelectedRange] = useState<string>('');
     const dropdownRef = useRef<HTMLDivElement | null>(null);
 
     const toggleDropdown = () => {
         setIsOpen(!isOpen);
     };
 
-    const parseTimestamp = (timestamp: string): moment.Moment => {
-        return moment.tz(timestamp, 'Asia/Bangkok'); // Adjust time zone as needed
-    };
-
-    const formatDate = (date: Date): string => {
-        const pad = (num: number) => (num < 10 ? `0${num}` : num);
-        return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}+00:00`;
-    };
-
     const handleClickOutside = (event: MouseEvent) => {
         if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
             setIsOpen(false);
         }
+    };
+
+    const handleRangeChange = (rangeKey: string) => {
+        setSelectedRange(rangeKey);
+        onRangeChange(rangeKey);
+        setIsOpen(false);
     };
 
     useEffect(() => {
@@ -54,38 +37,8 @@ const Dropdown: React.FC<DropdownProps> = ({ AnomalyData, onFilterChange }) => {
         };
     }, [isOpen]);
 
-    const filterData = (range: TimeRangeKey) => {
-        const timezone = 'Asia/Bangkok';
-        const now = moment().tz(timezone); // Current time in the specified time zone
-        const minutes = timeRanges[range];
-        const threshold = now.clone().subtract(minutes, 'minutes'); // Threshold time in the specified time zone
-
-        // Log the current and threshold times in the specified time zone
-        console.log('Current Time:', now.format('YYYY-MM-DD HH:mm:ssZ'));
-        console.log('Threshold Time:', threshold.format('YYYY-MM-DD HH:mm:ssZ'));
-
-        const filteredData = AnomalyData.filter((item) => {
-            const itemDate = parseTimestamp(item.timestamp); // Convert item timestamp to the specified time zone
-            // Compare using moment objects
-            return itemDate.isBetween(threshold, now, null, '[)');
-        });
-
-        // Log filtered data for debugging
-        console.log(filteredData);
-
-        // Pass filtered data to parent
-        onFilterChange(filteredData);
-    };
-
-
-    const handleRangeChange = (range: TimeRangeKey) => {
-        setSelectedRange(range);
-        filterData(range);
-        setIsOpen(false);
-    };
-
     return (
-        <div className="content-center relative inline-block text-left" ref={dropdownRef}>
+        <div className="flex content-end relative inline-block text-left self-end" ref={dropdownRef}>
             <button
                 type="button"
                 onClick={toggleDropdown}
@@ -117,14 +70,14 @@ const Dropdown: React.FC<DropdownProps> = ({ AnomalyData, onFilterChange }) => {
                     aria-labelledby="dropdownDefaultButton"
                 >
                     <ul className="py-2 text-sm text-white">
-                        {Object.keys(timeRanges).map((range) => (
-                            <li key={range}>
+                        {Object.keys(timeRanges).map((rangeKey) => (
+                            <li key={rangeKey}>
                                 <a
                                     href="#"
-                                    onClick={() => handleRangeChange(range as TimeRangeKey)}
+                                    onClick={() => handleRangeChange(rangeKey)}
                                     className="block px-4 py-2 hover:bg-gray-100 text-white"
                                 >
-                                    {range}
+                                    {rangeKey}
                                 </a>
                             </li>
                         ))}
@@ -135,5 +88,4 @@ const Dropdown: React.FC<DropdownProps> = ({ AnomalyData, onFilterChange }) => {
     );
 };
 
-
-export default Dropdown;
+export default DropdownRange;

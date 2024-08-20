@@ -1,22 +1,12 @@
 'use client';
 
 import * as React from 'react';
+import { MobileNav } from './mobile-nav';
 import { usePathname } from 'next/navigation'; // Import usePathname from Next.js
-// import Tooltip from '@mui/material/Tooltip';
-// import { Bell, List, Search, User } from 'react-feather';
 import { Button, Typography } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
-// import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
-// import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
-
-import { usePopover } from '@/hooks/use-popover';
-
-import { MobileNav } from './mobile-nav';
-import { UserPopover } from './user-popover';
-
-
 interface MainNavProps {
   toggleSideNav: () => void;
 }
@@ -35,7 +25,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
     timezone: 'GTM-7',
   } as const;
 
-  const userPopover = usePopover<HTMLDivElement>();
+  // const userPopover = usePopover<HTMLDivElement>();
   const pathname = usePathname();
   // console.log(pathname)
 
@@ -140,8 +130,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
               </Typography>
             </Stack>
             <Avatar
-              onClick={userPopover.handleOpen}
-              ref={userPopover.anchorRef}
+
               src="/assets/avatar.png"
               sx={{ cursor: 'pointer' }}
             />
@@ -149,7 +138,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
 
         </Stack>
       </Box>
-      <UserPopover anchorEl={userPopover.anchorRef.current} onClose={userPopover.handleClose} open={userPopover.open} />
+      {/* <UserPopover anchorEl={userPopover.anchorRef.current} onClose={userPopover.handleClose} open={userPopover.open} /> */}
       <MobileNav
         onClose={() => {
           setOpenNav(false);

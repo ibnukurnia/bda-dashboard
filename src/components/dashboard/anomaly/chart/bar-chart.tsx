@@ -12,19 +12,20 @@ interface BarChartProps {
     }[];
     height?: number;
     width?: string | number;
+    categories: string[]; // Add categories prop
 }
+
 
 const BarChart: React.FC<BarChartProps> = ({
     series,
     height = 350,
     width = '100%',
+    categories, // Destructure categories prop
 }) => {
-    // Use the correct ApexCharts type for options
     const options: ApexOptions = {
         chart: {
             type: 'bar',
             height: 350,
-            // background: '#f5f5f5', // Set the background color here
         },
         plotOptions: {
             bar: {
@@ -40,12 +41,11 @@ const BarChart: React.FC<BarChartProps> = ({
             enabled: false,
         },
         xaxis: {
-            categories: ['mylta', 'impala', 'pochinkisaldo', 'rozhok'],
+            categories: categories, // Use the categories prop here
             labels: {
                 style: {
                     colors: '#FFFFFF', // Color of the x-axis labels
                     fontSize: '14px', // Font size of the x-axis labels
-
                 },
             },
         },
@@ -73,5 +73,6 @@ const BarChart: React.FC<BarChartProps> = ({
         </div>
     );
 };
+
 
 export default BarChart;

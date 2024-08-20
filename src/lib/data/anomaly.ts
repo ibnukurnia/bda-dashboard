@@ -21,6 +21,7 @@ function updateTimestamps(dataArray: Anomaly[], newDate: string): Anomaly[] {
 }
 
 // Apply the transformation
-const updatedAnomalyData = updateTimestamps(anomalyData, '2024-08-06');
+const updatedAnomalyData = updateTimestamps(anomalyData, '2024-08-09');
+// console.log(updatedAnomalyData)
 
 export default updatedAnomalyData;

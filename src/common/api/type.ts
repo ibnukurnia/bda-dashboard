@@ -5,11 +5,12 @@ export interface ApiResponse<T> {
   valid: boolean
 }
 
-export interface PaginatedResponse<T> {
-  rows: T[]
+export interface PaginatedResponse {
+  rows: any
   page: number
   total_rows: number
   total_pages: number
+  columns: { title: string, key: string }[]
 }
 
 export interface ErrorResponse extends Error {

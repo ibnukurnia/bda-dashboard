@@ -49,6 +49,7 @@ export function SignInForm() {
 
     try {
       await LoginUsecase(values)
+      console.log(values)
       router.push('/dashboard')
     } catch (error) {
       //set to be displayed later
@@ -77,13 +78,12 @@ export function SignInForm() {
             name="pernr"
             render={({ field }) => (
               <FormControl error={Boolean(errors.pernr)}>
-                {/* <InputLabel>Email address</InputLabel> */}
                 <OutlinedInput
                   {...field}
                   label="Pern"
                   placeholder="Type your pernr"
                   type="text"
-                  sx={{ backgroundColor: 'white' }} // Set background color to white
+                  sx={{ backgroundColor: 'white' }}
                 />
                 {errors.pernr ? <FormHelperText>{errors.pernr.message}</FormHelperText> : null}
               </FormControl>
