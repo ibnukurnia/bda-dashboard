@@ -38,7 +38,7 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
     }, [isOpen]);
 
     return (
-        <div className="flex content-end relative inline-block text-left self-end" ref={dropdownRef}>
+        <div className="flex econtent-end relative inline-block text-left self-end" ref={dropdownRef}>
             <button
                 type="button"
                 onClick={toggleDropdown}
@@ -75,7 +75,7 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
                                 <a
                                     href="#"
                                     onClick={() => handleRangeChange(rangeKey)}
-                                    className="block px-4 py-2 hover:bg-gray-100 text-white"
+                                    className="block px-4 py-2 hover:bg-gray-600 text-white"
                                 >
                                     {rangeKey}
                                 </a>

@@ -15,8 +15,11 @@ import { ArrowLeft, ArrowRight } from 'react-feather'
 import DropdownRange from '../../dropdownRange'
 import SynchronizedCharts from '../../overview/chart/synchronized-charts'
 import ButtonWithCheckbox from '../../situation-room/button-checkbox'
+// import BarChart from '../chart/bar-chart'
+// import LineChart from '../chart/line-chart'
 import { fetchCheckboxes, fetchTimeRanges, TimeRangeOption, CheckboxOption } from '@/lib/api'
 import { Column } from '@/modules/models/anomaly-predictions'
+// import { AnomalyContext } from '@/contexts/anomaly-context'
 
 
 interface TabLogContentProps {
@@ -28,6 +31,7 @@ interface TabLogContentProps {
 }
 
 const defaultTimeRanges: Record<string, number> = {
+    'Last 1 minutes': 1,
     'Last 5 minutes': 5,
     'Last 10 minutes': 10,
     'Last 15 minutes': 15,
@@ -35,18 +39,20 @@ const defaultTimeRanges: Record<string, number> = {
     'Last 1 hour': 60,
     'Last 3 hours': 180,
     'Last 12 hours': 720,
+    'Last 6 hours': 360,
+    'Last 24 hours': 1440,
 };
 
 const TabLogContent: React.FC<TabLogContentProps> = ({
     selectedLog,
-    series,
+    // series,
     categories,
-    anomalyCategory,
-    anomalyData,
+    // anomalyCategory,
+    // anomalyData,
 }) => {
     const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges);
-    const [selectedRange, setSelectedRange] = useState<string>('');
-    const [hasErrorTimeRange, setHasErrorTimeRange] = useState<boolean>(false);
+    const [selectedRange, setSelectedRange] = useState<string>('Last 15 minute');
+    // const [hasErrorTimeRange, setHasErrorTimeRange] = useState<boolean>(false);
     const [checkboxOptions, setCheckboxOptions] = useState<CheckboxOption[]>([]);
     const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
     const [isLoadingFilter, setIsLoadingFilter] = useState<boolean>(true);
@@ -54,10 +60,9 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
     const [data, setData] = useState<any[]>([])
     const [totalPages, setTotalPages] = useState<number>(1);
-    // Define the pagination state used by React Table
     const [pagination, setPagination] = useState({
-        pageIndex: 0, //initial page index
-        pageSize: 10, //default page size
+        pageIndex: 1, // Start from page 1
+        pageSize: 10, // Default page size
     });
 
     const generateDayWiseTimeSeries = (baseval: number, count: number, yrange: { min: number; max: number }) => {
@@ -69,6 +74,10 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         }
         return series
     }
+
+    // const categoriesNew = generateDayWiseTimeSeries(new Date('11 Feb 2017').getTime(), 20, { min: 10, max: 60 }).map(
+    //     (d) => new Date(d[0]).toISOString()
+    // )
 
     const seriesNew = [
         { name: 'Series 1', data: generateDayWiseTimeSeries(new Date('11 Feb 2017').getTime(), 20, { min: 10, max: 60 }) },
@@ -82,8 +91,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        onPaginationChange: setPagination,
+        manualPagination: true, // Disable table's internal pagination
         state: {
             pagination,
         },
@@ -95,32 +103,68 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                 ? [...prevSelectedOptions, id]
                 : prevSelectedOptions.filter((optionId) => optionId !== id);
 
-            // console.log('Updated selectedOptions:', newSelectedOptions);
+            console.log('Updated selectedOptions:', newSelectedOptions);
             return newSelectedOptions;
         });
     };
 
     const handleSubmit = async () => {
-        const queryParams = selectedOptions.map((id) => `optionIds[]=${id}`).join('&');
-        const url = `/api/submit?${queryParams}`; // Replace with your actual API endpoint
         try {
-            const response = await fetch(url, {
-                method: 'GET', // Or 'POST' if your API expects POST requests
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            if (!response.ok) {
-                throw new Error('Failed to submit selected options');
+            const logType = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : '';
+            const limit = pagination.pageSize; // Use the current pageSize
+
+            console.log('Submitting with filters:', selectedOptions);
+
+            let timeRangeInMinutes: number;
+
+            // Determine the time range in minutes
+            if (selectedRange === 'Last 15 minute') {
+                timeRangeInMinutes = 15;
+            } else {
+                timeRangeInMinutes = defaultTimeRanges[selectedRange];
             }
-            const result = await response.json();
-            console.log('Submission successful:', result);
-            // Handle the response here (e.g., display success message, update state, etc.)
+
+            // Fetch data with the determined time range
+            const result = await GetHistoricalLogAnomalies(logType, limit, 1, selectedOptions, timeRangeInMinutes);
+
+            if (result.data !== null) {  // Add a null check here
+                setTotalPages(result.data.total_pages);
+
+                // Update columns and data
+                const newColumns = result.data.columns.map((column: any) => ({
+                    id: column.key,
+                    header: column.title,
+                    accessorKey: column.key,
+                }));
+                setColumns(newColumns);
+
+                const newData = result.data.rows.map((row: any) => {
+                    const mappedRow: any = {};
+                    result.data?.columns.forEach((col: any) => {
+                        mappedRow[col.key] = row[col.key];
+                    });
+                    return mappedRow;
+                });
+                setData(newData);
+
+                console.log('Data and columns updated after submit');
+
+                // Update the pageIndex based on the response from the API
+                if (result.data.page) {
+                    setPagination((prev) => ({
+                        ...prev,
+                        pageIndex: result.data.page,
+                    }));
+                    console.log('Page index updated to:', result.data.page);
+                }
+            } else {
+                console.warn('API response data is null or undefined');
+            }
         } catch (error) {
-            console.error('Error during submission:', error);
-            // Handle the error (e.g., display error message)
+            console.error('Error submitting data:', error);
         }
     };
+
 
     const renderChart = () => {
         switch (selectedLog) {
@@ -142,7 +186,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     <SynchronizedCharts
                         seriesNew={seriesNew} // Ensure seriesNew is relevant for Log Brimo
                         categories={categories} // Ensure categories are relevant for Log Brimo
-                        height={800}
+                        height={300}
                         width="100%"
                         title="Brimo Log Chart"
                         lineColors={['#FF5733', '#000000', '#546E7A']}
@@ -159,100 +203,111 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         }
     };
 
-    const handleRangeChange = (rangeKey: string) => {
+    const handleRangeChange = async (rangeKey: string) => {
+        const type = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : '';
+
         setSelectedRange(rangeKey);
-        // Handle the selected time range here, e.g., update charts, filter data, etc.
-        console.log(`Selected range: ${rangeKey}, minutes: ${timeRanges[rangeKey]}`);
-    };
+        const selectedTimeRange = defaultTimeRanges[rangeKey]; // Convert rangeKey to number
 
-    const fetchData = async (page: number, limit: number) => {
-        console.log('Fetching data for page:', page);
         try {
-            let type = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : '';
-            if (!type) {
-                console.warn('Unknown log type:', selectedLog);
-                return;
-            }
+            const filters = selectedOptions.length !== 0 ? selectedOptions : [];
+            const result = await GetHistoricalLogAnomalies(type, 10, 1, filters, selectedTimeRange);
 
-            const result = await GetHistoricalLogAnomalies(type, limit, page);
+            if (result.data && result.data.rows.length > 0) {
 
-            if (result.data) {
                 setTotalPages(result.data.total_pages);
-
-                // Extract columns and rows from the API response
-                const responseColumns = result.data.columns;
-                const responseRows = result.data.rows;
-
-                if (responseColumns && responseRows) {
-                    // Create ColumnDefs based on the API response columns
-                    const newColumns = responseColumns.map((column: any) => ({
-                        id: column.key, // Ensure each column has a unique id
-                        header: column.title, // Use title for the header
-                        accessorKey: column.key, // Ensure accessor matches your row data field
-                    }));
-
-                    setColumns(newColumns);
-
-                    // Map rows to match the columns
-                    const newData = responseRows.map((row: any) => {
-                        const mappedRow: any = {};
-                        responseColumns.forEach((col: any) => {
-                            mappedRow[col.key] = row[col.key];
-                        });
-                        return mappedRow;
+                const newData = result.data.rows.map((row: any) => {
+                    const mappedRow: any = {};
+                    result.data?.columns.forEach((col: any) => {
+                        mappedRow[col.key] = row[col.key];
                     });
+                    return mappedRow;
+                });
 
-                    setData(newData);
-                    console.log('Data and columns updated for page:', page);
-                } else {
-                    console.warn('No columns or rows in the API response');
-                }
+                setData(newData); // Update the table data
+
+                // If the API provides a page index, use it; otherwise, set to the current page (1)
+                const updatedPageIndex = result.data.page || 1;
+
+                setPagination((prev) => ({
+                    ...prev,
+                    pageIndex: updatedPageIndex,
+                }));
             } else {
-                console.warn('API response data is null or undefined');
+                // If no data is found, reset the table data and pagination
+                setData([]);
+                setPagination((prev) => ({
+                    ...prev,
+                    pageIndex: 1, // Reset pageIndex to 1
+                }));
             }
         } catch (error) {
             console.error('Error fetching data:', error);
+            // In case of error, you might also want to reset the pagination
+            setPagination((prev) => ({
+                ...prev,
+                pageIndex: 1, // Reset pageIndex to 1 in case of error
+            }));
         }
     };
 
-    const nextPage = () => {
-        setPagination((prev) => {
-            const newPageIndex = prev.pageIndex + 1;
-            fetchData(newPageIndex, prev.pageSize); // Fetch data for the new page
-            return { ...prev, pageIndex: newPageIndex };
-        });
-    };
 
-    const previousPage = () => {
-        setPagination((prev) => {
-            const newPageIndex = prev.pageIndex - 1;
-            console.log('Previous pageIndex:', prev.pageIndex);
-            console.log('New pageIndex (before check):', newPageIndex);
-
-            if (newPageIndex >= 1) { // Adjust check for 1-based indexing
-                console.log('Fetching data for new pageIndex:', newPageIndex);
-                fetchData(newPageIndex, prev.pageSize); // Fetch data for the new page
-                return { ...prev, pageIndex: newPageIndex };
-            }
-
-            console.log('New pageIndex is less than 1, no update made.');
-            return prev;
-        });
-    };
-
-    const fetchAnomaliesByLog = async () => {
+    const fetchDataByLog = async (
+        logType: string,
+        page: number,
+        limit: number,
+        filter: string[] = [],
+        date_range: number
+    ) => {
         try {
-            let type = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : '';
-            if (!type) return;
-
-            const limit = pagination.pageSize;
-            const page = 1; // Start from page 1
-
-            const result = await GetHistoricalLogAnomalies(type, limit, page);
+            // Call the API to get historical log anomalies
+            const result = await GetHistoricalLogAnomalies(logType, limit, page, filter, date_range);
 
             if (result.data) {
+                // Update the total number of pages based on the API response
                 setTotalPages(result.data.total_pages);
 
+                // Map the columns from the API response to the format required by the table
+                const newColumns = result.data.columns.map((column: any) => ({
+                    id: column.key,
+                    header: column.title,
+                    accessorKey: column.key,
+                }));
+                setColumns(newColumns);
+
+                // Map the rows from the API response to the format required by the table
+                const newData = result.data.rows.map((row: any) => {
+                    const mappedRow: any = {};
+                    result.data?.columns.forEach((col: any) => {
+                        mappedRow[col.key] = row[col.key];
+                    });
+                    return mappedRow;
+                });
+
+                // Update the table data
+                setData(newData);
+            } else {
+                // Log a warning if the API response is missing data
+                console.warn('API response data is null or undefined');
+            }
+        } catch (error) {
+            // Log an error if the API call fails
+            console.error('Error fetching data for selectedLog:', error);
+        }
+    };
+    // Function to fetch data based on pagination
+    const fetchDataByPagination = async (page: number, limit: number, filter: string[] = [], date_range: number) => {
+        console.log('Fetching data for page:', page);
+        let type = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : '';
+        if (!type) {
+            console.warn('Unknown log type:', selectedLog);
+            return;
+        }
+
+        try {
+            const result = await GetHistoricalLogAnomalies(type, limit, page, [], 15);
+
+            if (result.data) {
                 // Update columns and data
                 const newColumns = result.data.columns.map((column: any) => ({
                     id: column.key,
@@ -263,30 +318,109 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
 
                 const newData = result.data.rows.map((row: any) => {
                     const mappedRow: any = {};
-                    result.data.columns.forEach((col: any) => {
+                    result.data?.columns.forEach((col: any) => {
                         mappedRow[col.key] = row[col.key];
                     });
                     return mappedRow;
                 });
                 setData(newData);
-
-                // Reset pagination to page 1
-                setPagination((prev) => ({
-                    ...prev,
-                    pageIndex: 1, // Now we're explicitly setting pageIndex to 1
-                }));
             } else {
                 console.warn('API response data is null or undefined');
             }
         } catch (error) {
-            console.error('Error fetching data for selectedLog:', error);
+            console.error('Error fetching data:', error);
         }
     };
 
-    // 1. Fetch data when `selectedLog` changes
+    const nextPage = () => {
+        const logType = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : '';
+        if (selectedOptions.length !== 0) {
+            // If there are selected filters, hit the API with the filters
+            setPagination((prev) => {
+                const newPageIndex = Math.min(prev.pageIndex + 1, totalPages);
+                GetHistoricalLogAnomalies(logType, prev.pageSize, newPageIndex, selectedOptions, 15) // Fetch data with filters for the new page
+                    .then(result => {
+                        // Process the result and update the state
+                        if (result.data) {
+                            // Update columns and data
+                            const newColumns = result.data.columns.map((column: any) => ({
+                                id: column.key,
+                                header: column.title,
+                                accessorKey: column.key,
+                            }));
+                            setColumns(newColumns);
+
+                            const newData = result.data.rows.map((row: any) => {
+                                const mappedRow: any = {};
+                                result.data?.columns.forEach((col: any) => {
+                                    mappedRow[col.key] = row[col.key];
+                                });
+                                return mappedRow;
+                            });
+                            setData(newData);
+                        } else {
+                            console.warn('API response data is null or undefined');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data with filters:', error);
+                    });
+                return { ...prev, pageIndex: newPageIndex };
+            });
+        } else {
+            // If no filters are selected, proceed with normal pagination
+            setPagination((prev) => {
+                const newPageIndex = Math.min(prev.pageIndex + 1, totalPages);
+                fetchDataByPagination(newPageIndex, prev.pageSize, [], 15); // Fetch data for the new page
+                return { ...prev, pageIndex: newPageIndex };
+            });
+        }
+    };
+
+    const previousPage = () => {
+        setPagination((prev) => {
+            const newPageIndex = Math.max(prev.pageIndex - 1, 1);
+            fetchDataByPagination(newPageIndex, prev.pageSize, [], 15); // Fetch data for the previous page
+            return { ...prev, pageIndex: newPageIndex };
+        });
+    };
+
+    const loadCheckboxOptions = async () => {
+        try {
+            const response = await fetchCheckboxes(selectedLog === 'Log Brimo' ? 'brimo' : '');
+            console.log('API Response:', response); // Log the entire API response
+
+
+            if (response.data && response.data.columns) {
+                const options = response.data.columns.map((column: Column) => ({
+                    id: column.name,                   // Maps the "name" to "id"
+                    label: column.comment || column.name, // Maps the "comment" to "label", falls back to "name" if "comment" is missing
+                    type: column.type,                 // Maps the "type" to "type"
+                }));
+
+                console.log('Mapped Checkbox Options:', options); // Log the mapped options
+
+                setCheckboxOptions(options); // Update state with fetched options
+            } else {
+                console.error('Response data or columns are missing');
+                setHasErrorFilter(true);
+            }
+        } catch (error) {
+            console.error('Failed to load checkbox options', error);
+            setHasErrorFilter(true);
+        } finally {
+            setIsLoadingFilter(false);
+        }
+    };
+    // Initial fetch when component mounts or selectedLog changes
     useEffect(() => {
-        fetchAnomaliesByLog();
-    }, []); // Only re-run when selectedLog changes
+        const type = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : '';
+        fetchDataByLog(type, pagination.pageIndex, pagination.pageSize, [], 15);
+
+
+        loadCheckboxOptions();
+
+    }, [selectedLog]);
 
 
     return (
@@ -319,8 +453,8 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     <div className="flex flex-col self-end">
                         <button
                             onClick={handleSubmit}
-                            className={`focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center ${hasErrorFilter || selectedOptions ? 'text-black bg-gray-500 cursor-not-allowed' : 'text-white bg-blue-700 hover:bg-blue-800 '}`}
-                            disabled={hasErrorFilter || selectedOptions.length === 0}
+                            className={`focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center ${hasErrorFilter || selectedOptions.length === 0 ? 'text-black bg-gray-500 cursor-not-allowed' : 'text-white bg-blue-700 hover:bg-blue-800 '}`}
+                            disabled={selectedOptions.length === 0}
                         >
                             Confirm
                         </button>
@@ -365,78 +499,92 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                                         ))}
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 text-gray-600">
-                                        {table.getRowModel().rows.map((row) => (
-                                            <tr key={row.id}>
-                                                {row.getVisibleCells().map((cell) => (
-                                                    <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
-                                                        <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
-                                                            {cell.column.id === 'severity' && (
-                                                                <svg
-                                                                    width="14"
-                                                                    height="15"
-                                                                    viewBox="0 0 14 15"
-                                                                    fill="none"
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                >
-                                                                    <path
-                                                                        d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
-                                                                        fill="#F59823"
-                                                                    />
-                                                                </svg>
-                                                            )}
-                                                            {typeof cell.column.columnDef.cell === 'function'
-                                                                ? cell.column.columnDef.cell(cell.getContext())
-                                                                : cell.column.columnDef.cell}
-                                                        </div>
-                                                    </td>
-                                                ))}
+                                        {data.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={table.getAllColumns().length} className="text-center py-4">
+                                                    <div className="text-center text-2xl font-semibold text-white">
+                                                        DATA IS NOT AVAILABLE
+                                                    </div>
+                                                </td>
                                             </tr>
-                                        ))}
+                                        ) : (
+                                            table.getRowModel().rows.map((row) => (
+                                                <tr key={row.id}>
+                                                    {row.getVisibleCells().map((cell) => (
+                                                        <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                                                            <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
+                                                                {cell.column.id === 'severity' && (
+                                                                    <svg
+                                                                        width="14"
+                                                                        height="15"
+                                                                        viewBox="0 0 14 15"
+                                                                        fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                    >
+                                                                        <path
+                                                                            d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
+                                                                            fill="#F59823"
+                                                                        />
+                                                                    </svg>
+                                                                )}
+                                                                {typeof cell.column.columnDef.cell === 'function'
+                                                                    ? cell.column.columnDef.cell(cell.getContext())
+                                                                    : cell.column.columnDef.cell}
+                                                            </div>
+                                                        </td>
+                                                    ))}
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
-                            <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
-                                <div className="flex gap-1">
-                                    <span className="text-white">Rows per page:</span>
-                                    <select
-                                        value={table.getState().pagination.pageSize}
-                                        onChange={(e) => {
-                                            const newPageSize = Number(e.target.value);
-                                            table.setPageSize(newPageSize);
-                                            setPagination((prev) => ({
-                                                ...prev,
-                                                pageSize: newPageSize,
-                                                pageIndex: 0, // Reset to first page when page size changes
-                                            }));
-                                        }}
-                                        className="select-button-assesment"
-                                    >
-                                        {[4, 10, 16, 32].map((pageSize) => (
-                                            <option key={pageSize} value={pageSize}>
-                                                {pageSize}
-                                            </option>
-                                        ))}
-                                    </select>
+                            {data.length > 0 && (
+                                <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
+                                    <div className="flex gap-1">
+                                        <span className="text-white">Rows per page:</span>
+                                        <select
+                                            value={table.getState().pagination.pageSize}
+                                            onChange={(e) => {
+                                                const newPageSize = Number(e.target.value);
+                                                table.setPageSize(newPageSize);
+                                                setPagination((prev) => ({
+                                                    ...prev,
+                                                    pageSize: newPageSize,
+                                                    pageIndex: 0, // Reset to first page when page size changes
+                                                }));
+                                            }}
+                                            className="select-button-assesment"
+                                        >
+                                            {[5, 10, 15, 25].map((pageSize) => (
+                                                <option key={pageSize} value={pageSize}>
+                                                    {pageSize}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="text-white">
+                                        Page {pagination.pageIndex} of {totalPages}
+                                    </div>
+                                    <div className="d-flex">
+                                        <button
+                                            className="bg-transparent text-white p-2"
+                                            onClick={previousPage}
+                                            disabled={pagination.pageIndex === 0}
+                                        >
+                                            <ArrowLeft />
+                                        </button>
+                                        <button
+                                            className="bg-transparent text-white p-2"
+                                            onClick={nextPage}
+                                            disabled={pagination.pageIndex + 1 >= totalPages}
+                                        >
+                                            <ArrowRight />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="text-white">
-                                    Page {pagination.pageIndex + 1} of {totalPages}
-                                </div>
-                                <div className="d-flex">
-                                    <button
-                                        className="bg-transparent text-white p-2"
-                                        onClick={previousPage} disabled={pagination.pageIndex === 1}
-                                    >
-                                        <ArrowLeft />
-                                    </button>
-                                    <button
-                                        className="bg-transparent text-white p-2"
-                                        onClick={nextPage}
-                                        disabled={pagination.pageIndex + 1 >= totalPages}
-                                    >
-                                        <ArrowRight />
-                                    </button>
-                                </div>
-                            </div>
+                            )}
+
                         </div>
                     </Box>
                 </div>
