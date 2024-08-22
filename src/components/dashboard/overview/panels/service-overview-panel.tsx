@@ -1,6 +1,6 @@
 import { Typography } from "@mui/material"
 import { Stack } from "@mui/system"
-import DropdownButton from "../dropdown-button"
+import DropdownButton from "../button/dropdown-button"
 // import { CompaniesFilters } from "../old-component/overview-filters"
 // import { ServiceOverviewResponse } from "@/modules/models/overviews"
 import { useContext, useEffect, useState } from "react"

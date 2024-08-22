@@ -19,8 +19,12 @@ export interface Column {
   comment: string;
 }
 
-export interface CheckboxOptionResponse {
+export interface AnomalyOptionResponse {
   columns: Column[];  // This represents the array of columns in the response
+}
+
+export interface ServicesOptionResponse {
+  services: string[];  // This represents the array of columns in the response
 }
 
 export interface HistoricalAnomalyLogBrimoResponse {

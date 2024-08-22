@@ -17,6 +17,9 @@ module.exports = {
       boxShadow: {
         'custom-shadow': '0px 4px 4px 0px #00000040',
       },
+      borderColor: {
+        'primary-blue': '#2563eb', // Custom border color
+      },
     },
   },
   plugins: [],
