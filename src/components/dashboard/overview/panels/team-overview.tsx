@@ -1,8 +1,8 @@
 'use client'
 
 import { TeamOverviewResponse } from "@/modules/models/overviews";
-import DropdownButton from "../dropdown-button";
-import DatePickerComponent from "../date-picker";
+import DropdownButton from "../button/dropdown-button";
+import DatePickerComponent from "../button/date-picker";
 import ImageGrid from "../image-grid";
 import { Box, Stack, Typography } from "@mui/material"
 import { useContext, useEffect, useState } from "react";

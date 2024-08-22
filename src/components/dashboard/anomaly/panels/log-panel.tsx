@@ -19,6 +19,8 @@ import ButtonWithCheckbox from '../../situation-room/button-checkbox'
 // import LineChart from '../chart/line-chart'
 import { fetchCheckboxes, fetchTimeRanges, TimeRangeOption, CheckboxOption } from '@/lib/api'
 import { Column } from '@/modules/models/anomaly-predictions'
+import MultiSelectDropdown from '../button/dropdownCombination'
+import FilterPanel from '../button/filterPanel'
 // import { AnomalyContext } from '@/contexts/anomaly-context'
 
 
@@ -50,6 +52,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     // anomalyCategory,
     // anomalyData,
 }) => {
+    const optionsMultiple = ["Name", "Email address", "Description", "User ID"];
     const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges);
     const [selectedRange, setSelectedRange] = useState<string>('Last 15 minute');
     // const [hasErrorTimeRange, setHasErrorTimeRange] = useState<boolean>(false);
@@ -148,12 +151,12 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                 setData(newData);
 
                 console.log('Data and columns updated after submit');
-
                 // Update the pageIndex based on the response from the API
                 if (result.data.page) {
+                    const fixData = result.data.page
                     setPagination((prev) => ({
                         ...prev,
-                        pageIndex: result.data.page,
+                        pageIndex: fixData,
                     }));
                     console.log('Page index updated to:', result.data.page);
                 }
@@ -295,6 +298,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             console.error('Error fetching data for selectedLog:', error);
         }
     };
+
     // Function to fetch data based on pagination
     const fetchDataByPagination = async (page: number, limit: number, filter: string[] = [], date_range: number) => {
         console.log('Fetching data for page:', page);
@@ -426,9 +430,9 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     return (
         <div className="flex flex-col gap-10 px-14 py-12 card-style">
             <div className="flex flex-row justify-between items-center">
-                <div className="flex flex-row gap-12">
+                <div className="flex flex-row gap-10">
                     <div className="flex flex-col gap-4">
-                        <Typography variant="h5" component="h5" color="white" sx={{ lineHeight: 'normal' }}>
+                        <Typography variant="h5" component="h5" color="white">
                             Filter Anomaly By
                         </Typography>
                         <div className="flex flex-row gap-2">
@@ -460,6 +464,10 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                         </button>
                     </div>
                 </div>
+                <FilterPanel />
+                {/* <div className="flex self-end w-64">
+                    <MultiSelectDropdown options={optionsMultiple} />
+                </div> */}
                 <DropdownRange timeRanges={timeRanges} onRangeChange={handleRangeChange} />
             </div>
             <div className="flex flex-col gap-6">

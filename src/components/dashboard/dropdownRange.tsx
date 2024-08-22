@@ -38,11 +38,11 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
     }, [isOpen]);
 
     return (
-        <div className="flex econtent-end relative inline-block text-left self-end" ref={dropdownRef}>
+        <div className="flex content-end relative inline-block text-left self-end" ref={dropdownRef}>
             <button
                 type="button"
                 onClick={toggleDropdown}
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center"
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm py-3 ps-4 pe-9   text-center inline-flex items-center"
             >
                 {selectedRange || "Select time range"}
                 <svg
@@ -64,7 +64,7 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
 
             {isOpen && (
                 <div
-                    className="z-50 absolute right-0 mt-2 w-44 bg-gray-700 divide-y divide-gray-100 rounded-lg shadow"
+                    className="z-50 absolute right-0 mt-2 w-44 bg-white divide-y divide-gray-100 rounded-lg shadow"
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="dropdownDefaultButton"
@@ -75,7 +75,7 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
                                 <a
                                     href="#"
                                     onClick={() => handleRangeChange(rangeKey)}
-                                    className="block px-4 py-2 hover:bg-gray-600 text-white"
+                                    className="block px-4 py-2 hover:bg-gray-100 text-gray-800"
                                 >
                                     {rangeKey}
                                 </a>

@@ -1,6 +1,6 @@
 import { get } from '@/common/api'
 import { ApiResponse, PaginatedResponse } from '@/common/api/type'
-import { CheckboxOptionResponse, HistoricalAnomalyLogApmResponse, HistoricalAnomalyLogBrimoResponse, HistoricalAnomalyNetworkResponse, HistoricalAnomalySecurityResponse, HistoricalAnomalyUtilizationResponse } from "@/modules/models/anomaly-predictions"
+import { CheckboxOptionResponse, HistoricalAnomalyNetworkResponse, HistoricalAnomalySecurityResponse, HistoricalAnomalyUtilizationResponse } from "@/modules/models/anomaly-predictions"
 
 const GetHistoricalLogAnomalies = async (type: string, limit: number, page: number, filter: string[] = [], date_range: number) => {
   let endPoint = `anomaly-predictions?type=${type}&limit=${limit}&page=${page}&date_range=${date_range}`

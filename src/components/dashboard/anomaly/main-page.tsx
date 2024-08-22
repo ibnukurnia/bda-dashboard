@@ -5,9 +5,9 @@ import { useContext, useEffect, useRef, useState } from 'react'
 import { Box, Stack, Typography } from '@mui/material'
 import updatedAnomalyData from '@/lib/data/anomaly'
 import { ArrowLeft, ArrowRight } from 'react-feather'
-import DatePickerComponent from '../overview/date-picker'
+import DatePickerComponent from '../overview/button/date-picker'
 import BarChart from '../anomaly/chart/bar-chart'
-import DropdownTabs from './dropdownTabs'
+import DropdownTabs from './button/dropdownTabs'
 import Dropdown from '../dropdownRange';
 import { Anomaly } from '@/types/anomaly'; // Import the Anomaly type
 import {
