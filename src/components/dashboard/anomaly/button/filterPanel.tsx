@@ -1,122 +1,159 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-interface FilterOption {
+interface CheckboxOption {
+    id: string;
     label: string;
-    value: string;
-    count: number;
+    type: string;
 }
 
-const FilterPanel: React.FC = () => {
+interface FilterPanelProps {
+    checkboxOptions: CheckboxOption[];
+    servicesOptions: string[];
+    onApplyFilters: (filters: { selectedAnomalies: string[], selectedServices: string[] }) => void; // Separate filters for anomalies and services
+    onResetFilters: () => void;
+}
+
+const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOptions, onApplyFilters, onResetFilters }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-    const [selectedRadio, setSelectedRadio] = useState<string>('Score Tertinggi');
+    const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
+    const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
+    const panelRef = useRef<HTMLDivElement>(null);
 
     const togglePanel = () => {
         setIsOpen(!isOpen);
     };
 
-    const handleCheckboxChange = (value: string) => {
-        setSelectedOptions(prev =>
-            prev.includes(value) ? prev.filter(option => option !== value) : [...prev, value]
-        );
+    const handleAnomalyChange = (value: string) => {
+        setSelectedAnomalyOptions((prev) => (
+            prev.includes(value)
+                ? prev.filter((option) => option !== value)
+                : [...prev, value]
+        ));
     };
 
-    const handleRadioChange = (value: string) => {
-        setSelectedRadio(value);
-    };
-
-    const handleReset = () => {
-        setSelectedOptions([]);
-        setSelectedRadio('Score Tertinggi');
+    const handleServiceChange = (value: string) => {
+        setSelectedServiceOptions((prev) => (
+            prev.includes(value)
+                ? prev.filter((option) => option !== value)
+                : [...prev, value]
+        ));
     };
 
     const handleApply = () => {
-        console.log('Filters applied:', selectedOptions, selectedRadio);
+        onApplyFilters({
+            selectedAnomalies: selectedAnomalyOptions,
+            selectedServices: selectedServiceOptions,
+        });
         setIsOpen(false); // Close the panel after applying filters
     };
 
-    const checkboxOptions: FilterOption[] = [
-        { label: 'Internal BRI', value: 'internal-bri', count: 203520 },
-        { label: 'PNM', value: 'pnm', count: 179749 },
-        { label: 'Microsite', value: 'microsite', count: 0 },
-        { label: 'Indogrosir', value: 'indogrosir', count: 804 },
-        { label: 'Pojok Digital BRIRINS', value: 'pojok-digital-bririns', count: 0 },
-    ];
+    const handleReset = () => {
+        setSelectedAnomalyOptions([]);
+        setSelectedServiceOptions([]);
+        onResetFilters();
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+                setIsOpen(false); // Close the panel when clicking outside of it
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
 
     return (
-        <div>
+        <div className="flex self-end z-50">
             <button
-                className="bg-orange-500 text-white p-2 rounded-lg"
+                className="font-medium rounded-lg text-sm py-3 ps-4 pe-9 text-white text-center bg-blue-700 hover:bg-blue-800 inline-flex items-center gap-2"
                 onClick={togglePanel}
             >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="size-4"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"
+                    />
+                </svg>
                 Filter
             </button>
-
             {isOpen && (
                 <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-white rounded-lg p-6 w-96">
-                        <h2 className="text-xl font-semibold mb-4">Filter Pipeline Akuisisi</h2>
+                    <div ref={panelRef} className="bg-white rounded-lg p-6 w-96 flex flex-col gap-1">
+                        <h2 className="text-xl font-semibold mb-4 text-center">Filter</h2>
 
-                        <div className="mb-4">
-                            <h3 className="font-semibold mb-2">Urutkan</h3>
-                            <div>
-                                <label className="flex items-center">
-                                    <input
-                                        type="radio"
-                                        name="sort"
-                                        value="Jarak Terdekat"
-                                        checked={selectedRadio === 'Jarak Terdekat'}
-                                        onChange={(e) => handleRadioChange(e.target.value)}
-                                        className="mr-2"
-                                    />
-                                    Jarak Terdekat
-                                </label>
-                                <label className="flex items-center mt-2">
-                                    <input
-                                        type="radio"
-                                        name="sort"
-                                        value="Score Tertinggi"
-                                        checked={selectedRadio === 'Score Tertinggi'}
-                                        onChange={(e) => handleRadioChange(e.target.value)}
-                                        className="mr-2"
-                                    />
-                                    Score Tertinggi
-                                </label>
+                        <div className="">
+                            <h3 className="font-semibold mb-4">Anomaly</h3>
+                            <div className="overflow-y-auto max-h-32">
+                                {checkboxOptions.length > 0 ? (
+                                    checkboxOptions.map((option) => (
+                                        <label key={option.id} className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    value={option.id}
+                                                    checked={selectedAnomalyOptions.includes(option.id)}
+                                                    onChange={() => handleAnomalyChange(option.id)}
+                                                    className="mr-2"
+                                                />
+                                                {option.label}
+                                            </div>
+                                        </label>
+                                    ))
+                                ) : (
+                                    <p>No options available</p>
+                                )}
                             </div>
                         </div>
 
-                        <div className="mb-4">
-                            <h3 className="font-semibold mb-2">Sumber Data</h3>
-                            {checkboxOptions.map(option => (
-                                <label key={option.value} className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            value={option.value}
-                                            checked={selectedOptions.includes(option.value)}
-                                            onChange={() => handleCheckboxChange(option.value)}
-                                            className="mr-2"
-                                        />
-                                        {option.label}
-                                    </div>
-                                    <span>{option.count}</span>
-                                </label>
-                            ))}
+                        <hr className="w-auto h-1 mx-auto bg-gray-700 border-0 rounded" />
+
+                        <div className="">
+                            <h3 className="font-semibold mb-4">Services</h3>
+                            <div className="overflow-y-auto max-h-32">
+                                {servicesOptions.length > 0 ? (
+                                    servicesOptions.map((service, index) => (
+                                        <label key={index} className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    value={service}
+                                                    checked={selectedServiceOptions.includes(service)}
+                                                    onChange={() => handleServiceChange(service)}
+                                                    className="mr-2"
+                                                />
+                                                {service}
+                                            </div>
+                                        </label>
+                                    ))
+                                ) : (
+                                    <p>No services available</p>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="flex justify-between">
-                            <button
-                                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg"
-                                onClick={handleReset}
-                            >
+                        <div className="flex justify-between mt-6 space-x-4">
+                            <button className="bg-white text-blue-600 border border-primary-blue px-4 py-2 rounded-lg flex-1 text-center" onClick={handleReset}>
                                 RESET
                             </button>
-                            <button
-                                className="bg-orange-500 text-white px-4 py-2 rounded-lg"
-                                onClick={handleApply}
-                            >
-                                FILTER
-
+                            <button className="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 rounded-lg flex-1 text-center" onClick={handleApply}>
+                                TERAPKAN
                             </button>
                         </div>
                     </div>

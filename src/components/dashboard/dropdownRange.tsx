@@ -42,7 +42,7 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
             <button
                 type="button"
                 onClick={toggleDropdown}
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm py-3 ps-4 pe-9   text-center inline-flex items-center"
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm py-3 ps-4 pe-9 text-center inline-flex items-center"
             >
                 {selectedRange || "Select time range"}
                 <svg

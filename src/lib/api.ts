@@ -1,6 +1,6 @@
 import { get } from "@/common/api";
 import { ApiResponse, PaginatedResponse } from "@/common/api/type";
-import { CheckboxOptionResponse } from "@/modules/models/anomaly-predictions";
+import { AnomalyOptionResponse, ServicesOptionResponse } from "@/modules/models/anomaly-predictions";
 
 // lib/api.ts
 export interface TimeRangeOption {
@@ -13,6 +13,11 @@ export interface CheckboxOption {
     label: string;    // Corresponds to the "comment" field in the API response
     type: string;     // Corresponds to the "type" field in the API response
 }
+
+// export interface ServicesOption {
+//     services: string[];  // This represents the array of columns in the response
+// }
+
 
 export const fetchTimeRanges = async (): Promise<TimeRangeOption[]> => {
     try {
@@ -28,8 +33,16 @@ export const fetchTimeRanges = async (): Promise<TimeRangeOption[]> => {
 };
 
 
-export const fetchCheckboxes = async (table: string = "apm"): Promise<ApiResponse<CheckboxOptionResponse>> => {
-    const response: ApiResponse<CheckboxOptionResponse> = await get(`anomaly-predictions/filter-column?table=${table}`, {
+export const fetchAnomalyOption = async (table: string = "apm"): Promise<ApiResponse<AnomalyOptionResponse>> => {
+    const response: ApiResponse<AnomalyOptionResponse> = await get(`anomaly-predictions/filter-column?table=${table}`, {
+        withAuth: true,
+    });
+
+    return response;
+};
+
+export const fetchServicesOption = async (type: string = "apm"): Promise<ApiResponse<ServicesOptionResponse>> => {
+    const response: ApiResponse<ServicesOptionResponse> = await get(`log-services?type=${type}`, {
         withAuth: true,
     });
 
