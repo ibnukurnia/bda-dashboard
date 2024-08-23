@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { GetHistoricalLogAnomalies, GetMetricAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { Box, Typography } from '@mui/material'
 import {
     ColumnDef,
@@ -18,7 +18,7 @@ import SynchronizedCharts from '../../overview/chart/synchronized-charts'
 // import BarChart from '../chart/bar-chart'
 // import LineChart from '../chart/line-chart'
 import { fetchAnomalyOption, fetchServicesOption, CheckboxOption } from '@/lib/api'
-import { Column } from '@/modules/models/anomaly-predictions'
+import { Column, MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions'
 // import MultiSelectDropdown from '../button/dropdownCombination'
 import FilterPanel from '../button/filterPanel'
 // import { AnomalyContext } from '@/contexts/anomaly-context'
@@ -59,9 +59,10 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [filterServicesOptions, setFilterServiceOptions] = useState<string[]>([]);
     const [selectedServicesOptions, setSelectedServiceOptions] = useState<string[]>([]);
-    const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+    // const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
     const [isLoadingFilter, setIsLoadingFilter] = useState<boolean>(true);
     const [hasErrorFilter, setHasErrorFilter] = useState<boolean>(false);
+    const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
     const [data, setData] = useState<any[]>([])
     const [totalPages, setTotalPages] = useState<number>(1);
@@ -107,27 +108,17 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             case 'Log APM':
                 return (
                     <SynchronizedCharts
-                        seriesNew={seriesNew} // Ensure seriesNew is relevant for Log APM
-                        categories={categories} // Ensure categories are relevant for Log APM
+                        dataCharts={dataMetric} // Ensure dataMetric is relevant for Log APM
                         height={300}
                         width="100%"
-                        title="APM Log Chart"
-                        lineColors={['#FF5733', '#000000', '#546E7A']}
-                        yAxisMin={0}
-                        yAxisMax={150}
                     />
                 );
             case 'Log Brimo':
                 return (
                     <SynchronizedCharts
-                        seriesNew={seriesNew} // Ensure seriesNew is relevant for Log Brimo
-                        categories={categories} // Ensure categories are relevant for Log Brimo
+                        dataCharts={dataMetric} // Ensure dataMetric is relevant for Log Brimo
                         height={300}
                         width="100%"
-                        title="Brimo Log Chart"
-                        lineColors={['#FF5733', '#000000', '#546E7A']}
-                        yAxisMin={0}
-                        yAxisMax={150}
                     />
                 );
             default:
@@ -141,53 +132,70 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
 
     const handleRangeChange = async (rangeKey: string) => {
         const type = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : '';
+        const selectedTimeRange = defaultTimeRanges[rangeKey]; // Convert rangeKey to number
 
         setSelectedRange(rangeKey);
-        const selectedTimeRange = defaultTimeRanges[rangeKey]; // Convert rangeKey to number
-        console.log(selectedTimeRange)
 
         try {
             const filtersAnomaly = selectedAnomalyOptions.length !== 0 ? selectedAnomalyOptions : [];
             const filterServices = selectedServicesOptions.length !== 0 ? selectedServicesOptions : [];
-            console.log(selectedAnomalyOptions, selectedServicesOptions)
-            const result = await GetHistoricalLogAnomalies(type, 10, 1, filtersAnomaly, filterServices, selectedTimeRange);
 
-            if (result.data && result.data.rows.length > 0) {
-                setTotalPages(result.data.total_pages);
-                const newData = result.data.rows.map((row: any) => {
-                    const mappedRow: any = {};
-                    result.data?.columns.forEach((col: any) => {
-                        mappedRow[col.key] = row[col.key];
+            // Hit the GetHistoricalLogAnomalies API
+            const logResult = await GetHistoricalLogAnomalies(type, 10, 1, filtersAnomaly, filterServices, selectedTimeRange);
+
+            if (logResult.data) {
+                const { rows, columns, total_pages, page } = logResult.data;
+
+                if (rows.length > 0) {
+                    setTotalPages(total_pages);
+
+                    const newData = rows.map((row: any) => {
+                        const mappedRow: any = {};
+                        columns.forEach((col: any) => {
+                            mappedRow[col.key] = row[col.key];
+                        });
+                        return mappedRow;
                     });
-                    return mappedRow;
-                });
 
-                setData(newData); // Update the table data
+                    setData(newData); // Update the table data
 
-                // If the API provides a page index, use it; otherwise, set to the current page (1)
-                const updatedPageIndex = result.data.page || 1;
-
-                setPagination((prev) => ({
-                    ...prev,
-                    pageIndex: updatedPageIndex,
-                }));
+                    // Update the pagination
+                    const updatedPageIndex = page || 1;
+                    setPagination((prev) => ({
+                        ...prev,
+                        pageIndex: updatedPageIndex,
+                    }));
+                } else {
+                    // Reset the table data and pagination if no data is found
+                    setData([]);
+                    setPagination((prev) => ({
+                        ...prev,
+                        pageIndex: 1,
+                    }));
+                }
             } else {
-                // If no data is found, reset the table data and pagination
-                setData([]);
-                setPagination((prev) => ({
-                    ...prev,
-                    pageIndex: 1, // Reset pageIndex to 1
-                }));
+                console.warn('API response data is null or undefined');
+            }
+
+            // Hit the GetMetricAnomalies API
+            const metricResult = await GetMetricAnomalies(type, selectedTimeRange, filterServices);
+
+            if (metricResult.data) {
+                setDataMetric(metricResult.data);
+            } else {
+                console.warn('API response data is null or undefined');
             }
         } catch (error) {
             console.error('Error fetching data:', error);
-            // In case of error, you might also want to reset the pagination
+            // Reset pagination in case of an error
             setPagination((prev) => ({
                 ...prev,
-                pageIndex: 1, // Reset pageIndex to 1 in case of error
+                pageIndex: 1,
             }));
         }
+
     };
+
 
 
     const fetchDataByLog = async (
@@ -200,13 +208,14 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         try {
             // Call the API to get historical log anomalies
             const result = await GetHistoricalLogAnomalies(logType, limit, page, selectedAnomalyOptions, selectedServicesOptions, date_range);
-
             if (result.data) {
+                const { columns, rows, total_pages } = result.data;
+
                 // Update the total number of pages based on the API response
-                setTotalPages(result.data.total_pages);
+                setTotalPages(total_pages);
 
                 // Map the columns from the API response to the format required by the table
-                const newColumns = result.data.columns.map((column: any) => ({
+                const newColumns = columns.map((column: any) => ({
                     id: column.key,
                     header: column.title,
                     accessorKey: column.key,
@@ -214,9 +223,9 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                 setColumns(newColumns);
 
                 // Map the rows from the API response to the format required by the table
-                const newData = result.data.rows.map((row: any) => {
+                const newData = rows.map((row: any) => {
                     const mappedRow: any = {};
-                    result.data?.columns.forEach((col: any) => {
+                    columns.forEach((col: any) => {
                         mappedRow[col.key] = row[col.key];
                     });
                     return mappedRow;
@@ -225,14 +234,23 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                 // Update the table data
                 setData(newData);
             } else {
-                // Log a warning if the API response is missing data
                 console.warn('API response data is null or undefined');
             }
+
+
+            // Call the API to get metric anomalies
+            const metricResult = await GetMetricAnomalies(logType, date_range, selectedServicesOptions);
+
+            if (metricResult.data) {
+                setDataMetric(metricResult.data);
+            } else {
+                console.warn('API response data is null or undefined for metrics');
+            }
         } catch (error) {
-            // Log an error if the API call fails
             console.error('Error fetching data for selectedLog:', error);
         }
     };
+
 
     // Function to fetch data based on pagination
     const fetchDataByPagination = async (page: number, limit: number, filter: string[] = [], date_range: number) => {
@@ -336,12 +354,39 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     };
 
     const previousPage = () => {
+        const logType = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : '';
+        const selectedTimeRangeValue = timeRanges[selectedRange];
+        console.log(selectedTimeRangeValue)
+
         setPagination((prev) => {
             const newPageIndex = Math.max(prev.pageIndex - 1, 1);
-            fetchDataByPagination(newPageIndex, prev.pageSize, [], 15); // Fetch data for the previous page
+
+            if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length === 0) {
+                // If only anomaly options are selected
+                GetHistoricalLogAnomalies(logType, prev.pageSize, newPageIndex, selectedAnomalyOptions, [], selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            } else if (selectedServicesOptions.length !== 0 && selectedAnomalyOptions.length === 0) {
+                // If only service options are selected
+                GetHistoricalLogAnomalies(logType, prev.pageSize, newPageIndex, [], selectedServicesOptions, selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0) {
+                // If both anomaly and service options are selected
+                GetHistoricalLogAnomalies(logType, prev.pageSize, newPageIndex, selectedAnomalyOptions, selectedServicesOptions, selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            } else {
+                // If no filters are selected, proceed with normal pagination
+                fetchDataByPagination(newPageIndex, prev.pageSize, [], selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            }
+
             return { ...prev, pageIndex: newPageIndex };
         });
     };
+
 
     const loadAnomalyFilterOptions = async () => {
         try {

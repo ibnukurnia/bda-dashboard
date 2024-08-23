@@ -1,36 +1,33 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
+import { Typography } from '@mui/material';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 interface SynchronizedChartsProps {
-    seriesNew: {
-        name: string;
-        data: number[][];
+    dataCharts: {
+        title: string,
+        series: {
+            name: string
+            data: [
+                Date,
+                number,
+            ],
+        }[]
     }[];
-    categories: string[];
     height: number;
     width: string;
-    title: string;
-    lineColors: string[];
-    yAxisMin: number;
-    yAxisMax: number;
 }
 
 const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
-    seriesNew,
-    categories,
+    dataCharts,
     height,
     width,
-    title,
-    lineColors,
-    yAxisMin,
-    yAxisMax
 }) => {
     return (
         <div className="flex flex-col gap-4">
-            {seriesNew.map((series, index) => {
+            {dataCharts && dataCharts.map((metric, index) => {
                 const chartOptions: ApexOptions = {
                     chart: {
                         id: `sync-${index}`,
@@ -58,16 +55,20 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                     },
                     xaxis: {
                         type: 'datetime',
-                        categories: categories,
                         labels: {
+                            formatter(value, _, __) {
+                                const date = new Date(value);
+                                return date.toLocaleDateString(
+                                    'id-ID',
+                                    { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }
+                                )
+                            },
                             style: {
                                 colors: 'white', // White color for x-axis text
                             },
                         },
                     },
                     yaxis: {
-                        min: yAxisMin,
-                        max: yAxisMax,
                         labels: {
                             style: {
                                 colors: 'white', // White color for y-axis text
@@ -75,22 +76,30 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         },
                     },
                     stroke: {
-                        curve: 'straight',
+                        curve: 'smooth',
+                        width: 1,
                     },
-                    colors: [lineColors[index % lineColors.length]], // Ensure color is applied correctly
                     grid: {
                         row: {
                             colors: ['transparent', 'transparent'],
                             opacity: 1.5,
                         },
                     },
+                    legend: {
+                        labels: {
+                            colors: 'white'
+                        }
+                    }
                 };
 
                 return (
                     <div key={index}>
+                        <Typography variant="h6" component="h6" color="white">
+                            {metric.title}
+                        </Typography>
                         <Chart
                             options={chartOptions}
-                            series={[series]}
+                            series={metric.series as ApexAxisChartSeries}
                             type="line"
                             height={height}
                             width={width}

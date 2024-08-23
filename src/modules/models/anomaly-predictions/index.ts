@@ -8,6 +8,17 @@ export interface HistoricalAnomalyLogApmResponse {
   count_errors_500: number
 }
 
+export interface MetricLogAnomalyResponse {
+  title: string,
+  series: {
+    name: string
+    data: [
+      Date,
+      number,
+    ],
+  }[]
+}
+
 export interface TimeRangeOption {
   label: string;
   value: number;
