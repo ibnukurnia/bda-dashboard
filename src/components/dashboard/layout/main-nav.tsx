@@ -48,9 +48,9 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
       case '/dashboard/anomaly-detection':
         title = 'Anomaly Detection';
         break;
-      case '/dashboard/situation-room':
-        title = 'Situation Room';
-        break;
+      // case '/dashboard/situation-room':
+      //   title = 'Situation Room';
+      //   break;
       default:
         break;
     }
@@ -74,9 +74,9 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
       case '/dashboard/anomaly-detection':
         alert = 3
         break;
-      case '/situation':
-        alert = 1
-        break;
+      // case '/situation':
+      //   alert = 1
+      //   break;
       default:
         break;
     }
