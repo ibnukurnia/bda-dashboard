@@ -136,64 +136,68 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
 
         setSelectedRange(rangeKey);
 
-        try {
-            const filtersAnomaly = selectedAnomalyOptions.length !== 0 ? selectedAnomalyOptions : [];
-            const filterServices = selectedServicesOptions.length !== 0 ? selectedServicesOptions : [];
+        const filtersAnomaly = selectedAnomalyOptions.length !== 0 ? selectedAnomalyOptions : [];
+        const filterServices = selectedServicesOptions.length !== 0 ? selectedServicesOptions : [];
 
-            // Hit the GetHistoricalLogAnomalies API
-            const logResult = await GetHistoricalLogAnomalies(type, 10, 1, filtersAnomaly, filterServices, selectedTimeRange);
-
-            if (logResult.data) {
-                const { rows, columns, total_pages, page } = logResult.data;
-
-                if (rows.length > 0) {
-                    setTotalPages(total_pages);
-
-                    const newData = rows.map((row: any) => {
-                        const mappedRow: any = {};
-                        columns.forEach((col: any) => {
-                            mappedRow[col.key] = row[col.key];
+        // Hit the GetHistoricalLogAnomalies API
+        GetHistoricalLogAnomalies(type, 10, 1, filtersAnomaly, filterServices, selectedTimeRange)
+            .then(result => {
+                if (result.data) {
+                    const { rows, columns, total_pages, page } = result.data;
+    
+                    if (rows.length > 0) {
+                        setTotalPages(total_pages);
+    
+                        const newData = rows.map((row: any) => {
+                            const mappedRow: any = {};
+                            columns.forEach((col: any) => {
+                                mappedRow[col.key] = row[col.key];
+                            });
+                            return mappedRow;
                         });
-                        return mappedRow;
-                    });
-
-                    setData(newData); // Update the table data
-
-                    // Update the pagination
-                    const updatedPageIndex = page || 1;
-                    setPagination((prev) => ({
-                        ...prev,
-                        pageIndex: updatedPageIndex,
-                    }));
+    
+                        setData(newData); // Update the table data
+    
+                        // Update the pagination
+                        const updatedPageIndex = page || 1;
+                        setPagination((prev) => ({
+                            ...prev,
+                            pageIndex: updatedPageIndex,
+                        }));
+                    } else {
+                        // Reset the table data and pagination if no data is found
+                        setData([]);
+                        setPagination((prev) => ({
+                            ...prev,
+                            pageIndex: 1,
+                        }));
+                    }
                 } else {
-                    // Reset the table data and pagination if no data is found
-                    setData([]);
-                    setPagination((prev) => ({
-                        ...prev,
-                        pageIndex: 1,
-                    }));
+                    console.warn('API response data is null or undefined');
                 }
-            } else {
-                console.warn('API response data is null or undefined');
-            }
+            })
+            .catch(error => {
+                console.error('Error fetching historical anomalies on date range change:', error);
+                // Reset pagination in case of an error
+                setPagination((prev) => ({
+                    ...prev,
+                    pageIndex: 1,
+                }));
+            })
 
-            // Hit the GetMetricAnomalies API
-            const metricResult = await GetMetricAnomalies(type, selectedTimeRange, filterServices);
 
-            if (metricResult.data) {
-                setDataMetric(metricResult.data);
-            } else {
-                console.warn('API response data is null or undefined');
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            // Reset pagination in case of an error
-            setPagination((prev) => ({
-                ...prev,
-                pageIndex: 1,
-            }));
-        }
-
+        // Hit the GetMetricAnomalies API
+        GetMetricAnomalies(type, selectedTimeRange, filterServices)
+            .then(result => {
+                if (result.data) {
+                    setDataMetric(result.data);
+                } else {
+                    console.warn('API response data is null or undefined');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching metric anomalies on date range change:', error);
+            })
     };
 
 
@@ -205,9 +209,9 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         filter: string[] = [],
         date_range: number
     ) => {
-        try {
-            // Call the API to get historical log anomalies
-            const result = await GetHistoricalLogAnomalies(logType, limit, page, selectedAnomalyOptions, selectedServicesOptions, date_range);
+        // Call the API to get historical log anomalies
+        GetHistoricalLogAnomalies(logType, limit, page, selectedAnomalyOptions, selectedServicesOptions, date_range)
+        .then(result => {
             if (result.data) {
                 const { columns, rows, total_pages } = result.data;
 
@@ -236,19 +240,23 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             } else {
                 console.warn('API response data is null or undefined');
             }
+        })
+        .catch(error => {
+            console.error('Error fetching data historical anomalies by log:', error);
+        })
 
-
-            // Call the API to get metric anomalies
-            const metricResult = await GetMetricAnomalies(logType, date_range, selectedServicesOptions);
-
-            if (metricResult.data) {
-                setDataMetric(metricResult.data);
-            } else {
-                console.warn('API response data is null or undefined for metrics');
-            }
-        } catch (error) {
-            console.error('Error fetching data for selectedLog:', error);
-        }
+        // Call the API to get metric anomalies
+        GetMetricAnomalies(logType, date_range, selectedServicesOptions)
+            .then(result => {
+                if (result.data) {
+                    setDataMetric(result.data);
+                } else {
+                    console.warn('API response data is null or undefined for metrics');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data metric anomalies by log:', error);
+            })
     };
 
 
@@ -263,32 +271,33 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             return;
         }
 
-        try {
-            const result = await GetHistoricalLogAnomalies(type, limit, page, [], [], selectedTimeRangeValue);
+        GetHistoricalLogAnomalies(type, limit, page, [], [], selectedTimeRangeValue)
+            .then(result => {
+                if (result.data) {
+                    // Update columns and data
+                    const newColumns = result.data.columns.map((column: any) => ({
+                        id: column.key,
+                        header: column.title,
+                        accessorKey: column.key,
+                    }));
+                    setColumns(newColumns);
 
-            if (result.data) {
-                // Update columns and data
-                const newColumns = result.data.columns.map((column: any) => ({
-                    id: column.key,
-                    header: column.title,
-                    accessorKey: column.key,
-                }));
-                setColumns(newColumns);
-
-                const newData = result.data.rows.map((row: any) => {
-                    const mappedRow: any = {};
-                    result.data?.columns.forEach((col: any) => {
-                        mappedRow[col.key] = row[col.key];
+                    const newData = result.data.rows.map((row: any) => {
+                        const mappedRow: any = {};
+                        result.data?.columns.forEach((col: any) => {
+                            mappedRow[col.key] = row[col.key];
+                        });
+                        return mappedRow;
                     });
-                    return mappedRow;
-                });
-                setData(newData);
-            } else {
-                console.warn('API response data is null or undefined');
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
+                    setData(newData);
+                } else {
+                    console.warn('API response data is null or undefined');
+                }
+                
+            })
+            .catch (error => {
+                console.error('Error fetching historical anomalies by pagination:', error);
+            })
     };
 
     const processApiResult = (result: any) => {
@@ -461,17 +470,15 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         const type = selectedLog === 'Log APM' ? 'apm' : 'brimo';
         const timeRangeValue = timeRanges[selectedRange]; // Get the specific time range value
 
-        try {
-            // Call the API with the selected filters and time range value
-            const result = await GetHistoricalLogAnomalies(
-                type,
-                pagination.pageSize, // Use the current page size
-                1, // Start from the first page
-                selectedAnomalies,
-                selectedServices,
-                timeRangeValue || 15 // Use the selected time range or fallback to 15 minutes
-            );
-
+        // Call the API with the selected filters and time range value
+        GetHistoricalLogAnomalies(
+            type,
+            pagination.pageSize, // Use the current page size
+            1, // Start from the first page
+            selectedAnomalies,
+            selectedServices,
+            timeRangeValue || 15 // Use the selected time range or fallback to 15 minutes
+        ).then(result => {
             if (result.data) {
                 // Update the total number of pages based on the API response
                 setTotalPages(result.data.total_pages);
@@ -505,10 +512,26 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                 // Log a warning if the API response is missing data
                 console.warn('API response data is null or undefined');
             }
-        } catch (error) {
+        })
+        .catch(error => {
             // Log an error if the API call fails
-            console.error('Error fetching data for selectedLog:', error);
-        }
+            console.error('Error fetching historical anomalies on filter applied:', error);
+        })
+
+        GetMetricAnomalies(
+            type,
+            timeRangeValue || 15, // Use the selected time range or fallback to 15 minutes
+            selectedServices,
+        ).then(result => {
+                if (result.data) {
+                    setDataMetric(result.data);
+                } else {
+                    console.warn('API response data is null or undefined');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching metric anomalies on filter applied:', error);
+            })
     };
 
     // Initial fetch when component mounts or selectedLog changes
