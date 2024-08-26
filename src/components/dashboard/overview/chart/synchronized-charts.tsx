@@ -13,7 +13,7 @@ interface SynchronizedChartsProps {
             data: [
                 Date,
                 number,
-            ],
+            ][],
         }[]
     }[];
     height: number;
@@ -25,9 +25,34 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     height,
     width,
 }) => {
+    if (!dataCharts || dataCharts.length === 0) {
+        return (
+            <div className="text-center text-2xl font-semibold text-white">
+                DATA IS NOT AVAILABLE
+            </div>
+        )
+    }
+
     return (
         <div className="flex flex-col gap-4">
             {dataCharts && dataCharts.map((metric, index) => {
+                const { minDate, maxDate } = dataCharts[index].series.reduce(
+                    (acc, seriesItem) => {
+                        const seriesData = seriesItem.data;
+                        if (seriesData.length === 0) return acc
+
+                        const firstDate = new Date(seriesData[0][0])
+                        const lastDate = new Date(seriesData[seriesData.length-1][0])
+                        
+                        // Update min and max dates in the accumulator
+                        if (firstDate.getTime() < acc.minDate.getTime()) acc.minDate = firstDate;
+                        if (lastDate.getTime() > acc.maxDate.getTime()) acc.maxDate = lastDate;
+                
+                        return acc;
+                    },
+                    { minDate: new Date('9999-12-31'), maxDate: new Date('1970-01-01') } // Initial accumulator values
+                );
+                
                 const chartOptions: ApexOptions = {
                     chart: {
                         id: `sync-${index}`,
@@ -51,6 +76,22 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                     });
                                 });
                             },
+                            beforeZoom : (e, {xaxis}) => {
+                                // Adjust the zoom range if it goes beyond the limits
+                                if (xaxis.min < minDate) {
+                                  xaxis.min = minDate;
+                                }
+                                if (xaxis.max > maxDate) {
+                                  xaxis.max = maxDate;
+                                }
+                        
+                                return {
+                                  xaxis: {
+                                    min: xaxis.min,
+                                    max: xaxis.max,
+                                  },
+                                };
+                            },
                         },
                     },
                     xaxis: {
@@ -66,6 +107,10 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             style: {
                                 colors: 'white', // White color for x-axis text
                             },
+                            rotate: 0,
+                        },
+                        tooltip: {
+                            enabled: false,
                         },
                     },
                     yaxis: {
@@ -89,7 +134,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         labels: {
                             colors: 'white'
                         }
-                    }
+                    },
                 };
 
                 return (
