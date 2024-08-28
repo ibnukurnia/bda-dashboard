@@ -51,6 +51,9 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
       case '/dashboard/situation-room':
         title = 'Situation Room';
         break;
+      case '/dashboard/forecasting':
+        title = 'Forecasting';
+        break;
       default:
         break;
     }
