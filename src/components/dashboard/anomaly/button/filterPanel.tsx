@@ -72,7 +72,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
     }, [isOpen]);
 
     return (
-        <div className="flex self-end z-50">
+        <div className="flex self-end">
             <button
                 className="font-medium rounded-lg text-sm py-3 ps-4 pe-9 text-white text-center bg-blue-700 hover:bg-blue-800 inline-flex items-center gap-2"
                 onClick={togglePanel}
@@ -94,13 +94,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
                 Filter
             </button>
             {isOpen && (
-                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center">
+                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
                     <div ref={panelRef} className="bg-white rounded-lg p-6 w-96 flex flex-col gap-1">
-                        <h2 className="text-xl font-semibold mb-4 text-center">Filter</h2>
+                        <h2 className="text-xl font-semibold mb-10 text-center">Multiple Filter</h2>
 
                         <div className="">
-                            <h3 className="font-semibold mb-4">Anomaly</h3>
-                            <div className="overflow-y-auto max-h-32">
+                            <h3 className="font-semibold mb-3 text-lg">Anomaly</h3>
+                            <div className="overflow-y-auto max-h-40">
                                 {checkboxOptions.length > 0 ? (
                                     checkboxOptions.map((option) => (
                                         <label key={option.id} className="flex items-center justify-between mb-2">
@@ -125,8 +125,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
                         <hr className="w-auto h-1 mx-auto bg-gray-700 border-0 rounded" />
 
                         <div className="">
-                            <h3 className="font-semibold mb-4">Services</h3>
-                            <div className="overflow-y-auto max-h-32">
+                            <h3 className="font-semibold mb-3 text-lg">Services</h3>
+                            <div className="overflow-y-auto max-h-40">
                                 {servicesOptions.length > 0 ? (
                                     servicesOptions.map((service, index) => (
                                         <label key={index} className="flex items-center justify-between mb-2">
@@ -148,7 +148,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
                             </div>
                         </div>
 
-                        <div className="flex justify-between mt-6 space-x-4">
+                        <div className="flex justify-between mt-10 space-x-4">
                             <button className="bg-white text-blue-600 border border-primary-blue px-4 py-2 rounded-lg flex-1 text-center" onClick={handleReset}>
                                 RESET
                             </button>

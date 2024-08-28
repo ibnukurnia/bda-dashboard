@@ -1,8 +1,6 @@
-import React from 'react';
-import BarChart from '../chart/bar-chart';
-import LineChart from '../chart/line-chart'; // Import LineChart component
-import { Anomaly } from '@/types/anomaly';
-import { Box, Stack, Typography } from '@mui/material';
+import React, { useContext, useEffect, useState } from 'react'
+import { GetHistoricalLogAnomalies, GetMetricAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { Box, Typography } from '@mui/material'
 import {
     ColumnDef,
     getCoreRowModel,
@@ -11,64 +9,83 @@ import {
     getSortedRowModel,
     PaginationState,
     useReactTable,
-} from '@tanstack/react-table';
-import { ArrowLeft, ArrowRight } from 'react-feather';
+} from '@tanstack/react-table'
+import { ArrowLeft, ArrowRight } from 'react-feather'
+
+import DropdownRange from '../../dropdownRange'
+import SynchronizedCharts from '../../overview/chart/synchronized-charts'
+import { fetchAnomalyOption, fetchServicesOption, CheckboxOption } from '@/lib/api'
+import { Column, MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions'
+import FilterPanel from '../button/filterPanel'
 
 interface TabUtilizationContentProps {
-    selectedUtilization: string; // Add selectedLog prop
-    anomalyData: { data: number[] }[];
-    series: { name: string, data: number[] }[];
-    categories: string[];
-    anomalyCategory: string[];
-    data: Anomaly[];
-    columns: ColumnDef<Anomaly, any>[];
-    pagination: PaginationState;
-    setPagination: React.Dispatch<React.SetStateAction<PaginationState>>;
+    selectedUtilization: string
+    series: { name: string; data: number[] }[]
+    categories: string[]
+    anomalyCategory: string[]
+    anomalyData: { data: number[] }[]
 }
+
+const defaultTimeRanges: Record<string, number> = {
+    'Last 1 minutes': 1,
+    'Last 5 minutes': 5,
+    'Last 10 minutes': 10,
+    'Last 15 minutes': 15,
+    'Last 30 minutes': 30,
+    'Last 1 hour': 60,
+    'Last 3 hours': 180,
+    'Last 12 hours': 720,
+    'Last 6 hours': 360,
+    'Last 24 hours': 1440,
+};
 
 const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
     selectedUtilization,
-    series,
-    categories,
-    anomalyData,
-    anomalyCategory,
-    data,
-    columns,
-    pagination,
-    setPagination
+    // series,
+    // categories,
 }) => {
+    const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges);
+    const [selectedRange, setSelectedRange] = useState<string>('Last 15 minute');
+    const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([]);
+    const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
+    const [filterServicesOptions, setFilterServiceOptions] = useState<string[]>([]);
+    const [selectedServicesOptions, setSelectedServiceOptions] = useState<string[]>([]);
+    const [isLoadingFilter, setIsLoadingFilter] = useState<boolean>(true);
+    const [hasErrorFilter, setHasErrorFilter] = useState<boolean>(false);
+    const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
+    const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
+    const [data, setData] = useState<any[]>([])
+    const [totalPages, setTotalPages] = useState<number>(1);
+    const [isTableLoading, setIsTableLoading] = useState(true); // Table loading state
+    const [isChartLoading, setIsChartLoading] = useState(true); // Chart loading state
+    const [pagination, setPagination] = useState({
+        pageIndex: 1, // Start from page 1
+        pageSize: 10, // Default page size
+    });
+
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        onPaginationChange: setPagination,
+        manualPagination: true, // Disable table's internal pagination
         state: {
             pagination,
         },
     });
 
-    // Determine which chart to render based on the selected log
     const renderChart = () => {
+        if (dataMetric.length === 0) {
+            return <div className='flex justify-center items-center'><div className="spinner"></div></div>
+        }
+
         switch (selectedUtilization) {
             case 'Log APM':
-                return (
-                    <BarChart
-                        series={anomalyData}
-                        categories={anomalyCategory}
-                        height={350}
-                        width="100%"
-                    />
-                );
             case 'Log Brimo':
                 return (
-                    <LineChart
-                        series={series}
-                        categories={categories}
-                        yAxisMin={0}
-                        yAxisMax={130}
+                    <SynchronizedCharts
+                        dataCharts={dataMetric} // Ensure dataMetric is relevant for Log APM/Brimo
                         height={300}
                         width="100%"
                     />
@@ -82,124 +99,588 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
         }
     };
 
+    const handleRangeChange = async (rangeKey: string) => {
+        const type = selectedUtilization === 'Log APM' ? 'apm' : 'brimo';
+        const selectedTimeRange = defaultTimeRanges[rangeKey]; // Convert rangeKey to number
+
+        // Update the selected range state
+        setSelectedRange(rangeKey);
+
+        const filtersAnomaly = selectedAnomalyOptions.length > 0 ? selectedAnomalyOptions : [];
+        const filterServices = selectedServicesOptions.length > 0 ? selectedServicesOptions : [];
+
+        try {
+            // Initiate both API calls concurrently and independently
+            const logResultPromise = GetHistoricalLogAnomalies(type, 10, 1, filtersAnomaly, filterServices, selectedTimeRange);
+            const metricResultPromise = GetMetricAnomalies(type, selectedTimeRange, filterServices);
+
+            // Handle the result of the GetHistoricalLogAnomalies API call
+            logResultPromise
+                .then(logResult => {
+                    if (logResult.data) {
+                        const { rows, columns, total_pages, page } = logResult.data;
+
+                        if (rows.length > 0) {
+                            // Update the total number of pages based on the API response
+                            setTotalPages(total_pages);
+
+                            // Map the rows to the format required by the table
+                            const newData = rows.map((row: any) => {
+                                const mappedRow: any = {};
+                                columns.forEach((col: any) => {
+                                    mappedRow[col.key] = row[col.key];
+                                });
+                                return mappedRow;
+                            });
+
+                            setData(newData); // Update the table data
+
+                            // Update the pagination state
+                            setPagination((prev) => ({
+                                ...prev,
+                                pageIndex: page || 1,
+                            }));
+                        } else {
+                            // Reset the table data and pagination if no data is found
+                            setData([]);
+                            setPagination((prev) => ({
+                                ...prev,
+                                pageIndex: 1,
+                            }));
+                        }
+                    } else {
+                        console.warn('API response data is null or undefined');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching historical log anomalies:', error);
+                    // Reset pagination in case of an error
+                    setPagination((prev) => ({
+                        ...prev,
+                        pageIndex: 1,
+                    }));
+                });
+
+            // Handle the result of the GetMetricAnomalies API call
+            metricResultPromise
+                .then(metricResult => {
+                    if (metricResult.data) {
+                        setDataMetric(metricResult.data);
+                    } else {
+                        console.warn('API response data is null or undefined for metrics');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching metric anomalies:', error);
+                });
+
+        } catch (error) {
+            console.error('Unexpected error:', error);
+        }
+    };
+
+    const fetchDataByLog = async (
+        logType: string,
+        page: number,
+        limit: number,
+        filter: string[] = [],
+        date_range: number
+    ) => {
+        // Start both API calls concurrently
+        const logAnomaliesPromise = GetHistoricalLogAnomalies(logType, limit, page, selectedAnomalyOptions, selectedServicesOptions, date_range);
+        const metricAnomaliesPromise = GetMetricAnomalies(logType, date_range, selectedServicesOptions);
+
+        // Handle the result of the first API call
+        logAnomaliesPromise
+            .then(result => {
+                if (result.data) {
+                    const { columns, rows, total_pages } = result.data;
+
+                    // Update the total number of pages based on the API response
+                    setTotalPages(total_pages);
+
+                    // Map the columns from the API response to the format required by the table
+                    const newColumns = columns.map((column: any) => ({
+                        id: column.key,
+                        header: column.title,
+                        accessorKey: column.key,
+                    }));
+                    setColumns(newColumns);
+
+                    // Map the rows from the API response to the format required by the table
+                    const newData = rows.map((row: any) => {
+                        const mappedRow: any = {};
+                        columns.forEach((col: any) => {
+                            mappedRow[col.key] = row[col.key];
+                        });
+                        return mappedRow;
+                    });
+
+                    // Update the table data
+                    setData(newData);
+                    setIsTableLoading(false)
+                } else {
+                    console.warn('API response data is null or undefined');
+                }
+            })
+            .catch(error => {
+                handleApiError(error);
+            });
+
+        // Handle the result of the second API call
+        metricAnomaliesPromise
+            .then(metricResult => {
+                if (metricResult.data) {
+                    setDataMetric(metricResult.data);
+                    setIsChartLoading(false)
+                } else {
+                    console.warn('API response data is null or undefined for metrics');
+                }
+            })
+            .catch(error => {
+                handleApiError(error);
+            });
+    };
+
+    // Function to fetch data based on pagination
+    const fetchDataByPagination = async (page: number, limit: number, filter: string[] = [], date_range: number) => {
+        console.log('Fetching data for page:', page);
+        let type = selectedUtilization === 'Log APM' ? 'apm' : selectedUtilization === 'Log Brimo' ? 'brimo' : '';
+        const selectedTimeRangeValue = timeRanges[selectedRange];
+        console.log(selectedTimeRangeValue)
+        if (!type) {
+            console.warn('Unknown log type:', selectedUtilization);
+            return;
+        }
+
+        try {
+            const result = await GetHistoricalLogAnomalies(type, limit, page, [], [], selectedTimeRangeValue);
+
+            if (result.data) {
+                // Update columns and data
+                const newColumns = result.data.columns.map((column: any) => ({
+                    id: column.key,
+                    header: column.title,
+                    accessorKey: column.key,
+                }));
+                setColumns(newColumns);
+
+                const newData = result.data.rows.map((row: any) => {
+                    const mappedRow: any = {};
+                    result.data?.columns.forEach((col: any) => {
+                        mappedRow[col.key] = row[col.key];
+                    });
+                    return mappedRow;
+                });
+                setData(newData);
+            } else {
+                console.warn('API response data is null or undefined');
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    const processApiResult = (result: any) => {
+        if (result && result.data) {
+            // Update columns and data
+            const newColumns = result.data.columns.map((column: any) => ({
+                id: column.key,
+                header: column.title,
+                accessorKey: column.key,
+            }));
+            setColumns(newColumns);
+
+            const newData = result.data.rows.map((row: any) => {
+                const mappedRow: any = {};
+                result.data.columns.forEach((col: any) => {
+                    mappedRow[col.key] = row[col.key];
+                });
+                return mappedRow;
+            });
+            setData(newData);
+        } else {
+            console.warn('API response data is null or undefined');
+        }
+    };
+
+    // Function to handle API errors
+    const handleApiError = (error: any) => {
+        console.error('Error fetching data:', error);
+    };
+
+    const loadAnomalyFilterOptions = async () => {
+        try {
+            const response = await fetchAnomalyOption(selectedUtilization === 'Log Brimo' ? 'brimo' : '');
+            console.log('API Response:', response); // Log the entire API response
+
+
+            if (response.data && response.data.columns) {
+                const options = response.data.columns.map((column: Column) => ({
+                    id: column.name,                   // Maps the "name" to "id"
+                    label: column.comment || column.name, // Maps the "comment" to "label", falls back to "name" if "comment" is missing
+                    type: column.type,                 // Maps the "type" to "type"
+                }));
+
+                console.log('Mapped Checkbox Options:', options); // Log the mapped options
+
+                setFilterAnomalyOptions(options); // Update state with fetched options
+            } else {
+                console.error('Response data or columns are missing');
+                setHasErrorFilter(true);
+            }
+        } catch (error) {
+            console.error('Failed to load checkbox options', error);
+            setHasErrorFilter(true);
+        } finally {
+            setIsLoadingFilter(false);
+        }
+    };
+
+    const loadServicesFilterOptions = async () => {
+        try {
+            const response = await fetchServicesOption(selectedUtilization === 'Log Brimo' ? 'brimo' : '');
+            console.log('API Response:', response); // Log the entire API response
+
+            if (response.data && response.data.services) {
+                // No need to map as it's already an array of strings
+                const services = response.data.services;
+
+                console.log('Service Options:', services); // Log the services array
+
+                setFilterServiceOptions(services); // Update state with fetched service options
+            } else {
+                console.error('Response data or services are missing');
+                setHasErrorFilter(true);
+            }
+        } catch (error) {
+            console.error('Failed to load service options', error);
+            setHasErrorFilter(true);
+        } finally {
+            setIsLoadingFilter(false);
+        }
+    };
+
+    const handleResetFilters = () => {
+        // Clear the selected options
+        setSelectedAnomalyOptions([]);
+        setSelectedServiceOptions([]);
+        // Optionally, reset other filters or fetch the default data
+        console.log('Filters reset');
+
+    };
+
+    const handleApplyFilters = async (filters: { selectedAnomalies: string[], selectedServices: string[] }) => {
+        const { selectedAnomalies, selectedServices } = filters;
+
+        // Update the state with the selected options
+        setSelectedAnomalyOptions(selectedAnomalies);
+        setSelectedServiceOptions(selectedServices);
+
+        // Example: Fetch data based on the selected filters
+        const type = selectedUtilization === 'Log APM' ? 'apm' : 'brimo';
+        const timeRangeValue = timeRanges[selectedRange]; // Get the specific time range value
+
+        // Initiate both API calls concurrently and independently
+        const logAnomaliesPromise = GetHistoricalLogAnomalies(
+            type,
+            pagination.pageSize, // Use the current page size
+            1, // Start from the first page
+            selectedAnomalies,
+            selectedServices,
+            timeRangeValue || 15 // Use the selected time range or fallback to 15 minutes
+        );
+
+        const metricAnomaliesPromise = GetMetricAnomalies(
+            type,
+            timeRangeValue || 15, // Use the selected time range or fallback to 15 minutes
+            selectedServices
+        );
+
+        // Handle the result of the log anomalies API call
+        logAnomaliesPromise
+            .then(result => {
+                if (result.data) {
+                    // Update the total number of pages based on the API response
+                    setTotalPages(result.data.total_pages);
+
+                    // Map the columns from the API response to the format required by the table
+                    const newColumns = result.data.columns.map((column: any) => ({
+                        id: column.key,
+                        header: column.title,
+                        accessorKey: column.key,
+                    }));
+                    setColumns(newColumns);
+
+                    // Map the rows from the API response to the format required by the table
+                    const newData = result.data.rows.map((row: any) => {
+                        const mappedRow: any = {};
+                        result.data?.columns.forEach((col: any) => {
+                            mappedRow[col.key] = row[col.key];
+                        });
+                        return mappedRow;
+                    });
+
+                    // Update the table data
+                    setData(newData);
+
+                    // Update the pagination state, resetting to the first page
+                    setPagination((prev) => ({
+                        ...prev,
+                        pageIndex: 1, // Reset to the first page after applying filters
+                    }));
+                } else {
+                    console.warn('API response data is null or undefined');
+                }
+            })
+            .catch(handleApiError);
+
+        // Handle the result of the metric anomalies API call
+        metricAnomaliesPromise
+            .then(result => {
+                if (result.data) {
+                    setDataMetric(result.data);
+                } else {
+                    console.warn('API response data is null or undefined');
+                }
+            })
+            .catch(handleApiError);
+    };
+
+    const nextPage = () => {
+        const logType = selectedUtilization === 'Log APM' ? 'apm' : selectedUtilization === 'Log Brimo' ? 'brimo' : '';
+        const selectedTimeRangeValue = timeRanges[selectedRange];
+        console.log(selectedTimeRangeValue)
+
+        setPagination((prev) => {
+            const newPageIndex = Math.min(prev.pageIndex + 1, totalPages);
+
+            if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length === 0) {
+                // If only anomaly options are selected
+                GetHistoricalLogAnomalies(logType, prev.pageSize, newPageIndex, selectedAnomalyOptions, [], selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            } else if (selectedServicesOptions.length !== 0 && selectedAnomalyOptions.length === 0) {
+                // If only service options are selected
+                GetHistoricalLogAnomalies(logType, prev.pageSize, newPageIndex, [], selectedServicesOptions, selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0) {
+                // If both anomaly and service options are selected
+                GetHistoricalLogAnomalies(logType, prev.pageSize, newPageIndex, selectedAnomalyOptions, selectedServicesOptions, selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            } else {
+                // If no filters are selected, proceed with normal pagination
+                fetchDataByPagination(newPageIndex, prev.pageSize, [], selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            }
+
+            return { ...prev, pageIndex: newPageIndex };
+        });
+    };
+
+    const previousPage = () => {
+        const logType = selectedUtilization === 'Log APM' ? 'apm' : selectedUtilization === 'Log Brimo' ? 'brimo' : '';
+        const selectedTimeRangeValue = timeRanges[selectedRange];
+        console.log(selectedTimeRangeValue)
+
+        setPagination((prev) => {
+            const newPageIndex = Math.max(prev.pageIndex - 1, 1);
+
+            if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length === 0) {
+                // If only anomaly options are selected
+                GetHistoricalLogAnomalies(logType, prev.pageSize, newPageIndex, selectedAnomalyOptions, [], selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            } else if (selectedServicesOptions.length !== 0 && selectedAnomalyOptions.length === 0) {
+                // If only service options are selected
+                GetHistoricalLogAnomalies(logType, prev.pageSize, newPageIndex, [], selectedServicesOptions, selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0) {
+                // If both anomaly and service options are selected
+                GetHistoricalLogAnomalies(logType, prev.pageSize, newPageIndex, selectedAnomalyOptions, selectedServicesOptions, selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            } else {
+                // If no filters are selected, proceed with normal pagination
+                fetchDataByPagination(newPageIndex, prev.pageSize, [], selectedTimeRangeValue)
+                    .then(result => processApiResult(result))
+                    .catch(error => handleApiError(error));
+            }
+
+            return { ...prev, pageIndex: newPageIndex };
+        });
+    };
+
+    useEffect(() => {
+        const type = selectedUtilization === 'Log APM' ? 'apm' : selectedUtilization === 'Log Brimo' ? 'brimo' : '';
+
+        // Fetch data based on the selected log
+        fetchDataByLog(type, pagination.pageIndex, pagination.pageSize, [], 15);
+
+        // Load filter options and reset the selected range
+        loadAnomalyFilterOptions();
+        loadServicesFilterOptions();
+        // Reset Time Range
+        setSelectedRange('');
+
+    }, [selectedUtilization]);
+
     return (
-        <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-20">
-                <div className="card-style">
+        <div className="flex flex-col gap-10 px-14 py-12 card-style z-50">
+            <div className="flex flex-row justify-between items-center">
+                <FilterPanel
+                    servicesOptions={filterServicesOptions}
+                    checkboxOptions={filterAnomalyOptions}
+                    onApplyFilters={handleApplyFilters}
+                    onResetFilters={handleResetFilters}
+                />
+                <DropdownRange
+                    timeRanges={timeRanges}
+                    onRangeChange={handleRangeChange}
+                    selectedRange={selectedRange} // Pass selectedRange as a prop
+                />
+            </div>
+            <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-8">
                     <Typography variant="h5" component="h5" color="white">
-                        Most Recent Anomaly
+                        Historical Anomaly Records
                     </Typography>
-                    {renderChart()} {/* Render the appropriate chart */}
+                    <Box>
+                        <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
+                            <div className="min-w-full">
+                                {isTableLoading ? (
+                                    <div className="flex justify-center items-center">
+                                        <div className="spinner"></div>
+                                    </div>
+                                ) : data.length === 0 && !isTableLoading ? (
+                                    <div className="text-center py-4">
+                                        <div className="text-center text-2xl font-semibold text-white">
+                                            DATA IS NOT AVAILABLE
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <table id="person" className="table-auto divide-y divide-gray-200 w-full">
+                                        <thead>
+                                            {table.getHeaderGroups().map((headerGroup) => (
+                                                <tr key={headerGroup.id}>
+                                                    {headerGroup.headers.map((header) => (
+                                                        <th key={header.id} colSpan={header.colSpan} className="p-2">
+                                                            <div
+                                                                className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3`}
+                                                                onClick={header.column.getToggleSortingHandler()}
+                                                            >
+                                                                {typeof header.column.columnDef.header === 'function'
+                                                                    ? header.column.columnDef.header({} as any) // Pass a dummy context
+                                                                    : header.column.columnDef.header}
+                                                                {header.column.getCanSort() && (
+                                                                    <>
+                                                                        {{
+                                                                            asc: '🔼',
+                                                                            desc: '🔽',
+                                                                            undefined: '🔽', // Default icon for unsorted state
+                                                                        }[header.column.getIsSorted() as string] || '🔽'}
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </th>
+                                                    ))}
+                                                </tr>
+                                            ))}
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200 text-gray-600">
+                                            {table.getRowModel().rows.map((row) => (
+                                                <tr key={row.id}>
+                                                    {row.getVisibleCells().map((cell) => (
+                                                        <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                                                            <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
+                                                                {cell.column.id === 'severity' && (
+                                                                    <svg
+                                                                        width="14"
+                                                                        height="15"
+                                                                        viewBox="0 0 14 15"
+                                                                        fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                    >
+                                                                        <path
+                                                                            d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
+                                                                            fill="#F59823"
+                                                                        />
+                                                                    </svg>
+                                                                )}
+                                                                {typeof cell.column.columnDef.cell === 'function'
+                                                                    ? cell.column.columnDef.cell(cell.getContext())
+                                                                    : cell.column.columnDef.cell}
+                                                            </div>
+                                                        </td>
+                                                    ))}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+                            {data.length > 0 && !isTableLoading && (
+                                <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
+                                    <div className="flex gap-1">
+                                        <span className="text-white">Rows per page:</span>
+                                        <select
+                                            value={table.getState().pagination.pageSize}
+                                            onChange={(e) => {
+                                                const newPageSize = Number(e.target.value);
+                                                table.setPageSize(newPageSize);
+                                                setPagination((prev) => ({
+                                                    ...prev,
+                                                    pageSize: newPageSize,
+                                                    pageIndex: 0, // Reset to first page when page size changes
+                                                }));
+                                            }}
+                                            className="select-button-assesment"
+                                        >
+                                            {[5, 10, 15, 25].map((pageSize) => (
+                                                <option key={pageSize} value={pageSize}>
+                                                    {pageSize}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="text-white">
+                                        Page {pagination.pageIndex} of {totalPages}
+                                    </div>
+                                    <div className="d-flex">
+                                        <button
+                                            className={`p-2 ${pagination.pageIndex === 1 ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
+                                            onClick={previousPage}
+                                            disabled={pagination.pageIndex === 1}
+                                        >
+                                            <ArrowLeft />
+                                        </button>
+                                        <button
+                                            className={`p-2 ${pagination.pageIndex + 1 >= totalPages ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
+                                            onClick={nextPage}
+                                            disabled={pagination.pageIndex + 1 >= totalPages}
+                                        >
+                                            <ArrowRight />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                    </Box>
+                </div>
+                <div className="flex flex-col gap-8">
+                    <Typography variant="h5" component="h5" color="white">
+                        Graphic Anomaly Records
+                    </Typography>
+                    {renderChart()}
                 </div>
             </div>
-            <div className="flex flex-col gap-8 p-6" style={{ border: '1px solid #004889', borderRadius: 2 }}>
-                <Typography variant="h5" component="h5" color="white">
-                    Historical Anomaly Records
-                </Typography>
-                <Box>
-                    <div className="overflow-x-auto w-full">
-                        <div className="min-w-full">
-                            <table id="person" className="table-auto divide-y divide-gray-200 w-full">
-                                <thead>
-                                    {table.getHeaderGroups().map(headerGroup => (
-                                        <tr key={headerGroup.id}>
-                                            {headerGroup.headers.map(header => (
-                                                <th key={header.id} colSpan={header.colSpan} className="p-1">
-                                                    <div
-                                                        className={`${header.column.getCanSort() ? "cursor-pointer select-none" : ""} px-3`}
-                                                        onClick={header.column.getToggleSortingHandler()}
-                                                    >
-                                                        {typeof header.column.columnDef.header === 'function'
-                                                            ? header.column.columnDef.header({} as any) // Pass a dummy context
-                                                            : header.column.columnDef.header}
-                                                        {header.column.getCanSort() && (
-                                                            <>
-                                                                {{
-                                                                    asc: "🔼",
-                                                                    desc: "🔽",
-                                                                    undefined: "🔽" // Default icon for unsorted state
-                                                                }[header.column.getIsSorted() as string] || "🔽"}
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </th>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {table.getRowModel().rows.map(row => (
-                                        <tr key={row.id}>
-                                            {row.getVisibleCells().map(cell => (
-                                                <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
-                                                    <div className="inline-flex items-center px-3 py-1 rounded-full gap-x-2">
-                                                        {cell.column.id === 'severity' && (
-                                                            <svg
-                                                                width="14"
-                                                                height="15"
-                                                                viewBox="0 0 14 15"
-                                                                fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <path
-                                                                    d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
-                                                                    fill="#F59823"
-                                                                />
-                                                            </svg>
-                                                        )}
-                                                        {typeof cell.column.columnDef.cell === 'function'
-                                                            ? cell.column.columnDef.cell(cell.getContext())
-                                                            : cell.column.columnDef.cell}
-                                                    </div>
-                                                </td>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
-                            <div className="flex gap-1">
-                                <span className="text-white">Rows per page:</span>
-                                <select
-                                    value={table.getState().pagination.pageSize}
-                                    onChange={(e) => {
-                                        table.setPageSize(Number(e.target.value))
-                                    }}
-                                    className="select-button-assesment"
-                                >
-                                    {[4, 16, 32].map((pageSize) => (
-                                        <option key={pageSize} value={pageSize}>
-                                            {pageSize}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="text-white">
-                                {table.getState().pagination.pageIndex + 1} of {table.getState().pagination.pageSize}
-                            </div>
-                            <div className="d-flex">
-                                <button
-                                    className="bg-transparent text-white p-2"
-                                    onClick={() => table.previousPage()}
-                                    disabled={!table.getCanPreviousPage()}
-                                >
-                                    <ArrowLeft />
-                                </button>
-                                <button
-                                    className="bg-transparent text-white p-2"
-                                    onClick={() => table.nextPage()}
-                                    disabled={!table.getCanNextPage()}
-                                >
-                                    <ArrowRight />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </Box>
-            </div>
         </div>
-    );
-};
+    )
+}
 
-export default TabUtilizationContent;
+export default TabUtilizationContent
