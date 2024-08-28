@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
 import { Typography } from '@mui/material';
+import './synchronized-charts.css';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -18,13 +19,54 @@ interface SynchronizedChartsProps {
     }[];
     height: number;
     width: string;
+    zoomInDisabled?: boolean;
+    onZoomIn?: (minX: any, maxX: any) => void;
+    zoomOutDisabled?: boolean;
+    onZoomOut?: (minX: any, maxX: any) => void;
+    minX?: any;
+    maxX?: any;
+    minXOnEmpty?: any;
+    maxXOnEmpty?: any;
 }
 
 const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     dataCharts,
     height,
     width,
+    zoomInDisabled,
+    onZoomIn,
+    zoomOutDisabled,
+    onZoomOut,
+    minX,
+    maxX,
+    minXOnEmpty,
+    maxXOnEmpty,
 }) => {
+    const disableZoomButtons = () => {
+        const zoomInButtons = document.querySelectorAll('.apexcharts-zoomin-icon');
+        const zoomOutButtons = document.querySelectorAll('.apexcharts-zoomout-icon');
+    
+        zoomInButtons.forEach(button => {
+            if (zoomInDisabled) {
+                button.classList.add('zoom-disabled');
+            } else {
+                button.classList.remove('zoom-disabled');
+            }
+      });
+      
+      zoomOutButtons.forEach(button => {
+            if (zoomOutDisabled) {
+                button.classList.add('zoom-disabled');
+            } else {
+                button.classList.remove('zoom-disabled');
+            }
+        });
+    }
+
+    useEffect(() => {
+        disableZoomButtons()
+    }, [zoomInDisabled, zoomOutDisabled]);
+  
     if (!dataCharts || dataCharts.length === 0) {
         return (
             <div className="text-center text-2xl font-semibold text-white">
@@ -35,30 +77,23 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 
     return (
         <div className="flex flex-col gap-4">
-            {dataCharts && dataCharts.map((metric, index) => {
-                const { minDate, maxDate } = dataCharts[index].series.reduce(
-                    (acc, seriesItem) => {
-                        const seriesData = seriesItem.data;
-                        if (seriesData.length === 0) return acc
-
-                        const firstDate = new Date(seriesData[0][0])
-                        const lastDate = new Date(seriesData[seriesData.length - 1][0])
-
-                        // Update min and max dates in the accumulator
-                        if (firstDate.getTime() < acc.minDate.getTime()) acc.minDate = firstDate;
-                        if (lastDate.getTime() > acc.maxDate.getTime()) acc.maxDate = lastDate;
-
-                        return acc;
-                    },
-                    { minDate: new Date('9999-12-31'), maxDate: new Date('1970-01-01') } // Initial accumulator values
-                );
-
+            {dataCharts.map((metric, index) => {
                 const chartOptions: ApexOptions = {
                     chart: {
                         id: `sync-${index}`,
                         group: 'social',
                         type: 'line',
                         height: 160,
+                        toolbar: {
+                            tools: {
+                                zoomin: true,
+                                zoomout: true,
+                                zoom: false,
+                                pan: false,
+                                download: false,
+                                reset: false,
+                            }
+                        },
                         events: {
                             mounted: (chartContext: any) => {
                                 const chartEl = chartContext?.el;
@@ -80,21 +115,34 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                     });
                                 });
                             },
-                            beforeZoom: (e, { xaxis }) => {
-                                // Adjust the zoom range if it goes beyond the limits
-                                if (xaxis.min < minDate) {
-                                    xaxis.min = minDate;
+                            updated() {
+                                disableZoomButtons()
+                            },
+                            beforeZoom : (chartContext, {xaxis}) => {
+                                // Zoomed in
+                                if (xaxis.min > chartContext.minX && xaxis.max < chartContext.maxX) {
+                                    if (!zoomInDisabled) {
+                                        onZoomIn && onZoomIn(chartContext.minX, chartContext.maxX)
+                                        return {
+                                            xaxis: {
+                                                min: chartContext.minX,
+                                                max: chartContext.maxX,
+                                            }
+                                        }
+                                    }
                                 }
-                                if (xaxis.max > maxDate) {
-                                    xaxis.max = maxDate;
+                                // Zoomed out
+                                if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {
+                                    if (!zoomOutDisabled) {
+                                        onZoomOut && onZoomOut(chartContext.minX, chartContext.maxX)
+                                        return {
+                                            xaxis: {
+                                                min: minX && minX > chartContext.minX ? minX : chartContext.minX,
+                                                max: maxX && maxX < chartContext.maxX ? maxX : chartContext.maxX,
+                                            }
+                                        }
+                                    }
                                 }
-
-                                return {
-                                    xaxis: {
-                                        min: xaxis.min,
-                                        max: xaxis.max,
-                                    },
-                                };
                             },
                         },
                     },
@@ -116,6 +164,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         tooltip: {
                             enabled: false,
                         },
+                        min: metric.series.every(series => series.data.length <= 0) ? minXOnEmpty : undefined,
+                        max: metric.series.every(series => series.data.length <= 0) ? maxXOnEmpty : undefined,
                     },
                     yaxis: {
                         labels: {
@@ -142,7 +192,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                 };
 
                 return (
-                    <div key={index}>
+                    <div key={metric.title}>
                         <Typography variant="h6" component="h6" color="white">
                             {metric.title}
                         </Typography>
