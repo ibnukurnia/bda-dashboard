@@ -9,12 +9,9 @@ interface SynchronizedChartsProps {
     dataCharts: {
         title: string,
         series: {
-            name: string
-            data: [
-                Date,
-                number,
-            ],
-        }[]
+            name: string;
+            data: [Date, number][];
+        }[];
     }[];
     height: number;
     width: string;
@@ -26,8 +23,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     width,
 }) => {
     return (
-        <div className="flex flex-col gap-4">
-            {dataCharts && dataCharts.map((metric, index) => {
+        <div className="flex flex-col gap-5">
+            {dataCharts.map((metric, index) => {
                 const chartOptions: ApexOptions = {
                     chart: {
                         id: `sync-${index}`,
@@ -36,11 +33,15 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         height: 160,
                         events: {
                             mounted: (chartContext: any) => {
-                                const chartEl = chartContext.el;
+                                const chartEl = chartContext?.el;
+                                if (!chartEl) {
+                                    console.error('Chart element is null:', chartContext);
+                                    return;
+                                }
                                 chartEl.addEventListener('chart:updated', () => {
                                     const syncedCharts = document.querySelectorAll('[data-chart-id]');
                                     syncedCharts.forEach((chart: any) => {
-                                        if (chart.dataset.chartId !== chartContext.id) {
+                                        if (chart?.dataset?.chartId !== chartContext.id && chart?.__apexCharts) {
                                             chart.__apexCharts.updateOptions({
                                                 xaxis: {
                                                     min: chartContext.w.globals.minX,
@@ -56,22 +57,22 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                     xaxis: {
                         type: 'datetime',
                         labels: {
-                            formatter(value, _, __) {
+                            formatter(value) {
                                 const date = new Date(value);
                                 return date.toLocaleDateString(
                                     'id-ID',
                                     { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }
-                                )
+                                );
                             },
                             style: {
-                                colors: 'white', // White color for x-axis text
+                                colors: 'white',
                             },
                         },
                     },
                     yaxis: {
                         labels: {
                             style: {
-                                colors: 'white', // White color for y-axis text
+                                colors: 'white',
                             },
                         },
                     },
@@ -87,9 +88,9 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                     },
                     legend: {
                         labels: {
-                            colors: 'white'
-                        }
-                    }
+                            colors: 'white',
+                        },
+                    },
                 };
 
                 return (
