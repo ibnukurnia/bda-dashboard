@@ -4,7 +4,7 @@ import { paths } from '@/paths'
 
 import { ApiResponse, ErrorResponse } from './type'
 
-const API_URL: string = process.env.NEXT_PUBLIC_API_URL as ''
+const API_URL: string = process.env.NEXT_PUBLIC_API_URL ?? 'http://172.18.67.122:8080/api/'
 
 type RequestOption = {
   queries?: Record<string, any>
