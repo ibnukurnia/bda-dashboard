@@ -37,7 +37,10 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
 
     const handleCustomRangeChange = () => {
         if (customRangeStart && customRangeEnd) {
-            const customRangeLabel = `${customRangeStart} - ${customRangeEnd}`;
+            const formattedStart = format(new Date(customRangeStart), "yyyy-MM-dd HH:mm:ss");
+            const formattedEnd = format(new Date(customRangeEnd), "yyyy-MM-dd HH:mm:ss");
+            const customRangeLabel = `${formattedStart} - ${formattedEnd}`;
+            console.log('Custom Range Selected:', customRangeLabel); // Log the selected custom range
             onRangeChange(customRangeLabel);
             setIsCustomRange(false);
             setIsOpen(false);
