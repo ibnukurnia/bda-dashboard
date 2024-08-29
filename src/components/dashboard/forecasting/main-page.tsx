@@ -43,24 +43,6 @@ const MainPageForecasting = () => {
     optional: null as string | null,
   })
 
-  // const statistics = [
-  //   {
-  //     label: 'Stats 1',
-  //     value: 500,
-  //     unit: 'unit1',
-  //   },
-  //   {
-  //     label: 'Stats 2',
-  //     value: 120,
-  //     unit: 'unit2',
-  //   },
-  //   {
-  //     label: 'Stats 3',
-  //     value: 100,
-  //     unit: 'unit3',
-  //   },
-  // ]
-
   const table = useReactTable({
     data: data,
     columns: columns,
@@ -74,52 +56,12 @@ const MainPageForecasting = () => {
   })
 
   const nextPage = () => {
-    // const logType = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : ''
-    // if (selectedOptions.length !== 0) {
-    //   // If there are selected filters, hit the API with the filters
-    //   setPagination((prev) => {
-    //     const newPageIndex = Math.min(prev.pageIndex + 1, totalPages)
-    //     GetHistoricalLogAnomalies(
-    //       logType,
-    //       prev.pageSize,
-    //       newPageIndex,
-    //       selectedAnomalyOptions,
-    //       selectedServicesOptions,
-    //       15
-    //     ) // Fetch data with filters for the new page
-    //       .then((result) => {
-    //         // Process the result and update the state
-    //         if (result.data) {
-    //           // Update columns and data
-    //           const newColumns = result.data.columns.map((column: any) => ({
-    //             id: column.key,
-    //             header: column.title,
-    //             accessorKey: column.key,
-    //           }))
-    //           setColumns(newColumns)
-
-    //           const newData = result.data.rows.map((row: any) => {
-    //             const mappedRow: any = {}
-    //             result.data?.columns.forEach((col: any) => {
-    //               mappedRow[col.key] = row[col.key]
-    //             })
-    //             return mappedRow
-    //           })
-    //           setData(newData)
-    //         } else {
-    //           console.warn('API response data is null or undefined')
-    //         }
-    //       })
-    //       .catch((error) => {
-    //         console.error('Error fetching data with filters:', error)
-    //       })
-    //     return { ...prev, pageIndex: newPageIndex }
-    //   })
-    // } else {
-    //   // If no filters are selected, proceed with normal pagination
-    // }
     setPagination((prev) => {
       const newPageIndex = Math.min(prev.pageIndex + 1, totalPages)
+      GetForecastingTableData({ limit: pagination.pageSize, page: newPageIndex }).then((tableData) => {
+        setData(tableData.data)
+        setTotalPages(tableData.pagination.totalPage)
+      })
       // fetchDataByPagination(newPageIndex, prev.pageSize, [], 15) // Fetch data for the new page
       return { ...prev, pageIndex: newPageIndex }
     })
@@ -128,8 +70,22 @@ const MainPageForecasting = () => {
   const previousPage = () => {
     setPagination((prev) => {
       const newPageIndex = Math.max(prev.pageIndex - 1, 1)
+      GetForecastingTableData({ limit: pagination.pageSize, page: newPageIndex }).then((tableData) => {
+        setData(tableData.data)
+        setTotalPages(tableData.pagination.totalPage)
+      })
       // fetchDataByPagination(newPageIndex, prev.pageSize, [], 15) // Fetch data for the previous page
       return { ...prev, pageIndex: newPageIndex }
+    })
+  }
+
+  const handleChangePaginationSize = (size: number) => {
+    GetForecastingTableData({ limit: size, page: 1 }).then((tableData) => {
+      setData(tableData.data)
+      setTotalPages(tableData.pagination.totalPage)
+    })
+    setPagination((prev) => {
+      return { ...prev, pageSize: size, pageIndex: 1 }
     })
   }
 
@@ -150,24 +106,19 @@ const MainPageForecasting = () => {
     })
     GetForecastingColumns().then((result) => setColumns(result.data))
     GetForecastingGraphData().then((graphData) => setGraphData(graphData.data))
-    GetForecastingTableData().then((tableData) => setData(tableData.data))
+    GetForecastingTableData({ limit: pagination.pageSize, page: pagination.pageIndex }).then((tableData) => {
+      setData(tableData.data)
+      setTotalPages(tableData.pagination.totalPage)
+    })
     GetForecastingStatistics().then((statistics) => setStatistics(statistics.data))
   }
 
-  // useEffect(() => {
-  //   GetForecastingColumns().then((result) => setColumns(result.data))
-  //   GetForecastingGraphData().then((graphData) => setGraphData(graphData.data))
-  //   GetForecastingTableData().then((tableData) => setData(tableData.data))
-  // }, [])
+  console.log(pagination, 'ini pg')
 
   return (
     <div className="flex flex-col gap-8">
       <Stack sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
         <FilterPanel onApplyFilters={handleApplyFilters} activeFilter={filter} />
-        {/* <div className="flex flex-row gap-1.5 items-center">
-          <Info size={'16px'} color="white" />
-          <Typography color={'white'}>Please use this filter button to forecast</Typography>
-        </div> */}
       </Stack>
       {statistics.length > 0 && (
         <Stack sx={{ display: 'flex', gap: 6, flexDirection: 'row', px: 3 }}>
@@ -219,7 +170,7 @@ const MainPageForecasting = () => {
                   <ForecastingTable
                     table={table}
                     data={data}
-                    setPagination={setPagination}
+                    changePaginationSize={handleChangePaginationSize}
                     totalPages={totalPages}
                     previousPage={previousPage}
                     nextPage={nextPage}
