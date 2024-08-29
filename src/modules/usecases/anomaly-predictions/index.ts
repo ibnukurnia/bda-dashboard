@@ -8,8 +8,8 @@ import {
   MetricLogAnomalyResponse
 } from "@/modules/models/anomaly-predictions"
 
-const GetHistoricalLogAnomalies = async (type: string, limit: number, page: number, filterAnomaly: string[], filterServices: string[], date_range: number) => {
-  let endPoint = `anomaly-predictions?type=${type}&limit=${limit}&page=${page}&date_range=${date_range}`
+const GetHistoricalLogAnomalies = async (type: string, limit: number, page: number, filterAnomaly: string[], filterServices: string[], start_time: string, end_time: string) => {
+  let endPoint = `anomaly-predictions?type=${type}&limit=${limit}&page=${page}&start_time=${start_time}&end_time=${end_time}`
 
   filterAnomaly.forEach(f => {
     endPoint += `&filters=${f}`
@@ -26,8 +26,8 @@ const GetHistoricalLogAnomalies = async (type: string, limit: number, page: numb
   return response
 }
 
-const GetMetricLogAnomalies = async (type: string, date_range: number, service_name: string[] = []) => {
-  let endPoint = `anomaly-predictions/metrics?type=${type}&date_range=${date_range}`
+const GetMetricLogAnomalies = async (type: string, start_time: string, end_time: string, service_name: string[] = []) => {
+  let endPoint = `anomaly-predictions/metrics?type=${type}&start_time=${start_time}&end_time=${end_time}`
 
   service_name.forEach(sn => {
     endPoint += `&service_name=${sn}`
