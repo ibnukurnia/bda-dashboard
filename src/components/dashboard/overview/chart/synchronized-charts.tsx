@@ -3,20 +3,13 @@ import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
 import { Typography } from '@mui/material';
 import './synchronized-charts.css';
+import { MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions';
+import { formatDate } from 'date-fns';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 interface SynchronizedChartsProps {
-    dataCharts: {
-        title: string,
-        series: {
-            name: string
-            data: [
-                Date,
-                number,
-            ][],
-        }[]
-    }[];
+    dataCharts: MetricLogAnomalyResponse[];
     height: number;
     width: string;
     zoomInDisabled?: boolean;
@@ -81,7 +74,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                 const chartOptions: ApexOptions = {
                     chart: {
                         id: `sync-${index}`,
-                        group: 'social',
+                        group: 'log-anomaly',
                         type: 'line',
                         height: 160,
                         toolbar: {
@@ -151,21 +144,15 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         labels: {
                             formatter(value) {
                                 const date = new Date(value);
-                                return date.toLocaleDateString(
-                                    'id-ID',
-                                    { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }
-                                );
+                                return formatDate(date, "yyyy-MM-dd HH:mm:ss")
                             },
                             style: {
                                 colors: 'white',
                             },
                             rotate: 0,
                         },
-                        tooltip: {
-                            enabled: false,
-                        },
-                        min: metric.series.every(series => series.data.length <= 0) ? minXOnEmpty : undefined,
-                        max: metric.series.every(series => series.data.length <= 0) ? maxXOnEmpty : undefined,
+                        min: dataCharts.every(series => series.data.length <= 0) ? minXOnEmpty : undefined,
+                        max: dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : undefined,
                     },
                     yaxis: {
                         labels: {
@@ -173,10 +160,13 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                 colors: 'white',
                             },
                         },
+                        tooltip: {
+                            enabled: true,
+                        },
                     },
                     stroke: {
                         curve: 'smooth',
-                        width: 1,
+                        width: 4,
                     },
                     grid: {
                         row: {
@@ -198,7 +188,10 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         </Typography>
                         <Chart
                             options={chartOptions}
-                            series={metric.series as ApexAxisChartSeries}
+                            series={[{
+                                name: metric.title,
+                                data: metric.data.map(([date, number]) => ({ x: date, y: number })),
+                            }]}
                             type="line"
                             height={height}
                             width={width}

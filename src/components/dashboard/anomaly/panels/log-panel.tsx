@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Column, MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions'
-import { GetHistoricalLogAnomalies, GetMetricAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { Column } from '@/modules/models/anomaly-predictions'
+import { GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { Box, Typography } from '@mui/material'
 import {
     ColumnDef,
@@ -14,11 +14,9 @@ import {
 import { ArrowLeft, ArrowRight } from 'react-feather'
 import { CheckboxOption, fetchAnomalyOption, fetchServicesOption } from '@/lib/api'
 import DropdownRange from '../../dropdownRange'
-import SynchronizedCharts from '../../overview/chart/synchronized-charts'
 import FilterPanel from '../button/filterPanel'
 // import { AnomalyContext } from '@/contexts/anomaly-context'
-import SynchronizedChartsMultipleScale from '../../overview/chart/synchronized-charts -multiple-scale'
-import { dummyMutlipleYAxisAndScales } from './dummyMutlipleYAxisAndScales'
+import GraphAnomalyCard from '../card/graph-anomaly-card'
 
 
 interface TabLogContentProps {
@@ -45,7 +43,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
 }) => {
     const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
     const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
-    const [currentZoomDateRange, setCurrentZoomDateRange] = useState<string>('Last 15 minutes')
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
@@ -56,7 +53,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     const selectedTimeRangeValue = timeRanges[selectedRange]
     const [isLoadingFilter, setIsLoadingFilter] = useState<boolean>(true)
     const [hasErrorFilter, setHasErrorFilter] = useState<boolean>(false)
-    const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
     const [data, setData] = useState<any[]>([])
     const [totalPages, setTotalPages] = useState<number>(1)
@@ -79,45 +75,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         },
     })
 
-    const renderChart = () => {
-        if (dataMetric.length === 0) {
-            return (
-                <div className="flex justify-center items-center">
-                    <div className="spinner"></div>
-                </div>
-            )
-        }
-
-        switch (selectedLog) {
-            case 'Log APM':
-            case 'Log Brimo':
-                // Get the keys of the object as an array
-                const keys = Object.keys(defaultTimeRanges);
-                // Find the index of the key
-                const selectedKeyIndex = keys.indexOf(currentZoomDateRange);
-        
-                return (
-                    <SynchronizedCharts
-                        dataCharts={dataMetric} // Ensure dataMetric is relevant for Log Type
-                        height={300}
-                        width="100%"
-                        zoomInDisabled={selectedKeyIndex <= 0}
-                        zoomOutDisabled={selectedKeyIndex >= keys.length-1}
-                        onZoomIn={handleGraphZoomIn}
-                        onZoomOut={handleGraphZoomOut}
-                        minXOnEmpty={new Date().getTime() - timeRanges[currentZoomDateRange] * 60 * 1000}
-                        maxXOnEmpty={new Date().getTime()}
-                    />
-                );
-            default:
-                return (
-                    <Typography variant="h6" component="h6" color="white">
-                        No chart available for {selectedLog}
-                    </Typography>
-                )
-        }
-    }
-
     const handleRangeChange = async (rangeKey: string) => {
         const type = selectedLog === 'Log APM' ? 'apm' : 'brimo'
         const selectedTimeRange = defaultTimeRanges[rangeKey] // Convert rangeKey to number
@@ -132,7 +89,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         try {
             // Initiate both API calls concurrently and independently
             const logResultPromise = GetHistoricalLogAnomalies(type, 10, 1, filtersAnomaly, filterServices, selectedTimeRange)
-            const metricResultPromise = GetMetricAnomalies(type, selectedTimeRange, filterServices)
 
             // Handle the result of the GetHistoricalLogAnomalies API call
             logResultPromise
@@ -179,19 +135,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                         ...prev,
                         pageIndex: 1,
                     }))
-                })
-
-            // Handle the result of the GetMetricAnomalies API call
-            metricResultPromise
-                .then((metricResult) => {
-                    if (metricResult.data) {
-                        setDataMetric(metricResult.data)
-                    } else {
-                        console.warn('API response data is null or undefined for metrics')
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error fetching metric anomalies:', error)
                 })
         } catch (error) {
             console.error('Unexpected error:', error)
@@ -301,7 +244,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             selectedServicesOptions,
             date_range
         )
-        const metricAnomaliesPromise = GetMetricAnomalies(logType, date_range, selectedServicesOptions)
 
         // Handle the result of the first API call
         logAnomaliesPromise
@@ -334,20 +276,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     setIsTableLoading(false)
                 } else {
                     console.warn('API response data is null or undefined')
-                }
-            })
-            .catch((error) => {
-                handleApiError(error)
-            })
-
-        // Handle the result of the second API call
-        metricAnomaliesPromise
-            .then((metricResult) => {
-                if (metricResult.data) {
-                    setDataMetric(metricResult.data)
-                    setIsChartLoading(false)
-                } else {
-                    console.warn('API response data is null or undefined for metrics')
                 }
             })
             .catch((error) => {
@@ -502,12 +430,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             timeRangeValue || 15 // Use the selected time range or fallback to 15 minutes
         )
 
-        const metricAnomaliesPromise = GetMetricAnomalies(
-            type,
-            timeRangeValue || 15, // Use the selected time range or fallback to 15 minutes
-            selectedServices
-        )
-
         // Handle the result of the log anomalies API call
         logAnomaliesPromise
             .then((result) => {
@@ -540,17 +462,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                         ...prev,
                         pageIndex: 1, // Reset to the first page after applying filters
                     }))
-                } else {
-                    console.warn('API response data is null or undefined')
-                }
-            })
-            .catch(handleApiError)
-
-        // Handle the result of the metric anomalies API call
-        metricAnomaliesPromise
-            .then((result) => {
-                if (result.data) {
-                    setDataMetric(result.data)
                 } else {
                     console.warn('API response data is null or undefined')
                 }
@@ -667,59 +578,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             return { ...prev, pageIndex: newPageIndex }
         })
     }
-    const handleGraphZoomIn = async () => {
-        // Get the keys of the object as an array
-        const keys = Object.keys(defaultTimeRanges);
-        // Find the index of the key
-        const selectedKeyIndex = keys.indexOf(currentZoomDateRange);
-
-        // Do nothing if already at max zoomed in
-        if (selectedKeyIndex <= 0) return
-        
-        // Select new range
-        const newSelect = keys[selectedKeyIndex - 1];
-        setCurrentZoomDateRange(newSelect)
-
-        // Hit the GetMetricAnomalies API
-        GetMetricAnomalies(selectedLog, timeRanges[newSelect], selectedServicesOptions)
-            .then(result => {
-                if (result.data) {
-                    setDataMetric(result.data);
-                } else {
-                    console.warn('API response data is null or undefined');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching metric anomalies on date range change:', error);
-            })
-    }
-    const handleGraphZoomOut = async () => {
-        // Get the keys of the object as an array
-        const keys = Object.keys(defaultTimeRanges);
-        // Find the index of the key
-        const selectedKeyIndex = keys.indexOf(currentZoomDateRange);
-
-        // Do nothing if already at max zoomed out
-        if (selectedKeyIndex >= keys.length-1) return
-        
-        // Select new range
-        const newSelect = keys[selectedKeyIndex + 1];
-        setCurrentZoomDateRange(newSelect)
-
-        // Hit the GetMetricAnomalies API
-        GetMetricAnomalies(selectedLog, timeRanges[newSelect], selectedServicesOptions)
-            .then(result => {
-                if (result.data) {
-                    setDataMetric(result.data);
-                } else {
-                    console.warn('API response data is null or undefined');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching metric anomalies on date range change:', error);
-            })
-    }
-
 
     // Initial fetch when component mounts or selectedLog changes
     useEffect(() => {
@@ -740,15 +598,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         setSelectedRange('')
     }, [selectedLog])
 
-    useEffect(() => {
-        // Get the keys of the object as an array
-        const keys = Object.keys(defaultTimeRanges);
-        // Find the index of the key
-        const selectedKeyIndex = keys.indexOf(selectedRange === '' ? 'Last 15 minutes' : selectedRange);
-
-        setCurrentZoomDateRange(keys[selectedKeyIndex])
-    }, [selectedRange])
-    
     useEffect(() => {
         // Update the time difference every second
         const intervalId = setInterval(updateTimeDifference, 1000);
@@ -897,12 +746,12 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                         </div>
                     </Box>
                 </div>
-                <div className="flex flex-col gap-8">
-                    <Typography variant="h5" component="h5" color="white">
-                        Graphic Anomaly Records
-                    </Typography>
-                    {renderChart()}
-                </div>
+                <GraphAnomalyCard
+                    selectedLog={selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : ''}
+                    servicesOptions={filterServicesOptions}
+                    selectedTimeRangeKey={selectedRange}
+                    timeRanges={timeRanges}
+                />
             </div>
         </div>
     )

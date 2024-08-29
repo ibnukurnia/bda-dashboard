@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { GetHistoricalLogAnomalies, GetMetricAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { Box, Typography } from '@mui/material'
 import {
     ColumnDef,
@@ -112,7 +112,6 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
         try {
             // Initiate both API calls concurrently and independently
             const logResultPromise = GetHistoricalLogAnomalies(type, 10, 1, filtersAnomaly, filterServices, selectedTimeRange);
-            const metricResultPromise = GetMetricAnomalies(type, selectedTimeRange, filterServices);
 
             // Handle the result of the GetHistoricalLogAnomalies API call
             logResultPromise
@@ -161,18 +160,6 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
                     }));
                 });
 
-            // Handle the result of the GetMetricAnomalies API call
-            metricResultPromise
-                .then(metricResult => {
-                    if (metricResult.data) {
-                        setDataMetric(metricResult.data);
-                    } else {
-                        console.warn('API response data is null or undefined for metrics');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching metric anomalies:', error);
-                });
 
         } catch (error) {
             console.error('Unexpected error:', error);
@@ -188,7 +175,6 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
     ) => {
         // Start both API calls concurrently
         const logAnomaliesPromise = GetHistoricalLogAnomalies(logType, limit, page, selectedAnomalyOptions, selectedServicesOptions, date_range);
-        const metricAnomaliesPromise = GetMetricAnomalies(logType, date_range, selectedServicesOptions);
 
         // Handle the result of the first API call
         logAnomaliesPromise
@@ -221,20 +207,6 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
                     setIsTableLoading(false)
                 } else {
                     console.warn('API response data is null or undefined');
-                }
-            })
-            .catch(error => {
-                handleApiError(error);
-            });
-
-        // Handle the result of the second API call
-        metricAnomaliesPromise
-            .then(metricResult => {
-                if (metricResult.data) {
-                    setDataMetric(metricResult.data);
-                    setIsChartLoading(false)
-                } else {
-                    console.warn('API response data is null or undefined for metrics');
                 }
             })
             .catch(error => {
@@ -391,12 +363,6 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
             timeRangeValue || 15 // Use the selected time range or fallback to 15 minutes
         );
 
-        const metricAnomaliesPromise = GetMetricAnomalies(
-            type,
-            timeRangeValue || 15, // Use the selected time range or fallback to 15 minutes
-            selectedServices
-        );
-
         // Handle the result of the log anomalies API call
         logAnomaliesPromise
             .then(result => {
@@ -435,16 +401,6 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
             })
             .catch(handleApiError);
 
-        // Handle the result of the metric anomalies API call
-        metricAnomaliesPromise
-            .then(result => {
-                if (result.data) {
-                    setDataMetric(result.data);
-                } else {
-                    console.warn('API response data is null or undefined');
-                }
-            })
-            .catch(handleApiError);
     };
 
     const nextPage = () => {

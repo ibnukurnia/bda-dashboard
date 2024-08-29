@@ -5,3 +5,9 @@ export interface Anomaly {
     response_time: string;
     pod_name: string;
 }
+
+export type ColumnOption = {
+    name: string;
+    type: string;
+    comment: string;
+}
