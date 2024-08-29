@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 
@@ -28,11 +30,6 @@ interface TrafficMapProps {
             target: string;
         }>;
     };
-    // edgeColorMap: Array<{
-    //     color: string;
-    //     label: string;
-    //     range: [number, number];
-    // }>;
     edgeDrawingMethod: string;
 }
 
@@ -119,7 +116,9 @@ const TopologyDiagram: React.FC = () => {
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
-        setIsMounted(true);
+        if (typeof window !== 'undefined') {
+            setIsMounted(true);
+        }
     }, []);
 
     return (

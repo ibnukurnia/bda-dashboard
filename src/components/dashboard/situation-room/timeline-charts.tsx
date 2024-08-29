@@ -7,12 +7,14 @@ const DistributedTimelineChart: React.FC = () => {
     const [Chart, setChart] = useState<any>(null);
 
     useEffect(() => {
-        const loadChart = async () => {
-            const { default: ChartModule } = await import('react-apexcharts');
-            setChart(() => ChartModule);
-        };
+        if (typeof window !== 'undefined') {
+            const loadChart = async () => {
+                const { default: ChartModule } = await import('react-apexcharts');
+                setChart(() => ChartModule);
+            };
 
-        loadChart();
+            loadChart();
+        }
     }, []);
 
     const series = [

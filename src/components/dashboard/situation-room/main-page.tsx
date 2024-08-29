@@ -487,10 +487,10 @@ const MainPageSituationRoom = () => {
                                 Status
                             </Typography>
                             <div className='flex flex-row gap-2'>
-                                <ButtonWithCheckbox buttonClassName='' buttonText="Open" />
+                                {/* <ButtonWithCheckbox buttonClassName='' buttonText="Open" />
                                 <ButtonWithCheckbox buttonClassName='' buttonText="In Progress" />
                                 <ButtonWithCheckbox buttonClassName='bg-transparent' buttonText="Resolve" />
-                                <ButtonWithCheckbox buttonClassName='bg-transparent' buttonText="Close" />
+                                <ButtonWithCheckbox buttonClassName='bg-transparent' buttonText="Close" /> */}
                             </div>
                         </div>
                         <div className='flex flex-col gap-3'>
@@ -789,14 +789,14 @@ const MainPageSituationRoom = () => {
                         <TopologyDiagram />
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={3}>
-                        <LineChart
+                        {/* <LineChart
                             series={series}
                             categories={categories}
                             title="VM00009MOPB92 - BRIMO - mobile-banking - used_memory"
                             lineColor="#FE981c"
                             yAxisMin={0}
                             yAxisMax={160}
-                        />
+                        /> */}
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={4}>
                         Assign Team
