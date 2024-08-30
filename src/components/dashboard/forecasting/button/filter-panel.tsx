@@ -6,6 +6,8 @@ import {
   GetFilterService,
 } from '@/modules/usecases/forecasting'
 
+import Button from '@/components/system/Button/Button'
+
 import DropdownFilter from './dropdown'
 
 interface CheckboxOption {
@@ -162,19 +164,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
               selected={selectedOption}
             />
             <div className="flex justify-between mt-6 space-x-4">
-              <button
-                className="bg-white text-blue-600 border border-primary-blue px-4 py-2 rounded-lg flex-1 text-center"
-                onClick={handleReset}
-              >
+              <Button variant="secondary" onClick={handleReset}>
                 RESET
-              </button>
-              <button
+              </Button>
+              <Button
                 disabled={[selectedSource, selectedMetric, selectedService, selectedOption].some((el) => el === null)}
-                className="bg-blue-600 hover:bg-blue-800 disabled:text-gray-400 disabled:bg-gray-200 text-white px-4 py-2 rounded-lg flex-1 text-center"
                 onClick={handleApply}
               >
                 TERAPKAN
-              </button>
+              </Button>
             </div>
           </div>
         </div>
