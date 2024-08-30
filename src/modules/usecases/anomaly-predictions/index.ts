@@ -26,11 +26,11 @@ const GetHistoricalLogAnomalies = async (type: string, limit: number, page: numb
   return response
 }
 
-const GetMetricLogAnomalies = async (type: string, start_time: string, end_time: string, service_name: string[] = []) => {
-  let endPoint = `anomaly-predictions/metrics?type=${type}&start_time=${start_time}&end_time=${end_time}`
+const GetMetricLogAnomalies = async (type: string, start_time: string, end_time: string, service_name: string, metric: string[]) => {
+  let endPoint = `anomaly-predictions/metrics?type=${type}&start_time=${start_time}&end_time=${end_time}&service_name=${service_name}`
 
-  service_name.forEach(sn => {
-    endPoint += `&service_name=${sn}`
+  metric.forEach(m => {
+    endPoint += `&metrics=${m}`
   });
 
   const response: ApiResponse<MetricLogAnomalyResponse[]> = await get(endPoint, {
@@ -75,7 +75,7 @@ const GetFetchAnomalyOption = async (): Promise<ApiResponse<AnomalyOptionRespons
 
 export {
   GetHistoricalLogAnomalies,
-  GetMetricLogAnomalies as GetMetricAnomalies,
+  GetMetricLogAnomalies,
   GetHistoricalNetworkAnomalies,
   GetHistoricalSecurityAnomalies,
   GetHistoricalUtilizationAnomalies,
