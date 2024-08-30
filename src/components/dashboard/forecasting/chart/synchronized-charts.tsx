@@ -72,11 +72,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({ dataCharts, hei
             },
             tooltip: {
               enabled: true,
-              y: {
-                formatter(val, opts) {
-                  return `${val} ${metric.series[opts.seriesIndex].unit ?? ''}`
-                },
-              },
             },
             xaxis: {
               tooltip: {
@@ -119,7 +114,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({ dataCharts, hei
                 text: metric.yaxisLabel,
                 style: { color: 'white' },
               },
-              seriesName: metric.series.filter((el) => el.name.includes('-tps')).map((item) => item.name),
               labels: {
                 style: {
                   colors: 'white', // White color for y-axis text

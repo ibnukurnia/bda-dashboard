@@ -14,8 +14,10 @@ const GetForecastingGraphData = async () => {
   return resJson
 }
 
-const GetForecastingTableData = async () => {
-  const response = await fetch('/api/forecasting-table-data', { method: 'GET' })
+const GetForecastingTableData = async (params: { page: number; limit: number }) => {
+  const response = await fetch(`/api/forecasting-table-data?page=${params.page}&limit=${params.limit}`, {
+    method: 'GET',
+  })
   const resJson = await response.json()
 
   return resJson

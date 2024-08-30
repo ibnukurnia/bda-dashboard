@@ -23,12 +23,6 @@ interface ForecastingTableProps {
     count_error_400: number
     count_error_500: number
   }[]
-  setPagination: (
-    value: SetStateAction<{
-      pageIndex: number
-      pageSize: number
-    }>
-  ) => void
   pagination: {
     pageIndex: number
     pageSize: number
@@ -36,13 +30,15 @@ interface ForecastingTableProps {
   totalPages: number
   nextPage: () => void
   previousPage: () => void
+  changePaginationSize: (size: number) => void
 }
 
 const ForecastingTable = ({
   table,
   data,
   pagination,
-  setPagination,
+  // setPagination,
+  changePaginationSize,
   totalPages,
   nextPage,
   previousPage,
@@ -135,11 +131,7 @@ const ForecastingTable = ({
               onChange={(e) => {
                 const newPageSize = Number(e.target.value)
                 table.setPageSize(newPageSize)
-                setPagination((prev) => ({
-                  ...prev,
-                  pageSize: newPageSize,
-                  pageIndex: 0, // Reset to first page when page size changes
-                }))
+                changePaginationSize(newPageSize)
               }}
               className="select-button-assesment"
             >
@@ -164,7 +156,7 @@ const ForecastingTable = ({
             <button
               className="bg-transparent text-white p-2"
               onClick={nextPage}
-              disabled={pagination.pageIndex + 1 >= totalPages}
+              disabled={pagination.pageIndex >= totalPages}
             >
               <ArrowRight />
             </button>
