@@ -8,11 +8,14 @@ import { dummyDataMetric, dummyMutlipleYAxisAndScales, dummyScalesOption } from 
 import FilterGraphAnomaly from "../button/filterGraphAnomaly";
 import SynchronizedCharts from "../../overview/chart/synchronized-charts";
 import { ColumnOption } from "@/types/anomaly";
+import { format } from "date-fns";
 
 interface GraphicAnomalyCardProps {
     selectedLog: string;
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
+    startTime: string;
+    endTime: string;
     servicesOptions: string[];
 }
 
@@ -20,6 +23,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     selectedLog,
     selectedTimeRangeKey,
     timeRanges,
+    startTime,
+    endTime,
     servicesOptions,
 }) => {
     const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
@@ -33,8 +38,22 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const selectedKeyIndex = keys.indexOf(currentZoomDateRange);
 
     useEffect(() => {
+        if (selectedScales.length <= 0 || selectedService.length <= 0) return
+
         const selectedTimeRange = timeRanges[currentZoomDateRange] ?? 15
-        const metricResultPromise = GetMetricLogAnomalies(selectedLog, selectedTimeRange, selectedService, selectedScales.map(scale => scale.name))
+
+        // Calculate endDate as the current time, rounding down the seconds to 00
+        const endDateObj = new Date();
+        endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
+
+        // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
+        const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
+
+        // Convert startDate and endDate to strings
+        const predefinedStartTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
+        const predefinedEndTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
+
+        const metricResultPromise = GetMetricLogAnomalies(selectedLog, predefinedStartTime, predefinedEndTime, selectedService, selectedScales.map(scale => scale.name))
 
         metricResultPromise
             .then((metricResult) => {
@@ -52,8 +71,31 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         currentZoomDateRange,
         selectedService,
     ])
-
+    
     useUpdateEffect(() => {
+        if (selectedScales.length <= 0 || selectedService.length <= 0) return
+
+        const metricResultPromise = GetMetricLogAnomalies(selectedLog, startTime, endTime, selectedService, selectedScales.map(scale => scale.name))
+
+        metricResultPromise
+            .then((metricResult) => {
+                if (metricResult.data) {
+                    setDataMetric(metricResult.data)
+                } else {
+                    console.warn('API response data is null or undefined for metrics')
+                }
+            })
+            .catch((error) => {
+                console.error('Error fetching metric anomalies:', error)
+            })
+    }, [
+        startTime,
+        endTime,
+    ])
+    useUpdateEffect(() => {
+        // Skip if custom range
+        if (selectedTimeRangeKey.includes(' - ')) return
+
         setCurrentZoomDateRange(selectedTimeRangeKey)
     }, [selectedTimeRangeKey])
 
@@ -66,11 +108,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         setCurrentZoomDateRange(newSelect)
     }
     const handleGraphZoomOut = async () => {
-        // Get the keys of the object as an array
-        const keys = Object.keys(timeRanges);
-        // Find the index of the key
-        const selectedKeyIndex = keys.indexOf(currentZoomDateRange);
-
         // Do nothing if already at max zoomed out
         if (selectedKeyIndex >= keys.length-1) return
         
@@ -97,7 +134,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                     servicesOptions={servicesOptions}
                     onApplyFilters={handleOnApplyFilter}
                 />
-                {selectedScales.length > 0 || selectedService.length > 0 &&
+                {selectedService &&
                     <Typography variant="subtitle1" color="white">
                         Service name: {selectedService}
                     </Typography>
