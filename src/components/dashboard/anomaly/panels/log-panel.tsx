@@ -823,6 +823,8 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     servicesOptions={filterServicesOptions}
                     selectedTimeRangeKey={selectedRange}
                     timeRanges={timeRanges}
+                    startTime={startTime}
+                    endTime={endTime}
                 />
             </div>
         </div>
