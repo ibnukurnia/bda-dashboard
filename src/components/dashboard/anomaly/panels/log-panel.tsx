@@ -828,12 +828,14 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     </Box>
                 </div>
                 <GraphAnomalyCard
-                    selectedLog={selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : ''}
+                    selectedLog={getLogType(selectedLog)}
                     servicesOptions={filterServicesOptions}
                     selectedTimeRangeKey={selectedRange}
                     timeRanges={timeRanges}
-                    startTime={startTime}
-                    endTime={endTime}
+                    customTime={{
+                        startTime: startTime,
+                        endTime: endTime,
+                    }}
                 />
             </div>
         </div>
