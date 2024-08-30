@@ -1,0 +1,29 @@
+.toggle-container {
+    display: flex;
+    background-color: transparent;
+    border: 2px solid #004889;
+    border-radius: 25px;
+    width: 102px;
+    cursor: pointer;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .option {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 25px;
+
+    &:hover:not(.selected) {
+      background-color: #121621;
+    }
+  }
+  
+  .icon {
+    font-size: 16px;
+  }
+  
+  .selected {
+    background-color: #000000;
+  }
