@@ -5,8 +5,9 @@ export const paths = {
     overview: '/dashboard',
     // account: '/dashboard/account',
     anomaly: '/dashboard/anomaly-detection',
-    // situation: '/dashboard/situation-room',
-    // settings: '/dashboard/settings',
+    situation: '/dashboard/situation-room',
+    forecasting: '/dashboard/forecasting',
+    settings: '/dashboard/settings',
   },
   errors: { notFound: '/errors/not-found' },
 } as const;

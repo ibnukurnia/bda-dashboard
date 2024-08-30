@@ -9,6 +9,7 @@ import {
   Radio,
   Database,
   LogOut as Logout,
+  Activity,
 } from 'react-feather';
 
 export const navIcons: Record<string, Icon> = {
@@ -21,4 +22,5 @@ export const navIcons: Record<string, Icon> = {
   'database': Database,
   user: UserIcon,
   users: UsersIcon,
+  activity: Activity,
 };
