@@ -34,8 +34,14 @@ const GetHistoricalLogAnomalies = async (
   return response
 }
 
-const GetMetricLogAnomalies = async (type: string, date_range: number, service_name: string, metric: string[]) => {
-  let endPoint = `anomaly-predictions/metrics?type=${type}&date_range=${date_range}&service_name=${service_name}`
+const GetMetricLogAnomalies = async (
+  type: string,
+  start_time: string,
+  end_time: string,
+  service_name: string,
+  metric: string[]
+) => {
+  let endPoint = `anomaly-predictions/metrics?type=${type}&start_time=${start_time}&end_time=${end_time}&service_name=${service_name}`
 
   metric.forEach((m) => {
     endPoint += `&metrics=${m}`

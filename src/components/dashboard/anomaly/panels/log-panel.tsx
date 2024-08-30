@@ -78,45 +78,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         },
     })
 
-    // const renderChart = () => {
-    //     if (dataMetric.length === 0) {
-    //         return (
-    //             <div className="flex justify-center items-center">
-    //                 <div className="spinner"></div>
-    //             </div>
-    //         )
-    //     }
-
-    //     switch (selectedLog) {
-    //         case 'Log APM':
-    //         case 'Log Brimo':
-    //             // Get the keys of the object as an array
-    //             const keys = Object.keys(defaultTimeRanges);
-    //             // Find the index of the key
-    //             const selectedKeyIndex = keys.indexOf(currentZoomDateRange);
-
-    //             return (
-    //                 <SynchronizedCharts
-    //                     dataCharts={dataMetric} // Ensure dataMetric is relevant for Log Type
-    //                     height={300}
-    //                     width="100%"
-    //                     zoomInDisabled={selectedKeyIndex <= 0}
-    //                     zoomOutDisabled={selectedKeyIndex >= keys.length - 1}
-    //                     onZoomIn={handleGraphZoomIn}
-    //                     onZoomOut={handleGraphZoomOut}
-    //                     minXOnEmpty={new Date().getTime() - timeRanges[currentZoomDateRange] * 60 * 1000}
-    //                     maxXOnEmpty={new Date().getTime()}
-    //                 />
-    //             );
-    //         default:
-    //             return (
-    //                 <Typography variant="h6" component="h6" color="white">
-    //                     No chart available for {selectedLog}
-    //                 </Typography>
-    //             )
-    //     }
-    // }
-
     const getLogType = (selectedLog: string): string => {
         switch (selectedLog) {
             case 'Log APM':
@@ -201,7 +162,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                 startDate,
                 endDate
             );
-            const metricResultPromise = GetMetricLogAnomalies(logType, 15, "rozhok", []);
 
             // Handle the result of the GetHistoricalLogAnomalies API call
             logResultPromise
@@ -247,21 +207,8 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     setPagination((prev) => ({
                         ...prev,
                         pageIndex: 1,
-                    }));
-                });
-
-            // Handle the result of the GetMetricAnomalies API call
-            metricResultPromise
-                .then((metricResult) => {
-                    if (metricResult.data) {
-                        // setDataMetric(metricResult.data);
-                    } else {
-                        console.warn('API response data is null or undefined for metrics');
-                    }
+                    }))
                 })
-                .catch((error) => {
-                    console.error('Error fetching metric anomalies:', error);
-                });
         } catch (error) {
             console.error('Unexpected error:', error);
         }
@@ -604,11 +551,8 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     console.warn('API response data is null or undefined');
                 }
             })
-            .catch(handleApiError);
-
-        // Handle the result of the metric anomalies API call
-
-    };
+            .catch(handleApiError)
+    }
 
     const nextPage = () => {
         const logType = getLogType(selectedLog);
@@ -888,6 +832,8 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     servicesOptions={filterServicesOptions}
                     selectedTimeRangeKey={selectedRange}
                     timeRanges={timeRanges}
+                    startTime={startTime}
+                    endTime={endTime}
                 />
             </div>
         </div>
