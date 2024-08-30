@@ -5,19 +5,27 @@ import {
   HistoricalAnomalyNetworkResponse,
   HistoricalAnomalySecurityResponse,
   HistoricalAnomalyUtilizationResponse,
-  MetricLogAnomalyResponse
-} from "@/modules/models/anomaly-predictions"
+  MetricLogAnomalyResponse,
+} from '@/modules/models/anomaly-predictions'
 
-const GetHistoricalLogAnomalies = async (type: string, limit: number, page: number, filterAnomaly: string[], filterServices: string[], start_time: string, end_time: string) => {
+const GetHistoricalLogAnomalies = async (
+  type: string,
+  limit: number,
+  page: number,
+  filterAnomaly: string[],
+  filterServices: string[],
+  start_time: string,
+  end_time: string
+) => {
   let endPoint = `anomaly-predictions?type=${type}&limit=${limit}&page=${page}&start_time=${start_time}&end_time=${end_time}`
 
-  filterAnomaly.forEach(f => {
+  filterAnomaly.forEach((f) => {
     endPoint += `&filters=${f}`
-  });
+  })
 
-  filterServices.forEach(f => {
+  filterServices.forEach((f) => {
     endPoint += `&service_name=${f}`
-  });
+  })
 
   const response: ApiResponse<PaginatedResponse> = await get(endPoint, {
     withAuth: true,
@@ -26,12 +34,12 @@ const GetHistoricalLogAnomalies = async (type: string, limit: number, page: numb
   return response
 }
 
-const GetMetricLogAnomalies = async (type: string, start_time: string, end_time: string, service_name: string[] = []) => {
-  let endPoint = `anomaly-predictions/metrics?type=${type}&start_time=${start_time}&end_time=${end_time}`
+const GetMetricLogAnomalies = async (type: string, date_range: number, service_name: string, metric: string[]) => {
+  let endPoint = `anomaly-predictions/metrics?type=${type}&date_range=${date_range}&service_name=${service_name}`
 
-  service_name.forEach(sn => {
-    endPoint += `&service_name=${sn}`
-  });
+  metric.forEach((m) => {
+    endPoint += `&metrics=${m}`
+  })
 
   const response: ApiResponse<MetricLogAnomalyResponse[]> = await get(endPoint, {
     withAuth: true,
@@ -67,15 +75,14 @@ const GetHistoricalSecurityAnomalies = async () => {
 const GetFetchAnomalyOption = async (): Promise<ApiResponse<AnomalyOptionResponse>> => {
   const response: ApiResponse<AnomalyOptionResponse> = await get('anomaly-predictions/filter-column', {
     withAuth: true,
-  });
+  })
 
-  return response;
-};
-
+  return response
+}
 
 export {
   GetHistoricalLogAnomalies,
-  GetMetricLogAnomalies as GetMetricAnomalies,
+  GetMetricLogAnomalies,
   GetHistoricalNetworkAnomalies,
   GetHistoricalSecurityAnomalies,
   GetHistoricalUtilizationAnomalies,

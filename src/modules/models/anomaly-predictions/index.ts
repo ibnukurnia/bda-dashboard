@@ -10,13 +10,14 @@ export interface HistoricalAnomalyLogApmResponse {
 
 export interface MetricLogAnomalyResponse {
   title: string,
-  series: {
-    name: string
-    data: [
-      Date,
-      number,
-    ][],
-  }[]
+  anomalies: [
+    Date,
+    number,
+  ][],
+  data: [
+    Date,
+    number,
+  ][],
 }
 
 export interface TimeRangeOption {
