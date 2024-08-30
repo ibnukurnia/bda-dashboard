@@ -97,10 +97,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
 
   return (
     <div className="flex self-end z-50">
-      <button
-        className="font-medium rounded-lg text-sm py-3 ps-4 pe-9 text-white text-center bg-blue-700 hover:bg-blue-800 inline-flex items-center gap-2"
-        onClick={togglePanel}
-      >
+      <Button onClick={togglePanel}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -116,7 +113,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
           />
         </svg>
         Filter
-      </button>
+      </Button>
       {isOpen && (
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center">
           <div ref={panelRef} className="bg-white rounded-lg p-6 w-96 flex flex-col gap-3">
