@@ -64,7 +64,7 @@ const SynchronizedChartsMultipleScale: React.FC<SynchronizedChartsMultipleScaleP
     dataCharts.forEach((item) => {
         combinedSeries.push({
             name: `${item.title}`,
-            data: item.data.map(([date, number]) => ({ x: date, y: number }))
+            data: item.series.map(([date, number]) => ({ x: date, y: number }))
         });
     });
 

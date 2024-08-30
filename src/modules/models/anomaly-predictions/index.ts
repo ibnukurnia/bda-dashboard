@@ -14,7 +14,7 @@ export interface MetricLogAnomalyResponse {
     Date,
     number,
   ][],
-  data: [
+  series: [
     Date,
     number,
   ][],

@@ -10,7 +10,7 @@ export const dummydummyMutlipleYAxisAndScalesWithFilter = {
                     5288
                 ]
             ],
-            "data": [
+            "series": [
                 [
                     "2024-08-28 03:03:35",
                     5097
@@ -61,7 +61,7 @@ export const dummydummyMutlipleYAxisAndScalesWithFilter = {
                     5288
                 ]
             ],
-            "data": [
+            "series": [
                 [
                     "2024-08-28 03:03:35",
                     5097
@@ -938,7 +938,7 @@ export const dummyDataMetric = {
                     5288
                 ]
             ],
-            "data": [
+            "series": [
                 [
                     "2024-08-28 03:03:35",
                     5097
@@ -989,7 +989,7 @@ export const dummyDataMetric = {
                     5088
                 ]
             ],
-            "data": [
+            "series": [
                 [
                     "2024-08-28 03:03:35",
                     4097
