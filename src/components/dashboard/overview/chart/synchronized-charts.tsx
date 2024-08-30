@@ -144,15 +144,15 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         labels: {
                             formatter(value) {
                                 const date = new Date(value);
-                                return formatDate(date, "yyyy-MM-dd HH:mm:ss")
+                                return formatDate(date, "yyyy-MM-dd HH:mm")
                             },
                             style: {
                                 colors: 'white',
                             },
                             rotate: 0,
                         },
-                        min: dataCharts.every(series => series.series.length <= 0) ? minXOnEmpty : undefined,
-                        max: dataCharts.every(series => series.series.length <= 0) ? maxXOnEmpty : undefined,
+                        min: dataCharts.every(series => series.data.length <= 0) ? minXOnEmpty : undefined,
+                        max: dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : undefined,
                     },
                     yaxis: {
                         labels: {
@@ -190,7 +190,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             options={chartOptions}
                             series={[{
                                 name: metric.title,
-                                data: metric.series.map(([date, number]) => ({ x: date, y: number })),
+                                data: metric.data.map(([date, number]) => ({ x: date, y: number })),
                             }]}
                             type="line"
                             height={height}

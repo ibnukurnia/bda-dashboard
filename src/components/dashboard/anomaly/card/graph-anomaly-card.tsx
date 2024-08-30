@@ -40,6 +40,35 @@ const toggleList: ToggleOption[] = [
     }
 ]
 
+const GraphWrapper = ({
+    children,
+    isLoading,
+    isEmpty,
+    isFieldRequired,
+}: {
+    children: React.ReactNode;
+    isLoading?: boolean;
+    isEmpty?: boolean;
+    isFieldRequired?: boolean;
+}) => {
+    if (isFieldRequired) return (
+        <Typography variant="subtitle1" color="white" align="center">
+            DATA IS NOT AVAILABLE. PLEASE USE FILTER BUTTON TO FETCH DATA
+        </Typography>
+    )
+    if (isLoading) return (
+        <div className="flex justify-center items-center">
+            <div className="spinner"></div>
+        </div>
+    )
+    if (isEmpty) return (
+        <div className="text-center py-4">
+            <div className="text-center text-2xl font-semibold text-white">DATA IS NOT AVAILABLE</div>
+        </div>
+    )
+    return children
+}
+
 const Graph = ({
     data,
     selectedGraphToggle,
@@ -88,8 +117,10 @@ interface GraphicAnomalyCardProps {
     selectedLog: string;
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
-    startTime: string;
-    endTime: string;
+    customTime: {
+        startTime: string;
+        endTime: string;
+    }
     servicesOptions: string[];
 }
 
@@ -97,8 +128,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     selectedLog,
     selectedTimeRangeKey,
     timeRanges,
-    startTime,
-    endTime,
+    customTime,
     servicesOptions,
 }) => {
     const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
@@ -106,6 +136,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const [selectedScales, setSelectedScales] = useState<ColumnOption[]>([]);
     const [selectedService, setSelectedService] = useState<string>('');
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0])
+    const [isLoading, setIsLoading] = useState(false)
 
     // Get the keys of the object as an array
     const keys = Object.keys(timeRanges);
@@ -115,6 +146,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     useEffect(() => {
         if (selectedScales.length <= 0 || selectedService.length <= 0) return
 
+        setIsLoading(true)
         const selectedTimeRange = timeRanges[currentZoomDateRange] ?? 15
 
         // Calculate endDate as the current time, rounding down the seconds to 00
@@ -137,9 +169,11 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 } else {
                     console.warn('API response data is null or undefined for metrics')
                 }
+                setIsLoading(false)
             })
             .catch((error) => {
                 console.error('Error fetching metric anomalies:', error)
+                setIsLoading(false)
             })
     }, [
         selectedLog,
@@ -150,7 +184,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     useUpdateEffect(() => {
         if (selectedScales.length <= 0 || selectedService.length <= 0) return
 
-        const metricResultPromise = GetMetricLogAnomalies(selectedLog, startTime, endTime, selectedService, selectedScales.map(scale => scale.name))
+        setIsLoading(true)
+        const metricResultPromise = GetMetricLogAnomalies(selectedLog, customTime.startTime, customTime.endTime, selectedService, selectedScales.map(scale => scale.name))
 
         metricResultPromise
             .then((metricResult) => {
@@ -159,13 +194,14 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 } else {
                     console.warn('API response data is null or undefined for metrics')
                 }
+                setIsLoading(false)
             })
             .catch((error) => {
                 console.error('Error fetching metric anomalies:', error)
+                setIsLoading(false)
             })
     }, [
-        startTime,
-        endTime,
+        customTime
     ])
     useUpdateEffect(() => {
         // Skip if custom range
@@ -218,7 +254,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                         Service name: {selectedService}
                     </Typography>
                 }
-                {dataMetric.length !== 0 &&
+                {/* {dataMetric.length !== 0 && */}
+                {selectedService &&
                     <div className="ml-auto">
                         <Toggle
                             defaultToggle={selectedGraphToggle}
@@ -228,25 +265,22 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                     </div>
                 }
             </div>
-            {selectedScales.length <= 0 || selectedService.length <= 0 ?
-                <Typography variant="subtitle1" color="white" align="center">
-                    DATA IS NOT AVAILABLE. PLEASE USE FILTER BUTTON TO FETCH DATA
-                </Typography>
-                : (dataMetric.length === 0 ?
-                    <div className="flex justify-center items-center">
-                        <div className="spinner"></div>
-                    </div>
-                    : <Graph
-                        data={dummyDataMetric.data as MetricLogAnomalyResponse[]}
-                        selectedGraphToggle={selectedGraphToggle}
-                        zoomInDisabled={selectedKeyIndex <= 0}
-                        zoomOutDisabled={selectedKeyIndex >= keys.length-1}
-                        onZoomIn={handleGraphZoomIn}
-                        onZoomOut={handleGraphZoomOut}
-                        minXOnEmpty={new Date().getTime() - timeRanges[currentZoomDateRange] * 60 * 1000}
-                        maxXOnEmpty={new Date().getTime()}
-                    />
-            )}
+            <GraphWrapper
+                isFieldRequired={selectedScales.length <= 0 || selectedService.length <= 0}
+                // isLoading={isLoading}
+                // isEmpty={dataMetric.length === 0}
+            >
+                <Graph
+                    data={dummyDataMetric.data as MetricLogAnomalyResponse[]}
+                    selectedGraphToggle={selectedGraphToggle}
+                    zoomInDisabled={selectedKeyIndex <= 0}
+                    zoomOutDisabled={selectedKeyIndex >= keys.length-1}
+                    onZoomIn={handleGraphZoomIn}
+                    onZoomOut={handleGraphZoomOut}
+                    minXOnEmpty={new Date().getTime() - timeRanges[currentZoomDateRange] * 60 * 1000}
+                    maxXOnEmpty={new Date().getTime()}
+                />
+            </GraphWrapper>
         </div>
     )
 }
