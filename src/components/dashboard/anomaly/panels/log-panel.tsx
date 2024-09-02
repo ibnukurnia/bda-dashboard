@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Column } from '@/modules/models/anomaly-predictions'
-import { GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { GetHistoricalLogAnomalies, GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { Box, Typography } from '@mui/material'
 import {
     ColumnDef,
@@ -669,6 +669,15 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         }
     }, [selectedLog]);
 
+
+    useEffect(() => {
+        // Get the keys of the object as an array
+        const keys = Object.keys(defaultTimeRanges);
+        // Find the index of the key
+        const selectedKeyIndex = keys.indexOf(selectedRange === '' ? 'Last 15 minutes' : selectedRange);
+
+        // setCurrentZoomDateRange(keys[selectedKeyIndex])
+    }, [selectedRange])
 
     useEffect(() => {
         // Update the time difference every second

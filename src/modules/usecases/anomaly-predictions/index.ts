@@ -5,19 +5,27 @@ import {
   HistoricalAnomalyNetworkResponse,
   HistoricalAnomalySecurityResponse,
   HistoricalAnomalyUtilizationResponse,
-  MetricLogAnomalyResponse
-} from "@/modules/models/anomaly-predictions"
+  MetricLogAnomalyResponse,
+} from '@/modules/models/anomaly-predictions'
 
-const GetHistoricalLogAnomalies = async (type: string, limit: number, page: number, filterAnomaly: string[], filterServices: string[], start_time: string, end_time: string) => {
+const GetHistoricalLogAnomalies = async (
+  type: string,
+  limit: number,
+  page: number,
+  filterAnomaly: string[],
+  filterServices: string[],
+  start_time: string,
+  end_time: string
+) => {
   let endPoint = `anomaly-predictions?type=${type}&limit=${limit}&page=${page}&start_time=${start_time}&end_time=${end_time}`
 
-  filterAnomaly.forEach(f => {
+  filterAnomaly.forEach((f) => {
     endPoint += `&filters=${f}`
-  });
+  })
 
-  filterServices.forEach(f => {
+  filterServices.forEach((f) => {
     endPoint += `&service_name=${f}`
-  });
+  })
 
   const response: ApiResponse<PaginatedResponse> = await get(endPoint, {
     withAuth: true,
@@ -64,11 +72,10 @@ const GetHistoricalSecurityAnomalies = async () => {
 const GetFetchAnomalyOption = async (): Promise<ApiResponse<AnomalyOptionResponse>> => {
   const response: ApiResponse<AnomalyOptionResponse> = await get('anomaly-predictions/filter-column', {
     withAuth: true,
-  });
+  })
 
-  return response;
-};
-
+  return response
+}
 
 export {
   GetHistoricalLogAnomalies,
