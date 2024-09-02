@@ -1,0 +1,38 @@
+table {
+  position: relative !important;
+}
+
+td,
+th {
+  background-color: rgb(5, 6, 30);
+}
+
+th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  padding: 12px !important;
+}
+
+td {
+  padding: 12px 2px !important;
+}
+
+tr th:first-child,
+tr td:first-child {
+  min-width: 240px !important;
+  position: sticky;
+  z-index: 2;
+  left: 0;
+  /* background-color: rgb(17, 24, 39) !important;  */
+  padding: 12px !important;
+}
+
+.scrollbar-table::-webkit-scrollbar {
+  display: none;
+}
+
+.checkbox {
+  max-height: 30vh;
+  overflow: auto;
+}
