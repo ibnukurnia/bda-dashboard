@@ -11,9 +11,11 @@ interface FilterPanelProps {
     servicesOptions: string[];
     onApplyFilters: (filters: { selectedAnomalies: string[], selectedServices: string[] }) => void; // Separate filters for anomalies and services
     onResetFilters: () => void;
+    hasErrorFilterAnomaly: boolean;
+    hasErrorFilterService: boolean;
 }
 
-const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOptions, onApplyFilters, onResetFilters }) => {
+const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOptions, onApplyFilters, onResetFilters, hasErrorFilterAnomaly, hasErrorFilterService }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
@@ -98,36 +100,41 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
                     <div ref={panelRef} className="bg-white rounded-lg p-6 w-96 flex flex-col gap-1">
                         <h2 className="text-xl font-semibold mb-10 text-center">Multiple Filter</h2>
 
-                        <div className="">
+                        <div>
                             <h3 className="font-semibold mb-3 text-lg">Anomaly</h3>
                             <div className="overflow-y-auto max-h-40">
-                                {checkboxOptions.length > 0 ? (
-                                    checkboxOptions.map((option) => (
-                                        <label key={option.id} className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    value={option.id}
-                                                    checked={selectedAnomalyOptions.includes(option.id)}
-                                                    onChange={() => handleAnomalyChange(option.id)}
-                                                    className="mr-2"
-                                                />
-                                                {option.label}
-                                            </div>
-                                        </label>
-                                    ))
+                                {hasErrorFilterAnomaly ? (
+                                    <p className="text-red-500">An error occurred while loading options. Please try again later.</p>
                                 ) : (
-                                    <p>No options available</p>
+                                    checkboxOptions.length > 0 ? (
+                                        checkboxOptions.map((option) => (
+                                            <label key={option.id} className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={option.id}
+                                                        checked={selectedAnomalyOptions.includes(option.id)}
+                                                        onChange={() => handleAnomalyChange(option.id)}
+                                                        className="mr-2"
+                                                    />
+                                                    {option.label}
+                                                </div>
+                                            </label>
+                                        ))
+                                    ) : (
+                                        <p>No options available</p>
+                                    )
                                 )}
                             </div>
                         </div>
-
                         <hr className="w-auto h-1 mx-auto bg-gray-700 border-0 rounded" />
 
-                        <div className="">
+                        <div>
                             <h3 className="font-semibold mb-3 text-lg">Services</h3>
                             <div className="overflow-y-auto max-h-40">
-                                {servicesOptions.length > 0 ? (
+                                {hasErrorFilterService ? (
+                                    <p className="text-red-500">An error occurred while fetching services. Please try again later.</p>
+                                ) : servicesOptions.length > 0 ? (
                                     servicesOptions.map((service, index) => (
                                         <label key={index} className="flex items-center justify-between mb-2">
                                             <div className="flex items-center">

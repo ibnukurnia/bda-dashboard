@@ -1,6 +1,5 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
-import { config } from '@/config';
 import { Stack } from '@mui/material';
 import MainPageAnomaly from '@/components/dashboard/anomaly/main-page';
 

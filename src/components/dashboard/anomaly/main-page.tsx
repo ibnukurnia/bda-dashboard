@@ -291,19 +291,11 @@ const MainPageAnomaly = () => {
         {activeTab === 'log' && selectedLog && (
           <TabLogContent
             selectedLog={selectedLog}
-            series={series}
-            categories={categories}
-            anomalyData={mostRecentAnomalyData}
-            anomalyCategory={mostRecentAnomalyCategory}
           />
         )}
         {activeTab === 'utilization' && selectedUtilization && (
           <TabUtilizationContent
             selectedUtilization={selectedUtilization}
-            series={series}
-            categories={categories}
-            anomalyData={mostRecentAnomalyData}
-            anomalyCategory={mostRecentAnomalyCategory}
           />
         )}
         {activeTab === 'network' && (
