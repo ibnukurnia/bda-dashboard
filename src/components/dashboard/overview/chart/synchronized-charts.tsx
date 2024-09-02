@@ -1,30 +1,71 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
 import { Typography } from '@mui/material';
+import './synchronized-charts.css';
+import { MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions';
+import { formatDate } from 'date-fns';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
+const colors = [
+    '#4E88FF', '#00D8FF', '#FF4EC7', '#00E396', '#F9C80E', '#8C54FF',
+    '#FF4560', '#FF7D00', '#7DFF6B', '#FF6EC7', '#1B998B', '#B28DFF',
+    '#FF6666', '#3DDC97', '#F4A261', '#89CFF0'
+  ]
+
 interface SynchronizedChartsProps {
-    dataCharts: {
-        title: string,
-        series: {
-            name: string
-            data: [
-                Date,
-                number,
-            ][],
-        }[]
-    }[];
+    dataCharts: MetricLogAnomalyResponse[];
     height: number;
     width: string;
+    zoomInDisabled?: boolean;
+    onZoomIn?: (minX: any, maxX: any) => void;
+    zoomOutDisabled?: boolean;
+    onZoomOut?: (minX: any, maxX: any) => void;
+    minX?: any;
+    maxX?: any;
+    minXOnEmpty?: any;
+    maxXOnEmpty?: any;
 }
 
 const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     dataCharts,
     height,
     width,
+    zoomInDisabled,
+    onZoomIn,
+    zoomOutDisabled,
+    onZoomOut,
+    minX,
+    maxX,
+    minXOnEmpty,
+    maxXOnEmpty,
 }) => {
+    const disableZoomButtons = () => {
+        const zoomInButtons = document.querySelectorAll('.apexcharts-zoomin-icon');
+        const zoomOutButtons = document.querySelectorAll('.apexcharts-zoomout-icon');
+    
+        zoomInButtons.forEach(button => {
+            if (zoomInDisabled) {
+                button.classList.add('zoom-disabled');
+            } else {
+                button.classList.remove('zoom-disabled');
+            }
+      });
+      
+      zoomOutButtons.forEach(button => {
+            if (zoomOutDisabled) {
+                button.classList.add('zoom-disabled');
+            } else {
+                button.classList.remove('zoom-disabled');
+            }
+        });
+    }
+
+    useEffect(() => {
+        disableZoomButtons()
+    }, [zoomInDisabled, zoomOutDisabled]);
+  
     if (!dataCharts || dataCharts.length === 0) {
         return (
             <div className="text-center text-2xl font-semibold text-white">
@@ -35,30 +76,23 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 
     return (
         <div className="flex flex-col gap-4">
-            {dataCharts && dataCharts.map((metric, index) => {
-                const { minDate, maxDate } = dataCharts[index].series.reduce(
-                    (acc, seriesItem) => {
-                        const seriesData = seriesItem.data;
-                        if (seriesData.length === 0) return acc
-
-                        const firstDate = new Date(seriesData[0][0])
-                        const lastDate = new Date(seriesData[seriesData.length - 1][0])
-
-                        // Update min and max dates in the accumulator
-                        if (firstDate.getTime() < acc.minDate.getTime()) acc.minDate = firstDate;
-                        if (lastDate.getTime() > acc.maxDate.getTime()) acc.maxDate = lastDate;
-
-                        return acc;
-                    },
-                    { minDate: new Date('9999-12-31'), maxDate: new Date('1970-01-01') } // Initial accumulator values
-                );
-
+            {dataCharts.map((metric, index) => {
                 const chartOptions: ApexOptions = {
                     chart: {
                         id: `sync-${index}`,
-                        group: 'social',
+                        group: 'log-anomaly',
                         type: 'line',
                         height: 160,
+                        toolbar: {
+                            tools: {
+                                zoomin: true,
+                                zoomout: true,
+                                zoom: false,
+                                pan: false,
+                                download: false,
+                                reset: false,
+                            }
+                        },
                         events: {
                             mounted: (chartContext: any) => {
                                 const chartEl = chartContext?.el;
@@ -80,21 +114,34 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                     });
                                 });
                             },
-                            beforeZoom: (e, { xaxis }) => {
-                                // Adjust the zoom range if it goes beyond the limits
-                                if (xaxis.min < minDate) {
-                                    xaxis.min = minDate;
+                            updated() {
+                                disableZoomButtons()
+                            },
+                            beforeZoom : (chartContext, {xaxis}) => {
+                                // Zoomed in
+                                if (xaxis.min > chartContext.minX && xaxis.max < chartContext.maxX) {
+                                    if (zoomInDisabled) {
+                                        return {
+                                            xaxis: {
+                                                min: chartContext.minX,
+                                                max: chartContext.maxX,
+                                            }
+                                        }
+                                    }
+                                    onZoomIn && onZoomIn(chartContext.minX, chartContext.maxX)
                                 }
-                                if (xaxis.max > maxDate) {
-                                    xaxis.max = maxDate;
+                                // Zoomed out
+                                if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {
+                                    if (zoomOutDisabled) {
+                                        return {
+                                            xaxis: {
+                                                min: minX && minX > chartContext.minX ? minX : chartContext.minX,
+                                                max: maxX && maxX < chartContext.maxX ? maxX : chartContext.maxX,
+                                            }
+                                        }
+                                    }
+                                    onZoomOut && onZoomOut(chartContext.minX, chartContext.maxX)
                                 }
-
-                                return {
-                                    xaxis: {
-                                        min: xaxis.min,
-                                        max: xaxis.max,
-                                    },
-                                };
                             },
                         },
                     },
@@ -103,19 +150,15 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         labels: {
                             formatter(value) {
                                 const date = new Date(value);
-                                return date.toLocaleDateString(
-                                    'id-ID',
-                                    { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }
-                                );
+                                return formatDate(date, "yyyy-MM-dd HH:mm")
                             },
                             style: {
                                 colors: 'white',
                             },
                             rotate: 0,
                         },
-                        tooltip: {
-                            enabled: false,
-                        },
+                        min: dataCharts.every(series => series.data.length <= 0) ? minXOnEmpty : undefined,
+                        max: dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : undefined,
                     },
                     yaxis: {
                         labels: {
@@ -123,10 +166,33 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                 colors: 'white',
                             },
                         },
+                        tooltip: {
+                            enabled: true,
+                        },
+                        axisBorder: {
+                          show: true, // Show the Y-axis line
+                          color: 'white', // Customize the color of the Y-axis line if needed
+                          width: 2, // Adjust the width of the Y-axis line
+                        },
                     },
                     stroke: {
                         curve: 'smooth',
-                        width: 1,
+                        width: 4,
+                        colors: [colors[index % (colors.length)]], // This gives the remainder after all full loops.
+                    },
+                    markers: {
+                        size: 0.0000001, // Workaround hover marker not showing because discrete options
+                        hover: {
+                            size: 6, // Size of the marker when hovered
+                        },
+                        discrete: dataCharts.flatMap((metric, index) => metric.anomalies.map(a =>(
+                            {
+                                seriesIndex: index, // Index of the series
+                                dataPointIndex: metric.data.findIndex(d => d[0] === a[0]), // Index of the data point to display a marker
+                                fillColor: '#FF0000', // Custom fill color for the specific marker
+                                size: 6, // Custom size for the specific marker
+                            })
+                        ))
                     },
                     grid: {
                         row: {
@@ -139,16 +205,20 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             colors: 'white'
                         }
                     },
+                    colors: [colors[index % (colors.length)]], // This gives the remainder after all full loops.
                 };
 
                 return (
-                    <div key={index}>
+                    <div key={metric.title}>
                         <Typography variant="h6" component="h6" color="white">
                             {metric.title}
                         </Typography>
                         <Chart
                             options={chartOptions}
-                            series={metric.series as ApexAxisChartSeries}
+                            series={[{
+                                name: metric.title,
+                                data: metric.data.map(([date, number]) => ({ x: date, y: number })),
+                            }]}
                             type="line"
                             height={height}
                             width={width}

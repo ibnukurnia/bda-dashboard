@@ -7,7 +7,7 @@ export const metadata = { title: `Anomaly Prediction` } satisfies Metadata;
 
 export default function Page(): React.JSX.Element {
     return (
-        <Stack spacing={0}>
+        <Stack>
             <MainPageAnomaly />
         </Stack>
     );

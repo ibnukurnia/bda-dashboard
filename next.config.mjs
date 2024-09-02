@@ -4,6 +4,7 @@ const config = {
     ignoreBuildErrors: true, // Ignore TypeScript build errors (not recommended for production)
   },
   swcMinify: true, // Enable SWC minification
+  output: 'standalone',
 }
 
 export default config

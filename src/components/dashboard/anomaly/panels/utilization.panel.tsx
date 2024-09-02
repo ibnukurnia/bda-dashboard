@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Column, MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions'
-import { GetHistoricalLogAnomalies, GetMetricAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { GetHistoricalLogAnomalies, GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { Box, Typography } from '@mui/material'
 import {
     ColumnDef,
@@ -17,6 +17,7 @@ import DropdownRange from '../../dropdownRange'
 import SynchronizedCharts from '../../overview/chart/synchronized-charts'
 import FilterPanel from '../button/filterPanel'
 import { format } from 'date-fns';
+import GraphAnomalyCard from '../card/graph-anomaly-card'
 
 interface TabUtilizationContentProps {
     selectedUtilization: string
@@ -183,7 +184,6 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
                 startDate,
                 endDate
             );
-            const metricResultPromise = GetMetricAnomalies(utilizationType, startDate, endDate, filterServices);
 
             // Handle the result of the GetHistoricalLogAnomalies API call
             logResultPromise
@@ -229,21 +229,8 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
                     setPagination((prev) => ({
                         ...prev,
                         pageIndex: 1,
-                    }));
-                });
-
-            // Handle the result of the GetMetricAnomalies API call
-            metricResultPromise
-                .then((metricResult) => {
-                    if (metricResult.data) {
-                        setDataMetric(metricResult.data);
-                    } else {
-                        console.warn('API response data is null or undefined for metrics');
-                    }
+                    }))
                 })
-                .catch((error) => {
-                    console.error('Error fetching metric anomalies:', error);
-                });
         } catch (error) {
             console.error('Unexpected error:', error);
         }
@@ -706,15 +693,7 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
 
     return (
         <div className="flex flex-col gap-10 px-14 py-12 card-style z-50">
-            <div className="flex flex-row justify-between items-center">
-                <FilterPanel
-                    servicesOptions={filterServicesOptions}
-                    checkboxOptions={filterAnomalyOptions}
-                    onApplyFilters={handleApplyFilters}
-                    onResetFilters={handleResetFilters}
-                    hasErrorFilterAnomaly={hasErrorFilterAnomaly}
-                    hasErrorFilterService={hasErrorFilterService}
-                />
+            <div className="flex flex-row items-center self-end">
                 <div className="flex flex-row gap-2 self-center items-center">
                     <Typography variant="body2" component="p" color="white">
                         {timeDifference}
@@ -726,8 +705,16 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
                     />
                 </div>
             </div>
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-8">
                 <div className="flex flex-col gap-8">
+                    <FilterPanel
+                        servicesOptions={filterServicesOptions}
+                        checkboxOptions={filterAnomalyOptions}
+                        onApplyFilters={handleApplyFilters}
+                        onResetFilters={handleResetFilters}
+                        hasErrorFilterAnomaly={hasErrorFilterAnomaly}
+                        hasErrorFilterService={hasErrorFilterService}
+                    />
                     <Typography variant="h5" component="h5" color="white">
                         Historical Anomaly Records
                     </Typography>
@@ -740,7 +727,9 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
                                     </div>
                                 ) : data.length === 0 && !isTableLoading ? (
                                     <div className="text-center py-4">
-                                        <div className="text-center text-2xl font-semibold text-white">DATA IS NOT AVAILABLE</div>
+                                        <Typography variant="subtitle1" color="white" align="center">
+                                            No data available.
+                                        </Typography>
                                     </div>
                                 ) : (
                                     <table id="person" className="table-auto divide-y divide-gray-200 w-full">
@@ -847,12 +836,12 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
                         </div>
                     </Box>
                 </div>
-                <div className="flex flex-col gap-8">
-                    <Typography variant="h5" component="h5" color="white">
-                        Graphic Anomaly Records
-                    </Typography>
-                    {renderChart()}
-                </div>
+                <GraphAnomalyCard
+                    selectedLog={getUtilizationType(selectedUtilization)}
+                    servicesOptions={filterServicesOptions}
+                    selectedTimeRangeKey={selectedRange}
+                    timeRanges={timeRanges}
+                />
             </div>
         </div>
     )

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Column, MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions'
-import { GetHistoricalLogAnomalies, GetMetricAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { GetHistoricalLogAnomalies, GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { Box, Typography } from '@mui/material'
 import {
     ColumnDef,
@@ -14,8 +14,10 @@ import {
 import { ArrowLeft, ArrowRight } from 'react-feather'
 import { CheckboxOption, fetchAnomalyOption, fetchServicesOption } from '@/lib/api'
 import DropdownRange from '../../dropdownRange'
-import SynchronizedCharts from '../../overview/chart/synchronized-charts'
 import FilterPanel from '../button/filterPanel'
+// import { AnomalyContext } from '@/contexts/anomaly-context'
+import GraphAnomalyCard from '../card/graph-anomaly-card'
+
 import { format } from 'date-fns';
 
 interface TabLogContentProps {
@@ -38,7 +40,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     selectedLog,
 }) => {
     const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
-    const [selectedRange, setSelectedRange] = useState<string>('Last 15 minute')
+    const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [startTime, setStartTime] = useState<string>('')
@@ -70,34 +72,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             pagination,
         },
     })
-
-    const renderChart = () => {
-        if (dataMetric.length === 0) {
-            return (
-                <div className="flex justify-center items-center">
-                    <div className="spinner"></div>
-                </div>
-            )
-        }
-
-        switch (selectedLog) {
-            case 'Log APM':
-            case 'Log Brimo':
-                return (
-                    <SynchronizedCharts
-                        dataCharts={dataMetric} // Ensure dataMetric is relevant for Log APM/Brimo
-                        height={300}
-                        width="100%"
-                    />
-                )
-            default:
-                return (
-                    <Typography variant="h6" component="h6" color="white">
-                        No chart available for {selectedLog}
-                    </Typography>
-                )
-        }
-    }
 
     const getLogType = (selectedLog: string): string => {
         switch (selectedLog) {
@@ -183,7 +157,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                 startDate,
                 endDate
             );
-            const metricResultPromise = GetMetricAnomalies(logType, startDate, endDate, filterServices);
 
             // Handle the result of the GetHistoricalLogAnomalies API call
             logResultPromise
@@ -229,21 +202,8 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     setPagination((prev) => ({
                         ...prev,
                         pageIndex: 1,
-                    }));
-                });
-
-            // Handle the result of the GetMetricAnomalies API call
-            metricResultPromise
-                .then((metricResult) => {
-                    if (metricResult.data) {
-                        setDataMetric(metricResult.data);
-                    } else {
-                        console.warn('API response data is null or undefined for metrics');
-                    }
+                    }))
                 })
-                .catch((error) => {
-                    console.error('Error fetching metric anomalies:', error);
-                });
         } catch (error) {
             console.error('Unexpected error:', error);
         }
@@ -336,7 +296,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             handleApiError(error);
         }
     };
-
 
     const fetchDataByLog = async (
         logType: string,
@@ -575,11 +534,8 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     console.warn('API response data is null or undefined');
                 }
             })
-            .catch(handleApiError);
-
-        // Handle the result of the metric anomalies API call
-
-    };
+            .catch(handleApiError)
+    }
 
     const nextPage = () => {
         const logType = getLogType(selectedLog);
@@ -696,7 +652,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         }
     }, [selectedLog]);
 
-
     useEffect(() => {
         // Update the time difference every second
         const intervalId = setInterval(updateTimeDifference, 1000);
@@ -707,15 +662,8 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
 
     return (
         <div className="flex flex-col gap-10 px-14 py-12 card-style z-50">
-            <div className="flex flex-row justify-between items-center">
-                <FilterPanel
-                    servicesOptions={filterServicesOptions}
-                    checkboxOptions={filterAnomalyOptions}
-                    onApplyFilters={handleApplyFilters}
-                    onResetFilters={handleResetFilters}
-                    hasErrorFilterAnomaly={hasErrorFilterAnomaly}
-                    hasErrorFilterService={hasErrorFilterService}
-                />
+            <div className="flex flex-row items-center self-end">
+
                 <div className="flex flex-row gap-2 self-center items-center">
                     <Typography variant="body2" component="p" color="white">
                         {timeDifference}
@@ -729,6 +677,14 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             </div>
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-8">
+                    <FilterPanel
+                        servicesOptions={filterServicesOptions}
+                        checkboxOptions={filterAnomalyOptions}
+                        onApplyFilters={handleApplyFilters}
+                        onResetFilters={handleResetFilters}
+                        hasErrorFilterAnomaly={hasErrorFilterAnomaly}
+                        hasErrorFilterService={hasErrorFilterService}
+                    />
                     <Typography variant="h5" component="h5" color="white">
                         Historical Anomaly Records
                     </Typography>
@@ -741,7 +697,9 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                                     </div>
                                 ) : data.length === 0 && !isTableLoading ? (
                                     <div className="text-center py-4">
-                                        <div className="text-center text-2xl font-semibold text-white">DATA IS NOT AVAILABLE</div>
+                                        <Typography variant="subtitle1" color="white" align="center">
+                                            No data available.
+                                        </Typography>
                                     </div>
                                 ) : (
                                     <table id="person" className="table-auto divide-y divide-gray-200 w-full">
@@ -848,12 +806,12 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                         </div>
                     </Box>
                 </div>
-                <div className="flex flex-col gap-8">
-                    <Typography variant="h5" component="h5" color="white">
-                        Graphic Anomaly Records
-                    </Typography>
-                    {renderChart()}
-                </div>
+                <GraphAnomalyCard
+                    selectedLog={getLogType(selectedLog)}
+                    servicesOptions={filterServicesOptions}
+                    selectedTimeRangeKey={selectedRange}
+                    timeRanges={timeRanges}
+                />
             </div>
         </div>
     )

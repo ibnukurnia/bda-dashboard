@@ -74,7 +74,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
     }, [isOpen]);
 
     return (
-        <div className="flex self-end">
+        <div className="flex self-start">
             <button
                 className="font-medium rounded-lg text-sm py-3 ps-4 pe-9 text-white text-center bg-blue-700 hover:bg-blue-800 inline-flex items-center gap-2"
                 onClick={togglePanel}
