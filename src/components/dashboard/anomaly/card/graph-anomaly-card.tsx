@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Typography } from "@mui/material";
 import useUpdateEffect from "@/hooks/use-update-effect";
 import SynchronizedChartsMultipleScale from "../../overview/chart/synchronized-charts-multiple-scale";
-import { dummyDataMetric, dummyMutlipleYAxisAndScales, dummyScalesOption } from "../panels/dummyMutlipleYAxisAndScales";
 import FilterGraphAnomaly from "../button/filterGraphAnomaly";
 import SynchronizedCharts from "../../overview/chart/synchronized-charts";
 import { ColumnOption } from "@/types/anomaly";
