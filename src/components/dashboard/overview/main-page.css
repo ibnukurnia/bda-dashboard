@@ -15,17 +15,27 @@ th {
 }
 
 td {
-  padding: 12px 2px !important;
+  padding: 12px 6px !important;
+  min-height: 56px;
 }
 
-tr th:first-child,
-tr td:first-child {
+th:first-child {
+  top: 0 !important;
+  z-index: 3 !important;
+}
+
+th:first-child,
+td:first-child {
   min-width: 240px !important;
   position: sticky;
   z-index: 2;
   left: 0;
-  /* background-color: rgb(17, 24, 39) !important;  */
+  /* background-color: rgb(17, 24, 39) !important; */
   padding: 12px !important;
+}
+
+.scrollbar-table {
+  max-height: calc(100vh - 200px);
 }
 
 .scrollbar-table::-webkit-scrollbar {
