@@ -26,16 +26,13 @@ const GetHistoricalLogAnomalies = async (type: string, limit: number, page: numb
   return response
 }
 
-const GetMetricLogAnomalies = async (type: string, start_time: string, end_time: string, service_name: string, metric: string[]) => {
-  let endPoint = `anomaly-predictions/metrics-per-service?type=${type}&start_time=${start_time}&end_time=${end_time}&service_name=${service_name}`
-
-  metric.forEach(m => {
-    endPoint += `&metric_name=${m}`
-  });
+const GetMetricLogAnomalies = async (payload: {type: string, start_time: string, end_time: string, service_name: string, metric_name: string[]}, signal?: AbortSignal) => {
+  let endPoint = `anomaly-predictions/metrics-per-service`
 
   const response: ApiResponse<MetricLogAnomalyResponse[]> = await get(endPoint, {
     withAuth: true,
-  })
+    queries: payload,
+  }, signal)
 
   return response
 }

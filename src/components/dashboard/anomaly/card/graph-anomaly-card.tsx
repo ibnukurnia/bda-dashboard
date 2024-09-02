@@ -1,6 +1,6 @@
 import { MetricLogAnomalyResponse } from "@/modules/models/anomaly-predictions";
 import { GetMetricLogAnomalies } from "@/modules/usecases/anomaly-predictions";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Typography } from "@mui/material";
 import useUpdateEffect from "@/hooks/use-update-effect";
 import SynchronizedChartsMultipleScale from "../../overview/chart/synchronized-charts-multiple-scale";
@@ -85,8 +85,8 @@ const Graph = ({
     zoomOutDisabled: boolean;
     onZoomIn: (minX: any, maxX: any) => void;
     onZoomOut: (minX: any, maxX: any) => void;
-    minXOnEmpty: number;
-    maxXOnEmpty: number;
+    minXOnEmpty?: number;
+    maxXOnEmpty?: number;
 }) => {
     if (toggleList.indexOf(selectedGraphToggle) === 0) {
         return(
@@ -94,6 +94,12 @@ const Graph = ({
                 dataCharts={data}
                 height={600}
                 width="100%"
+                zoomInDisabled={zoomInDisabled}
+                zoomOutDisabled={zoomOutDisabled}
+                onZoomIn={onZoomIn}
+                onZoomOut={onZoomOut}
+                minXOnEmpty={minXOnEmpty}
+                maxXOnEmpty={maxXOnEmpty}
             />
         )
     }
@@ -117,10 +123,6 @@ interface GraphicAnomalyCardProps {
     selectedLog: string;
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
-    customTime: {
-        startTime: string;
-        endTime: string;
-    }
     servicesOptions: string[];
 }
 
@@ -128,89 +130,160 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     selectedLog,
     selectedTimeRangeKey,
     timeRanges,
-    customTime,
     servicesOptions,
 }) => {
     const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
     const [currentZoomDateRange, setCurrentZoomDateRange] = useState<string>(selectedTimeRangeKey === '' ? 'Last 15 minutes': selectedTimeRangeKey)
-    const [selectedScales, setSelectedScales] = useState<ColumnOption[]>([]);
-    const [selectedService, setSelectedService] = useState<string>('');
+    const [customTime, setCustomTime] = useState<{
+        startTime: string;
+        endTime: string;
+    }>({ startTime: new Date().toString(), endTime: new Date().toString()})
+    const [dateRangeMode, setDateRangeMode] = useState<"predefined" | "custom">("predefined")
+    const [selectedFilter, setSelectedFilter] = useState<{scale: ColumnOption[], service: string}>({scale:[], service: ""})
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0])
-    const [isLoading, setIsLoading] = useState(false)
+    const [initialLoading, setInitialLoading] = useState(true)
+
+    const abortControllerRef = useRef<AbortController | null>(null); // Ref to store the AbortController
+
 
     // Get the keys of the object as an array
     const keys = Object.keys(timeRanges);
     // Find the index of the key
     const selectedKeyIndex = keys.indexOf(currentZoomDateRange);
 
+    const selectedTimeRange = timeRanges[currentZoomDateRange] ?? 15
+
+    // Calculate endDate as the current time, rounding down the seconds to 00
+    const endDateObj = new Date();
+    endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
+
+    // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
+    const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
+
+    // Convert startDate and endDate to strings
+    const predefinedStartTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
+    const predefinedEndTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
+
+    const getMinX = () => {
+        if (dateRangeMode === "predefined") {
+            return new Date().getTime() - timeRanges[currentZoomDateRange] * 60 * 1000
+        }
+        if (dateRangeMode === "custom") {
+            return new Date(customTime.startTime).getTime()
+        }
+    }
+    const getMaxX = () => {
+        if (dateRangeMode === "predefined") {
+            return new Date().getTime()
+        }
+        if (dateRangeMode === "custom") {
+            return new Date(customTime.endTime).getTime()
+        }
+    }
+
+    // Cleanup function to abort fetch when the component unmounts
     useEffect(() => {
-        if (selectedScales.length <= 0 || selectedService.length <= 0) return
+        return () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        };
+    }, []);
 
-        setIsLoading(true)
-        const selectedTimeRange = timeRanges[currentZoomDateRange] ?? 15
-
-        // Calculate endDate as the current time, rounding down the seconds to 00
-        const endDateObj = new Date();
-        endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
-
-        // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
-        const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
-
-        // Convert startDate and endDate to strings
-        const predefinedStartTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
-        const predefinedEndTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
-
-        const metricResultPromise = GetMetricLogAnomalies(selectedLog, predefinedStartTime, predefinedEndTime, selectedService, selectedScales.map(scale => scale.name))
-
-        metricResultPromise
-            .then((metricResult) => {
-                if (metricResult.data) {
-                    setDataMetric(metricResult.data)
-                } else {
-                    console.warn('API response data is null or undefined for metrics')
-                }
-                setIsLoading(false)
-            })
-            .catch((error) => {
-                console.error('Error fetching metric anomalies:', error)
-                setIsLoading(false)
-            })
+    useUpdateEffect(() => {
+        if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
+        fetchMetricLog(selectedLog, predefinedStartTime, predefinedEndTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
     }, [
-        selectedLog,
         currentZoomDateRange,
-        selectedService,
     ])
     
     useUpdateEffect(() => {
-        if (selectedScales.length <= 0 || selectedService.length <= 0) return
+        if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
+        fetchMetricLog(selectedLog, customTime.startTime, customTime.endTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
+    }, [
+        customTime,
+    ])
 
-        setIsLoading(true)
-        const metricResultPromise = GetMetricLogAnomalies(selectedLog, customTime.startTime, customTime.endTime, selectedService, selectedScales.map(scale => scale.name))
+    useUpdateEffect(() => {
+        if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
 
-        metricResultPromise
+        if (dateRangeMode === "predefined") {
+            fetchMetricLog(selectedLog, predefinedStartTime, predefinedEndTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
+            return
+        }
+        if (dateRangeMode === "custom") {
+            fetchMetricLog(selectedLog, customTime.startTime, customTime.endTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
+            return
+        }
+    }, [
+        selectedLog,
+        selectedFilter,
+    ])
+
+    useUpdateEffect(() => {
+        if (selectedTimeRangeKey.includes(' - ')) {
+            // Handle custom range
+            const [start, end] = selectedTimeRangeKey.split(' - ');
+            setDateRangeMode("custom")
+            setCustomTime({
+                startTime: start,
+                endTime: end,
+            })
+            return
+        }
+
+        setDateRangeMode("predefined")
+        setCurrentZoomDateRange(selectedTimeRangeKey)
+    }, [selectedTimeRangeKey])
+
+    const fetchMetricLog = async (
+        logType: string,
+        startTime: string,
+        endTime: string,
+        serviceName: string,
+        scales: string[],
+    ) => {
+        // Abort any ongoing fetch request before starting a new one
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+    
+        // Create a new AbortController instance for the new fetch request
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+    
+        const metricResultPromise = GetMetricLogAnomalies({
+            type: logType,
+            start_time: startTime,
+            end_time: endTime,
+            service_name: serviceName,
+            metric_name: scales,
+        }, controller.signal)
+
+        return metricResultPromise
             .then((metricResult) => {
                 if (metricResult.data) {
                     setDataMetric(metricResult.data)
                 } else {
                     console.warn('API response data is null or undefined for metrics')
                 }
-                setIsLoading(false)
+                setInitialLoading(false)
             })
             .catch((error) => {
                 console.error('Error fetching metric anomalies:', error)
-                setIsLoading(false)
+                setInitialLoading(false)
             })
-    }, [
-        customTime
-    ])
-    useUpdateEffect(() => {
-        // Skip if custom range
-        if (selectedTimeRangeKey.includes(' - ')) return
+    }
 
-        setCurrentZoomDateRange(selectedTimeRangeKey)
-    }, [selectedTimeRangeKey])
+    const handleGraphZoomIn = async (minX: any, maxX: any) => {
+        if (dateRangeMode === "custom" && minX && maxX) {
+            setCustomTime({
+                startTime: minX,
+                endTime: maxX,
+            })
+            return
+        }
 
-    const handleGraphZoomIn = async () => {
         // Do nothing if already at max zoomed in
         if (selectedKeyIndex <= 0) return
         
@@ -218,7 +291,15 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         const newSelect = keys[selectedKeyIndex - 1];
         setCurrentZoomDateRange(newSelect)
     }
-    const handleGraphZoomOut = async () => {
+    const handleGraphZoomOut = async (minX: any, maxX: any) => {
+        if (dateRangeMode === "custom" && minX && maxX) {
+            setCustomTime({
+                startTime: minX,
+                endTime: maxX,
+            })
+            return
+        }
+
         // Do nothing if already at max zoomed out
         if (selectedKeyIndex >= keys.length-1) return
         
@@ -228,8 +309,10 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     }
 
     const handleOnApplyFilter = (selectedScales: ColumnOption[], selectedService: string) => {
-        setSelectedScales(selectedScales)
-        setSelectedService(selectedService)
+        setSelectedFilter({
+            scale: selectedScales,
+            service: selectedService,
+        })
     }
 
     const handleSelectToggle = (value: ToggleOption) => {
@@ -243,19 +326,18 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             </Typography>
             <div className="flex gap-2 items-center">
                 <FilterGraphAnomaly
-                    currentSelectedScales={selectedScales}
-                    currentSelectedService={selectedService}
+                    currentSelectedScales={selectedFilter.scale}
+                    currentSelectedService={selectedFilter.service}
                     scaleOptions={dummyScalesOption.data.columns}
                     servicesOptions={servicesOptions}
                     onApplyFilters={handleOnApplyFilter}
                 />
-                {selectedService &&
+                {selectedFilter.service &&
                     <Typography variant="subtitle1" color="white">
-                        Service name: {selectedService}
+                        Service name: {selectedFilter.service}
                     </Typography>
                 }
-                {/* {dataMetric.length !== 0 && */}
-                {selectedService &&
+                {dataMetric.length !== 0 &&
                     <div className="ml-auto">
                         <Toggle
                             defaultToggle={selectedGraphToggle}
@@ -266,19 +348,19 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 }
             </div>
             <GraphWrapper
-                isFieldRequired={selectedScales.length <= 0 || selectedService.length <= 0}
-                // isLoading={isLoading}
-                // isEmpty={dataMetric.length === 0}
+                isFieldRequired={selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0}
+                isLoading={initialLoading}
+                isEmpty={dataMetric.length === 0}
             >
                 <Graph
-                    data={dummyDataMetric.data as MetricLogAnomalyResponse[]}
+                    data={dataMetric}
                     selectedGraphToggle={selectedGraphToggle}
                     zoomInDisabled={selectedKeyIndex <= 0}
                     zoomOutDisabled={selectedKeyIndex >= keys.length-1}
                     onZoomIn={handleGraphZoomIn}
                     onZoomOut={handleGraphZoomOut}
-                    minXOnEmpty={new Date().getTime() - timeRanges[currentZoomDateRange] * 60 * 1000}
-                    maxXOnEmpty={new Date().getTime()}
+                    minXOnEmpty={getMinX()}
+                    maxXOnEmpty={getMaxX()}
                 />
             </GraphWrapper>
         </div>

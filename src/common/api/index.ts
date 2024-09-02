@@ -11,7 +11,7 @@ type RequestOption = {
   withAuth?: boolean
 }
 
-const get = async <T>(endpoint: string, option?: RequestOption): Promise<ApiResponse<T>> => {
+const get = async <T>(endpoint: string, option?: RequestOption, signal?: AbortSignal): Promise<ApiResponse<T>> => {
   const headers: Record<string, string> = {
     Accept: 'application/json',
   }
@@ -37,6 +37,7 @@ const get = async <T>(endpoint: string, option?: RequestOption): Promise<ApiResp
   }
 
   const response: Response = await fetch(`${API_URL}${endpoint}`, {
+    signal: signal,
     method: 'GET',
     headers: headers,
   })
@@ -96,7 +97,13 @@ const buildQueryParam = (queries: Record<string, any>): string => {
     const key = keys[i]
     const value = queries[key]
 
-    i === 0 ? (param += `?${key}=${value}`) : (param += `&${key}=${value}`)
+    if (value instanceof Array) {
+      value.forEach((m, j) => {
+        i === 0 && j === 0 ? (param += `?${key}=${m}`) : (param += `&${key}=${m}`)
+      });
+    } else {
+      i === 0 ? (param += `?${key}=${value}`) : (param += `&${key}=${value}`)
+    }
   }
 
   return param
