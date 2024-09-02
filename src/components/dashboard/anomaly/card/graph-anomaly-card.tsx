@@ -1,5 +1,5 @@
-import { MetricLogAnomalyResponse } from "@/modules/models/anomaly-predictions";
-import { GetMetricLogAnomalies } from "@/modules/usecases/anomaly-predictions";
+import { AnomalyOptionResponse, MetricLogAnomalyResponse } from "@/modules/models/anomaly-predictions";
+import { GetColumnOption, GetMetricLogAnomalies } from "@/modules/usecases/anomaly-predictions";
 import { useEffect, useRef, useState } from "react";
 import { Typography } from "@mui/material";
 import useUpdateEffect from "@/hooks/use-update-effect";
@@ -132,6 +132,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     timeRanges,
     servicesOptions,
 }) => {
+    const [dataColumn, setDataColumn] = useState<AnomalyOptionResponse>({columns: []})
     const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
     const [currentZoomDateRange, setCurrentZoomDateRange] = useState<string>(selectedTimeRangeKey === '' ? 'Last 15 minutes': selectedTimeRangeKey)
     const [customTime, setCustomTime] = useState<{
@@ -183,10 +184,22 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
     // Cleanup function to abort fetch when the component unmounts
     useEffect(() => {
+        GetColumnOption(selectedLog)
+            .then((result) => {
+                if (result.data) {
+                    setDataColumn(result.data)
+                } else {
+                    console.warn('API response data is null or undefined for column option')
+                }
+            })
+            .catch((error) => {
+                console.error('Error fetching column option:', error)
+            })
+
         return () => {
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort();
-        }
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
         };
     }, []);
 
@@ -328,7 +341,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 <FilterGraphAnomaly
                     currentSelectedScales={selectedFilter.scale}
                     currentSelectedService={selectedFilter.service}
-                    scaleOptions={dummyScalesOption.data.columns}
+                    scaleOptions={dataColumn.columns}
                     servicesOptions={servicesOptions}
                     onApplyFilters={handleOnApplyFilter}
                 />

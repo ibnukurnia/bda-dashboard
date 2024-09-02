@@ -77,10 +77,19 @@ const GetFetchAnomalyOption = async (): Promise<ApiResponse<AnomalyOptionRespons
   return response
 }
 
+const GetColumnOption = async (table: string): Promise<ApiResponse<AnomalyOptionResponse>> => {
+  const response: ApiResponse<AnomalyOptionResponse> = await get(`anomaly-predictions/filter-column-on-table?table=${table}`, {
+    withAuth: true,
+  })
+
+  return response
+}
+
 export {
   GetHistoricalLogAnomalies,
   GetMetricLogAnomalies,
   GetHistoricalNetworkAnomalies,
   GetHistoricalSecurityAnomalies,
   GetHistoricalUtilizationAnomalies,
+  GetColumnOption,
 }
