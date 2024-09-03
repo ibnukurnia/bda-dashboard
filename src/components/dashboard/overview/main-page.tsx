@@ -4,12 +4,17 @@ import React, { Fragment, useEffect, useRef, useState } from 'react'
 
 import './main-page.css'
 
+import dynamic from 'next/dynamic'
 import { Typography } from '@mui/material'
+import { ApexOptions } from 'apexcharts'
 import { Plus } from 'react-feather'
 
 import Button from '@/components/system/Button/Button'
 
+import DropdownRange from '../dropdownRange'
 import OverviewModal from './modal/overview-modal'
+
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
 // Define your data
 const sourceData = [
@@ -104,6 +109,17 @@ const sourceData = [
 ]
 
 const dates = ['Jan 21', 'Jan 22', 'Jan 23', 'Jan 24', 'Jan 25', 'Jan 26', 'Jan 27']
+const defaultTimeRanges: Record<string, number> = {
+  'Last 5 minutes': 5,
+  'Last 15 minutes': 15,
+  'Last 30 minutes': 30,
+  'Last 1 hours': 60,
+  'Last 6 hours': 360,
+  'Last 24 hours': 1440,
+  'Last 3 days': 4320,
+  'Last 1 week': 10080,
+  'Last 1 month': 43800,
+}
 
 const TablePanel = ({
   selectedServices,
@@ -112,11 +128,202 @@ const TablePanel = ({
   selectedServices: { name: string; data: number[]; count?: number }[]
   handleAddServices: () => void
 }) => {
+  const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
+  const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
+
+  const dummySeries = [
+    {
+      name: 'livik',
+      data: [
+        ['2024-08-23 13:41:10', 4962],
+        ['2024-08-23 13:41:11', 5122],
+        ['2024-08-23 13:41:12', 7133],
+        ['2024-08-23 13:41:13', 8001],
+        ['2024-08-23 13:41:14', 5450],
+        ['2024-08-23 13:41:15', 4962],
+        ['2024-08-23 13:41:16', 5122],
+        ['2024-08-23 13:41:17', 7133],
+        ['2024-08-23 13:41:18', 8001],
+        ['2024-08-23 13:41:19', 4450],
+      ],
+      group: 'apexcharts-axis-0',
+    },
+    {
+      name: 'pochinkisaldo',
+      data: [
+        ['2024-08-23 13:41:10', 2233],
+        ['2024-08-23 13:41:11', 1122],
+        ['2024-08-23 13:41:12', 3322],
+        ['2024-08-23 13:41:13', 5542],
+        ['2024-08-23 13:41:14', 6879],
+        ['2024-08-23 13:41:15', 4962],
+        ['2024-08-23 13:41:16', 6898],
+        ['2024-08-23 13:41:17', 7133],
+        ['2024-08-23 13:41:18', 7766],
+        ['2024-08-23 13:41:19', 4330],
+      ],
+      group: 'apexcharts-axis-0',
+    },
+  ]
+
+  const options: ApexOptions = {
+    chart: {
+      group: 'social',
+      type: 'line',
+      height: 120,
+      toolbar: {
+        show: false,
+      },
+      zoom: {
+        enabled: false,
+      },
+      events: {
+        mounted: (chartContext: any) => {
+          const chartEl = chartContext.el
+          chartEl.addEventListener('chart:updated', () => {
+            const syncedCharts = document.querySelectorAll('[data-chart-id]')
+            syncedCharts.forEach((chart: any) => {
+              if (chart.dataset.chartId !== chartContext.id) {
+                chart.__apexCharts.updateOptions({
+                  xaxis: {
+                    min: chartContext.w.globals.minX,
+                    max: chartContext.w.globals.maxX,
+                  },
+                })
+              }
+            })
+          })
+        },
+      },
+    },
+    tooltip: {
+      enabled: true,
+    },
+    xaxis: {
+      tooltip: {
+        enabled: false,
+      },
+      type: 'datetime',
+      labels: {
+        formatter(value, _, __) {
+          const date = new Date(value)
+          return date.toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          })
+        },
+        style: {
+          colors: 'white', // White color for x-axis text
+        },
+        rotate: 0,
+        hideOverlappingLabels: true,
+        trim: true,
+      },
+      crosshairs: { show: true },
+      axisBorder: { show: false },
+    },
+    yaxis: {
+      min(min) {
+        if (min > 0) {
+          return min - 1
+        }
+        return min
+      },
+      max(max) {
+        return max + 1
+      },
+      // title: {
+      //   text: metric.yaxisLabel,
+      //   style: { color: 'white' },
+      // },
+      labels: {
+        style: {
+          colors: 'white', // White color for y-axis text
+        },
+      },
+    },
+    stroke: {
+      curve: 'smooth',
+      width: 1,
+    },
+    grid: {
+      borderColor: '#bdbdbd',
+      row: {
+        colors: ['transparent', 'transparent'],
+        opacity: 1,
+      },
+      column: {
+        opacity: 0.5,
+      },
+    },
+    legend: {
+      show: false,
+      labels: {
+        colors: 'white',
+      },
+    },
+  }
+
   return (
     <div className="flex-1 px-4 overflow-auto">
+      <div className="grid grid-cols-3">
+        <Chart
+          options={options}
+          series={dummySeries as ApexAxisChartSeries}
+          type="line"
+          height={300}
+          width={400}
+          // data-chart-id={`chart${index + 1}`}
+        />
+        <Chart
+          options={options}
+          series={dummySeries as ApexAxisChartSeries}
+          type="line"
+          height={300}
+          width={400}
+          // data-chart-id={`chart${index + 1}`}
+        />
+        <Chart
+          options={options}
+          series={dummySeries as ApexAxisChartSeries}
+          type="line"
+          height={300}
+          width={400}
+          // data-chart-id={`chart${index + 1}`}
+        />
+        <Chart
+          options={options}
+          series={dummySeries as ApexAxisChartSeries}
+          type="line"
+          height={300}
+          width={400}
+          // data-chart-id={`chart${index + 1}`}
+        />
+        <Chart
+          options={options}
+          series={dummySeries as ApexAxisChartSeries}
+          type="line"
+          height={300}
+          width={400}
+          // data-chart-id={`chart${index + 1}`}
+        />
+      </div>
       <div className="flex justify-between items-center mb-4 text-white">
         <span className="font-bold">Showing {selectedServices.length} Services</span>
-        <span className="font-bold">Updated at 5:21:11 PM</span>
+        <div className="flex gap-3 items-center">
+          <span className="font-bold">Updated at 5:21:11 PM</span>
+          <DropdownRange
+            timeRanges={timeRanges}
+            // onRangeChange={handleRangeChange}
+            // selectedRange={selectedRange}
+            onRangeChange={(e) => null}
+            selectedRange={selectedRange}
+          />
+        </div>
       </div>
       <div className="overflow-auto scrollbar-table">
         <table className="w-full table-auto text-white">
@@ -136,7 +343,7 @@ const TablePanel = ({
             </tr>
           </thead>
           <tbody>
-            {selectedServices.map((service, index) => (
+            {selectedServices.length > 0 && selectedServices.map((service, index) => (
               <Fragment key={index}>
                 <tr key={index} className="">
                   <td className="p-3 min-w-64 align-center flex justify-between gap-2">
@@ -149,7 +356,7 @@ const TablePanel = ({
                     return (
                       <td key={cellIndex} className="p-3 text-center min-w-32 align-top">
                         <div
-                          className={`${cell < 50 ? '!bg-green-600' : cell < 100 ? '!bg-orange-600' : '!bg-red-600'} px-2 py-1 rounded-lg`}
+                          className={`${cell < 50 ? '!bg-green-600' : cell < 100 ? '!bg-yellow-600' : '!bg-red-600'} px-2 py-1 rounded-full`}
                         >
                           <span className="text-white">{cell}</span>
                         </div>

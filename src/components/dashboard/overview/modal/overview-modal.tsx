@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Typography } from '@mui/material'
-
+import './overview-modal.css'
 import Button from '@/components/system/Button/Button'
 import Checkbox from '@/components/system/Checkbox/Checkbox'
 
@@ -107,8 +107,8 @@ const OverviewModal = ({
   }, [open])
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-10">
-      <div ref={panelRef} className="bg-white rounded-lg p-6 w-3/4 flex flex-col gap-3">
+    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1200]">
+      <div ref={panelRef} className="bg-white rounded-lg p-6 w-3/5 flex flex-col gap-3">
         <h2 className="text-xl font-semibold mb-4 text-center">Add Services</h2>
         <div className="grid grid-cols-2 gap-6">
           <div className="flex flex-col gap-3">

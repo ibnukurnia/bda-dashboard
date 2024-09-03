@@ -35,7 +35,8 @@ td:first-child {
 }
 
 .scrollbar-table {
-  max-height: calc(100vh - 200px);
+  /* max-height: calc(100vh - 200px); */
+  height: calc(100vh - 220px);
 }
 
 .scrollbar-table::-webkit-scrollbar {
