@@ -25,9 +25,9 @@ interface FilterPanelProps {
   }
   onApplyFilters: (filters: {
     selectedSource: string | null
-    selectedMetric: string | null
+    // selectedMetric: string | null
     selectedService: string | null
-    selectedOption: string | null
+    // selectedOption: string | null
   }) => void // Separate filters for anomalies and services
 }
 
@@ -36,9 +36,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
   const panelRef = useRef<HTMLDivElement>(null)
 
   const [selectedSource, setSelectedSource] = useState<string | null>(activeFilter.sourceData)
-  const [selectedMetric, setSelectedMetric] = useState<string | null>(activeFilter.metric)
+  // const [selectedMetric, setSelectedMetric] = useState<string | null>(activeFilter.metric)
   const [selectedService, setSelectedService] = useState<string | null>(activeFilter.serviceName)
-  const [selectedOption, setSelectedOption] = useState<string | null>(activeFilter.optional)
+  // const [selectedOption, setSelectedOption] = useState<string | null>(activeFilter.optional)
 
   const [dataSource, setDataSource] = useState<any[]>([])
   const [metric, setMetric] = useState<any[]>([])
@@ -52,18 +52,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
   const handleApply = () => {
     onApplyFilters({
       selectedSource,
-      selectedMetric,
+      // selectedMetric,
       selectedService,
-      selectedOption,
+      // selectedOption,
     })
     setIsOpen(false) // Close the panel after applying filters
   }
 
   const handleReset = () => {
     setSelectedSource(null)
-    setSelectedMetric(null)
+    // setSelectedMetric(null)
     setSelectedService(null)
-    setSelectedOption(null)
+    // setSelectedOption(null)
   }
 
   useEffect(() => {
@@ -86,9 +86,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
 
   useEffect(() => {
     setSelectedSource(activeFilter.sourceData)
-    setSelectedMetric(activeFilter.metric)
+    // setSelectedMetric(activeFilter.metric)
     setSelectedService(activeFilter.serviceName)
-    setSelectedOption(activeFilter.optional)
+    // setSelectedOption(activeFilter.optional)
   }, [isOpen])
 
   useEffect(() => {
@@ -123,51 +123,49 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
               data={dataSource}
               onChange={(item: string) => {
                 setSelectedSource(item)
-                setSelectedMetric(null)
+                // setSelectedMetric(null)
                 setSelectedService(null)
-                setSelectedOption(null)
-                GetFilterMetric().then((metric) => setMetric(metric.data))
+                // setSelectedOption(null)
+                // GetFilterMetric().then((metric) => setMetric(metric.data))
+                GetFilterService().then((service) => setServices(service.data))
               }}
               selected={selectedSource}
             />
-            <DropdownFilter
+            {/* <DropdownFilter
               disabled={selectedSource === null}
               label="Metric"
               data={metric}
               onChange={(item: string) => {
-                setSelectedMetric(item)
+                // setSelectedMetric(item)
                 setSelectedService(null)
-                setSelectedOption(null)
+                // setSelectedOption(null)
                 GetFilterService().then((service) => setServices(service.data))
               }}
               selected={selectedMetric}
-            />
+            /> */}
             <DropdownFilter
-              disabled={selectedMetric === null}
+              disabled={selectedSource === null}
               label="Service Name"
               data={services}
               onChange={(item: string) => {
                 setSelectedService(item)
-                setSelectedOption(null)
-                GetFilterOptional().then((options) => setOptional(options.data))
+                // setSelectedOption(null)
+                // GetFilterOptional().then((options) => setOptional(options.data))
               }}
               selected={selectedService}
             />
-            <DropdownFilter
+            {/* <DropdownFilter
               disabled={selectedService === null}
               label="Optional"
               data={optional}
               onChange={(item: string) => setSelectedOption(item)}
               selected={selectedOption}
-            />
+            /> */}
             <div className="flex justify-between mt-6 space-x-4">
               <Button variant="secondary" onClick={handleReset}>
                 RESET
               </Button>
-              <Button
-                disabled={[selectedSource, selectedMetric, selectedService, selectedOption].some((el) => el === null)}
-                onClick={handleApply}
-              >
+              <Button disabled={[selectedSource, selectedService].some((el) => el === null)} onClick={handleApply}>
                 TERAPKAN
               </Button>
             </div>
