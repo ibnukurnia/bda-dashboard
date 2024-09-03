@@ -1,20 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
-import {
-  GetFilterDataSource,
-  GetFilterMetric,
-  GetFilterOptional,
-  GetFilterService,
-} from '@/modules/usecases/forecasting'
+import { GetFilterDataSource, GetFilterServiceList } from '@/modules/usecases/forecasting'
 
 import Button from '@/components/system/Button/Button'
 
 import DropdownFilter from './dropdown'
-
-interface CheckboxOption {
-  id: string
-  label: string
-  type: string
-}
 
 interface FilterPanelProps {
   activeFilter: {
@@ -23,12 +12,7 @@ interface FilterPanelProps {
     serviceName: string | null
     optional: string | null
   }
-  onApplyFilters: (filters: {
-    selectedSource: string | null
-    // selectedMetric: string | null
-    selectedService: string | null
-    // selectedOption: string | null
-  }) => void // Separate filters for anomalies and services
+  onApplyFilters: (filters: { selectedSource: string | null; selectedService: string | null }) => void // Separate filters for anomalies and services
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters }) => {
@@ -36,14 +20,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
   const panelRef = useRef<HTMLDivElement>(null)
 
   const [selectedSource, setSelectedSource] = useState<string | null>(activeFilter.sourceData)
-  // const [selectedMetric, setSelectedMetric] = useState<string | null>(activeFilter.metric)
   const [selectedService, setSelectedService] = useState<string | null>(activeFilter.serviceName)
-  // const [selectedOption, setSelectedOption] = useState<string | null>(activeFilter.optional)
 
-  const [dataSource, setDataSource] = useState<any[]>([])
-  const [metric, setMetric] = useState<any[]>([])
+  // const [dataSource, setDataSource] = useState<any[]>([])
   const [services, setServices] = useState<any[]>([])
-  const [optional, setOptional] = useState<any[]>([])
+  const dataSource = ['brimo', 'apm']
 
   const togglePanel = () => {
     setIsOpen(!isOpen)
@@ -52,18 +33,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
   const handleApply = () => {
     onApplyFilters({
       selectedSource,
-      // selectedMetric,
       selectedService,
-      // selectedOption,
     })
     setIsOpen(false) // Close the panel after applying filters
   }
 
   const handleReset = () => {
     setSelectedSource(null)
-    // setSelectedMetric(null)
     setSelectedService(null)
-    // setSelectedOption(null)
   }
 
   useEffect(() => {
@@ -86,14 +63,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
 
   useEffect(() => {
     setSelectedSource(activeFilter.sourceData)
-    // setSelectedMetric(activeFilter.metric)
     setSelectedService(activeFilter.serviceName)
-    // setSelectedOption(activeFilter.optional)
   }, [isOpen])
 
-  useEffect(() => {
-    GetFilterDataSource().then((source) => setDataSource(source.data))
-  }, [])
+  // useEffect(() => {
+  //   GetFilterDataSource().then((source) => setDataSource(source.data))
+  // }, [])
 
   return (
     <div className="flex self-end z-50">
@@ -123,44 +98,20 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
               data={dataSource}
               onChange={(item: string) => {
                 setSelectedSource(item)
-                // setSelectedMetric(null)
                 setSelectedService(null)
-                // setSelectedOption(null)
-                // GetFilterMetric().then((metric) => setMetric(metric.data))
-                GetFilterService().then((service) => setServices(service.data))
+                GetFilterServiceList({ data_source: item }).then((service) => setServices(service.data))
               }}
               selected={selectedSource}
             />
-            {/* <DropdownFilter
-              disabled={selectedSource === null}
-              label="Metric"
-              data={metric}
-              onChange={(item: string) => {
-                // setSelectedMetric(item)
-                setSelectedService(null)
-                // setSelectedOption(null)
-                GetFilterService().then((service) => setServices(service.data))
-              }}
-              selected={selectedMetric}
-            /> */}
             <DropdownFilter
               disabled={selectedSource === null}
               label="Service Name"
               data={services}
               onChange={(item: string) => {
                 setSelectedService(item)
-                // setSelectedOption(null)
-                // GetFilterOptional().then((options) => setOptional(options.data))
               }}
               selected={selectedService}
             />
-            {/* <DropdownFilter
-              disabled={selectedService === null}
-              label="Optional"
-              data={optional}
-              onChange={(item: string) => setSelectedOption(item)}
-              selected={selectedOption}
-            /> */}
             <div className="flex justify-between mt-6 space-x-4">
               <Button variant="secondary" onClick={handleReset}>
                 RESET

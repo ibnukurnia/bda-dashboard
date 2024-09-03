@@ -1,12 +1,23 @@
-import { NextApiRequest } from 'next'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(_: NextApiRequest) {
-  return NextResponse.json(
-    {
-      data: ['Service 1', 'Service 2', 'Service 3', 'Service 4', 'Service 5','Service 6'],
-      status_code: 200,
-    },
-    { status: 200 }
-  )
+export async function GET(req: NextRequest) {
+  const params = req.nextUrl.searchParams
+
+  if (params.get('data_source') === 'brimo') {
+    return NextResponse.json(
+      {
+        data: ['mylta-brimo'],
+        status_code: 200,
+      },
+      { status: 200 }
+    )
+  } else {
+    return NextResponse.json(
+      {
+        data: ['mylta-service', 'rozhok-service', 'chumachera-service'],
+        status_code: 200,
+      },
+      { status: 200 }
+    )
+  }
 }

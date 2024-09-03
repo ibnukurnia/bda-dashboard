@@ -21,8 +21,8 @@ const sourceData = [
     name: 'APM',
     count: 1865,
     services: [
-      { name: 'Windows', count: 1625, data: [28, 70, 49, 80, 132, 129, 134] },
-      { name: 'Linux', count: 1240, data: [28, 50, 124, 80, 132, 78, 134] },
+      { name: 'Windows', count: 1625, data: [28, 70, 49, 80, 132, 129, 134, 80, 132, 129, 134] },
+      { name: 'Linux', count: 1240, data: [28, 50, 124, 80, 132, 78, 134, 80, 132, 78, 134] },
     ],
   },
   {
@@ -107,7 +107,19 @@ const sourceData = [
   },
 ]
 
-const dates = ['Jan 21', 'Jan 22', 'Jan 23', 'Jan 24', 'Jan 25', 'Jan 26', 'Jan 27']
+const dates = [
+  'Jan 21',
+  'Jan 22',
+  'Jan 23',
+  'Jan 24',
+  'Jan 25',
+  'Jan 26',
+  'Jan 27',
+  'Jan 28',
+  'Jan 29',
+  'Jan 30',
+  'Jan 31',
+]
 const defaultTimeRanges: Record<string, number> = {
   'Last 5 minutes': 5,
   'Last 15 minutes': 15,

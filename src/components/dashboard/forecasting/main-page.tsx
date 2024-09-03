@@ -17,7 +17,7 @@ import './main-page.css'
 
 import {
   GetForecastingColumns,
-  GetForecastingGraphData,
+  GetForecastingData,
   GetForecastingStatistics,
   GetForecastingTableData,
 } from '@/modules/usecases/forecasting'
@@ -28,7 +28,7 @@ import ForecastingTable from './table/forecasting-table'
 
 const MainPageForecasting = () => {
   const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
-  // const [graphData, setGraphData] = useState<any[]>([])
+  const [graphData, setGraphData] = useState<any[]>([])
   const [data, setData] = useState<any[]>([])
   const [statistics, setStatistics] = useState<{ label: string; value: string; unit: string }[]>([])
   const [pagination, setPagination] = useState({
@@ -43,62 +43,13 @@ const MainPageForecasting = () => {
     optional: null as string | null,
   })
 
-  const graphData = [
-    {
-      title: 'Transaction Per Second',
-      data: [
-        ['2024-08-29 11:01:24', 2],
-        ['2024-08-29 11:01:27', 2],
-        ['2024-08-29 11:01:29', 2],
-        ['2024-08-29 11:01:32', 2],
-        ['2024-08-29 11:01:34', 2],
-        ['2024-08-29 11:02:19', 2],
-        ['2024-08-29 11:02:22', 2],
-        ['2024-08-29 11:02:24', 2],
-        ['2024-08-29 11:02:29', 2],
-        ['2024-08-29 11:02:34', 2],
-        ['2024-08-29 11:03:24', 2],
-        ['2024-08-29 11:03:29', 2],
-        ['2024-08-29 11:03:32', 2],
-        ['2024-08-29 11:03:34', 2],
-        ['2024-08-29 11:03:37', 2],
-        ['2024-08-29 11:03:39', 2],
-        ['2024-08-29 11:03:42', 2],
-        ['2024-08-29 11:04:32', 6],
-        ['2024-08-29 11:04:34', 2],
-        ['2024-08-29 11:04:35', 2],
-        ['2024-08-29 11:04:37', 6],
-        ['2024-08-29 11:04:39', 2],
-        ['2024-08-29 11:04:40', 2],
-        ['2024-08-29 11:04:42', 4],
-        ['2024-08-29 11:04:44', 2],
-        ['2024-08-29 11:04:45', 2],
-        ['2024-08-29 11:04:47', 4],
-        ['2024-08-29 11:04:49', 2],
-        ['2024-08-29 11:04:50', 2],
-        ['2024-08-29 11:05:09', 2],
-        ['2024-08-29 11:05:10', 2],
-        ['2024-08-29 11:05:12', 4],
-        ['2024-08-29 11:05:14', 2],
-        ['2024-08-29 11:05:15', 2],
-        ['2024-08-29 11:05:17', 4],
-        ['2024-08-29 11:05:19', 2],
-        ['2024-08-29 11:05:20', 2],
-        ['2024-08-29 11:05:22', 4],
-      ],
-    },
-  ]
-
   const table = useReactTable({
     data: data,
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    manualPagination: true, // Disable table's internal pagination
-    // state: {
-    //   pagination,
-    // },
+    manualPagination: true,
   })
 
   const nextPage = () => {
@@ -108,7 +59,6 @@ const MainPageForecasting = () => {
         setData(tableData.data)
         setTotalPages(tableData.pagination.totalPage)
       })
-      // fetchDataByPagination(newPageIndex, prev.pageSize, [], 15) // Fetch data for the new page
       return { ...prev, pageIndex: newPageIndex }
     })
   }
@@ -120,7 +70,6 @@ const MainPageForecasting = () => {
         setData(tableData.data)
         setTotalPages(tableData.pagination.totalPage)
       })
-      // fetchDataByPagination(newPageIndex, prev.pageSize, [], 15) // Fetch data for the previous page
       return { ...prev, pageIndex: newPageIndex }
     })
   }
@@ -135,28 +84,23 @@ const MainPageForecasting = () => {
     })
   }
 
-  const handleApplyFilters = async (filters: {
-    selectedSource: string | null
-    // selectedMetric: string | null
-    selectedService: string | null
-    // selectedOption: string | null
-  }) => {
+  const handleApplyFilters = async (filters: { selectedSource: string | null; selectedService: string | null }) => {
     const { selectedSource, selectedService } = filters
 
     setFilter({
       ...filter,
       sourceData: selectedSource,
-      // metric: selectedMetric,
       serviceName: selectedService,
-      // optional: selectedOption,
     })
     GetForecastingColumns().then((result) => setColumns(result.data))
-    // GetForecastingGraphData().then((graphData) => setGraphData(graphData.data))
     GetForecastingTableData({ limit: pagination.pageSize, page: pagination.pageIndex }).then((tableData) => {
       setData(tableData.data)
       setTotalPages(tableData.pagination.totalPage)
     })
     GetForecastingStatistics().then((statistics) => setStatistics(statistics.data))
+    GetForecastingData({ data_source: selectedSource ?? '', service_name: selectedService ?? '' }).then((res) =>
+      setGraphData(res.data)
+    )
   }
 
   return (
