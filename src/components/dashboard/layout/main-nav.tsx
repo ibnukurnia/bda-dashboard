@@ -52,9 +52,9 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
       case '/dashboard/anomaly-detection':
         title = 'Anomaly Detection';
         break;
-      case '/dashboard/situation-room':
-        title = 'Situation Room';
-        break;
+      // case '/dashboard/situation-room':
+      //   title = 'Situation Room';
+      //   break;
       case '/dashboard/forecasting':
         title = 'Forecasting';
         break;

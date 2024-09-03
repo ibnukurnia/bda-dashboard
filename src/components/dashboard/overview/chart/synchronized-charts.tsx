@@ -8,6 +8,12 @@ import { formatDate } from 'date-fns';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
+const colors = [
+    '#4E88FF', '#00D8FF', '#FF4EC7', '#00E396', '#F9C80E', '#8C54FF',
+    '#FF4560', '#FF7D00', '#7DFF6B', '#FF6EC7', '#1B998B', '#B28DFF',
+    '#FF6666', '#3DDC97', '#F4A261', '#89CFF0'
+  ]
+
 interface SynchronizedChartsProps {
     dataCharts: MetricLogAnomalyResponse[];
     height: number;
@@ -114,8 +120,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             beforeZoom : (chartContext, {xaxis}) => {
                                 // Zoomed in
                                 if (xaxis.min > chartContext.minX && xaxis.max < chartContext.maxX) {
-                                    if (!zoomInDisabled) {
-                                        onZoomIn && onZoomIn(chartContext.minX, chartContext.maxX)
+                                    if (zoomInDisabled) {
                                         return {
                                             xaxis: {
                                                 min: chartContext.minX,
@@ -123,11 +128,11 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                             }
                                         }
                                     }
+                                    onZoomIn && onZoomIn(chartContext.minX, chartContext.maxX)
                                 }
                                 // Zoomed out
                                 if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {
-                                    if (!zoomOutDisabled) {
-                                        onZoomOut && onZoomOut(chartContext.minX, chartContext.maxX)
+                                    if (zoomOutDisabled) {
                                         return {
                                             xaxis: {
                                                 min: minX && minX > chartContext.minX ? minX : chartContext.minX,
@@ -135,6 +140,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                             }
                                         }
                                     }
+                                    onZoomOut && onZoomOut(chartContext.minX, chartContext.maxX)
                                 }
                             },
                         },
@@ -144,7 +150,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         labels: {
                             formatter(value) {
                                 const date = new Date(value);
-                                return formatDate(date, "yyyy-MM-dd HH:mm:ss")
+                                return formatDate(date, "yyyy-MM-dd HH:mm")
                             },
                             style: {
                                 colors: 'white',
@@ -163,10 +169,30 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         tooltip: {
                             enabled: true,
                         },
+                        axisBorder: {
+                          show: true, // Show the Y-axis line
+                          color: 'white', // Customize the color of the Y-axis line if needed
+                          width: 2, // Adjust the width of the Y-axis line
+                        },
                     },
                     stroke: {
                         curve: 'smooth',
                         width: 4,
+                        colors: [colors[index % (colors.length)]], // This gives the remainder after all full loops.
+                    },
+                    markers: {
+                        size: 0.0000001, // Workaround hover marker not showing because discrete options
+                        hover: {
+                            size: 6, // Size of the marker when hovered
+                        },
+                        discrete: dataCharts.flatMap((metric, index) => metric.anomalies.map(a =>(
+                            {
+                                seriesIndex: index, // Index of the series
+                                dataPointIndex: metric.data.findIndex(d => d[0] === a[0]), // Index of the data point to display a marker
+                                fillColor: '#FF0000', // Custom fill color for the specific marker
+                                size: 6, // Custom size for the specific marker
+                            })
+                        ))
                     },
                     grid: {
                         row: {
@@ -179,6 +205,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             colors: 'white'
                         }
                     },
+                    colors: [colors[index % (colors.length)]], // This gives the remainder after all full loops.
                 };
 
                 return (

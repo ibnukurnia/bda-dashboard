@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Column } from '@/modules/models/anomaly-predictions'
-import { GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { Column, MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions'
+import { GetHistoricalLogAnomalies, GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { Box, Typography } from '@mui/material'
 import {
     ColumnDef,
@@ -22,10 +22,6 @@ import { format } from 'date-fns';
 
 interface TabLogContentProps {
     selectedLog: string
-    series: { name: string; data: number[] }[]
-    categories: string[]
-    anomalyCategory: string[]
-    anomalyData: { data: number[] }[]
 }
 
 const defaultTimeRanges: Record<string, number> = {
@@ -53,14 +49,13 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([])
     const [filterServicesOptions, setFilterServiceOptions] = useState<string[]>([])
     const [selectedServicesOptions, setSelectedServiceOptions] = useState<string[]>([])
-    const logType = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : ''
-    const [isLoadingFilter, setIsLoadingFilter] = useState<boolean>(true)
-    const [hasErrorFilter, setHasErrorFilter] = useState<boolean>(false)
+    const [hasErrorFilterAnomaly, setHasErrorAnomalyFilter] = useState<boolean>(false)
+    const [hasErrorFilterService, setHasErrorServiceFilter] = useState<boolean>(false)
+    const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
     const [data, setData] = useState<any[]>([])
     const [totalPages, setTotalPages] = useState<number>(1)
     const [isTableLoading, setIsTableLoading] = useState(true) // Table loading state
-    const [isChartLoading, setIsChartLoading] = useState(true) // Chart loading state
     const [pagination, setPagination] = useState({
         pageIndex: 1, // Start from page 1
         pageSize: 10, // Default page size
@@ -214,7 +209,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         }
     };
 
-
     const updateTimeDifference = () => {
         if (!lastRefreshTime) return;
 
@@ -302,7 +296,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             handleApiError(error);
         }
     };
-
 
     const fetchDataByLog = async (
         logType: string,
@@ -437,7 +430,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     const loadAnomalyFilterOptions = async () => {
         try {
             const response = await fetchAnomalyOption(selectedLog === 'Log Brimo' ? 'brimo' : '')
-            console.log('API Response:', response) // Log the entire API response
 
             if (response.data && response.data.columns) {
                 const options = response.data.columns.map((column: Column) => ({
@@ -451,13 +443,10 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                 setFilterAnomalyOptions(options) // Update state with fetched options
             } else {
                 console.error('Response data or columns are missing')
-                setHasErrorFilter(true)
             }
         } catch (error) {
             handleApiError(error)
-            setHasErrorFilter(true)
-        } finally {
-            setIsLoadingFilter(false)
+            setHasErrorAnomalyFilter(true)
         }
     }
 
@@ -469,19 +458,13 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             if (response.data && response.data.services) {
                 // No need to map as it's already an array of strings
                 const services = response.data.services
-
-                console.log('Service Options:', services) // Log the services array
-
                 setFilterServiceOptions(services) // Update state with fetched service options
             } else {
                 console.error('Response data or services are missing')
-                setHasErrorFilter(true)
             }
         } catch (error) {
             console.error('Failed to load service options', error)
-            setHasErrorFilter(true)
-        } finally {
-            setIsLoadingFilter(false)
+            setHasErrorServiceFilter(true)
         }
     }
 
@@ -669,7 +652,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         }
     }, [selectedLog]);
 
-
     useEffect(() => {
         // Update the time difference every second
         const intervalId = setInterval(updateTimeDifference, 1000);
@@ -680,13 +662,8 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
 
     return (
         <div className="flex flex-col gap-10 px-14 py-12 card-style z-50">
-            <div className="flex flex-row justify-between items-center">
-                <FilterPanel
-                    servicesOptions={filterServicesOptions}
-                    checkboxOptions={filterAnomalyOptions}
-                    onApplyFilters={handleApplyFilters}
-                    onResetFilters={handleResetFilters}
-                />
+            <div className="flex flex-row items-center self-end">
+
                 <div className="flex flex-row gap-2 self-center items-center">
                     <Typography variant="body2" component="p" color="white">
                         {timeDifference}
@@ -700,6 +677,14 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             </div>
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-8">
+                    <FilterPanel
+                        servicesOptions={filterServicesOptions}
+                        checkboxOptions={filterAnomalyOptions}
+                        onApplyFilters={handleApplyFilters}
+                        onResetFilters={handleResetFilters}
+                        hasErrorFilterAnomaly={hasErrorFilterAnomaly}
+                        hasErrorFilterService={hasErrorFilterService}
+                    />
                     <Typography variant="h5" component="h5" color="white">
                         Historical Anomaly Records
                     </Typography>
@@ -712,7 +697,9 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                                     </div>
                                 ) : data.length === 0 && !isTableLoading ? (
                                     <div className="text-center py-4">
-                                        <div className="text-center text-2xl font-semibold text-white">DATA IS NOT AVAILABLE</div>
+                                        <Typography variant="subtitle1" color="white" align="center">
+                                            No data available.
+                                        </Typography>
                                     </div>
                                 ) : (
                                     <table id="person" className="table-auto divide-y divide-gray-200 w-full">
@@ -783,6 +770,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                                             value={table.getState().pagination.pageSize}
                                             onChange={(e) => {
                                                 const newPageSize = Number(e.target.value);
+                                                const logType = getLogType(selectedLog);
                                                 handlePageSizeChange(newPageSize, logType, 1, selectedAnomalyOptions);
                                             }}
                                             className="select-button-assesment"
@@ -819,12 +807,10 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     </Box>
                 </div>
                 <GraphAnomalyCard
-                    selectedLog={selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : ''}
+                    selectedLog={getLogType(selectedLog)}
                     servicesOptions={filterServicesOptions}
                     selectedTimeRangeKey={selectedRange}
                     timeRanges={timeRanges}
-                    startTime={startTime}
-                    endTime={endTime}
                 />
             </div>
         </div>
