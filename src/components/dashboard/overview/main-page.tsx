@@ -319,7 +319,7 @@ const TablePanel = ({
   ]
 
   return (
-    <div className="flex-1 px-4 overflow-auto grid gap-6">
+    <div className="flex-1 px-4 grid gap-8">
       <div className="chart-section">
         {dummyData.map((item, id) => (
           <div className="chart-section-col">
@@ -327,17 +327,7 @@ const TablePanel = ({
           </div>
         ))}
       </div>
-      {/* <div className="grid grid-cols-3 gap-3">
-        {dummyData.slice(0, 3).map((item, id) => (
-          <DynamicUpdatingChart title={item.title} series={item.data} key={id} />
-        ))}
-        <div className="col-span-3 flex justify-center gap-4">
-          {dummyData.slice(3, 5).map((item, id) => (
-            <DynamicUpdatingChart title={item.title} series={item.data} key={id} />
-          ))}
-        </div>
-      </div> */}
-      <div>
+      <div className="overflow-auto grid">
         <div className="flex justify-between items-center mb-4 text-white">
           <span className="font-bold">Showing {selectedServices.length} Services</span>
           <div className="flex gap-3 items-center">
