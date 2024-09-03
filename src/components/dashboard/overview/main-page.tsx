@@ -15,8 +15,6 @@ import DropdownRange from '../dropdownRange'
 import DynamicUpdatingChart from './chart/dynamic-updating-chart'
 import OverviewModal from './modal/overview-modal'
 
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
-
 // Define your data
 const sourceData = [
   {

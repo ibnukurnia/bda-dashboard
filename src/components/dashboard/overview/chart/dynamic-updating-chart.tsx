@@ -108,6 +108,7 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
       series={series as ApexAxisChartSeries}
       type="line"
       height={300}
+      width={'100%'}
       // data-chart-id={`chart${index + 1}`}
     />
   )
