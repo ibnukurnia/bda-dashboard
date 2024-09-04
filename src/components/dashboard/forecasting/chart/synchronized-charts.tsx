@@ -7,16 +7,8 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
 interface SynchronizedChartsProps {
   dataCharts: {
-    categories: string
     title: string
-    yaxisLabel?: string
-    series: {
-      name: string
-      // data: [Date || string, number]
-      // data: [string, number]
-      data: any[]
-      unit?: string
-    }[]
+    data: any[]
   }[]
   height: number
   width: string
@@ -110,10 +102,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({ dataCharts, hei
               max(max) {
                 return max + 1
               },
-              title: {
-                text: metric.yaxisLabel,
-                style: { color: 'white' },
-              },
               labels: {
                 style: {
                   colors: 'white', // White color for y-axis text
@@ -147,13 +135,20 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({ dataCharts, hei
                 {metric.title}
               </Typography>
               {(() => {
-                if (metric.series.every((series) => series.data.length === 0)) {
+                if (metric.data.every((series) => series.length === 0)) {
                   return <Typography color={'white'}>NO DATA AVAILABLE</Typography>
                 } else {
                   return (
                     <Chart
                       options={chartOptions}
-                      series={metric.series as ApexAxisChartSeries}
+                      series={
+                        [
+                          {
+                            name: metric.title,
+                            data: metric.data,
+                          },
+                        ] as ApexAxisChartSeries
+                      }
                       type="line"
                       height={height}
                       width={width}
