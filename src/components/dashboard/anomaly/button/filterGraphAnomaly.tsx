@@ -42,8 +42,8 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     const handleApply = () => {
         onApplyFilters
             (selectedScaleOptions,
-            selectedServiceOptions,
-        );
+                selectedServiceOptions,
+            );
         setIsOpen(false); // Close the panel after applying filters
     };
 
@@ -77,11 +77,16 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     useEffect(() => {
         setFilteredServicesOptions(servicesOptions.filter(option => option.includes(searchValue)))
     }, [searchValue])
-    
+
     useEffect(() => {
         setFilteredServicesOptions(servicesOptions)
     }, [servicesOptions])
-    
+
+    // useEffect(() => {
+    //     console.log('Scale Options:', scaleOptions);
+    // }, [scaleOptions]);
+
+
     return (
         <div className="flex">
             <button
@@ -137,34 +142,34 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
 
                         <div className="w-full">
                             <h3 className="font-semibold mb-3 text-lg">Services</h3>
-                                {servicesOptions.length > 0 ? (
-                                    <>
-                                        <input
-                                            className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:ring-2 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                            placeholder='Search service'
-                                            value={searchValue}
-                                            onChange={handleSearch}
-                                        />
-                                        <div className="overflow-y-auto max-h-40">
-                                            {filteredServicesOptions.map((service, index) => (
-                                                <label key={index} className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="radio"
-                                                            value={service}
-                                                            checked={selectedServiceOptions === service}
-                                                            onChange={() => handleServiceChange(service)}
-                                                            className="mr-2"
-                                                        />
-                                                        {service}
-                                                    </div>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </>
-                                ) : (
-                                    <p>No services available</p>
-                                )}
+                            {servicesOptions.length > 0 ? (
+                                <>
+                                    <input
+                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:ring-2 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                        placeholder='Search service'
+                                        value={searchValue}
+                                        onChange={handleSearch}
+                                    />
+                                    <div className="overflow-y-auto max-h-40">
+                                        {filteredServicesOptions.map((service, index) => (
+                                            <label key={index} className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center">
+                                                    <input
+                                                        type="radio"
+                                                        value={service}
+                                                        checked={selectedServiceOptions === service}
+                                                        onChange={() => handleServiceChange(service)}
+                                                        className="mr-2"
+                                                    />
+                                                    {service}
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </>
+                            ) : (
+                                <p>No services available</p>
+                            )}
                         </div>
 
                         <div className="flex justify-between mt-10 space-x-4">

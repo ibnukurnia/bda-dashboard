@@ -40,7 +40,7 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
             const formattedStart = format(new Date(customRangeStart), "yyyy-MM-dd HH:mm:ss");
             const formattedEnd = format(new Date(customRangeEnd), "yyyy-MM-dd HH:mm:ss");
             const customRangeLabel = `${formattedStart} - ${formattedEnd}`;
-            console.log('Custom Range Selected:', customRangeLabel); // Log the selected custom range
+            // console.log('Custom Range Selected:', customRangeLabel); // Log the selected custom range
             onRangeChange(customRangeLabel);
             setIsCustomRange(false);
             setIsOpen(false);
@@ -59,11 +59,11 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
     }, [isOpen]);
 
     return (
-        <div className="relative inline-block text-left self-end" ref={dropdownRef}>
+        <div className="relative inline-block text-left self-end z-50" ref={dropdownRef}>
             <button
                 type="button"
                 onClick={toggleDropdown}
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm py-3 px-4 text-center inline-flex items-center"
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium rounded text-sm py-3 px-4 text-center inline-flex items-center"
             >
                 {selectedRange || "Select time range"}
                 <svg
@@ -84,31 +84,35 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
             </button>
 
             {isOpen && (
-                <div className={`absolute right-0 mt-2 bg-white rounded-lg shadow-lg z-50 py-4 px-2 flex ${isCustomRange ? 'w-[600px]' : 'w-auto]'}`}>
+                <div className={`absolute right-0 mt-2 bg-white rounded-lg shadow-lg z-50 py-4 px-2 flex ${isCustomRange ? 'w-[600px] md:w-[400px] sm:w-[300px]' : 'w-auto'}`}>
                     <ul className="text-sm text-gray-800 w-48">
                         {Object.keys(timeRanges).map((rangeKey) => (
                             <li key={rangeKey}>
-                                <a
-                                    href="#"
-                                    onClick={() => handleRangeChange(rangeKey)}
-                                    className="block px-4 py-2 hover:bg-gray-200"
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handleRangeChange(rangeKey);
+                                    }}
+                                    className="block px-4 py-2 hover:bg-gray-200 w-full text-left"
                                 >
                                     {rangeKey}
-                                </a>
+                                </button>
                             </li>
                         ))}
-                        <li key="custom">
-                            <a
-                                href="#"
-                                onClick={() => handleRangeChange('Custom')}
-                                className="block px-4 py-2 hover:bg-gray-200"
+                        {/* <li key="custom">
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleRangeChange('Custom');
+                                }}
+                                className="block px-4 py-2 hover:bg-gray-200 w-full text-left"
                             >
                                 Custom
-                            </a>
-                        </li>
+                            </button>
+                        </li> */}
                     </ul>
 
-                    {isCustomRange && (
+                    {/* {isCustomRange && (
                         <div className="p-4 border-l-2 w-full">
                             <div className="flex flex-col space-y-3">
                                 <label className="text-xs font-semibold text-gray-700">Start Date and Time</label>
@@ -126,17 +130,28 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
                                     className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                                 />
                             </div>
-                            <button
-                                onClick={handleCustomRangeChange}
-                                className="bg-blue-600 text-white py-1 px-4 rounded hover:bg-blue-700 w-full text-sm mt-6"
-                            >
-                                Apply
-                            </button>
+                            {customRangeStart && customRangeEnd && new Date(customRangeStart) < new Date(customRangeEnd) ? (
+                                <button
+                                    onClick={handleCustomRangeChange}
+                                    className="bg-blue-600 text-white py-1 px-4 rounded hover:bg-blue-700 w-full text-sm mt-6"
+                                >
+                                    Apply
+                                </button>
+                            ) : (
+                                <button
+                                    disabled
+                                    className="bg-gray-400 text-white py-1 px-4 rounded w-full text-sm mt-6 cursor-not-allowed"
+                                >
+                                    Invalid Range
+                                </button>
+                            )}
                         </div>
-                    )}
+                    )} */}
                 </div>
             )}
         </div>
+
+
     );
 };
 
