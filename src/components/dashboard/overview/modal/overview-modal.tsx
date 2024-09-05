@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Typography } from '@mui/material'
+
 import './overview-modal.css'
+
 import Button from '@/components/system/Button/Button'
 import Checkbox from '@/components/system/Checkbox/Checkbox'
 
@@ -112,7 +114,7 @@ const OverviewModal = ({
         <h2 className="text-xl font-semibold mb-4 text-center">Add Services</h2>
         <div className="grid grid-cols-2 gap-6">
           <div className="flex flex-col gap-3">
-            <Typography>Data Source</Typography>
+            <Typography fontWeight={600}>Data Source</Typography>
             <div className="checkbox">
               <Checkbox
                 data={listDataSource.map((item) => ({
@@ -125,7 +127,7 @@ const OverviewModal = ({
             </div>
           </div>
           <div className="flex flex-col gap-3">
-            <Typography>Services</Typography>
+            <Typography fontWeight={600}>Services</Typography>
             {servicesList.length > 0 ? (
               <div className="checkbox">
                 <Checkbox

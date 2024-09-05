@@ -3,17 +3,14 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 
 import './main-page.css'
-
-import dynamic from 'next/dynamic'
 import { Typography } from '@mui/material'
-import { ApexOptions } from 'apexcharts'
 import { Plus } from 'react-feather'
 
 import Button from '@/components/system/Button/Button'
 
-import DropdownRange from '../dropdownRange'
 import DynamicUpdatingChart from './chart/dynamic-updating-chart'
 import OverviewModal from './modal/overview-modal'
+import DropdownTime from './button/dropdown-time'
 
 // Define your data
 const sourceData = [
@@ -339,12 +336,12 @@ const TablePanel = ({
           </div>
         ))}
       </div>
-      <div className="overflow-auto grid">
+      <div>
         <div className="flex justify-between items-center mb-4 text-white">
           <span className="font-bold">Showing {selectedServices.length} Services</span>
           <div className="flex gap-3 items-center">
             <span className="font-bold">Updated at 5:21:11 PM</span>
-            <DropdownRange
+            <DropdownTime
               timeRanges={timeRanges}
               // onRangeChange={handleRangeChange}
               // selectedRange={selectedRange}
@@ -353,50 +350,52 @@ const TablePanel = ({
             />
           </div>
         </div>
-        <div className="overflow-auto scrollbar-table">
-          <table className="w-full table-auto text-white">
-            <thead>
-              <tr>
-                <th className="p-3">
-                  <Button onClick={handleAddServices}>
-                    <Plus size={'16px'} />
-                    <Typography>Add services</Typography>
-                  </Button>
-                </th>
-                {dates.map((date) => (
-                  <th key={date} className="p-3">
-                    {date}
+        <div className="overflow-auto grid">
+          <div className="overflow-auto scrollbar-table">
+            <table className="w-full table-auto text-white">
+              <thead>
+                <tr>
+                  <th className="p-3">
+                    <Button onClick={handleAddServices}>
+                      <Plus size={'16px'} />
+                      <Typography>Add services</Typography>
+                    </Button>
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {selectedServices.length > 0 &&
-                selectedServices.map((service, index) => (
-                  <Fragment key={index}>
-                    <tr key={index} className="">
-                      <td className="p-3 min-w-64 align-center flex justify-between gap-2">
-                        <Typography>{service.name}</Typography>
-                        <div className="flex">
-                          <span className="bg-blue-500 text-white rounded-lg px-2 h-fit">{service.count}</span>
-                        </div>
-                      </td>
-                      {service.data.map((cell, cellIndex) => {
-                        return (
-                          <td key={cellIndex} className="p-3 text-center min-w-32 align-top">
-                            <div
-                              className={`${cell < 50 ? '!bg-green-600' : cell < 100 ? '!bg-yellow-600' : '!bg-red-600'} px-2 py-1 rounded-full`}
-                            >
-                              <span className="text-white">{cell}</span>
-                            </div>
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  </Fragment>
-                ))}
-            </tbody>
-          </table>
+                  {dates.map((date) => (
+                    <th key={date} className="p-3">
+                      {date}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {selectedServices.length > 0 &&
+                  selectedServices.map((service, index) => (
+                    <Fragment key={index}>
+                      <tr key={index} className="">
+                        <td className="p-3 min-w-64 align-center flex justify-between gap-2">
+                          <Typography>{service.name}</Typography>
+                          <div className="flex">
+                            <span className="bg-blue-500 text-white rounded-lg px-2 h-fit">{service.count}</span>
+                          </div>
+                        </td>
+                        {service.data.map((cell, cellIndex) => {
+                          return (
+                            <td key={cellIndex} className="p-3 text-center min-w-32 align-top">
+                              <div
+                                className={`${cell < 50 ? '!bg-green-600' : cell < 100 ? '!bg-yellow-600' : '!bg-red-600'} px-2 py-1 rounded-full`}
+                              >
+                                <span className="text-white">{cell}</span>
+                              </div>
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    </Fragment>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

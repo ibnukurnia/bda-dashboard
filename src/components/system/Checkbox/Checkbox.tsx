@@ -20,7 +20,7 @@ const Checkbox = ({ data, onChange, selectedData, color = 'black' }: CheckboxPro
           value={item.id}
           checked={selectedData?.some((selected) => selected.id === item.id)}
           onChange={() => handleChange(item)}
-          className="mr-2 cursor-pointer"
+          className="mr-2 cursor-pointer checked:font-semibold"
         />
         {item.label ?? item.value}
       </div>

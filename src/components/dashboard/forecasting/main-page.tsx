@@ -38,9 +38,8 @@ const MainPageForecasting = () => {
   const [totalPages, setTotalPages] = useState<number>(1)
   const [filter, setFilter] = useState({
     sourceData: null as string | null,
-    metric: null as string | null,
     serviceName: null as string | null,
-    optional: null as string | null,
+    selectedDate: '' as string,
   })
 
   const table = useReactTable({
@@ -84,13 +83,18 @@ const MainPageForecasting = () => {
     })
   }
 
-  const handleApplyFilters = async (filters: { selectedSource: string | null; selectedService: string | null }) => {
-    const { selectedSource, selectedService } = filters
+  const handleApplyFilters = async (filters: {
+    selectedSource: string | null
+    selectedService: string | null
+    selectedDate: string
+  }) => {
+    const { selectedSource, selectedService, selectedDate } = filters
 
     setFilter({
       ...filter,
       sourceData: selectedSource,
       serviceName: selectedService,
+      selectedDate,
     })
     GetForecastingColumns().then((result) => setColumns(result.data))
     GetForecastingTableData({ limit: pagination.pageSize, page: pagination.pageIndex }).then((tableData) => {
@@ -98,9 +102,11 @@ const MainPageForecasting = () => {
       setTotalPages(tableData.pagination.totalPage)
     })
     GetForecastingStatistics().then((statistics) => setStatistics(statistics.data))
-    GetForecastingData({ data_source: selectedSource ?? '', service_name: selectedService ?? '' }).then((res) =>
-      setGraphData(res.data)
-    )
+    GetForecastingData({
+      data_source: selectedSource ?? '',
+      service_name: selectedService ?? '',
+      date: selectedDate,
+    }).then((res) => setGraphData(res.data))
   }
 
   return (
@@ -149,7 +155,12 @@ const MainPageForecasting = () => {
                   <Typography variant="h5" component="h5" color="white">
                     Graphic Anomaly Forecasting
                   </Typography>
-                  <SynchronizedCharts dataCharts={graphData} height={300} width="100%" />
+                  <SynchronizedCharts
+                    chartTitle={filter.serviceName?.length ? filter.serviceName : ''}
+                    dataCharts={graphData}
+                    height={300}
+                    width="100%"
+                  />
                 </div>
                 {/* <div className="flex flex-col gap-8">
                   <Typography variant="h5" component="h5" color="white">

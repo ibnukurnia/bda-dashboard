@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { GetFilterDataSource, GetFilterServiceList } from '@/modules/usecases/forecasting'
+import { GetFilterServiceList } from '@/modules/usecases/forecasting'
 
 import Button from '@/components/system/Button/Button'
 
@@ -8,11 +8,14 @@ import DropdownFilter from './dropdown'
 interface FilterPanelProps {
   activeFilter: {
     sourceData: string | null
-    metric: string | null
     serviceName: string | null
-    optional: string | null
+    selectedDate: string
   }
-  onApplyFilters: (filters: { selectedSource: string | null; selectedService: string | null }) => void // Separate filters for anomalies and services
+  onApplyFilters: (filters: {
+    selectedSource: string | null
+    selectedService: string | null
+    selectedDate: string
+  }) => void // Separate filters for anomalies and services
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters }) => {
@@ -21,10 +24,41 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
 
   const [selectedSource, setSelectedSource] = useState<string | null>(activeFilter.sourceData)
   const [selectedService, setSelectedService] = useState<string | null>(activeFilter.serviceName)
-
-  // const [dataSource, setDataSource] = useState<any[]>([])
+  const [selectedDate, setSelectedDate] = useState<string>('')
   const [services, setServices] = useState<any[]>([])
-  const dataSource = ['brimo', 'apm']
+  const dataSource = ['tps', 'sales volume']
+
+  const today = new Date()
+  const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate())
+  const maxDate = new Date(
+    new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).setDate(todayZero.getDate() + 29)
+  ).toDateString()
+
+  const logicDate = () => {
+    const parsedSelectedDate = new Date(selectedDate)
+    const selectedDateZero = new Date(
+      parsedSelectedDate?.getFullYear(),
+      parsedSelectedDate?.getMonth(),
+      parsedSelectedDate?.getDate()
+    )
+    const resLogicDate =
+      selectedDateZero.getTime() < new Date(todayZero).getTime() ||
+      selectedDateZero.getTime() > new Date(maxDate).getTime()
+
+    return resLogicDate
+  }
+
+  const formatDate = (date: Date | string) => {
+    var d = new Date(date),
+      month = '' + (d.getMonth() + 1),
+      day = '' + d.getDate(),
+      year = d.getFullYear()
+
+    if (month.length < 2) month = '0' + month
+    if (day.length < 2) day = '0' + day
+
+    return [year, month, day].join('-')
+  }
 
   const togglePanel = () => {
     setIsOpen(!isOpen)
@@ -34,6 +68,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
     onApplyFilters({
       selectedSource,
       selectedService,
+      selectedDate,
     })
     setIsOpen(false) // Close the panel after applying filters
   }
@@ -41,6 +76,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
   const handleReset = () => {
     setSelectedSource(null)
     setSelectedService(null)
+    setSelectedDate('')
   }
 
   useEffect(() => {
@@ -64,11 +100,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
   useEffect(() => {
     setSelectedSource(activeFilter.sourceData)
     setSelectedService(activeFilter.serviceName)
+    setSelectedDate(activeFilter.selectedDate)
   }, [isOpen])
-
-  // useEffect(() => {
-  //   GetFilterDataSource().then((source) => setDataSource(source.data))
-  // }, [])
 
   return (
     <div className="flex self-end z-50">
@@ -112,11 +145,39 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
               }}
               selected={selectedService}
             />
+            <label>Select Date</label>
+            <input
+              type="date"
+              name=""
+              id=""
+              min={formatDate(new Date())}
+              max={formatDate(maxDate)}
+              className={`text-black border border-gray-300 bg-light-700 disabled:bg-gray-100 disabled:text-gray-400 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm p-2 w-full`}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              value={selectedDate}
+              style={
+                logicDate()
+                  ? {
+                      border: '1px solid red',
+                      boxShadow:
+                        'var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color);',
+                    }
+                  : {}
+              }
+            />
+            {/* <DatePicker /> */}
             <div className="flex justify-between mt-6 space-x-4">
               <Button variant="secondary" onClick={handleReset}>
                 RESET
               </Button>
-              <Button disabled={[selectedSource, selectedService].some((el) => el === null)} onClick={handleApply}>
+              <Button
+                disabled={
+                  [selectedSource, selectedService].some((el) => el === null) ||
+                  !selectedDate ||
+                  (selectedDate.length !== 0 && logicDate())
+                }
+                onClick={handleApply}
+              >
                 TERAPKAN
               </Button>
             </div>

@@ -45,7 +45,10 @@ const GetFilterOptional = async () => {
   return resJson
 }
 
-const GetForecastingData = async (params: { data_source: string; service_name: string }, signal?: AbortSignal) => {
+const GetForecastingData = async (
+  params: { data_source: string; service_name: string; date: string },
+  signal?: AbortSignal
+) => {
   let endPoint = `forecasting`
 
   const response: ApiResponse<any> = await get(
