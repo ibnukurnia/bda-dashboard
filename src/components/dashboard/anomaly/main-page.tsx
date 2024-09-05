@@ -32,7 +32,7 @@ const MainPageAnomaly = () => {
   const { metricsOverviews, getMetricsOverview } = useContext(OverviewContext);
   const logs = ['Log APM', 'Log Brimo']; // Example logs
   const utilizations = ['Prometheus OCP', 'Prometheus DB']; // Example logs
-  const [emptyMessage, setEmptyMessage] = useState<string | null>(null);
+  const security = ['Palo Alto', 'Fortinet', 'Web Application Security']
   const [selectedLog, setSelectedLog] = useState(logs[0]);
   const [selectedUtilization, setSelectedUtilization] = useState('');
   const [selectedSecurity, setSelectedSecurity] = useState('');
@@ -95,15 +95,14 @@ const MainPageAnomaly = () => {
     } else if (tab === 'network') {
       setIsDropdownOpenLog(false);
       setIsDropdownOpenUtilization(false);
-      setIsDropdownOpenSecurity(false); // Ensure other dropdowns are closed
-      setActiveTab('network'); // Set Network tab as active
+      setIsDropdownOpenSecurity(false);
+      setActiveTab('network');
     } else if (tab === 'security') {
       setIsDropdownOpenLog(false);
       setIsDropdownOpenUtilization(false);
       setIsDropdownOpenSecurity(!isDropdownOpenSecurity); // Toggle Security dropdown
     }
   };
-
 
 
   const handleDropdownSelection = (type: string, value: SetStateAction<string>) => {
@@ -121,44 +120,10 @@ const MainPageAnomaly = () => {
       setSelectedSecurity(value);
       setActiveTab('security'); // Only set Security tab active when an option is selected
       setSelectedLog('');
-      setIsDropdownOpenLog(false);
-      setIsDropdownOpenUtilization(false);
+      setSelectedUtilization('');
+      setIsDropdownOpenSecurity(false);
     }
   };
-
-
-  // const handleFilterChange = (filteredData: Anomaly[]) => {
-  //   if (filteredData.length === 0) {
-  //     setData([]);
-  //     setEmptyMessage("Data was empty within that time range.");
-  //   } else {
-  //     setData(filteredData);
-  //     setEmptyMessage(null); // Clear the message when data is present
-  //   }
-  // };
-
-  // const handleChartUpdate = (data: { data: number[] }[], categories: string[]) => {
-  //   setMostRecentAnomalyData(data);
-  //   setMostRecentAnomalyCategory(categories);
-  // };
-
-  // const handleLogChange = (log: string) => {
-
-  //   setIsDropdownOpenLog(!isDropdownOpenUtilization)
-  //   console.log(selectedLog, log)
-  //   setSelectedLog(log);
-  //   // Update state with new sample data
-  //   if (log === 'Log APM') {
-  //     setMostRecentAnomalyData([{ data: [400, 430, 448, 470] }]);
-  //     setMostRecentAnomalyCategory(['mylta', 'impala', 'pochinkisaldo', 'rozhok']);
-  //   } else if (log === 'Log Brimo') {
-  //     setMostRecentAnomalyData([{ data: [430, 400, 470, 448] }]);
-  //     setMostRecentAnomalyCategory(['rozhok', 'pochinkisaldo', 'pochinkisaldo', 'mylta']);
-  //   }
-
-  //   // Add more conditions if you have additional logs and data
-  // };
-
 
   //this was to run the update data first time when the main-page.tsx mounting
   useEffect(() => {
@@ -182,6 +147,9 @@ const MainPageAnomaly = () => {
       if (dropdownRefUtilization.current && !dropdownRefUtilization.current.contains(event.target as Node)) {
         setIsDropdownOpenUtilization(false);
       }
+      if (dropdownRefSecurity.current && !dropdownRefSecurity.current.contains(event.target as Node)) {
+        setIsDropdownOpenSecurity(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -192,7 +160,7 @@ const MainPageAnomaly = () => {
 
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-10">
       <div className='flex flex-row justify-between'>
         <div className='flex flex-row gap-6 container-button-x p-3'>
           {/* Log Tab */}
@@ -225,7 +193,6 @@ const MainPageAnomaly = () => {
               </div>
             )}
           </div>
-
           {/* Utilization Tab */}
           <div className="container-button relative inline-block z-50" ref={dropdownRefUtilization}>
             <button
@@ -240,7 +207,6 @@ const MainPageAnomaly = () => {
                 <path d="M6 9L12 15L18 9H6Z" fill="#FFFFF7" />
               </svg>
             </button>
-
             {/* Dropdown Menu */}
             {isDropdownOpenUtilization && (
               <div className="absolute mt-2 w-full bg-white border border-gray-200 rounded shadow-lg z-10">
@@ -260,9 +226,9 @@ const MainPageAnomaly = () => {
           <div className='container-button'>
             <button
               onClick={() => handleTabClick('network')}
-              className={activeTab === 'network' ? 'active' : ''}
+              className={`flex items-center px-4 py-2 border rounded text-white ${activeTab === 'network' ? 'active' : 'bg-transparent'} transition duration-300 ease-in-out`}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_28_4313)">
                   <path
                     d="M21 8C19.55 8 18.74 9.44 19.07 10.51L15.52 14.07C15.22 13.98 14.78 13.98 14.48 14.07L11.93 11.52C12.27 10.45 11.46 9 10 9C8.55 9 7.73 10.44 8.07 11.52L3.51 16.07C2.44 15.74 1 16.55 1 18C1 19.1 1.9 20 3 20C4.45 20 5.26 18.56 4.93 17.49L9.48 12.93C9.78 13.02 10.22 13.02 10.52 12.93L13.07 15.48C12.73 16.55 13.54 18 15 18C16.45 18 17.27 16.56 16.93 15.48L20.49 11.93C21.56 12.26 23 11.45 23 10C23 8.9 22.1 8 21 8Z"
@@ -276,16 +242,15 @@ const MainPageAnomaly = () => {
                     <rect width="24" height="24" fill="white" />
                   </clipPath>
                 </defs>
-              </svg>
+              </svg> */}
               Network
             </button>
           </div>
-
           {/* Security Tab */}
-          <div className='container-button'>
+          <div className="container-button relative inline-block z-50" ref={dropdownRefSecurity}>
             <button
               onClick={() => handleTabClick('security')}
-              className={activeTab === 'security' ? 'active' : ''}
+              className={`flex items-center px-4 py-2 border rounded text-white ${activeTab === 'security' ? 'active' : 'bg-transparent'} transition duration-300 ease-in-out`}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_28_4313)">
@@ -302,11 +267,28 @@ const MainPageAnomaly = () => {
                   </clipPath>
                 </defs>
               </svg>
-              Security
+              {'Security'}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={`ml-2 transition-transform ${isDropdownOpenSecurity ? 'rotate-180' : 'rotate-0'}`}>
+                <path d="M6 9L12 15L18 9H6Z" fill="#FFFFF7" />
+              </svg>
             </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpenSecurity && (
+              <div className="absolute mt-2 w-full bg-white border border-gray-200 rounded shadow-lg z-10">
+                {security.map((security, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleDropdownSelection('security', security)}
+                    className={`text-black block w-full text-left p-6 text-sm ${selectedSecurity === security ? 'text-blue-600' : 'text-black'} transition duration-300 ease-in-out hover:bg-blue-100`}
+                  >
+                    {security}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-        {/* <Dropdown AnomalyData={updatedAnomalyData} onFilterChange={handleFilterChange} onChartUpdate={handleChartUpdate} /> */}
       </div>
       <div>
         {activeTab === 'log' && selectedLog && (
@@ -332,17 +314,10 @@ const MainPageAnomaly = () => {
             setPagination={setPagination}
           />
         )}
-        {activeTab === 'security' && (
+
+        {activeTab === 'security' && selectedSecurity && (
           <TabSecurityContent
-            selectedSecurity={selectedLog}
-            series={series} // Example: Pass appropriate data based on selected log
-            categories={categories} // Pass appropriate categories based on selected log
-            anomalyData={mostRecentAnomalyData}
-            anomalyCategory={mostRecentAnomalyCategory}
-            data={data}
-            columns={columns}
-            pagination={pagination}
-            setPagination={setPagination}
+            selectedSecurity={selectedSecurity}
           />
         )}
       </div>

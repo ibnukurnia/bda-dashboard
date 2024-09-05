@@ -52,7 +52,7 @@ const GraphWrapper = ({
 }) => {
     if (isFieldRequired) return (
         <Typography variant="subtitle1" color="white" align="center">
-            No data available. Please select a filter to view the data.
+            Please select a filter to view the data.
         </Typography>
     )
     if (isLoading) return (
@@ -62,7 +62,9 @@ const GraphWrapper = ({
     )
     if (isEmpty) return (
         <div className="text-center py-4">
-            <div className="text-center text-2xl font-semibold text-white">DATA IS NOT AVAILABLE</div>
+            <Typography variant="subtitle1" color="white" align="center">
+                Data is not available.
+            </Typography>
         </div>
     )
     return children
@@ -119,7 +121,9 @@ const Graph = ({
     }
 }
 interface GraphicAnomalyCardProps {
-    selectedLog: string;
+    selectedLog?: string;
+    selectedSecurity?: string;
+    selectedUtilization?: string;
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
     servicesOptions: string[];
@@ -127,6 +131,8 @@ interface GraphicAnomalyCardProps {
 
 const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     selectedLog,
+    selectedUtilization,
+    selectedSecurity,
     selectedTimeRangeKey,
     timeRanges,
     servicesOptions,
@@ -142,6 +148,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const [selectedFilter, setSelectedFilter] = useState<{ scale: ColumnOption[], service: string }>({ scale: [], service: "" })
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0])
     const [initialLoading, setInitialLoading] = useState(true)
+    const activeType = selectedLog ?? selectedUtilization ?? selectedSecurity ?? '';
+
 
     const abortControllerRef = useRef<AbortController | null>(null); // Ref to store the AbortController
 
@@ -150,7 +158,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const keys = Object.keys(timeRanges);
     // Find the index of the key
     const selectedKeyIndex = keys.indexOf(currentZoomDateRange);
-
     const selectedTimeRange = timeRanges[currentZoomDateRange] ?? 15
 
     // Calculate endDate as the current time, rounding down the seconds to 00
@@ -183,10 +190,11 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
     // Cleanup function to abort fetch when the component unmounts
     useEffect(() => {
-        GetColumnOption(selectedLog)
+        GetColumnOption(activeType)
             .then((result) => {
                 if (result.data) {
                     setDataColumn(result.data)
+                    // console.log(result.data)
                 } else {
                     console.warn('API response data is null or undefined for column option')
                 }
@@ -203,33 +211,35 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     }, []);
 
     useUpdateEffect(() => {
-        if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
-        fetchMetricLog(selectedLog, predefinedStartTime, predefinedEndTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
-    }, [
-        currentZoomDateRange,
-    ])
+        if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return;
+
+        // Use activeType to determine which type is currently active
+        fetchMetricLog(activeType, predefinedStartTime, predefinedEndTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name));
+    }, [currentZoomDateRange, activeType]); // Add activeType to the dependency array
+
 
     useUpdateEffect(() => {
         if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
-        fetchMetricLog(selectedLog, customTime.startTime, customTime.endTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
+        fetchMetricLog(activeType, customTime.startTime, customTime.endTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
     }, [
-        customTime,
+        customTime, activeType
     ])
 
     useUpdateEffect(() => {
         if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
 
         if (dateRangeMode === "predefined") {
-            fetchMetricLog(selectedLog, predefinedStartTime, predefinedEndTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
+            fetchMetricLog(activeType, predefinedStartTime, predefinedEndTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
             return
         }
         if (dateRangeMode === "custom") {
-            fetchMetricLog(selectedLog, customTime.startTime, customTime.endTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
+            fetchMetricLog(activeType, customTime.startTime, customTime.endTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
             return
         }
     }, [
-        selectedLog,
+        activeType,
         selectedFilter,
+
     ])
 
     useUpdateEffect(() => {
@@ -249,7 +259,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     }, [selectedTimeRangeKey])
 
     const fetchMetricLog = async (
-        logType: string,
+        activeType: string,
         startTime: string,
         endTime: string,
         serviceName: string,
@@ -265,7 +275,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         abortControllerRef.current = controller;
 
         const metricResultPromise = GetMetricLogAnomalies({
-            type: logType,
+            type: activeType,
             start_time: startTime,
             end_time: endTime,
             service_name: serviceName,
@@ -325,6 +335,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             scale: selectedScales,
             service: selectedService,
         })
+
     }
 
     const handleSelectToggle = (value: ToggleOption) => {

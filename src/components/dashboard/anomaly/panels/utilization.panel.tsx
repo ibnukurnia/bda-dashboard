@@ -705,7 +705,7 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
                     />
                 </div>
             </div>
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-10">
                 <div className="flex flex-col gap-8">
                     <FilterPanel
                         servicesOptions={filterServicesOptions}
