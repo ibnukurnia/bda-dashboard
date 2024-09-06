@@ -90,6 +90,7 @@ class AuthClient {
 
   async signOut(): Promise<{ error?: string }> {
     localStorage.removeItem('token')
+    localStorage.removeItem('filter')
 
     return {}
   }

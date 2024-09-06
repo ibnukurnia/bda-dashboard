@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useState } from 'react'
 import { Box, Stack, Typography } from '@mui/material'
 import {
   ColumnDef,
@@ -22,6 +22,8 @@ import {
   GetForecastingTableData,
 } from '@/modules/usecases/forecasting'
 
+import { useLocalStorage } from '@/hooks/use-storage'
+
 import FilterPanel from './button/filter-panel'
 import SynchronizedCharts from './chart/synchronized-charts'
 import ForecastingTable from './table/forecasting-table'
@@ -41,6 +43,8 @@ const MainPageForecasting = () => {
     serviceName: null as string | null,
     selectedDate: '' as string,
   })
+  const [filterValue, setFilterValue] = useLocalStorage('filter', undefined)
+  const [chartLoading, setChartLoading] = useState(false)
 
   const table = useReactTable({
     data: data,
@@ -90,24 +94,52 @@ const MainPageForecasting = () => {
   }) => {
     const { selectedSource, selectedService, selectedDate } = filters
 
+    setChartLoading(true)
     setFilter({
       ...filter,
       sourceData: selectedSource,
       serviceName: selectedService,
       selectedDate,
     })
-    GetForecastingColumns().then((result) => setColumns(result.data))
-    GetForecastingTableData({ limit: pagination.pageSize, page: pagination.pageIndex }).then((tableData) => {
-      setData(tableData.data)
-      setTotalPages(tableData.pagination.totalPage)
-    })
     GetForecastingStatistics().then((statistics) => setStatistics(statistics.data))
     GetForecastingData({
       data_source: selectedSource ?? '',
       service_name: selectedService ?? '',
       date: selectedDate,
-    }).then((res) => setGraphData(res.data))
+    })
+      .then((res) => {
+        setGraphData(res.data)
+        setChartLoading(false)
+      })
+      .catch(() => setChartLoading(false))
+
+    setFilterValue({ dataSource: selectedSource, service: selectedService, date: selectedDate })
   }
+
+  useLayoutEffect(() => {
+    if (filterValue?.dataSource && filterValue?.service && filterValue?.date) {
+      setChartLoading(true)
+      const { dataSource, service, date } = filterValue
+      setFilter({
+        ...filter,
+        sourceData: dataSource,
+        serviceName: service,
+        selectedDate: date,
+      })
+
+      GetForecastingStatistics().then((statistics) => setStatistics(statistics.data))
+      GetForecastingData({
+        data_source: dataSource,
+        service_name: service,
+        date,
+      })
+        .then((res) => {
+          setGraphData(res.data)
+          setChartLoading(false)
+        })
+        .catch(() => setChartLoading(false))
+    }
+  }, [])
 
   return (
     <div className="flex flex-col gap-8">
@@ -156,10 +188,11 @@ const MainPageForecasting = () => {
                     Graphic Anomaly Forecasting
                   </Typography>
                   <SynchronizedCharts
-                    chartTitle={filter.serviceName?.length ? filter.serviceName : ''}
+                    chartTitle={filter.serviceName?.length ? `${filter.serviceName} - ${filter.sourceData}` : ''}
                     dataCharts={graphData}
                     height={300}
                     width="100%"
+                    loading={chartLoading}
                   />
                 </div>
                 {/* <div className="flex flex-col gap-8">

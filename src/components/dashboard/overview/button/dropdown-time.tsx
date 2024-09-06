@@ -63,10 +63,10 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
   }, [isOpen])
 
   useLayoutEffect(() => {
-    const emptySpaceDown = window.innerHeight + window.scrollY
     const containerHeight = dropdownContainerRef.current?.clientHeight
     const buttonPos = dropdownRef.current?.offsetTop
     const buttonHeight = dropdownRef.current?.clientHeight
+    const emptySpaceDown = window.innerHeight + window.scrollY - (buttonHeight ?? 0)
 
     if (buttonPos && containerHeight && buttonPos + containerHeight > emptySpaceDown) {
       setPosition(0 - containerHeight - 4)
