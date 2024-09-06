@@ -1,0 +1,13 @@
+.checkbox::-webkit-scrollbar {
+  width: 8px;
+  border-radius: 8px;
+  background-color: #ededed;
+  z-index: 2;
+}
+
+.checkbox::-webkit-scrollbar-thumb {
+  width: 8px;
+  border-radius: 8px;
+  background-color: #bdbdbd;
+  z-index: 2;
+}

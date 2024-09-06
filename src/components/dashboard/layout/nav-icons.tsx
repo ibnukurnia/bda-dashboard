@@ -10,6 +10,7 @@ import {
   Database,
   LogOut as Logout,
   Activity,
+  AlertOctagon,
 } from 'react-feather';
 
 export const navIcons: Record<string, Icon> = {
@@ -20,6 +21,7 @@ export const navIcons: Record<string, Icon> = {
   'log-out': Logout,
   'radio': Radio,
   'database': Database,
+  'alert-octagon': AlertOctagon,
   user: UserIcon,
   users: UsersIcon,
   activity: Activity,
