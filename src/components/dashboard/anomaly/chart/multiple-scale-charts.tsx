@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
-import './synchronized-charts.css';
+import './custom-chart-styles.css';
 import { MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions';
 import { formatDate } from 'date-fns';
 
@@ -13,7 +13,7 @@ const colors = [
     '#FF6666', '#3DDC97', '#F4A261', '#89CFF0'
   ]
 
-interface SynchronizedChartsMultipleScaleProps {
+interface MultipleScaleChartProps {
     dataCharts: MetricLogAnomalyResponse[];
     height: number;
     width: string;
@@ -27,7 +27,7 @@ interface SynchronizedChartsMultipleScaleProps {
     maxXOnEmpty?: any;
 }
 
-const SynchronizedChartsMultipleScale: React.FC<SynchronizedChartsMultipleScaleProps> = ({
+const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
     dataCharts,
     height,
     width,
@@ -147,7 +147,6 @@ const SynchronizedChartsMultipleScale: React.FC<SynchronizedChartsMultipleScaleP
                 style: {
                     colors: 'white', // White color for y-axis text
                 },
-                formatter: (value) => value % 1 !== 0 ? value.toFixed(2) : value.toString(),
             },
             seriesName: metric.title,
             tooltip: {
@@ -204,4 +203,4 @@ const SynchronizedChartsMultipleScale: React.FC<SynchronizedChartsMultipleScaleP
     );
 };
 
-export default SynchronizedChartsMultipleScale;
+export default MultipleScaleChart;

@@ -14,7 +14,7 @@ import {
 import { ArrowLeft, ArrowRight } from 'react-feather'
 import { CheckboxOption, fetchAnomalyOption, fetchServicesOption } from '@/lib/api'
 import DropdownRange from '../../dropdownRange'
-import SynchronizedCharts from '../../overview/chart/synchronized-charts'
+import SynchronizedCharts from '../chart/synchronized-charts'
 import FilterPanel from '../button/filterPanel'
 import { format } from 'date-fns';
 import GraphAnomalyCard from '../card/graph-anomaly-card'
