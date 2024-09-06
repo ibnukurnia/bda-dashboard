@@ -190,6 +190,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
     // Cleanup function to abort fetch when the component unmounts
     useEffect(() => {
+        setDataColumn({columns: []})
+        setSelectedFilter({ scale: [], service: "" })
         GetColumnOption(activeType)
             .then((result) => {
                 if (result.data) {
@@ -208,7 +210,9 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 abortControllerRef.current.abort();
             }
         };
-    }, []);
+    }, [
+        activeType,
+    ]);
 
     useUpdateEffect(() => {
         if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return;
@@ -237,9 +241,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             return
         }
     }, [
-        activeType,
         selectedFilter,
-
     ])
 
     useUpdateEffect(() => {
