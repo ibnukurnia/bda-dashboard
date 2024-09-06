@@ -1,16 +1,17 @@
 'use client'
 
-import React, { Fragment, useEffect, useRef, useState } from 'react'
+import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import './main-page.css'
+
 import { Typography } from '@mui/material'
 import { Plus } from 'react-feather'
 
 import Button from '@/components/system/Button/Button'
 
+import DropdownTime from './button/dropdown-time'
 import DynamicUpdatingChart from './chart/dynamic-updating-chart'
 import OverviewModal from './modal/overview-modal'
-import DropdownTime from './button/dropdown-time'
 
 // Define your data
 const sourceData = [
@@ -138,6 +139,10 @@ const TablePanel = ({
 }) => {
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
+  const [firstThWidth, setFirstThWidth] = useState(0)
+  const [scrollXTable, setScrollXTable] = useState(0)
+  const containerTableRef = useRef<HTMLDivElement>(null)
+  const firstThRef = useRef<HTMLTableHeaderCellElement>(null)
 
   const dummyData = [
     {
@@ -327,6 +332,11 @@ const TablePanel = ({
     },
   ]
 
+  useLayoutEffect(() => {
+    const resWidth = firstThRef.current?.offsetWidth
+    setFirstThWidth(resWidth ?? 0)
+  }, [])
+
   return (
     <div className="flex-1 px-4 grid gap-8">
       <div className="chart-section">
@@ -350,12 +360,39 @@ const TablePanel = ({
             />
           </div>
         </div>
-        <div className="overflow-auto grid">
-          <div className="overflow-auto scrollbar-table">
+        <div className="relative grid">
+          {scrollXTable > 0 && (
+            <button
+              className={`absolute bg-blue-600 text-xs z-10 top-1/2 left-[${firstThWidth}px] text-white px-2 py-1 opacity-50 hover:opacity-100 rounded-md`}
+              onClick={() => containerTableRef.current?.scrollTo({ left: 0, behavior: 'smooth' })}
+            >
+              {'<'}
+            </button>
+          )}
+          {containerTableRef.current?.scrollWidth &&
+            containerTableRef.current?.clientWidth &&
+            scrollXTable < containerTableRef.current?.scrollWidth - containerTableRef.current?.clientWidth && (
+              <button
+                className="absolute bg-blue-600 text-xs z-10 top-1/2 right-0 text-white px-2 py-1 opacity-50 hover:opacity-100 rounded-md"
+                onClick={() =>
+                  containerTableRef.current?.scrollTo({
+                    left: containerTableRef.current?.scrollWidth - containerTableRef.current?.clientWidth,
+                    behavior: 'smooth',
+                  })
+                }
+              >
+                {'>'}
+              </button>
+            )}
+          <div
+            ref={containerTableRef}
+            onScroll={() => setScrollXTable(containerTableRef.current?.scrollLeft ?? 0)}
+            className="overflow-auto scrollbar-table"
+          >
             <table className="w-full table-auto text-white">
               <thead>
                 <tr>
-                  <th className="p-3">
+                  <th className="p-3" ref={firstThRef}>
                     <Button onClick={handleAddServices}>
                       <Plus size={'16px'} />
                       <Typography>Add services</Typography>
@@ -369,7 +406,7 @@ const TablePanel = ({
                 </tr>
               </thead>
               <tbody>
-                {selectedServices.length > 0 &&
+                {selectedServices.length > 0 ? (
                   selectedServices.map((service, index) => (
                     <Fragment key={index}>
                       <tr key={index} className="">
@@ -392,7 +429,12 @@ const TablePanel = ({
                         })}
                       </tr>
                     </Fragment>
-                  ))}
+                  ))
+                ) : (
+                  <tr>
+                    <td>No service selected</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { GetFilterServiceList } from '@/modules/usecases/forecasting'
 
+import { useLocalStorage } from '@/hooks/use-storage'
 import Button from '@/components/system/Button/Button'
 
 import DropdownFilter from './dropdown'
@@ -26,6 +27,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
   const [selectedService, setSelectedService] = useState<string | null>(activeFilter.serviceName)
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [services, setServices] = useState<any[]>([])
+  const [filterValue] = useLocalStorage('filter', undefined)
+
   const dataSource = ['tps', 'sales volume']
 
   const today = new Date()
@@ -102,6 +105,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
     setSelectedService(activeFilter.serviceName)
     setSelectedDate(activeFilter.selectedDate)
   }, [isOpen])
+
+  useLayoutEffect(() => {
+    if (filterValue?.dataSource) {
+      GetFilterServiceList({ data_source: filterValue.dataSource }).then((service) => setServices(service.data))
+    }
+  }, [])
 
   return (
     <div className="flex self-end z-50">
