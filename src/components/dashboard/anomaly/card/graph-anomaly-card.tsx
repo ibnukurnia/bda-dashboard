@@ -210,24 +210,19 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 abortControllerRef.current.abort();
             }
         };
-    }, [
-        activeType,
-    ]);
+    }, [activeType]);
 
     useUpdateEffect(() => {
         if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return;
 
         // Use activeType to determine which type is currently active
         fetchMetricLog(activeType, predefinedStartTime, predefinedEndTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name));
-    }, [currentZoomDateRange, activeType]); // Add activeType to the dependency array
-
+    }, [currentZoomDateRange])
 
     useUpdateEffect(() => {
         if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
         fetchMetricLog(activeType, customTime.startTime, customTime.endTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
-    }, [
-        customTime, activeType
-    ])
+    }, [customTime])
 
     useUpdateEffect(() => {
         if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
@@ -239,9 +234,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         if (dateRangeMode === "custom") {
             fetchMetricLog(activeType, customTime.startTime, customTime.endTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
         }
-    }, [
-        selectedFilter,
-    ])
+    }, [selectedFilter])
 
     useUpdateEffect(() => {
         if (selectedTimeRangeKey.includes(' - ')) {

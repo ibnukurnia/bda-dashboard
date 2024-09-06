@@ -82,6 +82,14 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         setFilteredServicesOptions(servicesOptions)
     }, [servicesOptions])
 
+    useEffect(() => {
+        setSelectedScaleOptions(currentSelectedScales)
+    }, [currentSelectedScales])
+
+    useEffect(() => {
+        setSelectedServiceOptions(currentSelectedService)
+    }, [currentSelectedService])
+
     // useEffect(() => {
     //     console.log('Scale Options:', scaleOptions);
     // }, [scaleOptions]);

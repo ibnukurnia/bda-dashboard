@@ -144,19 +144,37 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
             },
             opposite: index !== 0 && index >= Math.ceil((dataCharts.length-1) / 2),
             labels: {
+                formatter: (value: number) => {
+                    if (!metric.data || metric.data.length <= 0) value.toString()
+                    
+                    // Convert the number to a string
+                    const valueString = metric.data[0][1].toString()
+                    
+                    // Find the position of the decimal point
+                    const decimalIndex = valueString.indexOf('.')
+                    
+                    // If there is no decimal point
+                    if (decimalIndex === -1) {
+                        return value.toFixed(0)
+                    }
+                    
+                    // Return the number of digits after the decimal point
+                    return value.toFixed(valueString.length - decimalIndex - 1)
+                },
                 style: {
                     colors: 'white', // White color for y-axis text
                 },
             },
             seriesName: metric.title,
             tooltip: {
-                enabled: true,
+                enabled: index === 0 || index === 1,
             },
             axisBorder: {
               show: true, // Show the Y-axis line
               color: colors[index % (colors.length)], // This gives the remainder after all full loops.
               width: 2, // Adjust the width of the Y-axis line
             },
+            
         })),
         stroke: {
             curve: 'smooth',
