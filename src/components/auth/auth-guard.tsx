@@ -32,7 +32,7 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
       router.replace(paths.auth.signIn);
       return;
     }
-    console.log(user)
+    // console.log(user)
     setIsChecking(false);
   };
 

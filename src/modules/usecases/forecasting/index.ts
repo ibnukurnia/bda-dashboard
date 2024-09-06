@@ -1,14 +1,8 @@
 import { get } from '@/common/api'
+import { ApiResponse } from '@/common/api/type'
 
 const GetForecastingColumns = async () => {
   const response = await fetch('/api/forecasting-columns', { method: 'GET' })
-  const resJson = await response.json()
-
-  return resJson
-}
-
-const GetForecastingGraphData = async () => {
-  const response = await fetch('/api/forecasting-graph-data', { method: 'GET' })
   const resJson = await response.json()
 
   return resJson
@@ -44,13 +38,6 @@ const GetFilterMetric = async () => {
   return resJson
 }
 
-const GetFilterService = async () => {
-  const response = await fetch('/api/forecasting/service-name', { method: 'GET' })
-  const resJson = await response.json()
-
-  return resJson
-}
-
 const GetFilterOptional = async () => {
   const response = await fetch('/api/forecasting/options', { method: 'GET' })
   const resJson = await response.json()
@@ -58,13 +45,46 @@ const GetFilterOptional = async () => {
   return resJson
 }
 
+const GetForecastingData = async (
+  params: { data_source: string; service_name: string; date: string },
+  signal?: AbortSignal
+) => {
+  let endPoint = `forecasting`
+
+  const response: ApiResponse<any> = await get(
+    endPoint,
+    {
+      withAuth: true,
+      queries: params,
+    },
+    signal
+  )
+
+  return response
+}
+
+const GetFilterServiceList = async (params: { data_source: string }, signal?: AbortSignal) => {
+  let endPoint = `forecasting/service-list`
+
+  const response: ApiResponse<any> = await get(
+    endPoint,
+    {
+      withAuth: true,
+      queries: params,
+    },
+    signal
+  )
+
+  return response
+}
+
 export {
   GetForecastingColumns,
-  GetForecastingGraphData,
   GetForecastingTableData,
   GetForecastingStatistics,
   GetFilterDataSource,
   GetFilterMetric,
-  GetFilterService,
   GetFilterOptional,
+  GetForecastingData,
+  GetFilterServiceList,
 }

@@ -19,6 +19,7 @@ import FilterPanel from '../button/filterPanel'
 import GraphAnomalyCard from '../card/graph-anomaly-card'
 
 import { format } from 'date-fns';
+import AutoRefreshButton from '../button/refreshButton'
 
 interface TabLogContentProps {
     selectedLog: string
@@ -31,9 +32,9 @@ const defaultTimeRanges: Record<string, number> = {
     'Last 1 hours': 60,
     'Last 6 hours': 360,
     'Last 24 hours': 1440,
-    'Last 3 days': 4320,
-    'Last 1 week': 10080,
-    'Last 1 month': 43800,
+    // 'Last 3 days': 4320,
+    // 'Last 1 week': 10080,
+    // 'Last 1 month': 43800,
 }
 
 const TabLogContent: React.FC<TabLogContentProps> = ({
@@ -43,6 +44,8 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
+    const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
+    const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
     const [startTime, setStartTime] = useState<string>('')
     const [endTime, setEndTime] = useState<string>('')
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
@@ -202,18 +205,24 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     setPagination((prev) => ({
                         ...prev,
                         pageIndex: 1,
-                    }))
+                    }));
                 })
+                .finally(() => {
+                    // Set table loading to false after API call completes
+                    setIsTableLoading(false);
+                });
         } catch (error) {
             console.error('Unexpected error:', error);
+            setIsTableLoading(false); // Ensure loading is set to false in case of error
         }
     };
+
 
     const updateTimeDifference = () => {
         if (!lastRefreshTime) return;
 
         const now = new Date();
-        console.log(now)
+        // console.log(now)
         const diffInSeconds = Math.floor((now.getTime() - lastRefreshTime.getTime()) / 1000);
 
         if (diffInSeconds < 60) {
@@ -225,6 +234,33 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             const hours = Math.floor(diffInSeconds / 3600);
             setTimeDifference(`Refreshed ${hours} hour${hours > 1 ? 's' : ''} ago`);
         }
+    };
+
+    // Function to refresh data manually (on "Refresh Now" button click)
+    const handleRefreshNow = async () => {
+        const logType = getLogType(selectedLog); // Get the log type
+
+        if (logType) {
+            // Call fetchDataByLog without passing time range values, defaults will be used
+            await fetchDataByLog(
+                logType,
+                pagination.pageIndex,     // Page number
+                pagination.pageSize,      // Page size (limit)
+                selectedAnomalyOptions,    // Anomaly filter options
+                selectedServicesOptions,    // Service filter options
+                startTime,
+                endTime
+            );
+            console.log('Manual refresh triggered');
+        } else {
+            console.warn('Invalid log type selected');
+        }
+    };
+
+    // Handle auto-refresh toggling and interval selection
+    const handleAutoRefreshChange = (autoRefresh: boolean, interval: number) => {
+        setAutoRefresh(autoRefresh);
+        setRefreshInterval(autoRefresh ? interval : null); // Set the interval if auto-refresh is on
     };
 
     const handlePageSizeChange = async (
@@ -301,24 +337,29 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         logType: string,
         page: number,
         limit: number,
-        filter: string[] = []
+        anomalyOptions: string[] = [],
+        serviceOptions: string[] = [],
+        startTime?: string, // Optional
+        endTime?: string    // Optional
     ) => {
-
-        // Get startTime and endTime using the helper function
+        // Use passed startTime and endTime, or default to helper function values
         const { startTimeValue, endTimeValue } = getTimeRange();
 
-        // Start both API calls concurrently
+        const finalStartTime = startTime || startTimeValue; // Use passed startTime or fallback to default
+        const finalEndTime = endTime || endTimeValue;       // Use passed endTime or fallback to default
+
+        // Start the API call with either the passed or default start/end time values
         const logAnomaliesPromise = GetHistoricalLogAnomalies(
             logType,
             limit,
             page,
-            selectedAnomalyOptions,
-            selectedServicesOptions,
-            startTimeValue, // Use formatted startTimeToUse
-            endTimeValue// Use formatted endTimeToUse
+            anomalyOptions,      // Pass anomaly filter options
+            serviceOptions,      // Pass service filter options
+            finalStartTime,      // Use finalStartTime (either passed or default)
+            finalEndTime         // Use finalEndTime (either passed or default)
         );
 
-        // Handle the result of the first API call
+        // Handle the result of the API call
         logAnomaliesPromise
             .then((result) => {
                 if (result.data) {
@@ -438,7 +479,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     type: column.type, // Maps the "type" to "type"
                 }))
 
-                console.log('Mapped Checkbox Options:', options) // Log the mapped options
+                // console.log('Mapped Checkbox Options:', options) // Log the mapped options
 
                 setFilterAnomalyOptions(options) // Update state with fetched options
             } else {
@@ -453,7 +494,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     const loadServicesFilterOptions = async () => {
         try {
             const response = await fetchServicesOption(selectedLog === 'Log Brimo' ? 'brimo' : '')
-            console.log('API Response:', response) // Log the entire API response
+            // console.log('API Response:', response) // Log the entire API response
 
             if (response.data && response.data.services) {
                 // No need to map as it's already an array of strings
@@ -486,6 +527,9 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         // Determine the log type
         const logType = getLogType(selectedLog);
         const { startTimeValue, endTimeValue } = getTimeRange();
+
+        // Set table loading to true before starting the API call
+        setIsTableLoading(true);
 
         // Initiate both API calls concurrently and independently
         const logAnomaliesPromise = GetHistoricalLogAnomalies(
@@ -535,14 +579,21 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                 }
             })
             .catch(handleApiError)
-    }
+            .finally(() => {
+                // Set table loading to false after API call completes
+                setIsTableLoading(false);
+            });
+    };
 
     const nextPage = () => {
         const logType = getLogType(selectedLog);
 
+        setIsTableLoading(true); // Set loading to true before making the API call
+
         setPagination((prev) => {
             const newPageIndex = Math.min(prev.pageIndex + 1, totalPages);
             const { startTimeValue, endTimeValue } = getTimeRange();
+
             // Define a function to call the API with the appropriate filters
             const callApi = (anomalyOptions: string[], serviceOptions: string[]) => {
                 GetHistoricalLogAnomalies(
@@ -555,7 +606,10 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                     endTimeValue
                 )
                     .then((result) => processApiResult(result))
-                    .catch((error) => handleApiError(error));
+                    .catch((error) => handleApiError(error))
+                    .finally(() => {
+                        setIsTableLoading(false); // Set loading to false after the API call completes
+                    });
             };
 
             // Handle different filter scenarios
@@ -572,7 +626,10 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                 // If no filters are selected, proceed with normal pagination
                 fetchDataByPagination(newPageIndex, prev.pageSize, [], startTimeValue, endTimeValue)
                     .then((result) => processApiResult(result))
-                    .catch((error) => handleApiError(error));
+                    .catch((error) => handleApiError(error))
+                    .finally(() => {
+                        setIsTableLoading(false); // Set loading to false after the API call completes
+                    });
             }
 
             return { ...prev, pageIndex: newPageIndex };
@@ -581,6 +638,8 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
 
     const previousPage = () => {
         const logType = getLogType(selectedLog);
+
+        setIsTableLoading(true); // Set loading to true before making the API call
 
         setPagination((prev) => {
             const newPageIndex = Math.max(prev.pageIndex - 1, 1);
@@ -630,7 +689,10 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
             // Handle the API call response
             logAnomaliesPromise
                 .then((result) => processApiResult(result))
-                .catch((error) => handleApiError(error));
+                .catch((error) => handleApiError(error))
+                .finally(() => {
+                    setIsTableLoading(false); // Set loading to false after the API call completes
+                });
 
             return { ...prev, pageIndex: newPageIndex };
         });
@@ -660,11 +722,40 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         return () => clearInterval(intervalId);
     }, [lastRefreshTime]);
 
-    return (
-        <div className="flex flex-col gap-10 px-14 py-12 card-style z-50">
-            <div className="flex flex-row items-center self-end">
+    // Setup auto-refresh if enabled
+    useEffect(() => {
+        let intervalId: NodeJS.Timeout | null = null;
+        if (autoRefresh && refreshInterval) {
+            intervalId = setInterval(() => {
+                const logType = getLogType(selectedLog);
 
-                <div className="flex flex-row gap-2 self-center items-center">
+                if (logType) {
+                    // Call fetchDataByLog with or without time range depending on the case
+                    fetchDataByLog(
+                        logType,
+                        pagination.pageIndex,     // Page number
+                        pagination.pageSize,      // Page size (limit)
+                        selectedAnomalyOptions,    // Anomaly filter options
+                        selectedServicesOptions,   // Service filter options
+                        startTime,
+                        endTime
+                    );
+                    console.log('Auto-refresh triggered');
+                }
+            }, refreshInterval);
+        }
+
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        };
+    }, [autoRefresh, refreshInterval, selectedLog, pagination.pageIndex, pagination.pageSize, selectedAnomalyOptions, selectedServicesOptions]);
+
+    return (
+        <div className='flex flex-col gap-4'>
+            <div className='flex flex-row gap-2 self-end items-center'>
+                <div className="flex flex-row gap-2 self-end items-center">
                     <Typography variant="body2" component="p" color="white">
                         {timeDifference}
                     </Typography>
@@ -673,147 +764,152 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                         onRangeChange={handleRangeChange}
                         selectedRange={selectedRange} // Pass selectedRange as a prop
                     />
+
                 </div>
+                <AutoRefreshButton onRefresh={handleRefreshNow} onAutoRefreshChange={handleAutoRefreshChange} />
             </div>
-            <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-8">
-                    <FilterPanel
-                        servicesOptions={filterServicesOptions}
-                        checkboxOptions={filterAnomalyOptions}
-                        onApplyFilters={handleApplyFilters}
-                        onResetFilters={handleResetFilters}
-                        hasErrorFilterAnomaly={hasErrorFilterAnomaly}
-                        hasErrorFilterService={hasErrorFilterService}
-                    />
-                    <Typography variant="h5" component="h5" color="white">
-                        Historical Anomaly Records
-                    </Typography>
-                    <Box>
-                        <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
-                            <div className="min-w-full">
-                                {isTableLoading ? (
-                                    <div className="flex justify-center items-center">
-                                        <div className="spinner"></div>
+            <div className="flex flex-col gap-10 p-12 card-style">
+                <div className="flex flex-col gap-10">
+                    <div className="flex flex-col gap-8">
+                        <FilterPanel
+                            servicesOptions={filterServicesOptions}
+                            checkboxOptions={filterAnomalyOptions}
+                            onApplyFilters={handleApplyFilters}
+                            onResetFilters={handleResetFilters}
+                            hasErrorFilterAnomaly={hasErrorFilterAnomaly}
+                            hasErrorFilterService={hasErrorFilterService}
+                        />
+                        <Typography variant="h5" component="h5" color="white">
+                            Historical Anomaly Records
+                        </Typography>
+                        <Box>
+                            <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
+                                <div className="min-w-full">
+                                    {isTableLoading ? (
+                                        <div className="flex justify-center items-center">
+                                            <div className="spinner"></div>
+                                        </div>
+                                    ) : data.length === 0 && !isTableLoading ? (
+                                        <div className="text-center py-4">
+                                            <Typography variant="subtitle1" color="white" align="center">
+                                                No data available.
+                                            </Typography>
+                                        </div>
+                                    ) : (
+                                        <table id="person" className="table-auto divide-y divide-gray-200 w-full">
+                                            <thead>
+                                                {table.getHeaderGroups().map((headerGroup) => (
+                                                    <tr key={headerGroup.id}>
+                                                        {headerGroup.headers.map((header) => (
+                                                            <th key={header.id} colSpan={header.colSpan} className="p-2">
+                                                                <div
+                                                                    className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3`}
+                                                                    onClick={header.column.getToggleSortingHandler()}
+                                                                >
+                                                                    {typeof header.column.columnDef.header === 'function'
+                                                                        ? header.column.columnDef.header({} as any) // Pass a dummy context
+                                                                        : header.column.columnDef.header}
+                                                                    {header.column.getCanSort() && (
+                                                                        <>
+                                                                            {{
+                                                                                asc: '🔼',
+                                                                                desc: '🔽',
+                                                                                undefined: '🔽', // Default icon for unsorted state
+                                                                            }[header.column.getIsSorted() as string] || '🔽'}
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </th>
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-200 text-gray-600">
+                                                {table.getRowModel().rows.map((row) => (
+                                                    <tr key={row.id}>
+                                                        {row.getVisibleCells().map((cell) => (
+                                                            <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                                                                <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
+                                                                    {cell.column.id === 'severity' && (
+                                                                        <svg
+                                                                            width="14"
+                                                                            height="15"
+                                                                            viewBox="0 0 14 15"
+                                                                            fill="none"
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                        >
+                                                                            <path
+                                                                                d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
+                                                                                fill="#F59823"
+                                                                            />
+                                                                        </svg>
+                                                                    )}
+                                                                    {typeof cell.column.columnDef.cell === 'function'
+                                                                        ? cell.column.columnDef.cell(cell.getContext())
+                                                                        : cell.column.columnDef.cell}
+                                                                </div>
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
+                                {data.length > 0 && !isTableLoading && (
+                                    <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
+                                        <div className="flex gap-1">
+                                            <span className="text-white">Rows per page:</span>
+                                            <select
+                                                value={table.getState().pagination.pageSize}
+                                                onChange={(e) => {
+                                                    const newPageSize = Number(e.target.value);
+                                                    const logType = getLogType(selectedLog);
+                                                    handlePageSizeChange(newPageSize, logType, 1, selectedAnomalyOptions);
+                                                }}
+                                                className="select-button-assesment"
+                                            >
+                                                {[5, 10, 15, 25].map((pageSize) => (
+                                                    <option key={pageSize} value={pageSize}>
+                                                        {pageSize}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="text-white">
+                                            Page {pagination.pageIndex} of {totalPages}
+                                        </div>
+                                        <div className="d-flex">
+                                            <button
+                                                className={`p-2 ${pagination.pageIndex === 1 ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
+                                                onClick={previousPage}
+                                                disabled={pagination.pageIndex === 1}
+                                            >
+                                                <ArrowLeft />
+                                            </button>
+                                            <button
+                                                className={`p-2 ${pagination.pageIndex === totalPages ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
+                                                onClick={nextPage}
+                                                disabled={pagination.pageIndex === totalPages}
+                                            >
+                                                <ArrowRight />
+                                            </button>
+                                        </div>
                                     </div>
-                                ) : data.length === 0 && !isTableLoading ? (
-                                    <div className="text-center py-4">
-                                        <Typography variant="subtitle1" color="white" align="center">
-                                            No data available.
-                                        </Typography>
-                                    </div>
-                                ) : (
-                                    <table id="person" className="table-auto divide-y divide-gray-200 w-full">
-                                        <thead>
-                                            {table.getHeaderGroups().map((headerGroup) => (
-                                                <tr key={headerGroup.id}>
-                                                    {headerGroup.headers.map((header) => (
-                                                        <th key={header.id} colSpan={header.colSpan} className="p-2">
-                                                            <div
-                                                                className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3`}
-                                                                onClick={header.column.getToggleSortingHandler()}
-                                                            >
-                                                                {typeof header.column.columnDef.header === 'function'
-                                                                    ? header.column.columnDef.header({} as any) // Pass a dummy context
-                                                                    : header.column.columnDef.header}
-                                                                {header.column.getCanSort() && (
-                                                                    <>
-                                                                        {{
-                                                                            asc: '🔼',
-                                                                            desc: '🔽',
-                                                                            undefined: '🔽', // Default icon for unsorted state
-                                                                        }[header.column.getIsSorted() as string] || '🔽'}
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        </th>
-                                                    ))}
-                                                </tr>
-                                            ))}
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-200 text-gray-600">
-                                            {table.getRowModel().rows.map((row) => (
-                                                <tr key={row.id}>
-                                                    {row.getVisibleCells().map((cell) => (
-                                                        <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
-                                                            <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
-                                                                {cell.column.id === 'severity' && (
-                                                                    <svg
-                                                                        width="14"
-                                                                        height="15"
-                                                                        viewBox="0 0 14 15"
-                                                                        fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                    >
-                                                                        <path
-                                                                            d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
-                                                                            fill="#F59823"
-                                                                        />
-                                                                    </svg>
-                                                                )}
-                                                                {typeof cell.column.columnDef.cell === 'function'
-                                                                    ? cell.column.columnDef.cell(cell.getContext())
-                                                                    : cell.column.columnDef.cell}
-                                                            </div>
-                                                        </td>
-                                                    ))}
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
                                 )}
                             </div>
-                            {data.length > 0 && !isTableLoading && (
-                                <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
-                                    <div className="flex gap-1">
-                                        <span className="text-white">Rows per page:</span>
-                                        <select
-                                            value={table.getState().pagination.pageSize}
-                                            onChange={(e) => {
-                                                const newPageSize = Number(e.target.value);
-                                                const logType = getLogType(selectedLog);
-                                                handlePageSizeChange(newPageSize, logType, 1, selectedAnomalyOptions);
-                                            }}
-                                            className="select-button-assesment"
-                                        >
-                                            {[5, 10, 15, 25].map((pageSize) => (
-                                                <option key={pageSize} value={pageSize}>
-                                                    {pageSize}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="text-white">
-                                        Page {pagination.pageIndex} of {totalPages}
-                                    </div>
-                                    <div className="d-flex">
-                                        <button
-                                            className={`p-2 ${pagination.pageIndex === 1 ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
-                                            onClick={previousPage}
-                                            disabled={pagination.pageIndex === 1}
-                                        >
-                                            <ArrowLeft />
-                                        </button>
-                                        <button
-                                            className={`p-2 ${pagination.pageIndex === totalPages ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
-                                            onClick={nextPage}
-                                            disabled={pagination.pageIndex === totalPages}
-                                        >
-                                            <ArrowRight />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </Box>
+                        </Box>
+                    </div>
+                    <GraphAnomalyCard
+                        selectedLog={getLogType(selectedLog)}
+                        servicesOptions={filterServicesOptions}
+                        selectedTimeRangeKey={selectedRange}
+                        timeRanges={timeRanges}
+                    />
                 </div>
-                <GraphAnomalyCard
-                    selectedLog={getLogType(selectedLog)}
-                    servicesOptions={filterServicesOptions}
-                    selectedTimeRangeKey={selectedRange}
-                    timeRanges={timeRanges}
-                />
             </div>
         </div>
+
     )
 }
 

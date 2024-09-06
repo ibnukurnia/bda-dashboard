@@ -3,17 +3,14 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 
 import './main-page.css'
-
-import dynamic from 'next/dynamic'
 import { Typography } from '@mui/material'
-import { ApexOptions } from 'apexcharts'
 import { Plus } from 'react-feather'
 
 import Button from '@/components/system/Button/Button'
 
-import DropdownRange from '../dropdownRange'
 import DynamicUpdatingChart from './chart/dynamic-updating-chart'
 import OverviewModal from './modal/overview-modal'
+import DropdownTime from './button/dropdown-time'
 
 // Define your data
 const sourceData = [
@@ -21,8 +18,8 @@ const sourceData = [
     name: 'APM',
     count: 1865,
     services: [
-      { name: 'Windows', count: 1625, data: [28, 70, 49, 80, 132, 129, 134] },
-      { name: 'Linux', count: 1240, data: [28, 50, 124, 80, 132, 78, 134] },
+      { name: 'Windows', count: 1625, data: [28, 70, 49, 80, 132, 129, 134, 80, 132, 129, 134] },
+      { name: 'Linux', count: 1240, data: [28, 50, 124, 80, 132, 78, 134, 80, 132, 78, 134] },
     ],
   },
   {
@@ -107,7 +104,19 @@ const sourceData = [
   },
 ]
 
-const dates = ['Jan 21', 'Jan 22', 'Jan 23', 'Jan 24', 'Jan 25', 'Jan 26', 'Jan 27']
+const dates = [
+  'Jan 21',
+  'Jan 22',
+  'Jan 23',
+  'Jan 24',
+  'Jan 25',
+  'Jan 26',
+  'Jan 27',
+  'Jan 28',
+  'Jan 29',
+  'Jan 30',
+  'Jan 31',
+]
 const defaultTimeRanges: Record<string, number> = {
   'Last 5 minutes': 5,
   'Last 15 minutes': 15,
@@ -327,12 +336,12 @@ const TablePanel = ({
           </div>
         ))}
       </div>
-      <div className="overflow-auto grid">
+      <div>
         <div className="flex justify-between items-center mb-4 text-white">
           <span className="font-bold">Showing {selectedServices.length} Services</span>
           <div className="flex gap-3 items-center">
             <span className="font-bold">Updated at 5:21:11 PM</span>
-            <DropdownRange
+            <DropdownTime
               timeRanges={timeRanges}
               // onRangeChange={handleRangeChange}
               // selectedRange={selectedRange}
@@ -341,50 +350,52 @@ const TablePanel = ({
             />
           </div>
         </div>
-        <div className="overflow-auto scrollbar-table">
-          <table className="w-full table-auto text-white">
-            <thead>
-              <tr>
-                <th className="p-3">
-                  <Button onClick={handleAddServices}>
-                    <Plus size={'16px'} />
-                    <Typography>Add services</Typography>
-                  </Button>
-                </th>
-                {dates.map((date) => (
-                  <th key={date} className="p-3">
-                    {date}
+        <div className="overflow-auto grid">
+          <div className="overflow-auto scrollbar-table">
+            <table className="w-full table-auto text-white">
+              <thead>
+                <tr>
+                  <th className="p-3">
+                    <Button onClick={handleAddServices}>
+                      <Plus size={'16px'} />
+                      <Typography>Add services</Typography>
+                    </Button>
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {selectedServices.length > 0 &&
-                selectedServices.map((service, index) => (
-                  <Fragment key={index}>
-                    <tr key={index} className="">
-                      <td className="p-3 min-w-64 align-center flex justify-between gap-2">
-                        <Typography>{service.name}</Typography>
-                        <div className="flex">
-                          <span className="bg-blue-500 text-white rounded-lg px-2 h-fit">{service.count}</span>
-                        </div>
-                      </td>
-                      {service.data.map((cell, cellIndex) => {
-                        return (
-                          <td key={cellIndex} className="p-3 text-center min-w-32 align-top">
-                            <div
-                              className={`${cell < 50 ? '!bg-green-600' : cell < 100 ? '!bg-yellow-600' : '!bg-red-600'} px-2 py-1 rounded-full`}
-                            >
-                              <span className="text-white">{cell}</span>
-                            </div>
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  </Fragment>
-                ))}
-            </tbody>
-          </table>
+                  {dates.map((date) => (
+                    <th key={date} className="p-3">
+                      {date}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {selectedServices.length > 0 &&
+                  selectedServices.map((service, index) => (
+                    <Fragment key={index}>
+                      <tr key={index} className="">
+                        <td className="p-3 min-w-64 align-center flex justify-between gap-2">
+                          <Typography>{service.name}</Typography>
+                          <div className="flex">
+                            <span className="bg-blue-500 text-white rounded-lg px-2 h-fit">{service.count}</span>
+                          </div>
+                        </td>
+                        {service.data.map((cell, cellIndex) => {
+                          return (
+                            <td key={cellIndex} className="p-3 text-center min-w-32 align-top">
+                              <div
+                                className={`${cell < 50 ? '!bg-green-600' : cell < 100 ? '!bg-yellow-600' : '!bg-red-600'} px-2 py-1 rounded-full`}
+                              >
+                                <span className="text-white">{cell}</span>
+                              </div>
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    </Fragment>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
