@@ -7,6 +7,7 @@ export const paths = {
     anomaly: '/dashboard/anomaly-detection',
     // situation: '/dashboard/situation-room',
     forecasting: '/dashboard/forecasting',
+    rootCauseAnalysis: '/dashboard/root-cause-analysis',
     settings: '/dashboard/settings',
   },
   errors: { notFound: '/errors/not-found' },

@@ -9,9 +9,11 @@ const API_URL: string = process.env.NEXT_PUBLIC_API_URL ?? 'http://172.18.67.122
 type RequestOption = {
   queries?: Record<string, any>
   withAuth?: boolean
+  signal?: AbortSignal
+  isLocal?: boolean
 }
 
-const get = async <T>(endpoint: string, option?: RequestOption, signal?: AbortSignal): Promise<ApiResponse<T>> => {
+const get = async <T>(endpoint: string, option?: RequestOption): Promise<ApiResponse<T>> => {
   const headers: Record<string, string> = {
     Accept: 'application/json',
   }
@@ -36,8 +38,8 @@ const get = async <T>(endpoint: string, option?: RequestOption, signal?: AbortSi
     headers.Authorization = `Bearer ${token}`
   }
 
-  const response: Response = await fetch(`${API_URL}${endpoint}`, {
-    signal: signal,
+  const response: Response = await fetch(`${!option?.isLocal ? API_URL : ''}${endpoint}`, {
+    signal: option?.signal,
     method: 'GET',
     headers: headers,
   })

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
 import { Typography } from '@mui/material';
-import './synchronized-charts.css';
+import './custom-chart-styles.css';
 import { MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions';
 import { formatDate } from 'date-fns';
 
@@ -185,14 +185,13 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         hover: {
                             size: 6, // Size of the marker when hovered
                         },
-                        discrete: dataCharts.flatMap((metric, index) => metric.anomalies.map(a =>(
-                            {
-                                seriesIndex: index, // Index of the series
-                                dataPointIndex: metric.data.findIndex(d => d[0] === a[0]), // Index of the data point to display a marker
-                                fillColor: '#FF0000', // Custom fill color for the specific marker
-                                size: 6, // Custom size for the specific marker
-                            })
-                        ))
+                        discrete: metric.anomalies.map(a => ({
+                            seriesIndex: 0, // Index of the series
+                            dataPointIndex: metric.data.findIndex(d => d[0] === a[0]), // Index of the data point to display a marker
+                            fillColor: '#FF0000', // Custom fill color for the specific marker
+                            strokeColor: '#FF0000',
+                            size: 4, // Custom size for the specific marker
+                        }))
                     },
                     grid: {
                         row: {

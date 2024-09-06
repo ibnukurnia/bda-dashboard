@@ -3,9 +3,9 @@ import { GetColumnOption, GetMetricLogAnomalies } from "@/modules/usecases/anoma
 import { useEffect, useRef, useState } from "react";
 import { Typography } from "@mui/material";
 import useUpdateEffect from "@/hooks/use-update-effect";
-import SynchronizedChartsMultipleScale from "../../overview/chart/synchronized-charts-multiple-scale";
+import MultipleScaleChart from "../chart/multiple-scale-charts";
 import FilterGraphAnomaly from "../button/filterGraphAnomaly";
-import SynchronizedCharts from "../../overview/chart/synchronized-charts";
+import SynchronizedCharts from "../chart/synchronized-charts";
 import { ColumnOption } from "@/types/anomaly";
 import { format } from "date-fns";
 import Toggle, { ToggleOption } from "../button/toggle";
@@ -91,7 +91,7 @@ const Graph = ({
 }) => {
     if (toggleList.indexOf(selectedGraphToggle) === 0) {
         return (
-            <SynchronizedChartsMultipleScale
+            <MultipleScaleChart
                 dataCharts={data}
                 height={600}
                 width="100%"
@@ -238,7 +238,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         }
         if (dateRangeMode === "custom") {
             fetchMetricLog(activeType, customTime.startTime, customTime.endTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
-            return
         }
     }, [
         selectedFilter,
