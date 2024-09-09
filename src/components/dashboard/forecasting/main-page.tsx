@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useLayoutEffect, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { Box, Stack, Typography } from '@mui/material'
 import {
   ColumnDef,
@@ -141,6 +141,43 @@ const MainPageForecasting = () => {
     }
   }, [])
 
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null
+
+    if (filter.sourceData && filter.serviceName && filter.selectedDate) {
+      intervalId = setInterval(() => {
+        GetForecastingData({
+          data_source: filter.sourceData ?? '',
+          service_name: filter.serviceName ?? '',
+          date: filter.selectedDate,
+        })
+          .then((res) => {
+            setGraphData(res.data)
+            setChartLoading(false)
+          })
+          .catch(() => setGraphData([]))
+      }, 30000)
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
+    }
+  }, [filter])
+
+  const chartIntervalUpdate = useMemo(() => {
+    return (
+      <SynchronizedCharts
+        chartTitle={filter.serviceName?.length ? `${filter.serviceName} - ${filter.sourceData}` : ''}
+        dataCharts={graphData}
+        height={400}
+        width="100%"
+        loading={chartLoading}
+      />
+    )
+  }, [graphData])
+
   return (
     <div className="flex flex-col gap-8">
       <Stack sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
@@ -187,13 +224,14 @@ const MainPageForecasting = () => {
                   <Typography variant="h5" component="h5" color="white">
                     Graphic Anomaly Forecasting
                   </Typography>
-                  <SynchronizedCharts
+                  {chartIntervalUpdate}
+                  {/* <SynchronizedCharts
                     chartTitle={filter.serviceName?.length ? `${filter.serviceName} - ${filter.sourceData}` : ''}
                     dataCharts={graphData}
-                    height={300}
+                    height={400}
                     width="100%"
                     loading={chartLoading}
-                  />
+                  /> */}
                 </div>
                 {/* <div className="flex flex-col gap-8">
                   <Typography variant="h5" component="h5" color="white">

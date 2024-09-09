@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Typography } from '@mui/material'
 import { ApexOptions } from 'apexcharts'
@@ -17,6 +17,10 @@ interface SynchronizedChartsProps {
 }
 
 const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({ dataCharts, height, width, chartTitle, loading }) => {
+  const [zoomX, _setZoomX] = useState({
+    min: new Date().getTime() - 1000 * 60 * 60 * 2,
+    max: new Date().getTime() + 1000 * 60 * 60 * 2,
+  })
   const chartOptions: ApexOptions = {
     chart: {
       // id: `sync-${index}`,
@@ -34,22 +38,37 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({ dataCharts, hei
         enabled: true,
       },
       events: {
-        mounted: (chartContext: any) => {
-          const chartEl = chartContext.el
+        // mounted: (chartContext: any) => {
+        //   const chartEl = chartContext.el
 
-          chartEl.addEventListener('chart:updated', () => {
-            const syncedCharts = document.querySelectorAll('[data-chart-id]')
-            syncedCharts.forEach((chart: any) => {
-              if (chart.dataset.chartId !== chartContext.id) {
-                chart.__apexCharts.updateOptions({
-                  xaxis: {
-                    min: chartContext.w.globals.minX,
-                    max: chartContext.w.globals.maxX,
-                  },
-                })
-              }
-            })
-          })
+        //   chartEl.addEventListener('chart:updated', () => {
+        //     const syncedCharts = document.querySelectorAll('[data-chart-id]')
+        //     syncedCharts.forEach((chart: any) => {
+        //       if (chart.dataset.chartId !== chartContext.id) {
+        //         chart.__apexCharts.updateOptions({
+        //           xaxis: {
+        //             min: chartContext.w.globals.minX,
+        //             max: chartContext.w.globals.maxX,
+        //           },
+        //         })
+        //       }
+        //     })
+        //   })
+        // },
+
+        beforeZoom(_, { xaxis }) {
+          const today = new Date()
+          const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
+          const todayMaxTime = todayZero + 1000 * 60 * 60 * 24 - 1
+
+          const res = {
+            min: xaxis.min < todayZero ? todayZero : xaxis.min,
+            max: xaxis.max > todayMaxTime ? todayMaxTime : xaxis.max,
+          }
+
+          return {
+            xaxis: res,
+          }
         },
       },
     },
@@ -57,6 +76,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({ dataCharts, hei
       enabled: true,
     },
     xaxis: {
+      min: zoomX.min,
+      max: zoomX.max,
       tooltip: {
         enabled: false,
       },
