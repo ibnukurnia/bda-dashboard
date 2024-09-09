@@ -40,7 +40,8 @@ const GetMetricLogAnomalies = async (payload: {type: string, start_time: string,
   const response: ApiResponse<MetricLogAnomalyResponse[]> = await get(endPoint, {
     withAuth: true,
     queries: payload,
-  }, signal)
+    signal: signal,
+  })
 
   return response
 }

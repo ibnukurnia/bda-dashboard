@@ -17,18 +17,21 @@ interface PathProps {
   sourceIndex: number;
   childCount?: number
   expandedIndex?: number;
+  nodeWidth?: string | number;
 }
 
 const Path: React.FC<PathProps> = ({ 
   sourceIndex,
   childCount,
   expandedIndex,
+  nodeWidth = 192,
  }) => {
   if (childCount != null) {
     return (
       <svg
       xmlns="http://www.w3.org/2000/svg"
-      className={'absolute left-48 z-10'} style={{ top: '10px' }}
+      className={'absolute left-48 z-10'}
+      style={{ top: '10px', left: nodeWidth }}
       width={width}
       height={heigth}
       >

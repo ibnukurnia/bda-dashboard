@@ -5,7 +5,7 @@ import { Typography } from '@mui/material';
 interface NodeProps {
   percentage: number; // Accepts a number between 0 and 100
   title: string;
-  count: number;
+  count?: number;
   expanded: boolean;
   handleOnClickNode: () => void;
 }
@@ -18,7 +18,7 @@ const Node: React.FC<NodeProps> = ({
   handleOnClickNode,
  }) => {
   return (
-    <button className="w-48 h-20 relative flex flex-col outline-none snap-center" onClick={handleOnClickNode}>
+    <button className="w-full h-20 relative flex flex-col outline-none snap-center" onClick={handleOnClickNode}>
       <ProgressBar progress={percentage} />
       <Typography
         variant="subtitle1"
@@ -27,13 +27,15 @@ const Node: React.FC<NodeProps> = ({
       >
         {title}
       </Typography>
-      <Typography
-        variant="subtitle1"
-        color={'white'}
-        fontWeight={expanded ? 700 : 400}
-      >
-        {count}
-      </Typography>
+      {count != null &&
+        <Typography
+          variant="subtitle1"
+          color={'white'}
+          fontWeight={expanded ? 700 : 400}
+        >
+          {count}
+        </Typography>
+      }
     </button>
   );
 };
