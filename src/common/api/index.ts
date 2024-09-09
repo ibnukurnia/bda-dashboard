@@ -102,7 +102,7 @@ const buildQueryParam = (queries: Record<string, any>): string => {
     if (value instanceof Array) {
       value.forEach((m, j) => {
         i === 0 && j === 0 ? (param += `?${key}=${m}`) : (param += `&${key}=${m}`)
-      });
+      })
     } else {
       i === 0 ? (param += `?${key}=${value}`) : (param += `&${key}=${value}`)
     }
@@ -114,6 +114,7 @@ const buildQueryParam = (queries: Record<string, any>): string => {
 const interceptor = (status: number) => {
   if (status === 401) {
     localStorage.removeItem('token')
+    localStorage.removeItem('filter')
     window.location.replace(paths.auth.signIn)
   }
 }
