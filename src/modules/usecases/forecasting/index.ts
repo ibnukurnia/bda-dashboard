@@ -51,14 +51,11 @@ const GetForecastingData = async (
 ) => {
   let endPoint = `forecasting`
 
-  const response: ApiResponse<any> = await get(
-    endPoint,
-    {
-      withAuth: true,
-      queries: params,
-    },
-    signal
-  )
+  const response: ApiResponse<any> = await get(endPoint, {
+    withAuth: true,
+    queries: params,
+    signal,
+  })
 
   return response
 }
@@ -66,14 +63,11 @@ const GetForecastingData = async (
 const GetFilterServiceList = async (params: { data_source: string }, signal?: AbortSignal) => {
   let endPoint = `forecasting/service-list`
 
-  const response: ApiResponse<any> = await get(
-    endPoint,
-    {
-      withAuth: true,
-      queries: params,
-    },
-    signal
-  )
+  const response: ApiResponse<any> = await get(endPoint, {
+    withAuth: true,
+    queries: params,
+    signal,
+  })
 
   return response
 }

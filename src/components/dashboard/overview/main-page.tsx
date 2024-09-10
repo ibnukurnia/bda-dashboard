@@ -4,6 +4,7 @@ import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'r
 
 import './main-page.css'
 
+import { GetChartsOverview } from '@/modules/usecases/overviews'
 import { Typography } from '@mui/material'
 import { Plus } from 'react-feather'
 
@@ -141,6 +142,7 @@ const TablePanel = ({
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
   const [firstThWidth, setFirstThWidth] = useState(0)
   const [scrollXTable, setScrollXTable] = useState(0)
+  const [chartData, setChartData] = useState<any[]>([])
   const containerTableRef = useRef<HTMLDivElement>(null)
   const firstThRef = useRef<HTMLTableHeaderCellElement>(null)
 
@@ -337,14 +339,25 @@ const TablePanel = ({
     setFirstThWidth(resWidth ?? 0)
   }, [])
 
+  useEffect(() => {
+    GetChartsOverview({ time_range: 120 })
+      .then((res) => {
+        setChartData(res.data)
+      })
+      .catch(() => setChartData([]))
+  }, [])
+
   return (
     <div className="flex-1 px-4 grid gap-8">
       <div className="chart-section">
-        {dummyData.map((item, id) => (
-          <div className="chart-section-col">
-            <DynamicUpdatingChart title={item.title} series={item.data} key={id} />
-          </div>
-        ))}
+        {/* {dummyData.map((item, id) => { */}
+        {chartData.map((item, id) => {
+          return (
+            <div className="chart-section-col" key={id}>
+              <DynamicUpdatingChart title={item.title} series={item.data} key={id} id={id} />
+            </div>
+          )
+        })}
       </div>
       <div>
         <div className="flex justify-between items-center mb-4 text-white">
@@ -355,13 +368,13 @@ const TablePanel = ({
               timeRanges={timeRanges}
               // onRangeChange={handleRangeChange}
               // selectedRange={selectedRange}
-              onRangeChange={(e) => null}
+              onRangeChange={(e) => setSelectedRange(e)}
               selectedRange={selectedRange}
             />
           </div>
         </div>
         <div className="relative grid">
-          {scrollXTable > 0 && (
+          {/* {scrollXTable > 0 && (
             <button
               className={`absolute bg-blue-600 text-xs z-10 top-1/2 left-[${firstThWidth}px] text-white px-2 py-1 opacity-50 hover:opacity-100 rounded-md`}
               onClick={() => containerTableRef.current?.scrollTo({ left: 0, behavior: 'smooth' })}
@@ -383,7 +396,7 @@ const TablePanel = ({
               >
                 {'>'}
               </button>
-            )}
+            )} */}
           <div
             ref={containerTableRef}
             onScroll={() => setScrollXTable(containerTableRef.current?.scrollLeft ?? 0)}

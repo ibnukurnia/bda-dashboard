@@ -109,14 +109,14 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
                 </div>
               </li>
             ))}
-            <li key="custom">
+            {/* <li key="custom">
               <div
                 onClick={() => handleRangeChange('Custom')}
                 className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
               >
                 Custom
               </div>
-            </li>
+            </li> */}
           </ul>
 
           {isCustomRange && (
