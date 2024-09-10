@@ -68,11 +68,11 @@ td:first-child {
 
 .chart-section {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
-.chart-section-col:nth-child(-1n + 3) {
+/* .chart-section-col:nth-child(-1n + 3) {
   grid-column: span 4;
 }
 .chart-section-col:nth-last-child(2) {
@@ -82,4 +82,4 @@ td:first-child {
 .chart-section-col:nth-last-child(1) {
   grid-row-start: 2;
   grid-column: 7 / span 4;
-}
+} */

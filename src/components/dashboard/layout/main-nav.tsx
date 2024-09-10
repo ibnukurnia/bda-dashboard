@@ -118,8 +118,9 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
           position: 'sticky',
           top: 0,
           zIndex: 'var(--mui-zIndex-appBar)',
-          paddingTop: 2,
-          paddingBottom: 2,
+          padding: '16px 24px',
+          // paddingTop: 2,
+          // paddingBottom: 2,
         }}
       >
         <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', minHeight: '64px' }}>
