@@ -353,7 +353,7 @@ const TablePanel = ({
         {/* {dummyData.map((item, id) => { */}
         {chartData.map((item, id) => {
           return (
-            <div className="chart-section-col" key={id}>
+            <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
               <DynamicUpdatingChart title={item.title} series={item.data} key={id} id={id} />
             </div>
           )

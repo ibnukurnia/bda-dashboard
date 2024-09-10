@@ -84,6 +84,7 @@ const DynamicUpdatingChart = ({ series, title, id }: DynamicUpdatingChartProps) 
           colors: 'white', // White color for y-axis text
         },
       },
+      tickAmount: 6,
     },
     stroke: {
       curve: 'smooth',
