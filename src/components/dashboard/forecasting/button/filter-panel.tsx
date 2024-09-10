@@ -29,7 +29,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
   const [services, setServices] = useState<any[]>([])
   const [filterValue] = useLocalStorage('filter', undefined)
 
-  const dataSource = ['tps', 'sales volume']
+  const dataSource = ['tpm', 'sales volume']
 
   const today = new Date()
   const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate())

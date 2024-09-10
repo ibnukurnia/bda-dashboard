@@ -6,11 +6,14 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 interface DynamicUpdatingChartProps {
   series: any[]
   title?: string
+  id?: string | number
 }
 
-const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
+const DynamicUpdatingChart = ({ series, title, id }: DynamicUpdatingChartProps) => {
   const options: ApexOptions = {
     chart: {
+      // id: `chart-${id}`,
+      group: 'overview',
       type: 'line',
       height: 120,
       toolbar: {
@@ -36,6 +39,8 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
       enabled: true,
     },
     xaxis: {
+      max: new Date().getTime(),
+      min: new Date().getTime() - 1000 * 60 * 15,
       categories: '',
       tooltip: {
         enabled: false,
@@ -79,6 +84,7 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
           colors: 'white', // White color for y-axis text
         },
       },
+      tickAmount: 6,
     },
     stroke: {
       curve: 'smooth',

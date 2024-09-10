@@ -42,10 +42,10 @@ td:first-child {
 }
 
 .scrollbar-table::-webkit-scrollbar {
-  display: none;
+  /* display: none; */
 }
 
-/* .scrollbar-table::-webkit-scrollbar {
+.scrollbar-table::-webkit-scrollbar {
   width: 8px;
   height: 8px;
   border-radius: 8px;
@@ -59,7 +59,7 @@ td:first-child {
   border-radius: 8px;
   background-color: #bdbdbd;
   z-index: 2;
-} */
+}
 
 .checkbox {
   max-height: 30vh;
@@ -67,19 +67,12 @@ td:first-child {
 }
 
 .chart-section {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 24px;
 }
 
-.chart-section-col:nth-child(-1n + 3) {
-  grid-column: span 4;
-}
-.chart-section-col:nth-last-child(2) {
-  grid-row-start: 2;
-  grid-column: 3 / span 4;
-}
-.chart-section-col:nth-last-child(1) {
-  grid-row-start: 2;
-  grid-column: 7 / span 4;
+.chart-section-col {
+  flex: 1;
+  min-width: 400px;
 }
