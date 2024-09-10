@@ -7,7 +7,7 @@ import MultipleScaleChart from "../chart/multiple-scale-charts";
 import FilterGraphAnomaly from "../button/filterGraphAnomaly";
 import SynchronizedCharts from "../chart/synchronized-charts";
 import { ColumnOption } from "@/types/anomaly";
-import { format } from "date-fns";
+import { format, isAfter, isBefore } from "date-fns";
 import Toggle, { ToggleOption } from "../button/toggle";
 
 const toggleList: ToggleOption[] = [
@@ -73,34 +73,31 @@ const GraphWrapper = ({
 const Graph = ({
     data,
     selectedGraphToggle,
-    zoomInDisabled,
-    zoomOutDisabled,
-    onZoomIn,
     onZoomOut,
     minXOnEmpty,
     maxXOnEmpty,
 }: {
     data: MetricLogAnomalyResponse[];
     selectedGraphToggle: ToggleOption;
-    zoomInDisabled: boolean;
-    zoomOutDisabled: boolean;
-    onZoomIn: (minX: any, maxX: any) => void;
     onZoomOut: (minX: any, maxX: any) => void;
     minXOnEmpty?: number;
     maxXOnEmpty?: number;
 }) => {
+    const minX = new Date()
+    minX.setHours(minX.getHours() - 24)
+    const maxX = new Date()
+
     if (toggleList.indexOf(selectedGraphToggle) === 0) {
         return (
             <MultipleScaleChart
                 dataCharts={data}
                 height={600}
                 width="100%"
-                zoomInDisabled={zoomInDisabled}
-                zoomOutDisabled={zoomOutDisabled}
-                onZoomIn={onZoomIn}
                 onZoomOut={onZoomOut}
                 minXOnEmpty={minXOnEmpty}
                 maxXOnEmpty={maxXOnEmpty}
+                minX={minX.getTime()}
+                maxX={maxX.getTime()}
             />
         )
     }
@@ -110,12 +107,11 @@ const Graph = ({
                 dataCharts={data} // Ensure dataMetric is relevant for Log Type
                 height={300}
                 width="100%"
-                zoomInDisabled={zoomInDisabled}
-                zoomOutDisabled={zoomOutDisabled}
-                onZoomIn={onZoomIn}
                 onZoomOut={onZoomOut}
                 minXOnEmpty={minXOnEmpty}
                 maxXOnEmpty={maxXOnEmpty}
+                minX={minX.getTime()}
+                maxX={maxX.getTime()}
             />
         )
     }
@@ -139,6 +135,13 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 }) => {
     const [dataColumn, setDataColumn] = useState<AnomalyOptionResponse>({ columns: [] })
     const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
+    const [lastTimeRangeParam, setLastTimeRangeParam] = useState<{
+        startTime: string | null;
+        endTime: string | null;
+    }>({
+        startTime: null,
+        endTime: null,
+    })
     const [currentZoomDateRange, setCurrentZoomDateRange] = useState<string>(selectedTimeRangeKey === '' ? 'Last 15 minutes' : selectedTimeRangeKey)
     const [customTime, setCustomTime] = useState<{
         startTime: string;
@@ -188,7 +191,15 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         }
     }
 
-    // Cleanup function to abort fetch when the component unmounts
+    useEffect(() => {
+        // Cleanup function to abort fetch when the component unmounts
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
+    }, [])
+    
     useEffect(() => {
         setDataColumn({columns: []})
         setSelectedFilter({ scale: [], service: "" })
@@ -196,7 +207,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             .then((result) => {
                 if (result.data) {
                     setDataColumn(result.data)
-                    // console.log(result.data)
                 } else {
                     console.warn('API response data is null or undefined for column option')
                 }
@@ -204,12 +214,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             .catch((error) => {
                 console.error('Error fetching column option:', error)
             })
-
-        return () => {
-            if (abortControllerRef.current) {
-                abortControllerRef.current.abort();
-            }
-        };
     }, [activeType]);
 
     useUpdateEffect(() => {
@@ -261,7 +265,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     ) => {
         // Abort any ongoing fetch request before starting a new one
         if (abortControllerRef.current) {
-            abortControllerRef.current.abort();
+            abortControllerRef.current.abort("Create new fetch request");
         }
 
         // Create a new AbortController instance for the new fetch request
@@ -279,6 +283,10 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         return metricResultPromise
             .then((metricResult) => {
                 if (metricResult.data) {
+                    setLastTimeRangeParam({
+                        startTime: startTime,
+                        endTime: endTime,
+                    })
                     setDataMetric(metricResult.data)
                 } else {
                     console.warn('API response data is null or undefined for metrics')
@@ -291,37 +299,19 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             })
     }
 
-    const handleGraphZoomIn = async (minX: any, maxX: any) => {
-        if (dateRangeMode === "custom" && minX && maxX) {
-            setCustomTime({
-                startTime: minX,
-                endTime: maxX,
-            })
-            return
-        }
-
-        // Do nothing if already at max zoomed in
-        if (selectedKeyIndex <= 0) return
-
-        // Select new range
-        const newSelect = keys[selectedKeyIndex - 1];
-        setCurrentZoomDateRange(newSelect)
-    }
     const handleGraphZoomOut = async (minX: any, maxX: any) => {
-        if (dateRangeMode === "custom" && minX && maxX) {
-            setCustomTime({
-                startTime: minX,
-                endTime: maxX,
-            })
-            return
+        if ((lastTimeRangeParam.startTime != null && lastTimeRangeParam.endTime != null) &&
+             (isBefore(lastTimeRangeParam.startTime, minX) || isAfter(lastTimeRangeParam.endTime, maxX))) {
+                return
         }
 
-        // Do nothing if already at max zoomed out
-        if (selectedKeyIndex >= keys.length - 1) return
-
-        // Select new range
-        const newSelect = keys[selectedKeyIndex + 1];
-        setCurrentZoomDateRange(newSelect)
+        fetchMetricLog(
+            activeType,
+            format(new Date(minX), 'yyyy-MM-dd HH:mm:ss'),
+            format(new Date(maxX), 'yyyy-MM-dd HH:mm:ss'),
+            selectedFilter.service,
+            selectedFilter.scale.map(scale => scale.name)
+        )
     }
 
     const handleOnApplyFilter = (selectedScales: ColumnOption[], selectedService: string) => {
@@ -372,9 +362,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 <Graph
                     data={dataMetric}
                     selectedGraphToggle={selectedGraphToggle}
-                    zoomInDisabled={selectedKeyIndex <= 0}
-                    zoomOutDisabled={selectedKeyIndex >= keys.length - 1}
-                    onZoomIn={handleGraphZoomIn}
                     onZoomOut={handleGraphZoomOut}
                     minXOnEmpty={getMinX()}
                     maxXOnEmpty={getMaxX()}

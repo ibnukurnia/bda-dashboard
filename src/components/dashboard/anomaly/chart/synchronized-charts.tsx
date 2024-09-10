@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
 import { Typography } from '@mui/material';
@@ -18,9 +18,6 @@ interface SynchronizedChartsProps {
     dataCharts: MetricLogAnomalyResponse[];
     height: number;
     width: string;
-    zoomInDisabled?: boolean;
-    onZoomIn?: (minX: any, maxX: any) => void;
-    zoomOutDisabled?: boolean;
     onZoomOut?: (minX: any, maxX: any) => void;
     minX?: any;
     maxX?: any;
@@ -32,29 +29,19 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     dataCharts,
     height,
     width,
-    zoomInDisabled,
-    onZoomIn,
-    zoomOutDisabled,
     onZoomOut,
     minX,
     maxX,
     minXOnEmpty,
     maxXOnEmpty,
 }) => {
-    const disableZoomButtons = () => {
-        const zoomInButtons = document.querySelectorAll('.apexcharts-zoomin-icon');
+    const [zoomOutDisabled, setZoomOutDisabled] = useState(false)
+
+    const toggleZoomOutButton = (disabled: boolean) => {
         const zoomOutButtons = document.querySelectorAll('.apexcharts-zoomout-icon');
     
-        zoomInButtons.forEach(button => {
-            if (zoomInDisabled) {
-                button.classList.add('zoom-disabled');
-            } else {
-                button.classList.remove('zoom-disabled');
-            }
-      });
-      
-      zoomOutButtons.forEach(button => {
-            if (zoomOutDisabled) {
+        zoomOutButtons.forEach(button => {
+            if (disabled) {
                 button.classList.add('zoom-disabled');
             } else {
                 button.classList.remove('zoom-disabled');
@@ -63,9 +50,13 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     }
 
     useEffect(() => {
-        disableZoomButtons()
-    }, [zoomInDisabled, zoomOutDisabled]);
+        toggleZoomOutButton(zoomOutDisabled)
+    }, [zoomOutDisabled]);
   
+    useEffect(() => {
+        setZoomOutDisabled(false)
+    }, [dataCharts])
+    
     if (!dataCharts || dataCharts.length === 0) {
         return (
             <div className="text-center text-2xl font-semibold text-white">
@@ -114,33 +105,33 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                     });
                                 });
                             },
-                            updated() {
-                                disableZoomButtons()
+                            updated(_, options) {
+                                if (minX >= options.globals.minX && maxX <= options.globals.maxX) {
+                                    setZoomOutDisabled(true)
+                                    toggleZoomOutButton(true)
+                                } else {
+                                    setZoomOutDisabled(false)
+                                    toggleZoomOutButton(false)
+                                }
                             },
                             beforeZoom : (chartContext, {xaxis}) => {
-                                // Zoomed in
-                                if (xaxis.min > chartContext.minX && xaxis.max < chartContext.maxX) {
-                                    if (zoomInDisabled) {
-                                        return {
-                                            xaxis: {
-                                                min: chartContext.minX,
-                                                max: chartContext.maxX,
-                                            }
-                                        }
-                                    }
-                                    onZoomIn && onZoomIn(chartContext.minX, chartContext.maxX)
-                                }
                                 // Zoomed out
                                 if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {
-                                    if (zoomOutDisabled) {
-                                        return {
+                                    if (!zoomOutDisabled) {
+                                        onZoomOut && onZoomOut(xaxis.min, xaxis.max)
+                                    }
+            
+                                    if (minX >= xaxis.min && maxX <= xaxis.max) {
+                                        setZoomOutDisabled(true)
+                                        return {                                                                                                      
                                             xaxis: {
-                                                min: minX && minX > chartContext.minX ? minX : chartContext.minX,
-                                                max: maxX && maxX < chartContext.maxX ? maxX : chartContext.maxX,
+                                                min: minX,
+                                                max: maxX,
                                             }
                                         }
+                                    } else {
+                                        setZoomOutDisabled(false)
                                     }
-                                    onZoomOut && onZoomOut(chartContext.minX, chartContext.maxX)
                                 }
                             },
                         },
