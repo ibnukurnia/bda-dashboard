@@ -53,22 +53,6 @@ const MainPageRootCauseAnalysis = () => {
     fetchData()
   }, [filter])
   
-  // Setup auto-refresh if enabled
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null;
-    if (autoRefresh.enabled && autoRefresh.interval) {
-        intervalId = setInterval(() => {
-          fetchData()
-        }, autoRefresh.interval);
-    }
-
-    return () => {
-        if (intervalId) {
-            clearInterval(intervalId);
-        }
-    };
-  }, [autoRefresh]);
-
   useInterval(fetchData, autoRefresh.interval, autoRefresh.enabled)
 
   useInterval(() =>
@@ -151,41 +135,17 @@ const MainPageRootCauseAnalysis = () => {
         </div>
         <div className="flex flex-col gap-10 px-2 py-8 card-style">
           <div className="w-full flex flex-col gap-8">
-            <div className="px-6">
-              <Typography
-                variant="h5"
-                color={'white'}
-              >
-                {/* {"Root Cause Log"} */}
-              </Typography>
-            </div>
             {initialLoading ?
               <div className="flex justify-center items-center">
                   <div className="spinner"></div>
               </div>
               : <RCATree
-              data={dataTree}
-              handleDetail={handleDetail}
+                data={dataTree}
+                handleDetail={handleDetail}
               />
             }
           </div>
         </div>
-        {/* <div className="flex flex-col gap-10 px-2 py-8 card-style">
-          <div className="w-full flex flex-col gap-8">
-            <div className="px-6">
-              <Typography
-                variant="h5"
-                color={'white'}
-              >
-                {"Root Cause Network"}
-              </Typography>
-            </div>
-            <RCATree
-              data={dataTree}
-              handleDetail={handleDetail}
-            />
-          </div>
-        </div> */}
       </div>
       {modalServices && (
         <TableModal

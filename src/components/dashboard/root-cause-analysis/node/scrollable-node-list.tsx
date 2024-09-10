@@ -13,6 +13,7 @@ interface ScrollableNodeListProps {
   expandedIndex: number;
   expandedChildIndex: number;
   handleOnScroll: (scrollTop: number) => void;
+  handleOpenDetail?: () => void;
 }
 
 const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
@@ -21,6 +22,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   expandedIndex,
   expandedChildIndex,
   handleOnScroll,
+  handleOpenDetail,
 }) => {
   const [hideButtonUp, setHideButtonUp] = useState<boolean>(true);
   const [hideButtonDown, setHideButtonDown] = useState<boolean>(true);
@@ -129,6 +131,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
             count={node.anomalyCount}
             expanded={expandedIndex === index}
             handleOnClickNode={()=> handleOnClickNode(index)}
+            handleOpenDetail={handleOpenDetail}
           />
         ))}
       </div>

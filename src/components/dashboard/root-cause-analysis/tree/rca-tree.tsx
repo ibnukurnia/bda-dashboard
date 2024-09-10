@@ -4,6 +4,7 @@ import { TreeNodeType } from './types';
 import TopBar from '../bar/top-bar';
 import { RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis';
 import { Typography } from '@mui/material';
+import usePrevious from '@/hooks/use-previous';
 
 const nodeHeight = 80
 
@@ -24,6 +25,7 @@ const RCATree: React.FC<RCATreeProps> = ({
   const [expandedNodes, setExpandedNodes] = useState<ExpandedNodesType[]>([]);
   const [scrollTopPositions, setScrollTopPositions] = useState<number[]>([])
   const [mappedData, setMappedData] = useState<TreeNodeType[]>([])
+  const prevMappedData = usePrevious(mappedData)
 
   useEffect(() => {
     if (!data) return
@@ -45,7 +47,21 @@ const RCATree: React.FC<RCATreeProps> = ({
   }, [data])
 
   useEffect(() => {
-    setExpandedNodes([])
+    setExpandedNodes(prev => {
+      const newArr: ExpandedNodesType[] = []
+      let tempNode: TreeNodeType
+
+      prev.forEach(expNode => {
+        const expandedName = expNode.node.name
+        const list = tempNode.children ?? prevMappedData
+        if (list == null) return
+
+        const newExpandedNodeIndex = list.findIndex(node => node.name === expandedName)
+        newArr.push({ node: list[newExpandedNodeIndex], nodeIndex: newExpandedNodeIndex})
+        tempNode = {...list[newExpandedNodeIndex]}
+      })
+      return newArr
+    })
   }, [mappedData])
   
   useEffect(() => {
@@ -81,10 +97,6 @@ const RCATree: React.FC<RCATreeProps> = ({
       }
       return newArray
     })
-    
-    if (depth ===3) {
-      handleDetail()
-    }
   }
 
   const handleOnScroll = (depth: number, scrollTop: number) => {
@@ -153,12 +165,14 @@ const RCATree: React.FC<RCATreeProps> = ({
                 expandedIndex={expandedNodes[i+1]?.nodeIndex}
                 expandedChildIndex={expandedNodes[i+2]?.nodeIndex - scrollTopPositions[i+2] / nodeHeight}
                 handleOnScroll={(scrollTop) => handleOnScroll(i + 1, scrollTop)}
+                handleOpenDetail={i === 1 ? handleDetail : undefined}
               />
             );
           }
           
           return (
             <Typography
+              key={"placeholder-no-impacted-service"}
               variant="subtitle1"
               color={'white'}
               align='center'

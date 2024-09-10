@@ -14,13 +14,9 @@ const GetRootCauseAnalysisTree = async (params: { start_time: string; end_time: 
 }
 
 const GetRootCauseAnalysisTableData = async (params: { page: number; limit: number }) => {
-  // const response: ApiResponse<PaginatedResponse> = await get(`/api/root-cause-analysis/table?page=${params.page}&limit=${params.limit}`, {isLocal: true })
-
-  // return response
   const response = await fetch(`/api/root-cause-analysis/table?page=${params.page}&limit=${params.limit}`, {
     method: 'GET',
   })
-  console.log(response);
   
   const resJson = await response.json()
 
