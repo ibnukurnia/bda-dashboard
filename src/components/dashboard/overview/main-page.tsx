@@ -355,13 +355,13 @@ const TablePanel = ({
               timeRanges={timeRanges}
               // onRangeChange={handleRangeChange}
               // selectedRange={selectedRange}
-              onRangeChange={(e) => null}
+              onRangeChange={(e) => setSelectedRange(e)}
               selectedRange={selectedRange}
             />
           </div>
         </div>
         <div className="relative grid">
-          {scrollXTable > 0 && (
+          {/* {scrollXTable > 0 && (
             <button
               className={`absolute bg-blue-600 text-xs z-10 top-1/2 left-[${firstThWidth}px] text-white px-2 py-1 opacity-50 hover:opacity-100 rounded-md`}
               onClick={() => containerTableRef.current?.scrollTo({ left: 0, behavior: 'smooth' })}
@@ -383,7 +383,7 @@ const TablePanel = ({
               >
                 {'>'}
               </button>
-            )}
+            )} */}
           <div
             ref={containerTableRef}
             onScroll={() => setScrollXTable(containerTableRef.current?.scrollLeft ?? 0)}

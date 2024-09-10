@@ -11,6 +11,8 @@ interface DynamicUpdatingChartProps {
 const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
   const options: ApexOptions = {
     chart: {
+      id: `${title}-chart`,
+      group: 'overview-chart-01',
       type: 'line',
       height: 120,
       toolbar: {

@@ -42,10 +42,10 @@ td:first-child {
 }
 
 .scrollbar-table::-webkit-scrollbar {
-  display: none;
+  /* display: none; */
 }
 
-/* .scrollbar-table::-webkit-scrollbar {
+.scrollbar-table::-webkit-scrollbar {
   width: 8px;
   height: 8px;
   border-radius: 8px;
@@ -59,7 +59,7 @@ td:first-child {
   border-radius: 8px;
   background-color: #bdbdbd;
   z-index: 2;
-} */
+}
 
 .checkbox {
   max-height: 30vh;

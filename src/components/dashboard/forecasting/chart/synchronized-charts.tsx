@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Typography } from '@mui/material'
 import { ApexOptions } from 'apexcharts'
@@ -14,12 +14,28 @@ interface SynchronizedChartsProps {
   height: number
   width: string
   loading?: boolean
+  minZoom?: number
+  maxZoom?: number
+  setZoom?: (params?: { minZoom?: number; maxZoom?: number }) => void
 }
 
-const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({ dataCharts, height, width, chartTitle, loading }) => {
-  const [zoomX, _setZoomX] = useState({
-    min: new Date().getTime() - 1000 * 60 * 60 * 2,
-    max: new Date().getTime() + 1000 * 60 * 60 * 2,
+const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
+  dataCharts,
+  height,
+  width,
+  chartTitle,
+  loading,
+  minZoom,
+  maxZoom,
+  setZoom,
+}) => {
+  const today = new Date()
+  const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
+  const todayMaxTime = todayZero + 1000 * 60 * 60 * 24 - 1
+
+  const [zoomX, setZoomX] = useState({
+    min: minZoom ?? new Date().getTime() - 1000 * 60 * 60 * 2,
+    max: maxZoom ?? new Date().getTime() + 1000 * 60 * 60 * 2,
   })
   const chartOptions: ApexOptions = {
     chart: {
@@ -38,33 +54,28 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({ dataCharts, hei
         enabled: true,
       },
       events: {
-        // mounted: (chartContext: any) => {
-        //   const chartEl = chartContext.el
+        beforeResetZoom() {
+          const resResetZoom = {
+            min: new Date().getTime() - 1000 * 60 * 60 * 2,
+            max: new Date().getTime() + 1000 * 60 * 60 * 2,
+          }
 
-        //   chartEl.addEventListener('chart:updated', () => {
-        //     const syncedCharts = document.querySelectorAll('[data-chart-id]')
-        //     syncedCharts.forEach((chart: any) => {
-        //       if (chart.dataset.chartId !== chartContext.id) {
-        //         chart.__apexCharts.updateOptions({
-        //           xaxis: {
-        //             min: chartContext.w.globals.minX,
-        //             max: chartContext.w.globals.maxX,
-        //           },
-        //         })
-        //       }
-        //     })
-        //   })
-        // },
+          return {
+            xaxis: resResetZoom,
+          }
+        },
 
-        beforeZoom(_, { xaxis }) {
-          const today = new Date()
-          const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
-          const todayMaxTime = todayZero + 1000 * 60 * 60 * 24 - 1
+        beforeZoom(_chart, { xaxis }) {
+          // const today = new Date()
+          // const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
+          // const todayMaxTime = todayZero + 1000 * 60 * 60 * 24 - 1
 
           const res = {
             min: xaxis.min < todayZero ? todayZero : xaxis.min,
             max: xaxis.max > todayMaxTime ? todayMaxTime : xaxis.max,
           }
+
+          setZoom && setZoom({ minZoom: res.min, maxZoom: res.max })
 
           return {
             xaxis: res,
@@ -160,6 +171,12 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({ dataCharts, hei
 
     return []
   }, [dataCharts])
+
+  useLayoutEffect(() => {
+    if (minZoom !== undefined && maxZoom !== undefined) {
+      setZoomX({ min: minZoom, max: maxZoom })
+    }
+  }, [minZoom, maxZoom])
 
   return (
     <div className="flex flex-col gap-4">

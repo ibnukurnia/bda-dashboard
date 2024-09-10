@@ -45,6 +45,10 @@ const MainPageForecasting = () => {
   })
   const [filterValue, setFilterValue] = useLocalStorage('filter', undefined)
   const [chartLoading, setChartLoading] = useState(false)
+  const [zoomLevel, setZoomLevel] = useState({
+    maxZoom: undefined as number | undefined,
+    minZoom: undefined as number | undefined,
+  })
 
   const table = useReactTable({
     data: data,
@@ -116,6 +120,10 @@ const MainPageForecasting = () => {
     setFilterValue({ dataSource: selectedSource, service: selectedService, date: selectedDate })
   }
 
+  const handleZoom = (value?: { maxZoom?: number; minZoom?: number }) => {
+    setZoomLevel({ ...zoomLevel, ...value })
+  }
+
   useLayoutEffect(() => {
     if (filterValue?.dataSource && filterValue?.service && filterValue?.date) {
       setChartLoading(true)
@@ -174,6 +182,9 @@ const MainPageForecasting = () => {
         height={400}
         width="100%"
         loading={chartLoading}
+        setZoom={(e) => handleZoom(e)}
+        maxZoom={zoomLevel.maxZoom}
+        minZoom={zoomLevel.minZoom}
       />
     )
   }, [graphData])
@@ -184,9 +195,9 @@ const MainPageForecasting = () => {
         <FilterPanel onApplyFilters={handleApplyFilters} activeFilter={filter} />
       </Stack>
       {statistics.length > 0 && (
-        <Stack sx={{ display: 'flex', gap: 6, flexDirection: 'row', px: 3 }}>
+        <Stack sx={{ display: 'flex', gap: 4, flexDirection: 'row' }}>
           {statistics?.map((statistic, statsid) => (
-            <Stack key={statsid} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div key={statsid} className="flex flex-col gap-2 p-6 bg-[#0A1635] rounded-2xl border border-[#373737]">
               <div className="inline-flex align-center gap-3">
                 <svg width="32" height="24" viewBox="0 0 32 28" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -203,7 +214,7 @@ const MainPageForecasting = () => {
                 {statistic?.value}
                 <span style={{ fontSize: '16px', marginLeft: '5px', fontWeight: 400 }}>{statistic?.unit}</span>
               </Typography>
-            </Stack>
+            </div>
           ))}
         </Stack>
       )}
