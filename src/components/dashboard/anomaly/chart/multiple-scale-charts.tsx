@@ -185,6 +185,7 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                     seriesIndex: index, // Index of the series
                     dataPointIndex: metric.data.findIndex(d => d[0] === a[0]), // Index of the data point to display a marker
                     fillColor: '#FF0000', // Custom fill color for the specific marker
+                    strokeColor: '#FF0000',
                     size: 6, // Custom size for the specific marker
                 })
             ))

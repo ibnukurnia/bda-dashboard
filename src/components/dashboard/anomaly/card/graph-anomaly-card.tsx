@@ -104,7 +104,7 @@ const Graph = ({
     if (toggleList.indexOf(selectedGraphToggle) === 1) {
         return (
             <SynchronizedCharts
-                dataCharts={data} // Ensure dataMetric is relevant for Log Type
+                dataCharts={data}
                 height={300}
                 width="100%"
                 onZoomOut={onZoomOut}

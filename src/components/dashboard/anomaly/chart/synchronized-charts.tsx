@@ -76,35 +76,11 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         height: 160,
                         toolbar: {
                             tools: {
-                                zoomin: true,
-                                zoomout: true,
-                                zoom: false,
                                 pan: false,
                                 download: false,
-                                reset: false,
                             }
                         },
                         events: {
-                            mounted: (chartContext: any) => {
-                                const chartEl = chartContext?.el;
-                                if (!chartEl) {
-                                    console.error('Chart element is null:', chartContext);
-                                    return;
-                                }
-                                chartEl.addEventListener('chart:updated', () => {
-                                    const syncedCharts = document.querySelectorAll('[data-chart-id]');
-                                    syncedCharts.forEach((chart: any) => {
-                                        if (chart?.dataset?.chartId !== chartContext.id && chart?.__apexCharts) {
-                                            chart.__apexCharts.updateOptions({
-                                                xaxis: {
-                                                    min: chartContext.w.globals.minX,
-                                                    max: chartContext.w.globals.maxX,
-                                                },
-                                            });
-                                        }
-                                    });
-                                });
-                            },
                             updated(_, options) {
                                 if (minX >= options.globals.minX && maxX <= options.globals.maxX) {
                                     setZoomOutDisabled(true)
@@ -147,6 +123,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                 colors: 'white',
                             },
                             rotate: 0,
+                            hideOverlappingLabels: true,
+                            trim: true,
                         },
                         min: dataCharts.every(series => series.data.length <= 0) ? minXOnEmpty : undefined,
                         max: dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : undefined,
@@ -157,9 +135,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                 colors: 'white',
                             },
                         },
-                        tooltip: {
-                            enabled: true,
-                        },
                         axisBorder: {
                           show: true, // Show the Y-axis line
                           color: 'white', // Customize the color of the Y-axis line if needed
@@ -169,7 +144,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                     stroke: {
                         curve: 'smooth',
                         width: 4,
-                        colors: [colors[index % (colors.length)]], // This gives the remainder after all full loops.
+                        // colors: [colors[index % (colors.length)]], // This gives the remainder after all full loops.
                     },
                     markers: {
                         size: 0.0000001, // Workaround hover marker not showing because discrete options
@@ -204,6 +179,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             {metric.title}
                         </Typography>
                         <Chart
+                            key={Math.random()} // Workaround synchronized tooltip bug
                             options={chartOptions}
                             series={[{
                                 name: metric.title,
@@ -212,7 +188,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             type="line"
                             height={height}
                             width={width}
-                            data-chart-id={`chart${index + 1}`}
                         />
                     </div>
                 );
