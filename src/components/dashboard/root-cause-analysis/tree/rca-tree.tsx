@@ -52,11 +52,13 @@ const RCATree: React.FC<RCATreeProps> = ({
       let tempNode: TreeNodeType
 
       prev.forEach(expNode => {
-        const expandedName = expNode.node.name
-        const list = tempNode?.children ?? prevMappedData
+        const prevExpName = expNode.node.name
+        const list = tempNode?.children ?? mappedData
         if (list == null) return
 
-        const newExpandedNodeIndex = list.findIndex(node => node.name === expandedName)
+        const newExpandedNodeIndex = list.findIndex(node => node.name === prevExpName)
+        if (newExpandedNodeIndex === -1) return newArr
+
         newArr.push({ node: list[newExpandedNodeIndex], nodeIndex: newExpandedNodeIndex})
         tempNode = {...list[newExpandedNodeIndex]}
       })
