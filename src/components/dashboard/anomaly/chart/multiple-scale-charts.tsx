@@ -120,7 +120,7 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
             labels: {
                 formatter(value, _, __) {
                     const date = new Date(value);
-                    return formatDate(date, "yyyy-MM-dd HH:mm")
+                    return formatDate(date, "yyyy-MM-dd HH:mm").split(" ")
                 },
                 style: {
                     colors: 'white', // White color for x-axis text

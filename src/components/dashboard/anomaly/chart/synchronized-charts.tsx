@@ -117,7 +117,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         labels: {
                             formatter(value) {
                                 const date = new Date(value);
-                                return formatDate(date, "yyyy-MM-dd HH:mm")
+                                return formatDate(date, "yyyy-MM-dd HH:mm").split(" ")
                             },
                             style: {
                                 colors: 'white',
