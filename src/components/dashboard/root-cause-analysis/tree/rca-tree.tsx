@@ -4,7 +4,6 @@ import { TreeNodeType } from './types';
 import TopBar from '../bar/top-bar';
 import { RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis';
 import { Typography } from '@mui/material';
-import usePrevious from '@/hooks/use-previous';
 
 const nodeHeight = 80
 
@@ -25,7 +24,6 @@ const RCATree: React.FC<RCATreeProps> = ({
   const [expandedNodes, setExpandedNodes] = useState<ExpandedNodesType[]>([]);
   const [scrollTopPositions, setScrollTopPositions] = useState<number[]>([])
   const [mappedData, setMappedData] = useState<TreeNodeType[]>([])
-  const prevMappedData = usePrevious(mappedData)
 
   useEffect(() => {
     if (!data) return
