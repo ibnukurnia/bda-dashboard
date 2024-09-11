@@ -126,6 +126,8 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                     colors: 'white', // White color for x-axis text
                 },
                 rotate: 0,
+                hideOverlappingLabels: true,
+                trim: true,
             },
             min: dataCharts.every(series => series.data.length <= 0) ? minXOnEmpty : undefined,
             max: dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : undefined,

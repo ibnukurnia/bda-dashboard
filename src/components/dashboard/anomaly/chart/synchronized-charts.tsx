@@ -112,6 +112,12 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             },
                         },
                     },
+                    title: {
+                      text: metric.title,
+                      style: {
+                        color: 'white',
+                      },
+                    },
                     xaxis: {
                         type: 'datetime',
                         labels: {
@@ -164,6 +170,9 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             colors: ['transparent', 'transparent'],
                             opacity: 1.5,
                         },
+                        padding: {
+                            top: -20
+                        }
                     },
                     legend: {
                         labels: {
@@ -174,22 +183,17 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                 };
 
                 return (
-                    <div key={metric.title}>
-                        <Typography variant="h6" component="h6" color="white">
-                            {metric.title}
-                        </Typography>
-                        <Chart
-                            key={Math.random()} // Workaround synchronized tooltip bug
-                            options={chartOptions}
-                            series={[{
-                                name: metric.title,
-                                data: metric.data.map(([date, number]) => ({ x: date, y: number })),
-                            }]}
-                            type="line"
-                            height={height}
-                            width={width}
-                        />
-                    </div>
+                    <Chart
+                        key={Math.random()} // Workaround synchronized tooltip bug
+                        options={chartOptions}
+                        series={[{
+                            name: metric.title,
+                            data: metric.data.map(([date, number]) => ({ x: date, y: number })),
+                        }]}
+                        type="line"
+                        height={height}
+                        width={width}
+                    />
                 );
             })}
         </div>
