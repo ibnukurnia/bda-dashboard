@@ -53,7 +53,7 @@ const RCATree: React.FC<RCATreeProps> = ({
 
       prev.forEach(expNode => {
         const expandedName = expNode.node.name
-        const list = tempNode.children ?? prevMappedData
+        const list = tempNode?.children ?? prevMappedData
         if (list == null) return
 
         const newExpandedNodeIndex = list.findIndex(node => node.name === expandedName)
