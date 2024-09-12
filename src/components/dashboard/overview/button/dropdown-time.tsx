@@ -96,7 +96,7 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
         <div
           ref={dropdownContainerRef}
           style={{ top: position }}
-          className={`absolute right-0 bg-white rounded-lg shadow-lg z-50 flex ${isCustomRange ? 'w-[600px]' : 'w-[auto]'}`}
+          className={`absolute left-0 bg-white rounded-lg shadow-lg z-50 flex ${isCustomRange ? 'w-[600px]' : 'w-[auto]'}`}
         >
           <ul className="text-sm text-gray-800 w-48">
             {Object.keys(timeRanges).map((rangeKey) => (

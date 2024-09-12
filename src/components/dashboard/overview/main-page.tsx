@@ -6,13 +6,18 @@ import './main-page.css'
 
 import { GetChartsOverview } from '@/modules/usecases/overviews'
 import { Typography } from '@mui/material'
-import { Plus } from 'react-feather'
+import { format } from 'date-fns'
+import { Check, Minus, Plus } from 'react-feather'
 
 import Button from '@/components/system/Button/Button'
 
 import DropdownTime from './button/dropdown-time'
+import DonutChart from './chart/donut-chart'
 import DynamicUpdatingChart from './chart/dynamic-updating-chart'
 import OverviewModal from './modal/overview-modal'
+import TablePanel from './panels/table-panel'
+import TableServices from './table/table-services'
+import TableSeverity from './table/table-severity'
 
 // Define your data
 const sourceData = [
@@ -119,32 +124,28 @@ const dates = [
   'Jan 30',
   'Jan 31',
 ]
+
+const toMiliseconds = 1000 * 60
+
 const defaultTimeRanges: Record<string, number> = {
-  'Last 5 minutes': 5,
-  'Last 15 minutes': 15,
-  'Last 30 minutes': 30,
-  'Last 1 hours': 60,
-  'Last 6 hours': 360,
-  'Last 24 hours': 1440,
-  'Last 3 days': 4320,
-  'Last 1 week': 10080,
-  'Last 1 month': 43800,
+  'Last 5 minutes': 5 * toMiliseconds,
+  'Last 15 minutes': 15 * toMiliseconds,
+  'Last 30 minutes': 30 * toMiliseconds,
+  'Last 1 hours': 60 * toMiliseconds,
+  'Last 6 hours': 360 * toMiliseconds,
+  'Last 24 hours': 1440 * toMiliseconds,
 }
 
-const TablePanel = ({
-  selectedServices,
-  handleAddServices,
-}: {
-  selectedServices: { name: string; data: number[]; count?: number }[]
-  handleAddServices: () => void
-}) => {
+const MainPageOverview = () => {
+  const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
+  const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
+  const [modalServices, setModalServices] = useState(false)
+  const [modalSeverity, setModalSeverity] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
-  const [firstThWidth, setFirstThWidth] = useState(0)
-  const [scrollXTable, setScrollXTable] = useState(0)
   const [chartData, setChartData] = useState<any[]>([])
-  const containerTableRef = useRef<HTMLDivElement>(null)
-  const firstThRef = useRef<HTMLTableHeaderCellElement>(null)
+  const mainRef = useRef<HTMLDivElement>(null)
 
   const dummyData = [
     {
@@ -334,140 +335,31 @@ const TablePanel = ({
     },
   ]
 
-  useLayoutEffect(() => {
-    const resWidth = firstThRef.current?.offsetWidth
-    setFirstThWidth(resWidth ?? 0)
-  }, [])
-
-  useEffect(() => {
-    GetChartsOverview({ time_range: 120 })
-      .then((res) => {
-        setChartData(res.data)
-      })
-      .catch(() => setChartData([]))
-  }, [])
-
-  return (
-    <div className="flex-1 px-4 grid gap-8">
-      <div className="chart-section">
-        {/* {dummyData.map((item, id) => { */}
-        {chartData.map((item, id) => {
-          return (
-            <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
-              <DynamicUpdatingChart title={item.title} series={item.data} key={id} id={id} />
-            </div>
-          )
-        })}
-      </div>
-      <div>
-        <div className="flex justify-between items-center mb-4 text-white">
-          <span className="font-bold">Showing {selectedServices.length} Services</span>
-          <div className="flex gap-3 items-center">
-            <span className="font-bold">Updated at 5:21:11 PM</span>
-            <DropdownTime
-              timeRanges={timeRanges}
-              // onRangeChange={handleRangeChange}
-              // selectedRange={selectedRange}
-              onRangeChange={(e) => setSelectedRange(e)}
-              selectedRange={selectedRange}
-            />
-          </div>
-        </div>
-        <div className="relative grid">
-          {/* {scrollXTable > 0 && (
-            <button
-              className={`absolute bg-blue-600 text-xs z-10 top-1/2 left-[${firstThWidth}px] text-white px-2 py-1 opacity-50 hover:opacity-100 rounded-md`}
-              onClick={() => containerTableRef.current?.scrollTo({ left: 0, behavior: 'smooth' })}
-            >
-              {'<'}
-            </button>
-          )}
-          {containerTableRef.current?.scrollWidth &&
-            containerTableRef.current?.clientWidth &&
-            scrollXTable < containerTableRef.current?.scrollWidth - containerTableRef.current?.clientWidth && (
-              <button
-                className="absolute bg-blue-600 text-xs z-10 top-1/2 right-0 text-white px-2 py-1 opacity-50 hover:opacity-100 rounded-md"
-                onClick={() =>
-                  containerTableRef.current?.scrollTo({
-                    left: containerTableRef.current?.scrollWidth - containerTableRef.current?.clientWidth,
-                    behavior: 'smooth',
-                  })
-                }
-              >
-                {'>'}
-              </button>
-            )} */}
-          <div
-            ref={containerTableRef}
-            onScroll={() => setScrollXTable(containerTableRef.current?.scrollLeft ?? 0)}
-            className="overflow-auto scrollbar-table"
-          >
-            <table className="w-full table-auto text-white">
-              <thead>
-                <tr>
-                  <th className="p-3" ref={firstThRef}>
-                    <Button onClick={handleAddServices}>
-                      <Plus size={'16px'} />
-                      <Typography>Add services</Typography>
-                    </Button>
-                  </th>
-                  {dates.map((date) => (
-                    <th key={date} className="p-3">
-                      {date}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {selectedServices.length > 0 ? (
-                  selectedServices.map((service, index) => (
-                    <Fragment key={index}>
-                      <tr key={index} className="">
-                        <td className="p-3 min-w-64 align-center flex justify-between gap-2">
-                          <Typography>{service.name}</Typography>
-                          <div className="flex">
-                            <span className="bg-blue-500 text-white rounded-lg px-2 h-fit">{service.count}</span>
-                          </div>
-                        </td>
-                        {service.data.map((cell, cellIndex) => {
-                          return (
-                            <td key={cellIndex} className="p-3 text-center min-w-32 align-top">
-                              <div
-                                className={`${cell < 50 ? '!bg-green-600' : cell < 100 ? '!bg-yellow-600' : '!bg-red-600'} px-2 py-1 rounded-full`}
-                              >
-                                <span className="text-white">{cell}</span>
-                              </div>
-                            </td>
-                          )
-                        })}
-                      </tr>
-                    </Fragment>
-                  ))
-                ) : (
-                  <tr>
-                    <td>No service selected</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const MainPageOverview = () => {
-  const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
-  const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
-  const [modalServices, setModalServices] = useState(false)
-  const panelRef = useRef<HTMLDivElement>(null)
-
   const handleApplyFilter = (sDataSource: any[], sService: { name: string; data: number[]; count?: number }[]) => {
     setSelectedDataSource(sDataSource)
     setSelectedServices(sService)
     setModalServices(false)
   }
+
+  useEffect(() => {
+    GetChartsOverview()
+      .then((res) => {
+        setChartData(res.data)
+      })
+      .catch(() => setChartData([]))
+
+    const intervalChartId = setInterval(() => {
+      GetChartsOverview()
+        .then((res) => {
+          setChartData(res.data)
+        })
+        .catch(() => setChartData([]))
+    }, 10000)
+
+    return () => {
+      clearInterval(intervalChartId)
+    }
+  }, [])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -487,10 +379,103 @@ const MainPageOverview = () => {
     }
   }, [modalServices])
 
+  const thSeverity = ['Severity', 'Count']
+  const severityData = [
+    { severity: 'Critical', count: 0, color: 'bg-red-600' },
+    { severity: 'Major', count: 3, color: 'bg-orange-600' },
+    { severity: 'Minor', count: 2, color: 'bg-yellow-400' },
+    { severity: 'OK', count: 1, color: 'bg-green-600' },
+  ]
+
+  const thServices = ['Top Services', 'Health Score', 'Event Trend']
+  const configDataKey = ['name', 'health_score', 'event_trend']
+  const servicesData = [
+    {
+      name: 'APM',
+      health_score: 30,
+      event_trend: '5%',
+      event_trend_up: true,
+    },
+    {
+      name: 'BRIMO',
+      health_score: 70,
+      event_trend: '10%',
+      event_trend_up: true,
+    },
+    {
+      name: 'PROMETHEUS DB',
+      health_score: 65,
+      event_trend: '12%',
+      event_trend_up: true,
+    },
+  ]
+
   return (
-    <div className="flex flex-row">
-      {/* <FilterPanel onSelectServices={setSelectedServices} /> */}
-      <TablePanel selectedServices={selectedServices} handleAddServices={() => setModalServices(!modalServices)} />
+    <div className="flex flex-row" ref={mainRef}>
+      <div className="flex-1 grid gap-8">
+        <div className="chart-section">
+          {/* {dummyData.map((item, id) => { */}
+          {chartData.map((item, id) => {
+            return (
+              <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
+                <DynamicUpdatingChart title={item.title} series={item.data} id={id} />
+              </div>
+            )
+          })}
+        </div>
+        <div className="flex gap-3 items-center justify-between card">
+          <div className="flex gap-4 items-center">
+            <span className="text-2xl text-white font-bold">Filter</span>
+            <DropdownTime
+              timeRanges={timeRanges}
+              // onRangeChange={handleRangeChange}
+              // selectedRange={selectedRange}
+              onRangeChange={(e) => {
+                setSelectedRange(e)
+                // console.log(new Date(new Date().setSeconds(0, 0)).getTime() + timeRanges[e], 'ini')
+                console.log(format(new Date(new Date().setSeconds(0, 0)).getTime(), 'yyyy-MM-dd HH:mm:ss'), 'ini end')
+                console.log(
+                  format(new Date(new Date().setSeconds(0, 0)).getTime() - timeRanges[e], 'yyyy-MM-dd HH:mm:ss'),
+                  'ini start'
+                )
+              }}
+              selectedRange={selectedRange}
+            />
+          </div>
+          <span className="font-bold text-white">Updated at 5:21:11 PM</span>
+        </div>
+        <div className="grid grid-cols-1 gap-4">
+          {/* <div className="grid grid-cols-2 gap-4"> */}
+          <div className="flex flex-col gap-4 card">
+            <span className="font-bold text-white text-2xl">Services Overview</span>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <DonutChart
+                  series={severityData.map((item) => item.count)}
+                  labels={severityData.map((sditem) => sditem.severity)}
+                />
+                <TableSeverity
+                  tableHeader={thSeverity}
+                  data={severityData}
+                  onClickSeverity={(e) => setModalSeverity(true)}
+                />
+              </div>
+              <TableServices data={servicesData} tableHeader={thServices} dataKeys={configDataKey} />
+            </div>
+          </div>
+          {/* <div className="flex flex-col gap-4">
+            <span className="font-bold text-white">Severity Detail</span>
+            <TablePanel
+              selectedServices={selectedServices}
+              handleAddServices={() => setModalServices(!modalServices)}
+            />
+          </div> */}
+        </div>
+        <div className="flex flex-col gap-4 card">
+          <span className="font-bold text-white text-2xl">Showing {selectedServices.length} Services</span>
+          <TablePanel selectedServices={selectedServices} handleAddServices={() => setModalServices(!modalServices)} />
+        </div>
+      </div>
       {modalServices && (
         <OverviewModal
           open={modalServices}
