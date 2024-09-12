@@ -8,7 +8,7 @@ interface TopBarProps {
 
 const TopBar: React.FC<TopBarProps> = ({ title, subtitle }) => {
   return (
-    <div className="w-48 h-16">
+    <div className="w-full h-16">
       <Typography
         variant="subtitle1"
         color={'white'}

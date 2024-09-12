@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import ScrollableNodeList from '../node/scrollable-node-list';
-import { dummyTreeNodes } from './dummy';
 import { TreeNodeType } from './types';
 import TopBar from '../bar/top-bar';
+import { RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis';
+import { Typography } from '@mui/material';
 
 const nodeHeight = 80
 
@@ -12,15 +13,57 @@ type ExpandedNodesType = {
 }
 
 interface RCATreeProps {
+  data: RootCauseAnalysisTreeResponse[] | null;
   handleDetail: () => void;
 }
 const RCATree: React.FC<RCATreeProps> = ({
+  data,
   handleDetail,
 }) => {
   // State to manage expanded nodes
   const [expandedNodes, setExpandedNodes] = useState<ExpandedNodesType[]>([]);
   const [scrollTopPositions, setScrollTopPositions] = useState<number[]>([])
+  const [mappedData, setMappedData] = useState<TreeNodeType[]>([])
 
+  useEffect(() => {
+    if (!data) return
+    setMappedData(data.map(s => ({
+      name: s.source,
+      anomalyCount: s.routes.reduce((count, r) => count + r.total, 0),
+      children: s.routes.map(r => ({
+        name: r.anomaly,
+        anomalyCount: r.total,
+        children: r.impacted_services.map(is => ({
+          name: is.service,
+          anomalyCount: is.total,
+          children: is.impacted.map(i => ({
+            name: i,
+          }))
+        })).sort((a, b) => b.anomalyCount - a.anomalyCount)
+      })).sort((a, b) => b.anomalyCount - a.anomalyCount)
+    })).sort((a, b) => b.anomalyCount - a.anomalyCount))
+  }, [data])
+
+  useEffect(() => {
+    setExpandedNodes(prev => {
+      const newArr: ExpandedNodesType[] = []
+      let tempNode: TreeNodeType
+
+      prev.forEach(expNode => {
+        const prevExpName = expNode.node.name
+        const list = tempNode?.children ?? mappedData
+        if (list == null) return
+
+        const newExpandedNodeIndex = list.findIndex(node => node.name === prevExpName)
+        if (newExpandedNodeIndex === -1) return newArr
+
+        newArr.push({ node: list[newExpandedNodeIndex], nodeIndex: newExpandedNodeIndex})
+        tempNode = {...list[newExpandedNodeIndex]}
+      })
+      return newArr
+    })
+  }, [mappedData])
+  
   useEffect(() => {
     setScrollTopPositions(prev => {
       const newArray = [...prev]
@@ -54,10 +97,6 @@ const RCATree: React.FC<RCATreeProps> = ({
       }
       return newArray
     })
-    
-    if (!node.children || node.children.length <= 0) {
-      handleDetail()
-    }
   }
 
   const handleOnScroll = (depth: number, scrollTop: number) => {
@@ -71,28 +110,35 @@ const RCATree: React.FC<RCATreeProps> = ({
   }
 
   return (
-    <div className='m-auto pb-8 flex flex-col gap-8'>
+    <div className='w-full px-6 pb-8 flex flex-col gap-8'>
       <div
-        className="grid gap-16 justify-center"
+        className="w-full grid gap-16 justify-center"
           style={{
             gridTemplateColumns: "repeat(4, 1fr)"
           }}
       >
-        {expandedNodes.length <= 0 &&
+        {mappedData &&
           <TopBar
-            title={dummyTreeNodes[0].type ?? ''}
+            title={"Data Source"}
+            subtitle={expandedNodes[0]?.node?.name}
           />
         }
-        {expandedNodes.map(expNode => 
+        {expandedNodes[0] &&
           <TopBar
-            key={`${expNode.node.type}-${expNode.node.name}`}
-            title={expNode.node.type}
-            subtitle={expNode.node.name}
+            title={"Matric Anomaly"}
+            subtitle={expandedNodes[1]?.node?.name}
           />
-        )}
-        {(expandedNodes[expandedNodes.length-1]?.node?.children?.length ?? -1 > 0) && 
+        }
+        {expandedNodes[1] &&
           <TopBar
-            title={expandedNodes[expandedNodes.length-1]?.node.childrenType ?? ''}
+            title={"Service"}
+            subtitle={expandedNodes[2]?.node?.name}
+          />
+        }
+        {expandedNodes[2] &&
+          <TopBar
+            title={"Impacted Service"}
+            subtitle={expandedNodes[3]?.node?.name}
           />
         }
       </div>
@@ -103,8 +149,8 @@ const RCATree: React.FC<RCATreeProps> = ({
           }}
       >
         <ScrollableNodeList
-          nodes={dummyTreeNodes}
-          handleOnClickNode={(index) => handleOnClickNode(0, index, dummyTreeNodes[index])}
+          nodes={mappedData}
+          handleOnClickNode={(index) => handleOnClickNode(0, index, mappedData[index])}
           expandedIndex={expandedNodes[0]?.nodeIndex}
           expandedChildIndex={expandedNodes[1]?.nodeIndex - scrollTopPositions[1] / nodeHeight}
           handleOnScroll={(scrollTop) => handleOnScroll(0, scrollTop)}
@@ -119,11 +165,21 @@ const RCATree: React.FC<RCATreeProps> = ({
                 expandedIndex={expandedNodes[i+1]?.nodeIndex}
                 expandedChildIndex={expandedNodes[i+2]?.nodeIndex - scrollTopPositions[i+2] / nodeHeight}
                 handleOnScroll={(scrollTop) => handleOnScroll(i + 1, scrollTop)}
+                handleOpenDetail={i === 1 ? handleDetail : undefined}
               />
             );
           }
           
-          return null
+          return (
+            <Typography
+              key={"placeholder-no-impacted-service"}
+              variant="subtitle1"
+              color={'white'}
+              align='center'
+            >
+              No Impacted Service
+            </Typography>
+          )
         })}
       </div>
     </div>

@@ -108,7 +108,7 @@ const TableModal = ({
   
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1200]">
-      <div ref={panelRef} className="rounded-lg p-6 w-3/5 flex flex-col gap-3 card-style">
+      <div ref={panelRef} className="rounded-lg p-6 w-4/5 flex flex-col gap-3 card-style">
         <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
           <div className="min-w-full">
             <TableWrapper isLoading={isTableLoading} isEmpty={data.length === 0}>

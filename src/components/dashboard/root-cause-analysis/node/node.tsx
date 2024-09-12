@@ -1,13 +1,15 @@
 import React from 'react';
 import ProgressBar from '../bar/progress-bar';
 import { Typography } from '@mui/material';
+import { ChevronRight } from 'react-feather';
 
 interface NodeProps {
   percentage: number; // Accepts a number between 0 and 100
   title: string;
-  count: number;
+  count?: number;
   expanded: boolean;
   handleOnClickNode: () => void;
+  handleOpenDetail?: () => void;
 }
 
 const Node: React.FC<NodeProps> = ({ 
@@ -16,9 +18,10 @@ const Node: React.FC<NodeProps> = ({
   count,
   expanded,
   handleOnClickNode,
+  handleOpenDetail,
  }) => {
   return (
-    <button className="w-48 h-20 relative flex flex-col outline-none snap-center" onClick={handleOnClickNode}>
+    <button className="w-full h-20 relative flex flex-col outline-none snap-center" onClick={handleOnClickNode}>
       <ProgressBar progress={percentage} />
       <Typography
         variant="subtitle1"
@@ -27,13 +30,28 @@ const Node: React.FC<NodeProps> = ({
       >
         {title}
       </Typography>
-      <Typography
-        variant="subtitle1"
-        color={'white'}
-        fontWeight={expanded ? 700 : 400}
-      >
-        {count}
-      </Typography>
+      <div className='w-full flex justify-between items-center'>
+        {count != null &&
+          <Typography
+            variant="subtitle1"
+            color={'white'}
+            fontWeight={expanded ? 700 : 400}
+          >
+            {count}
+          </Typography>
+        }
+        {handleOpenDetail &&
+          <div className='flex gap-0 items-center' onClick={handleOpenDetail}>
+            <Typography
+              variant="caption"
+              color={'white'}
+            >
+              Detail
+            </Typography>
+            <ChevronRight size={16} color='white'/>
+          </div>
+        }
+      </div>
     </button>
   );
 };

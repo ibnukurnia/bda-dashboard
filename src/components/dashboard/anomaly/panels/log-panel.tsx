@@ -47,6 +47,13 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
     const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
+    const [graphAutoRefresh, setGraphAutoRefresh] = useState<{
+        enabled: boolean;
+        interval: number | null;
+    }>({
+        enabled: false,
+        interval: null,
+    })
     const [startTime, setStartTime] = useState<string>('')
     const [endTime, setEndTime] = useState<string>('')
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
@@ -273,6 +280,10 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     const handleAutoRefreshChange = (autoRefresh: boolean, interval: number) => {
         setAutoRefresh(autoRefresh);
         setRefreshInterval(autoRefresh ? interval : null); // Set the interval if auto-refresh is on
+        setGraphAutoRefresh({
+            enabled: autoRefresh,
+            interval: interval,
+        });
     };
 
     const handlePageSizeChange = async (

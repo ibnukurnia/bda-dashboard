@@ -5,12 +5,15 @@ import './scrollable-node-list.css'
 import Path from '../path/path';
 import { ChevronDown, ChevronUp } from 'react-feather';
 
+const nodeHeight = 80
+
 interface ScrollableNodeListProps {
   nodes: TreeNodeType[];
   handleOnClickNode: (index: number) => void;
   expandedIndex: number;
   expandedChildIndex: number;
   handleOnScroll: (scrollTop: number) => void;
+  handleOpenDetail?: () => void;
 }
 
 const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
@@ -19,22 +22,45 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   expandedIndex,
   expandedChildIndex,
   handleOnScroll,
+  handleOpenDetail,
 }) => {
   const [hideButtonUp, setHideButtonUp] = useState<boolean>(true);
   const [hideButtonDown, setHideButtonDown] = useState<boolean>(true);
   const [sliderHeight, setSliderHeight] = useState<number>(0);
+  const [scrollTopPositions, setScrollTopPositions] = useState<number>(0)
+  const [maxCount, setMaxCount] = useState<number>(0)
+  const [containerWidth, setContainerWidth] = useState(0)
 
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    handleSliderWidth()
+    window.addEventListener('resize', handleSliderHeight);
+    window.addEventListener('resize', handleContainerWidth);
+    return () => {
+        window.removeEventListener('resize', handleSliderHeight);
+        window.removeEventListener('resize', handleContainerWidth);
+    };
+  }, [])
+
+  useEffect(() => {
+    handleSliderHeight()
+    handleContainerWidth()
+    setMaxCount(nodes.reduce((count, node) => {
+      if (!node.anomalyCount) return count
+      return node.anomalyCount > count ? node.anomalyCount : count
+    }, 0))
   }, [nodes])
 
   useEffect(() => {
     handleScrollButtonVisibility()
   }, [sliderHeight])
 
-  const handleSliderWidth = () => {
+  const handleContainerWidth = () => {
+    if (!containerRef.current) return 
+    setContainerWidth(containerRef.current?.clientWidth)
+  }
+
+  const handleSliderHeight = () => {
     if (!containerRef.current) return 
     
     setSliderHeight(
@@ -70,8 +96,15 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
 
   const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
     handleScrollButtonVisibility()
+    setScrollTopPositions(event.currentTarget.scrollTop)
     handleOnScroll(event.currentTarget.scrollTop)
   };
+
+  const getPercentageValue = (anomalyCount?: number) => {
+    if (maxCount === 0) return 0
+    if (anomalyCount != null) return anomalyCount / maxCount * 100
+    return 100
+  }
 
   return (
     <div className='relative'>
@@ -89,7 +122,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
       }
       <div
         ref={containerRef}
-        className="w-48 no-scrollbar scroll-smooth overflow-y-auto grid grid-flow-row snap-y snap-mandatory"
+        className="w-full no-scrollbar scroll-smooth overflow-y-auto grid grid-flow-row snap-y snap-mandatory"
         style={{
           height: "560px",
           gridTemplateRows: "repeat(7, 1fr)"
@@ -100,17 +133,19 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
           <Node
             key={node.name}
             title={node.name}
-            percentage={node.percentage}
+            percentage={getPercentageValue(node.anomalyCount)}
             count={node.anomalyCount}
             expanded={expandedIndex === index}
             handleOnClickNode={()=> handleOnClickNode(index)}
+            handleOpenDetail={handleOpenDetail}
           />
         ))}
       </div>
       <Path
-        sourceIndex={expandedIndex}
+        sourceIndex={expandedIndex - scrollTopPositions / nodeHeight}
         expandedIndex={expandedChildIndex}
         childCount={nodes[expandedIndex]?.children?.length}
+        nodeWidth={containerWidth}
       />
       {!hideButtonDown &&
         <div
