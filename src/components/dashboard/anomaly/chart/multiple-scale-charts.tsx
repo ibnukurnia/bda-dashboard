@@ -11,7 +11,7 @@ const colors = [
     '#4E88FF', '#00D8FF', '#FF4EC7', '#00E396', '#F9C80E', '#8C54FF',
     '#FF4560', '#FF7D00', '#7DFF6B', '#FF6EC7', '#1B998B', '#B28DFF',
     '#FF6666', '#3DDC97', '#F4A261', '#89CFF0'
-  ]
+]
 
 interface MultipleScaleChartProps {
     dataCharts: MetricLogAnomalyResponse[];
@@ -41,26 +41,26 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
     maxXOnEmpty,
 }) => {
     useEffect(() => {
-      const zoomInButtons = document.querySelectorAll('.apexcharts-zoomin-icon');
-      const zoomOutButtons = document.querySelectorAll('.apexcharts-zoomout-icon');
-  
-      zoomInButtons.forEach(button => {
-        if (zoomInDisabled) {
-          button.classList.add('zoom-disabled');
-        } else {
-          button.classList.remove('zoom-disabled');
-        }
-      });
-  
-      zoomOutButtons.forEach(button => {
-        if (zoomOutDisabled) {
-          button.classList.add('zoom-disabled');
-        } else {
-          button.classList.remove('zoom-disabled');
-        }
-      });
+        const zoomInButtons = document.querySelectorAll('.apexcharts-zoomin-icon');
+        const zoomOutButtons = document.querySelectorAll('.apexcharts-zoomout-icon');
+
+        zoomInButtons.forEach(button => {
+            if (zoomInDisabled) {
+                button.classList.add('zoom-disabled');
+            } else {
+                button.classList.remove('zoom-disabled');
+            }
+        });
+
+        zoomOutButtons.forEach(button => {
+            if (zoomOutDisabled) {
+                button.classList.add('zoom-disabled');
+            } else {
+                button.classList.remove('zoom-disabled');
+            }
+        });
     }, [zoomInDisabled, zoomOutDisabled]);
-  
+
     if (!dataCharts || dataCharts.length === 0) {
         return (
             <div className="text-center text-2xl font-semibold text-white">
@@ -70,14 +70,14 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
     }
 
     const combinedSeries: ApexAxisChartSeries = [];
-    
+
     dataCharts.forEach((item) => {
         combinedSeries.push({
             name: `${item.title}`,
             data: item.data.map(([date, number]) => ({ x: date, y: number }))
         });
     });
-    
+
     const chartOptions: ApexOptions = {
         chart: {
             // group: 'social',
@@ -92,7 +92,7 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                 }
             },
             events: {
-                beforeZoom : (chartContext, {xaxis}) => {
+                beforeZoom: (chartContext, { xaxis }) => {
                     // Zoomed in
                     if (xaxis.min > chartContext.minX && xaxis.max < chartContext.maxX) {
                         if (zoomInDisabled) {
@@ -142,25 +142,30 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                     color: 'white', // White color for y-axis text
                 },
             },
-            opposite: index !== 0 && index >= Math.ceil((dataCharts.length-1) / 2),
+            opposite: index !== 0 && index >= Math.ceil((dataCharts.length - 1) / 2),
             labels: {
                 formatter: (value: number) => {
-                    if (!metric.data || metric.data.length <= 0) value.toString()
-                    
-                    // Convert the number to a string
-                    const valueString = metric.data[0][1].toString()
-                    
-                    // Find the position of the decimal point
-                    const decimalIndex = valueString.indexOf('.')
-                    
-                    // If there is no decimal point
-                    if (decimalIndex === -1) {
-                        return value.toFixed(0)
+                    // Check if metric.data is defined and has at least one element
+                    if (!metric.data || metric.data.length === 0) {
+                        // Return a default value or handle the empty case appropriately
+                        return value.toFixed(0);
                     }
-                    
+
+                    // Convert the number to a string
+                    const valueString = metric.data[0][1].toString();
+
+                    // Find the position of the decimal point
+                    const decimalIndex = valueString.indexOf('.');
+
+                    // If there is no decimal point, return the number without decimal places
+                    if (decimalIndex === -1) {
+                        return value.toFixed(0);
+                    }
+
                     // Return the number of digits after the decimal point
-                    return value.toFixed(valueString.length - decimalIndex - 1)
+                    return value.toFixed(valueString.length - decimalIndex - 1);
                 },
+
                 style: {
                     colors: 'white', // White color for y-axis text
                 },
@@ -170,11 +175,11 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                 enabled: index === 0 || index === 1,
             },
             axisBorder: {
-              show: true, // Show the Y-axis line
-              color: colors[index % (colors.length)], // This gives the remainder after all full loops.
-              width: 2, // Adjust the width of the Y-axis line
+                show: true, // Show the Y-axis line
+                color: colors[index % (colors.length)], // This gives the remainder after all full loops.
+                width: 2, // Adjust the width of the Y-axis line
             },
-            
+
         })),
         stroke: {
             curve: 'smooth',
@@ -185,7 +190,7 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
             hover: {
                 size: 6, // Size of the marker when hovered
             },
-            discrete: dataCharts.flatMap((metric, index) => metric.anomalies.map(a =>(
+            discrete: dataCharts.flatMap((metric, index) => metric.anomalies.map(a => (
                 {
                     seriesIndex: index, // Index of the series
                     dataPointIndex: metric.data.findIndex(d => d[0] === a[0]), // Index of the data point to display a marker

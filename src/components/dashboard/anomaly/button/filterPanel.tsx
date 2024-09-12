@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, ChangeEvent } from 'react';
 
 interface CheckboxOption {
     id: string;
@@ -9,36 +9,46 @@ interface CheckboxOption {
 interface FilterPanelProps {
     checkboxOptions: CheckboxOption[];
     servicesOptions: string[];
-    onApplyFilters: (filters: { selectedAnomalies: string[], selectedServices: string[] }) => void; // Separate filters for anomalies and services
+    onApplyFilters: (filters: { selectedAnomalies: string[], selectedServices: string[] }) => void;
     onResetFilters: () => void;
     hasErrorFilterAnomaly: boolean;
     hasErrorFilterService: boolean;
 }
 
-const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOptions, onApplyFilters, onResetFilters, hasErrorFilterAnomaly, hasErrorFilterService }) => {
+const FilterPanel: React.FC<FilterPanelProps> = ({
+    checkboxOptions,
+    servicesOptions,
+    onApplyFilters,
+    onResetFilters,
+    hasErrorFilterAnomaly,
+    hasErrorFilterService
+}) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
+    const [searchValue, setSearchValue] = useState<string>(''); // For search input
+    const [resetMessage, setResetMessage] = useState<boolean>(false); // State for temporary reset message
     const panelRef = useRef<HTMLDivElement>(null);
+
+    // Filter services based on the search input
+    const filteredServicesOptions = servicesOptions.filter(service =>
+        service.toLowerCase().includes(searchValue.toLowerCase())
+    );
 
     const togglePanel = () => {
         setIsOpen(!isOpen);
     };
 
     const handleAnomalyChange = (value: string) => {
-        setSelectedAnomalyOptions((prev) => (
-            prev.includes(value)
-                ? prev.filter((option) => option !== value)
-                : [...prev, value]
-        ));
+        setSelectedAnomalyOptions((prev) =>
+            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
+        );
     };
 
     const handleServiceChange = (value: string) => {
-        setSelectedServiceOptions((prev) => (
-            prev.includes(value)
-                ? prev.filter((option) => option !== value)
-                : [...prev, value]
-        ));
+        setSelectedServiceOptions((prev) =>
+            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
+        );
     };
 
     const handleApply = () => {
@@ -52,7 +62,17 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
     const handleReset = () => {
         setSelectedAnomalyOptions([]);
         setSelectedServiceOptions([]);
+        setSearchValue('');
         onResetFilters();
+
+        // Show reset confirmation message
+        setResetMessage(true);
+        // Hide the message after 2 seconds
+        setTimeout(() => setResetMessage(false), 2000);
+    };
+
+    const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+        setSearchValue(e.target.value);
     };
 
     useEffect(() => {
@@ -74,7 +94,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
     }, [isOpen]);
 
     return (
-        <div className="flex self-start">
+        <div className="flex self-start z-99">
             <button
                 className="font-medium rounded-lg text-sm py-3 ps-4 pe-9 text-white text-center bg-blue-700 hover:bg-blue-800 inline-flex items-center gap-2"
                 onClick={togglePanel}
@@ -95,13 +115,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
                 </svg>
                 Filter
             </button>
+
             {isOpen && (
                 <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div ref={panelRef} className="bg-white rounded-lg p-6 w-96 flex flex-col gap-1">
-                        <h2 className="text-xl font-semibold mb-10 text-center">Multiple Filter</h2>
+                    <div ref={panelRef} className="bg-white rounded-lg p-6 w-96 flex flex-col gap-4">
+                        <h2 className="text-xl font-semibold text-center">Multiple Filter</h2>
 
+                        {/* Anomaly Section */}
                         <div>
                             <h3 className="font-semibold mb-3 text-lg">Anomaly</h3>
+                            <p className="text-sm text-gray-600 mb-2">
+                                Selected Anomalies: {selectedAnomalyOptions.length}
+                            </p>
                             <div className="overflow-y-auto max-h-40">
                                 {hasErrorFilterAnomaly ? (
                                     <p className="text-red-500">An error occurred while loading options. Please try again later.</p>
@@ -129,13 +154,23 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
                         </div>
                         <hr className="w-auto h-1 mx-auto bg-gray-700 border-0 rounded" />
 
+                        {/* Services Section with Search */}
                         <div>
                             <h3 className="font-semibold mb-3 text-lg">Services</h3>
-                            <div className="overflow-y-auto max-h-40">
+                            <p className="text-sm text-gray-600 mb-2">
+                                Selected Services: {selectedServiceOptions.length}
+                            </p>
+                            <input
+                                className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:ring-2 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                placeholder='Search service'
+                                value={searchValue}
+                                onChange={handleSearch}
+                            />
+                            <div className="overflow-y-auto max-h-52">
                                 {hasErrorFilterService ? (
                                     <p className="text-red-500">An error occurred while fetching services. Please try again later.</p>
-                                ) : servicesOptions.length > 0 ? (
-                                    servicesOptions.map((service, index) => (
+                                ) : filteredServicesOptions.length > 0 ? (
+                                    filteredServicesOptions.map((service, index) => (
                                         <label key={index} className="flex items-center justify-between mb-2">
                                             <div className="flex items-center">
                                                 <input
@@ -155,7 +190,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
                             </div>
                         </div>
 
-                        <div className="flex justify-between mt-10 space-x-4">
+                        <div className="flex justify-between mt-6 space-x-4">
                             <button className="bg-white text-blue-600 border border-primary-blue px-4 py-2 rounded-lg flex-1 text-center" onClick={handleReset}>
                                 RESET
                             </button>
@@ -163,6 +198,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ checkboxOptions, servicesOpti
                                 TERAPKAN
                             </button>
                         </div>
+
+                        {/* Show reset confirmation message */}
+                        {resetMessage && <p className="text-center text-blue-500 mt-4 font-semibold">Filters have been reset!</p>}
                     </div>
                 </div>
             )}

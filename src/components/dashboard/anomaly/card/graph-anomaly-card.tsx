@@ -124,18 +124,22 @@ interface GraphicAnomalyCardProps {
     selectedLog?: string;
     selectedSecurity?: string;
     selectedUtilization?: string;
+    selectedNetwork?: string;
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
     servicesOptions: string[];
+    isFullScreen: boolean;
 }
 
 const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     selectedLog,
     selectedUtilization,
     selectedSecurity,
+    selectedNetwork,
     selectedTimeRangeKey,
     timeRanges,
     servicesOptions,
+    isFullScreen
 }) => {
     const [dataColumn, setDataColumn] = useState<AnomalyOptionResponse>({ columns: [] })
     const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
@@ -148,10 +152,26 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const [selectedFilter, setSelectedFilter] = useState<{ scale: ColumnOption[], service: string }>({ scale: [], service: "" })
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0])
     const [initialLoading, setInitialLoading] = useState(true)
-    const activeType = selectedLog ?? selectedUtilization ?? selectedSecurity ?? '';
+    const activeType = selectedLog ?? selectedUtilization ?? selectedSecurity ?? selectedNetwork ?? '';
 
 
     const abortControllerRef = useRef<AbortController | null>(null); // Ref to store the AbortController
+
+    const transformSelectedActiveType = (activeType: string | undefined) => {
+        if (activeType === "apm") {
+            return "Log  APM";
+        } else if (activeType === "brimo") {
+            return "Log Brimo";
+        } else if (activeType === "k8s_prometheus")
+            return "Prometheus OCP";
+        else if (activeType === "k8s_db") {
+            return "Prometheus DB";
+        }
+        else if (activeType === "ivat") {
+            return "ivat"
+        }
+        return activeType; // Default case, return the original activeType if no match
+    };
 
 
     // Get the keys of the object as an array
@@ -170,6 +190,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     // Convert startDate and endDate to strings
     const predefinedStartTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
     const predefinedEndTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
+    console.log("atoekfowkfw " + activeType)
 
     const getMinX = () => {
         if (dateRangeMode === "predefined") {
@@ -190,7 +211,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
     // Cleanup function to abort fetch when the component unmounts
     useEffect(() => {
-        setDataColumn({columns: []})
+        setDataColumn({ columns: [] })
         setSelectedFilter({ scale: [], service: "" })
         GetColumnOption(activeType)
             .then((result) => {
@@ -290,7 +311,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 setInitialLoading(false)
             })
     }
-
     const handleGraphZoomIn = async (minX: any, maxX: any) => {
         if (dateRangeMode === "custom" && minX && maxX) {
             setCustomTime({
@@ -323,7 +343,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         const newSelect = keys[selectedKeyIndex + 1];
         setCurrentZoomDateRange(newSelect)
     }
-
     const handleOnApplyFilter = (selectedScales: ColumnOption[], selectedService: string) => {
         setSelectedFilter({
             scale: selectedScales,
@@ -331,29 +350,35 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         })
 
     }
-
     const handleSelectToggle = (value: ToggleOption) => {
         setSelectedGraphToggle(value)
     }
 
+    console.log(dataColumn)
+
     return (
         <div className="flex flex-col gap-8">
-            <FilterGraphAnomaly
+            {!isFullScreen && <FilterGraphAnomaly
                 currentSelectedScales={selectedFilter.scale}
                 currentSelectedService={selectedFilter.service}
                 scaleOptions={dataColumn.columns}
                 servicesOptions={servicesOptions}
                 onApplyFilters={handleOnApplyFilter}
-            />
-            <Typography variant="h5" component="h5" color="white">
-                Graphic Anomaly Records
-            </Typography>
+            />}
+            <div className='flex flex-col gap-2'>
+                <Typography variant="h5" component="h5" color="white">
+                    {`Graphic ${transformSelectedActiveType(activeType)} Anomaly Records`}
+                </Typography>
+
+
+            </div>
             <div className="flex gap-2 items-center">
                 {selectedFilter.service &&
                     <Typography variant="subtitle1" color="white">
                         Service name: {selectedFilter.service}
                     </Typography>
                 }
+
                 {dataMetric.length !== 0 &&
                     <div className="ml-auto">
                         <Toggle

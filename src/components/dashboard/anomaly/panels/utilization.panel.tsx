@@ -18,6 +18,8 @@ import SynchronizedCharts from '../chart/synchronized-charts'
 import FilterPanel from '../button/filterPanel'
 import { format } from 'date-fns';
 import GraphAnomalyCard from '../card/graph-anomaly-card'
+import AutoRefreshButton from '../button/refreshButton'
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
 
 interface TabUtilizationContentProps {
     selectedUtilization: string
@@ -39,9 +41,12 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
     selectedUtilization,
 }) => {
     const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
+    const handle = useFullScreenHandle();
     const [selectedRange, setSelectedRange] = useState<string>('Last 15 minute')
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
+    const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
+    const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
     const [startTime, setStartTime] = useState<string>('')
     const [endTime, setEndTime] = useState<string>('')
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
@@ -71,34 +76,32 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
             pagination,
         },
     })
+    // Function to refresh data manually (on "Refresh Now" button click)
+    const handleRefreshNow = async () => {
+        const utilizationType = getUtilizationType(selectedUtilization); // Get the log type
 
-    const renderChart = () => {
-        if (dataMetric.length === 0) {
-            return (
-                <div className="flex justify-center items-center">
-                    <div className="spinner"></div>
-                </div>
-            )
+        if (utilizationType) {
+            // Call fetchDataByLog without passing time range values, defaults will be used
+            await fetchDataByUtilization(
+                utilizationType,
+                pagination.pageIndex,     // Page number
+                pagination.pageSize,      // Page size (limit)
+                selectedAnomalyOptions,    // Anomaly filter options
+                selectedServicesOptions,    // Service filter options
+                startTime,
+                endTime
+            );
+            console.log('Manual refresh triggered');
+        } else {
+            console.warn('Invalid log type selected');
         }
+    };
 
-        switch (selectedUtilization) {
-            case 'Prometheus OCP':
-            case 'Prometheus DB':
-                return (
-                    <SynchronizedCharts
-                        dataCharts={dataMetric} // Ensure dataMetric is relevant
-                        height={300}
-                        width="100%"
-                    />
-                )
-            default:
-                return (
-                    <Typography variant="h6" component="h6" color="white">
-                        No chart available for {selectedUtilization}
-                    </Typography>
-                )
-        }
-    }
+    // Handle auto-refresh toggling and interval selection
+    const handleAutoRefreshChange = (autoRefresh: boolean, interval: number) => {
+        setAutoRefresh(autoRefresh);
+        setRefreshInterval(autoRefresh ? interval : null); // Set the interval if auto-refresh is on
+    };
 
     const getUtilizationType = (selectedUtilization: string): string => {
         switch (selectedUtilization) {
@@ -328,21 +331,26 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
         utilizationType: string,
         page: number,
         limit: number,
-        filter: string[] = []
+        anomalyOptions: string[] = [],
+        serviceOptions: string[] = [],
+        startTime?: string, // Optional
+        endTime?: string    // Optional
     ) => {
 
         // Get startTime and endTime using the helper function
         const { startTimeValue, endTimeValue } = getTimeRange();
+        const finalStartTime = startTime || startTimeValue;
+        const finalEndTime = endTime || endTimeValue;
 
         // Start both API calls concurrently
         const logAnomaliesPromise = GetHistoricalLogAnomalies(
             utilizationType,
             limit,
             page,
-            selectedAnomalyOptions,
-            selectedServicesOptions,
-            startTimeValue, // Use formatted startTimeToUse
-            endTimeValue// Use formatted endTimeToUse
+            anomalyOptions,      // Pass anomaly filter options
+            serviceOptions,      // Pass service filter options
+            finalStartTime,      // Use finalStartTime (either passed or default)
+            finalEndTime         // Use finalEndTime (either passed or default)
         );
 
         // Handle the result of the first API call
@@ -455,39 +463,55 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
     }
 
     const loadAnomalyFilterOptions = async () => {
+        const utilizationType = getUtilizationType(selectedUtilization); // Get the utilization type based on selectedUtilization
+
+        if (!utilizationType) {
+            console.error('Invalid utilization type:', utilizationType);
+            setHasErrorAnomalyFilter(true); // Set error state if utilization type is invalid
+            return;
+        }
 
         try {
-            const response = await fetchAnomalyOption(selectedUtilization === 'Prometheus DB' ? 'k8s_db' : '')
-            console.log('API Response:', response) // Log the entire API response
+            const response = await fetchAnomalyOption(utilizationType); // Pass the correct utilization type to the API call
+            console.log('API Response:', response); // Log the entire API response
 
             if (response.data && response.data.columns) {
                 const options = response.data.columns.map((column: Column) => ({
                     id: column.name, // Maps the "name" to "id"
                     label: column.comment || column.name, // Maps the "comment" to "label", falls back to "name" if "comment" is missing
                     type: column.type, // Maps the "type" to "type"
-                }))
+                }));
 
-                console.log('Mapped Checkbox Options:', options) // Log the mapped options
+                console.log('Mapped Checkbox Options:', options); // Log the mapped options
 
-                setFilterAnomalyOptions(options) // Update state with fetched options
+                setFilterAnomalyOptions(options); // Update state with fetched options
             } else {
-                console.error('Response data or columns are missing')
+                console.error('Response data or columns are missing');
+                setHasErrorAnomalyFilter(true); // Set error state if response is invalid
             }
         } catch (error) {
-            handleApiError(error)
-            setHasErrorAnomalyFilter(true)
+            handleApiError(error);
+            setHasErrorAnomalyFilter(true); // Set error state on catch
         }
-    }
+    };
 
     const loadServicesFilterOptions = async () => {
+        const utilizationType = getUtilizationType(selectedUtilization); // Get the correct utilization type
+
+        if (!utilizationType) {
+            console.error('Invalid utilization type:', utilizationType);
+            setHasErrorServiceFilter(true); // Set error state if utilization type is invalid
+            return;
+        }
+
         try {
-            const response = await fetchServicesOption(selectedUtilization === 'Prometheus DB' ? 'k8s_db' : '')
-            console.log('API Response:', response) // Log the entire API response
+            const response = await fetchServicesOption(utilizationType); // Pass the correct utilization type to the API
+            console.log('API Response UTIL:', response); // Log the entire API response
+
 
             if (response.data && response.data.services) {
                 // No need to map as it's already an array of strings
                 const services = response.data.services
-
                 setFilterServiceOptions(services) // Update state with fetched service options
             } else {
                 console.error('Response data or services are missing')
@@ -496,7 +520,7 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
             console.error('Failed to load service options', error)
             setHasErrorServiceFilter(true)
         }
-    }
+    };
 
     const handleResetFilters = () => {
         // Clear the selected options
@@ -691,10 +715,41 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
         return () => clearInterval(intervalId);
     }, [lastRefreshTime]);
 
+    // Setup auto-refresh if enabled
+    useEffect(() => {
+        let intervalId: NodeJS.Timeout | null = null;
+        if (autoRefresh && refreshInterval) {
+            intervalId = setInterval(() => {
+                const utilizationType = getUtilizationType(selectedUtilization);
+
+                if (utilizationType) {
+                    // Call fetchDataByutilization with or without time range depending on the case
+                    fetchDataByUtilization(
+                        utilizationType,
+                        pagination.pageIndex,     // Page number
+                        pagination.pageSize,      // Page size (limit)
+                        selectedAnomalyOptions,    // Anomaly filter options
+                        selectedServicesOptions,   // Service filter options
+                        startTime,
+                        endTime
+                    );
+                    console.log('Auto-refresh triggered');
+                }
+            }, refreshInterval);
+        }
+
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        };
+    }, [autoRefresh, refreshInterval, selectedUtilization, pagination.pageIndex, pagination.pageSize, selectedAnomalyOptions, selectedServicesOptions]);
+
+
     return (
-        <div className="flex flex-col gap-10 px-14 py-12 card-style z-50">
-            <div className="flex flex-row items-center self-end">
-                <div className="flex flex-row gap-2 self-center items-center">
+        <div className="flex flex-col gap-4">
+            <div className='flex flex-row gap-2 self-end items-center'>
+                <div className="flex flex-row gap-2 self-end items-center">
                     <Typography variant="body2" component="p" color="white">
                         {timeDifference}
                     </Typography>
@@ -703,146 +758,184 @@ const TabUtilizationContent: React.FC<TabUtilizationContentProps> = ({
                         onRangeChange={handleRangeChange}
                         selectedRange={selectedRange} // Pass selectedRange as a prop
                     />
+
                 </div>
+                <AutoRefreshButton onRefresh={handleRefreshNow} onAutoRefreshChange={handleAutoRefreshChange} />
+                <button onClick={handle.enter} className='text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm py-3 px-4 text-center rounded-l items-center'>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                    >
+                        <path d="M3 4a1 1 0 011-1h3a1 1 0 110 2H5v2a1 1 0 11-2 0V5a1 1 0 010-1zM3 14a1 1 0 011 1v2h2a1 1 0 110 2H4a1 1 0 01-1-1v-3a1 1 0 011-1zm13-1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 110-2h2v-2a1 1 0 011-1zm0-8a1 1 0 011 1v3a1 1 0 11-2 0V5h-2a1 1 0 110-2h3a1 1 0 011 1z" />
+                    </svg>
+                </button>
             </div>
-            <div className="flex flex-col gap-10">
-                <div className="flex flex-col gap-8">
-                    <FilterPanel
-                        servicesOptions={filterServicesOptions}
-                        checkboxOptions={filterAnomalyOptions}
-                        onApplyFilters={handleApplyFilters}
-                        onResetFilters={handleResetFilters}
-                        hasErrorFilterAnomaly={hasErrorFilterAnomaly}
-                        hasErrorFilterService={hasErrorFilterService}
-                    />
-                    <Typography variant="h5" component="h5" color="white">
-                        Historical Anomaly Records
-                    </Typography>
-                    <Box>
-                        <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
-                            <div className="min-w-full">
-                                {isTableLoading ? (
-                                    <div className="flex justify-center items-center">
-                                        <div className="spinner"></div>
-                                    </div>
-                                ) : data.length === 0 && !isTableLoading ? (
-                                    <div className="text-center py-4">
-                                        <Typography variant="subtitle1" color="white" align="center">
-                                            No data available.
-                                        </Typography>
-                                    </div>
+            <FullScreen handle={handle}>
+                <div className={`flex flex-col gap-10 p-12 card-style ${handle.active ? 'h-screen overflow-auto' : ''}`}>
+                    <div className="flex flex-col gap-10">
+                        {!handle.active && <FilterPanel
+                            servicesOptions={filterServicesOptions}
+                            checkboxOptions={filterAnomalyOptions}
+                            onApplyFilters={handleApplyFilters}
+                            onResetFilters={handleResetFilters}
+                            hasErrorFilterAnomaly={hasErrorFilterAnomaly}
+                            hasErrorFilterService={hasErrorFilterService}
+                        />}
+                        <div className='flex flex-col gap-2'>
+                            <Typography variant="h5" component="h5" color="white">
+                                {`Historical ${selectedUtilization} Anomaly Records`}
+                            </Typography>
+                            <Typography variant="body2" component="h6" color="white">
+                                {`Anomaly: `}
+                                {selectedAnomalyOptions.length === 0 ? (
+                                    <span className='font-bold text-gray-300'>-</span>
                                 ) : (
-                                    <table id="person" className="table-auto divide-y divide-gray-200 w-full">
-                                        <thead>
-                                            {table.getHeaderGroups().map((headerGroup) => (
-                                                <tr key={headerGroup.id}>
-                                                    {headerGroup.headers.map((header) => (
-                                                        <th key={header.id} colSpan={header.colSpan} className="p-2">
-                                                            <div
-                                                                className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3`}
-                                                                onClick={header.column.getToggleSortingHandler()}
-                                                            >
-                                                                {typeof header.column.columnDef.header === 'function'
-                                                                    ? header.column.columnDef.header({} as any) // Pass a dummy context
-                                                                    : header.column.columnDef.header}
-                                                                {header.column.getCanSort() && (
-                                                                    <>
-                                                                        {{
-                                                                            asc: '🔼',
-                                                                            desc: '🔽',
-                                                                            undefined: '🔽', // Default icon for unsorted state
-                                                                        }[header.column.getIsSorted() as string] || '🔽'}
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        </th>
-                                                    ))}
-                                                </tr>
-                                            ))}
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-200 text-gray-600">
-                                            {table.getRowModel().rows.map((row) => (
-                                                <tr key={row.id}>
-                                                    {row.getVisibleCells().map((cell) => (
-                                                        <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
-                                                            <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
-                                                                {cell.column.id === 'severity' && (
-                                                                    <svg
-                                                                        width="14"
-                                                                        height="15"
-                                                                        viewBox="0 0 14 15"
-                                                                        fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                    >
-                                                                        <path
-                                                                            d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
-                                                                            fill="#F59823"
-                                                                        />
-                                                                    </svg>
-                                                                )}
-                                                                {typeof cell.column.columnDef.cell === 'function'
-                                                                    ? cell.column.columnDef.cell(cell.getContext())
-                                                                    : cell.column.columnDef.cell}
-                                                            </div>
-                                                        </td>
-                                                    ))}
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                    selectedAnomalyOptions.map((optionId, index) => {
+                                        // Find the corresponding option in filterAnomalyOptions
+                                        const option = filterAnomalyOptions.find(opt => opt.id === optionId);
+
+                                        // Display the label if found, otherwise display the id itself
+                                        return (
+                                            <span key={index} className='font-bold text-gray-300'>
+                                                {option ? option.label : optionId}
+                                                {index < selectedAnomalyOptions.length - 1 && ', '}
+                                            </span>
+                                        );
+                                    })
+                                )}
+                            </Typography>
+
+                        </div>
+
+                        <Box>
+                            <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
+                                <div className="min-w-full">
+                                    {isTableLoading ? (
+                                        <div className="flex justify-center items-center">
+                                            <div className="spinner"></div>
+                                        </div>
+                                    ) : data.length === 0 && !isTableLoading ? (
+                                        <div className="text-center py-4">
+                                            <Typography variant="subtitle1" color="white" align="center">
+                                                No data available.
+                                            </Typography>
+                                        </div>
+                                    ) : (
+                                        <table id="person" className="table-auto divide-y divide-gray-200 w-full">
+                                            <thead>
+                                                {table.getHeaderGroups().map((headerGroup) => (
+                                                    <tr key={headerGroup.id}>
+                                                        {headerGroup.headers.map((header) => (
+                                                            <th key={header.id} colSpan={header.colSpan} className="p-2">
+                                                                <div
+                                                                    className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3`}
+                                                                    onClick={header.column.getToggleSortingHandler()}
+                                                                >
+                                                                    {typeof header.column.columnDef.header === 'function'
+                                                                        ? header.column.columnDef.header({} as any) // Pass a dummy context
+                                                                        : header.column.columnDef.header}
+                                                                    {header.column.getCanSort() && (
+                                                                        <>
+                                                                            {{
+                                                                                asc: '🔼',
+                                                                                desc: '🔽',
+                                                                                undefined: '🔽', // Default icon for unsorted state
+                                                                            }[header.column.getIsSorted() as string] || '🔽'}
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </th>
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-200 text-gray-600">
+                                                {table.getRowModel().rows.map((row) => (
+                                                    <tr key={row.id}>
+                                                        {row.getVisibleCells().map((cell) => (
+                                                            <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                                                                <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
+                                                                    {cell.column.id === 'severity' && (
+                                                                        <svg
+                                                                            width="14"
+                                                                            height="15"
+                                                                            viewBox="0 0 14 15"
+                                                                            fill="none"
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                        >
+                                                                            <path
+                                                                                d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
+                                                                                fill="#F59823"
+                                                                            />
+                                                                        </svg>
+                                                                    )}
+                                                                    {typeof cell.column.columnDef.cell === 'function'
+                                                                        ? cell.column.columnDef.cell(cell.getContext())
+                                                                        : cell.column.columnDef.cell}
+                                                                </div>
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
+                                {data.length > 0 && !isTableLoading && (
+                                    <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
+                                        <div className="flex gap-1">
+                                            <span className="text-white">Rows per page:</span>
+                                            <select
+                                                value={table.getState().pagination.pageSize}
+                                                onChange={(e) => {
+                                                    const newPageSize = Number(e.target.value);
+                                                    const utilizationType = getUtilizationType(selectedUtilization);
+                                                    handlePageSizeChange(newPageSize, utilizationType, 1, selectedAnomalyOptions);
+                                                }}
+                                                className="select-button-assesment"
+                                            >
+                                                {[5, 10, 15, 25].map((pageSize) => (
+                                                    <option key={pageSize} value={pageSize}>
+                                                        {pageSize}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="text-white">
+                                            Page {pagination.pageIndex} of {totalPages}
+                                        </div>
+                                        <div className="d-flex">
+                                            <button
+                                                className={`p-2 ${pagination.pageIndex === 1 ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
+                                                onClick={previousPage}
+                                                disabled={pagination.pageIndex === 1}
+                                            >
+                                                <ArrowLeft />
+                                            </button>
+                                            <button
+                                                className={`p-2 ${pagination.pageIndex === totalPages ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
+                                                onClick={nextPage}
+                                                disabled={pagination.pageIndex === totalPages}
+                                            >
+                                                <ArrowRight />
+                                            </button>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
-                            {data.length > 0 && !isTableLoading && (
-                                <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
-                                    <div className="flex gap-1">
-                                        <span className="text-white">Rows per page:</span>
-                                        <select
-                                            value={table.getState().pagination.pageSize}
-                                            onChange={(e) => {
-                                                const newPageSize = Number(e.target.value);
-                                                const utilizationType = getUtilizationType(selectedUtilization);
-                                                handlePageSizeChange(newPageSize, utilizationType, 1, selectedAnomalyOptions);
-                                            }}
-                                            className="select-button-assesment"
-                                        >
-                                            {[5, 10, 15, 25].map((pageSize) => (
-                                                <option key={pageSize} value={pageSize}>
-                                                    {pageSize}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="text-white">
-                                        Page {pagination.pageIndex} of {totalPages}
-                                    </div>
-                                    <div className="d-flex">
-                                        <button
-                                            className={`p-2 ${pagination.pageIndex === 1 ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
-                                            onClick={previousPage}
-                                            disabled={pagination.pageIndex === 1}
-                                        >
-                                            <ArrowLeft />
-                                        </button>
-                                        <button
-                                            className={`p-2 ${pagination.pageIndex === totalPages ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
-                                            onClick={nextPage}
-                                            disabled={pagination.pageIndex === totalPages}
-                                        >
-                                            <ArrowRight />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </Box>
+                        </Box>
+                    </div>
+                    <GraphAnomalyCard
+                        selectedUtilization={getUtilizationType(selectedUtilization)}
+                        servicesOptions={filterServicesOptions}
+                        selectedTimeRangeKey={selectedRange}
+                        timeRanges={timeRanges}
+                        isFullScreen={handle.active}
+                    />
                 </div>
-                <GraphAnomalyCard
-                    selectedLog={getUtilizationType(selectedUtilization)}
-                    servicesOptions={filterServicesOptions}
-                    selectedTimeRangeKey={selectedRange}
-                    timeRanges={timeRanges}
-                />
-            </div>
+            </FullScreen>
         </div>
     )
 }
