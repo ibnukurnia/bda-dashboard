@@ -46,6 +46,13 @@ const TabNetworkContent: React.FC<TabNetworkContentProps> = ({
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
     const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
+    const [graphAutoRefresh, setGraphAutoRefresh] = useState<{
+        enabled: boolean;
+        interval: number | null;
+    }>({
+        enabled: false,
+        interval: null,
+    })
     const [startTime, setStartTime] = useState<string>('')
     const [endTime, setEndTime] = useState<string>('')
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
@@ -261,6 +268,10 @@ const TabNetworkContent: React.FC<TabNetworkContentProps> = ({
     const handleAutoRefreshChange = (autoRefresh: boolean, interval: number) => {
         setAutoRefresh(autoRefresh);
         setRefreshInterval(autoRefresh ? interval : null); // Set the interval if auto-refresh is on
+        setGraphAutoRefresh({
+            enabled: autoRefresh,
+            interval: interval,
+        });
     };
 
     const handlePageSizeChange = async (
@@ -965,6 +976,7 @@ const TabNetworkContent: React.FC<TabNetworkContentProps> = ({
                         servicesOptions={filterServicesOptions}
                         selectedTimeRangeKey={selectedRange}
                         timeRanges={timeRanges}
+                        autoRefresh={graphAutoRefresh}
                         isFullScreen={handle.active}
                     />
                 </div>
