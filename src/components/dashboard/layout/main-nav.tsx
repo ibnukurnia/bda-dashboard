@@ -7,6 +7,10 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Link from 'next/link'; // Import Link from Next.js
+import { authClient } from '@/lib/auth/client';
+import { useUser } from '@/hooks/use-user';
+import router from 'next/dist/client/router';
+import { logger } from '@/lib/default-logger';
 
 import { MobileNav } from './mobile-nav';
 
@@ -22,6 +26,8 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
 
   const notifRef = React.useRef<HTMLDivElement | null>(null);
   const userRef = React.useRef<HTMLDivElement | null>(null);
+  const { checkSession } = useUser();
+
 
   const user = {
     name: 'Fadhli',
@@ -79,6 +85,22 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
     );
   };
 
+  const handleSignOut = React.useCallback(async (): Promise<void> => {
+    try {
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        logger.error('Sign out error', error);
+        return;
+      }
+
+      await checkSession?.();
+      router.reload();
+    } catch (err) {
+      logger.error('Sign out error', err);
+    }
+  }, [checkSession]);
+
   const handleToggleSideNav = () => {
     toggleSideNav();
     setIsSidebarOpen((prevState) => !prevState);
@@ -117,10 +139,9 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
           backgroundColor: '#05061e',
           position: 'sticky',
           top: 0,
-          zIndex: 'var(--mui-zIndex-appBar)',
-          padding: '16px 24px',
-          // paddingTop: 2,
-          // paddingBottom: 2,
+          zIndex: '999999',
+          paddingTop: 2,
+          paddingBottom: 2,
         }}
       >
         <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', minHeight: '64px' }}>
@@ -148,6 +169,9 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
           ref={userRef}
           sx={{
             position: 'absolute',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
             top: '72px',
             right: '16px',
             backgroundColor: 'white',
@@ -157,7 +181,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
             zIndex: 9999,
           }}
         >
-          <Stack direction="column" gap={2} p={1}>
+          <Stack direction="column" gap={1} p={1}>
             <Typography variant="h6" component="h2" color="black">
               {user.name}
             </Typography>
@@ -167,7 +191,11 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
             <Typography variant="body2" component="p" color="black">
               {formattedDate}
             </Typography>
+            {/* Logout Button */}
           </Stack>
+          <Button onClick={handleSignOut} variant="contained" color="error">
+            Log Out
+          </Button>
         </Box>
       )}
 
