@@ -41,7 +41,7 @@ const Node: React.FC<NodeProps> = ({
           </Typography>
         }
         {handleOpenDetail &&
-          <div className='flex gap-0 items-center' onClick={handleOpenDetail}>
+          <div className='pl-2 flex gap-0 items-center hover:bg-gray-600 active:bg-gray-500 rounded-lg' onClick={handleOpenDetail}>
             <Typography
               variant="caption"
               color={'white'}
