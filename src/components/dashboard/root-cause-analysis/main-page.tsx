@@ -49,6 +49,8 @@ const MainPageRootCauseAnalysis = () => {
   })
   const [initialLoading, setInitialLoading] = useState(true)
   const [modalServices, setModalServices] = useState(false)
+
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const componentToFullscreenedRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -121,7 +123,7 @@ const MainPageRootCauseAnalysis = () => {
 
   return (
     <>
-      <div className='flex flex-col gap-8'>
+      <div className={`flex flex-col gap-8 ${isFullscreen ? "py-8 px-6" : ""}`} ref={componentToFullscreenedRef}>
         <div className='flex flex-row gap-2 self-end items-center'>
             <div className="flex flex-row gap-2 self-end items-center">
                 <Typography variant="body2" component="p" color="white">
@@ -134,9 +136,12 @@ const MainPageRootCauseAnalysis = () => {
                 />
             </div>
             <AutoRefreshButton onRefresh={fetchData} onAutoRefreshChange={handleAutoRefreshChange} />
-            <FullscreenComponent elementRef={componentToFullscreenedRef}/>
+            <FullscreenComponent
+              elementRef={componentToFullscreenedRef}
+              onToggle={(isFullscreen) => setIsFullscreen(isFullscreen)}
+            />
         </div>
-        <div className="flex flex-col gap-10 px-2 py-8 card-style" ref={componentToFullscreenedRef}>
+        <div className="flex flex-col gap-10 px-2 py-8 card-style">
           <div className="w-full flex flex-col gap-8">
             {initialLoading ?
               <div className="flex justify-center items-center">
