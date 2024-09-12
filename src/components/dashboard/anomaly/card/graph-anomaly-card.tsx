@@ -9,6 +9,7 @@ import SynchronizedCharts from "../chart/synchronized-charts";
 import { ColumnOption } from "@/types/anomaly";
 import { format, isAfter, isBefore } from "date-fns";
 import Toggle, { ToggleOption } from "../button/toggle";
+import useInterval from "@/hooks/use-interval";
 
 const toggleList: ToggleOption[] = [
     {
@@ -72,16 +73,18 @@ const GraphWrapper = ({
 
 const Graph = ({
     data,
-    selectedGraphToggle,
+    selectedGraphToggle = toggleList[0],
     onZoomOut,
     minXOnEmpty,
     maxXOnEmpty,
+    animations,
 }: {
     data: MetricLogAnomalyResponse[];
     selectedGraphToggle: ToggleOption;
     onZoomOut: (minX: any, maxX: any) => void;
     minXOnEmpty?: number;
     maxXOnEmpty?: number;
+    animations?: boolean;
 }) => {
     const minX = new Date()
     minX.setHours(minX.getHours() - 24)
@@ -98,6 +101,7 @@ const Graph = ({
                 maxXOnEmpty={maxXOnEmpty}
                 minX={minX.getTime()}
                 maxX={maxX.getTime()}
+                animations={animations}
             />
         )
     }
@@ -112,6 +116,7 @@ const Graph = ({
                 maxXOnEmpty={maxXOnEmpty}
                 minX={minX.getTime()}
                 maxX={maxX.getTime()}
+                animations={animations}
             />
         )
     }
@@ -123,6 +128,10 @@ interface GraphicAnomalyCardProps {
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
     servicesOptions: string[];
+    autoRefresh?: {
+        enabled: boolean;
+        interval: number | null;
+    };
 }
 
 const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
@@ -132,6 +141,10 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     selectedTimeRangeKey,
     timeRanges,
     servicesOptions,
+    autoRefresh = {
+        enabled: false,
+        interval: null,
+    },
 }) => {
     const [dataColumn, setDataColumn] = useState<AnomalyOptionResponse>({ columns: [] })
     const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
@@ -220,23 +233,23 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return;
 
         // Use activeType to determine which type is currently active
-        fetchMetricLog(activeType, predefinedStartTime, predefinedEndTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name));
+        fetchMetricLog(predefinedStartTime, predefinedEndTime);
     }, [currentZoomDateRange])
 
     useUpdateEffect(() => {
         if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
-        fetchMetricLog(activeType, customTime.startTime, customTime.endTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
+        fetchMetricLog(customTime.startTime, customTime.endTime)
     }, [customTime])
 
     useUpdateEffect(() => {
         if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
 
         if (dateRangeMode === "predefined") {
-            fetchMetricLog(activeType, predefinedStartTime, predefinedEndTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
+            fetchMetricLog(predefinedStartTime, predefinedEndTime)
             return
         }
         if (dateRangeMode === "custom") {
-            fetchMetricLog(activeType, customTime.startTime, customTime.endTime, selectedFilter.service, selectedFilter.scale.map(scale => scale.name))
+            fetchMetricLog(customTime.startTime, customTime.endTime)
         }
     }, [selectedFilter])
 
@@ -256,13 +269,19 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         setCurrentZoomDateRange(selectedTimeRangeKey)
     }, [selectedTimeRangeKey])
 
-    const fetchMetricLog = async (
-        activeType: string,
+    useInterval(
+        () => fetchMetricLog(
+            lastTimeRangeParam.startTime ?? predefinedStartTime,
+            lastTimeRangeParam.endTime ?? predefinedEndTime
+        ),
+        autoRefresh.interval,
+        autoRefresh.enabled
+    )
+
+    async function fetchMetricLog(
         startTime: string,
         endTime: string,
-        serviceName: string,
-        scales: string[],
-    ) => {
+    ) {
         // Abort any ongoing fetch request before starting a new one
         if (abortControllerRef.current) {
             abortControllerRef.current.abort("Create new fetch request");
@@ -276,8 +295,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             type: activeType,
             start_time: startTime,
             end_time: endTime,
-            service_name: serviceName,
-            metric_name: scales,
+            service_name: selectedFilter.service,
+            metric_name: selectedFilter.scale.map(scale => scale.name),
         }, controller.signal)
 
         return metricResultPromise
@@ -306,11 +325,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         }
 
         fetchMetricLog(
-            activeType,
             format(new Date(minX), 'yyyy-MM-dd HH:mm:ss'),
             format(new Date(maxX), 'yyyy-MM-dd HH:mm:ss'),
-            selectedFilter.service,
-            selectedFilter.scale.map(scale => scale.name)
         )
     }
 
@@ -365,6 +381,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                     onZoomOut={handleGraphZoomOut}
                     minXOnEmpty={getMinX()}
                     maxXOnEmpty={getMaxX()}
+                    animations={!!!autoRefresh.enabled}
                 />
             </GraphWrapper>
         </div>

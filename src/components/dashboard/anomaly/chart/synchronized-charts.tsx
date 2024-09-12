@@ -23,6 +23,7 @@ interface SynchronizedChartsProps {
     maxX?: any;
     minXOnEmpty?: any;
     maxXOnEmpty?: any;
+    animations?: boolean;
 }
 
 const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
@@ -34,6 +35,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     maxX,
     minXOnEmpty,
     maxXOnEmpty,
+    animations,
 }) => {
     const [zoomOutDisabled, setZoomOutDisabled] = useState(false)
 
@@ -74,6 +76,9 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         group: 'log-anomaly',
                         type: 'line',
                         height: 160,
+                        animations: {
+                            enabled: animations,
+                        },
                         toolbar: {
                             tools: {
                                 pan: false,
