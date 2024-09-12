@@ -120,12 +120,14 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
             labels: {
                 formatter(value, _, __) {
                     const date = new Date(value);
-                    return formatDate(date, "yyyy-MM-dd HH:mm")
+                    return formatDate(date, "yyyy-MM-dd HH:mm").split(" ")
                 },
                 style: {
                     colors: 'white', // White color for x-axis text
                 },
                 rotate: 0,
+                hideOverlappingLabels: true,
+                trim: true,
             },
             min: dataCharts.every(series => series.data.length <= 0) ? minXOnEmpty : undefined,
             max: dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : undefined,
@@ -185,6 +187,7 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                     seriesIndex: index, // Index of the series
                     dataPointIndex: metric.data.findIndex(d => d[0] === a[0]), // Index of the data point to display a marker
                     fillColor: '#FF0000', // Custom fill color for the specific marker
+                    strokeColor: '#FF0000',
                     size: 6, // Custom size for the specific marker
                 })
             ))

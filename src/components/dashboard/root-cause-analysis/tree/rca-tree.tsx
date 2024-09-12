@@ -45,7 +45,23 @@ const RCATree: React.FC<RCATreeProps> = ({
   }, [data])
 
   useEffect(() => {
-    setExpandedNodes([])
+    setExpandedNodes(prev => {
+      const newArr: ExpandedNodesType[] = []
+      let tempNode: TreeNodeType
+
+      prev.forEach(expNode => {
+        const prevExpName = expNode.node.name
+        const list = tempNode?.children ?? mappedData
+        if (list == null) return
+
+        const newExpandedNodeIndex = list.findIndex(node => node.name === prevExpName)
+        if (newExpandedNodeIndex === -1) return newArr
+
+        newArr.push({ node: list[newExpandedNodeIndex], nodeIndex: newExpandedNodeIndex})
+        tempNode = {...list[newExpandedNodeIndex]}
+      })
+      return newArr
+    })
   }, [mappedData])
   
   useEffect(() => {
@@ -81,10 +97,6 @@ const RCATree: React.FC<RCATreeProps> = ({
       }
       return newArray
     })
-    
-    if (depth ===3) {
-      handleDetail()
-    }
   }
 
   const handleOnScroll = (depth: number, scrollTop: number) => {
@@ -153,12 +165,14 @@ const RCATree: React.FC<RCATreeProps> = ({
                 expandedIndex={expandedNodes[i+1]?.nodeIndex}
                 expandedChildIndex={expandedNodes[i+2]?.nodeIndex - scrollTopPositions[i+2] / nodeHeight}
                 handleOnScroll={(scrollTop) => handleOnScroll(i + 1, scrollTop)}
+                handleOpenDetail={i === 1 ? handleDetail : undefined}
               />
             );
           }
           
           return (
             <Typography
+              key={"placeholder-no-impacted-service"}
               variant="subtitle1"
               color={'white'}
               align='center'

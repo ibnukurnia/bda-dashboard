@@ -13,6 +13,7 @@ interface ScrollableNodeListProps {
   expandedIndex: number;
   expandedChildIndex: number;
   handleOnScroll: (scrollTop: number) => void;
+  handleOpenDetail?: () => void;
 }
 
 const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
@@ -21,6 +22,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   expandedIndex,
   expandedChildIndex,
   handleOnScroll,
+  handleOpenDetail,
 }) => {
   const [hideButtonUp, setHideButtonUp] = useState<boolean>(true);
   const [hideButtonDown, setHideButtonDown] = useState<boolean>(true);
@@ -98,6 +100,12 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
     handleOnScroll(event.currentTarget.scrollTop)
   };
 
+  const getPercentageValue = (anomalyCount?: number) => {
+    if (maxCount === 0) return 0
+    if (anomalyCount != null) return anomalyCount / maxCount * 100
+    return 100
+  }
+
   return (
     <div className='relative'>
       {!hideButtonUp &&
@@ -125,10 +133,11 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
           <Node
             key={node.name}
             title={node.name}
-            percentage={node.anomalyCount ? node.anomalyCount / maxCount * 100 : 100}
+            percentage={getPercentageValue(node.anomalyCount)}
             count={node.anomalyCount}
             expanded={expandedIndex === index}
             handleOnClickNode={()=> handleOnClickNode(index)}
+            handleOpenDetail={handleOpenDetail}
           />
         ))}
       </div>
