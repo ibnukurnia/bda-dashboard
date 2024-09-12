@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import './main-page.css'
 
@@ -14,6 +14,7 @@ import { getTimeDifference } from './helper'
 import { GetRootCauseAnalysisTree } from '@/modules/usecases/root-cause-analysis'
 import { RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis'
 import useInterval from '@/hooks/use-interval'
+import FullscreenComponent from '../FullScreenComponent'
 
 const defaultTimeRanges: Record<string, number> = {
   'Last 5 minutes': 5,
@@ -48,6 +49,7 @@ const MainPageRootCauseAnalysis = () => {
   })
   const [initialLoading, setInitialLoading] = useState(true)
   const [modalServices, setModalServices] = useState(false)
+  const componentToFullscreenedRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchData()
@@ -132,8 +134,9 @@ const MainPageRootCauseAnalysis = () => {
                 />
             </div>
             <AutoRefreshButton onRefresh={fetchData} onAutoRefreshChange={handleAutoRefreshChange} />
+            <FullscreenComponent elementRef={componentToFullscreenedRef}/>
         </div>
-        <div className="flex flex-col gap-10 px-2 py-8 card-style">
+        <div className="flex flex-col gap-10 px-2 py-8 card-style" ref={componentToFullscreenedRef}>
           <div className="w-full flex flex-col gap-8">
             {initialLoading ?
               <div className="flex justify-center items-center">
