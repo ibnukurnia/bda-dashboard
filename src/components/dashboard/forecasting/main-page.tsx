@@ -224,7 +224,7 @@ const MainPageForecasting = () => {
             return (
               <div className="flex flex-col gap-8">
                 <Typography variant="h5" component="h5" color="white" align="center">
-                  DATA IS NOT AVAILABLE. PLEASE USE FILTER BUTTON TO FORECAST DATA
+                  PLEASE USE FILTER BUTTON TO FORECAST DATA
                 </Typography>
               </div>
             )

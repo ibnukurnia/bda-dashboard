@@ -4,8 +4,14 @@ import Node from './node';
 import './scrollable-node-list.css'
 import Path from '../path/path';
 import { ChevronDown, ChevronUp } from 'react-feather';
+import { FullScreenHandle } from 'react-full-screen';
 
 const nodeHeight = 80
+const headerHeight = 96
+const filterHeight = 44
+const gapHeight = 32
+const otherElementHeight = (isFullScreen: boolean) =>
+  !isFullScreen ? headerHeight + filterHeight + gapHeight + 32 + 64 + 96 : 32 * 5 + 64
 
 interface ScrollableNodeListProps {
   nodes: TreeNodeType[];
@@ -14,6 +20,7 @@ interface ScrollableNodeListProps {
   expandedChildIndex: number;
   handleOnScroll: (scrollTop: number) => void;
   handleOpenDetail?: () => void;
+  fullScreenHandle: FullScreenHandle; // From react-full-screen
 }
 
 const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
@@ -23,6 +30,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   expandedChildIndex,
   handleOnScroll,
   handleOpenDetail,
+  fullScreenHandle, // Use handle from react-full-screen
 }) => {
   const [hideButtonUp, setHideButtonUp] = useState<boolean>(true);
   const [hideButtonDown, setHideButtonDown] = useState<boolean>(true);
@@ -30,21 +38,29 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   const [scrollTopPositions, setScrollTopPositions] = useState<number>(0)
   const [maxCount, setMaxCount] = useState<number>(0)
   const [containerWidth, setContainerWidth] = useState(0)
+  const [containerHeight, setContainerHeight] = useState(window.innerHeight - otherElementHeight(fullScreenHandle.active))
 
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     window.addEventListener('resize', handleSliderHeight);
     window.addEventListener('resize', handleContainerWidth);
+    window.addEventListener('resize', handleContainerHeight);
     return () => {
         window.removeEventListener('resize', handleSliderHeight);
         window.removeEventListener('resize', handleContainerWidth);
+        window.removeEventListener('resize', handleContainerHeight);
     };
   }, [])
 
   useEffect(() => {
+    handleContainerHeight()
+  }, [fullScreenHandle.active])
+
+  useEffect(() => {
     handleSliderHeight()
     handleContainerWidth()
+    handleContainerHeight()
     setMaxCount(nodes.reduce((count, node) => {
       if (!node.anomalyCount) return count
       return node.anomalyCount > count ? node.anomalyCount : count
@@ -106,6 +122,24 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
     return 100
   }
 
+  const handleContainerHeight = () => {
+    const isFullScreen = fullScreenHandle.node.current?.classList.contains('fullscreen-enabled') ?? false
+  
+    const height = window.innerHeight - otherElementHeight(isFullScreen); // equivalent to calc(100vh - other element height)
+    const roundedHeight = Math.floor(height / 80) * 80; // rounding down to nearest multiple of 80
+    
+    setContainerHeight(Math.max(80, roundedHeight))
+  }
+  
+  const getPathCount = () => {
+    const childCount = nodes[expandedIndex]?.children?.length
+    const countByHeight = Math.floor(containerHeight / 80)
+    
+    if (!childCount) return undefined
+
+    return Math.min(childCount, Math.max(1, countByHeight))
+  }
+
   return (
     <div className='relative'>
       {!hideButtonUp &&
@@ -122,10 +156,9 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
       }
       <div
         ref={containerRef}
-        className="w-full no-scrollbar scroll-smooth overflow-y-auto grid grid-flow-row snap-y snap-mandatory"
+        className="w-full no-scrollbar scroll-smooth overflow-y-auto flex flex-col snap-y snap-mandatory"
         style={{
-          height: "560px",
-          gridTemplateRows: "repeat(7, 1fr)"
+          height: containerHeight,
         }}
         onScroll={onScroll}
       >
@@ -144,7 +177,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
       <Path
         sourceIndex={expandedIndex - scrollTopPositions / nodeHeight}
         expandedIndex={expandedChildIndex}
-        childCount={nodes[expandedIndex]?.children?.length}
+        childCount={getPathCount()}
         nodeWidth={containerWidth}
       />
       {!hideButtonDown &&

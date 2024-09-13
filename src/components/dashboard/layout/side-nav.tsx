@@ -9,11 +9,11 @@ import type { NavItemConfig } from '@/types/nav';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { navItems } from './config';
 import { navIcons } from './nav-icons';
-import { authClient } from '@/lib/auth/client';
-import { logger } from '@/lib/default-logger';
+// import { authClient } from '@/lib/auth/client';
+// import { logger } from '@/lib/default-logger';
 import { useUser } from '@/hooks/use-user';
 import { usePathname } from 'next/navigation';
-import router from 'next/dist/client/router';
+// import router from 'next/dist/client/router';
 
 interface SideNavProps {
   isOpen: boolean;
@@ -23,27 +23,27 @@ export function SideNav({ isOpen }: SideNavProps): React.ReactElement {
   const pathname = usePathname();
   const { checkSession } = useUser();
 
-  const handleSignOut = React.useCallback(async (): Promise<void> => {
-    try {
-      const { error } = await authClient.signOut();
+  // const handleSignOut = React.useCallback(async (): Promise<void> => {
+  //   try {
+  //     const { error } = await authClient.signOut();
 
-      if (error) {
-        logger.error('Sign out error', error);
-        return;
-      }
+  //     if (error) {
+  //       logger.error('Sign out error', error);
+  //       return;
+  //     }
 
-      await checkSession?.();
-      router.reload();
-    } catch (err) {
-      logger.error('Sign out error', err);
-    }
-  }, [checkSession]);
+  //     await checkSession?.();
+  //     router.reload();
+  //   } catch (err) {
+  //     logger.error('Sign out error', err);
+  //   }
+  // }, [checkSession]);
 
-  const logoutItem: NavItemConfig = {
-    key: 'logout',
-    icon: 'log-out',
-    onClick: handleSignOut,
-  };
+  // const logoutItem: NavItemConfig = {
+  //   key: 'logout',
+  //   icon: 'log-out',
+  //   onClick: handleSignOut,
+  // };
 
   return (
     <Box
@@ -80,9 +80,9 @@ export function SideNav({ isOpen }: SideNavProps): React.ReactElement {
       <Box component="nav" sx={{ flex: '1 1 auto', px: '10px', py: '20px' }}>
         {renderNavItems({ pathname, items: navItems })}
       </Box>
-      <Box component="nav" sx={{ alignContent: 'flex-end', flex: '1 1 auto', px: '8px', py: '20px', mt: 'auto' }}>
+      {/* <Box component="nav" sx={{ alignContent: 'flex-end', flex: '1 1 auto', px: '8px', py: '20px', mt: 'auto' }}>
         {renderNavItems({ pathname, items: [logoutItem] })}
-      </Box>
+      </Box> */}
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
     </Box>
   );

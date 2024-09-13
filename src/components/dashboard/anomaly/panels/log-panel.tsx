@@ -17,6 +17,7 @@ import DropdownRange from '../../dropdownRange'
 import FilterPanel from '../button/filterPanel'
 // import { AnomalyContext } from '@/contexts/anomaly-context'
 import GraphAnomalyCard from '../card/graph-anomaly-card'
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
 
 import { format } from 'date-fns';
 import AutoRefreshButton from '../button/refreshButton'
@@ -46,6 +47,13 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
     const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
+    const [graphAutoRefresh, setGraphAutoRefresh] = useState<{
+        enabled: boolean;
+        interval: number | null;
+    }>({
+        enabled: false,
+        interval: null,
+    })
     const [startTime, setStartTime] = useState<string>('')
     const [endTime, setEndTime] = useState<string>('')
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
@@ -54,7 +62,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     const [selectedServicesOptions, setSelectedServiceOptions] = useState<string[]>([])
     const [hasErrorFilterAnomaly, setHasErrorAnomalyFilter] = useState<boolean>(false)
     const [hasErrorFilterService, setHasErrorServiceFilter] = useState<boolean>(false)
-    const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
     const [data, setData] = useState<any[]>([])
     const [totalPages, setTotalPages] = useState<number>(1)
@@ -63,6 +70,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         pageIndex: 1, // Start from page 1
         pageSize: 10, // Default page size
     })
+    const handle = useFullScreenHandle();
 
     const table = useReactTable({
         data,
@@ -217,7 +225,6 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         }
     };
 
-
     const updateTimeDifference = () => {
         if (!lastRefreshTime) return;
 
@@ -238,29 +245,45 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
 
     // Function to refresh data manually (on "Refresh Now" button click)
     const handleRefreshNow = async () => {
-        const logType = getLogType(selectedLog); // Get the log type
+        setIsTableLoading(true); // Show loading state
 
-        if (logType) {
-            // Call fetchDataByLog without passing time range values, defaults will be used
-            await fetchDataByLog(
-                logType,
-                pagination.pageIndex,     // Page number
-                pagination.pageSize,      // Page size (limit)
-                selectedAnomalyOptions,    // Anomaly filter options
-                selectedServicesOptions,    // Service filter options
-                startTime,
-                endTime
-            );
-            console.log('Manual refresh triggered');
-        } else {
-            console.warn('Invalid log type selected');
-        }
+        // Small delay to ensure loading state is shown before fetching data
+        setTimeout(async () => {
+            const logType = getLogType(selectedLog); // Get the log type
+
+            if (logType) {
+                try {
+                    // Call fetchDataByLog with time range values
+                    await fetchDataByLog(
+                        logType,
+                        pagination.pageIndex,     // Page number
+                        pagination.pageSize,      // Page size (limit)
+                        selectedAnomalyOptions,    // Anomaly filter options
+                        selectedServicesOptions,   // Service filter options
+                        startTime,
+                        endTime
+                    );
+                    console.log('Manual refresh triggered');
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                } finally {
+                    setIsTableLoading(false); // Hide loading state once data arrives
+                }
+            } else {
+                console.warn('Invalid log type selected');
+                setIsTableLoading(false); // Hide loading state in case of invalid log type
+            }
+        }, 0);
     };
 
     // Handle auto-refresh toggling and interval selection
     const handleAutoRefreshChange = (autoRefresh: boolean, interval: number) => {
         setAutoRefresh(autoRefresh);
         setRefreshInterval(autoRefresh ? interval : null); // Set the interval if auto-refresh is on
+        setGraphAutoRefresh({
+            enabled: autoRefresh,
+            interval: interval,
+        });
     };
 
     const handlePageSizeChange = async (
@@ -469,27 +492,37 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     }
 
     const loadAnomalyFilterOptions = async () => {
+        const logType = getLogType(selectedLog); // Get the utilization type based on selectedUtilization
+
+        if (!logType) {
+            console.error('Invalid log type:', logType);
+            setHasErrorAnomalyFilter(true); // Set error state if log type is invalid
+            return;
+        }
+
         try {
-            const response = await fetchAnomalyOption(selectedLog === 'Log Brimo' ? 'brimo' : '')
+            const response = await fetchAnomalyOption(logType); // Pass the correct utilization type to the API call
+            console.log('API Response:', response); // Log the entire API response
 
             if (response.data && response.data.columns) {
                 const options = response.data.columns.map((column: Column) => ({
                     id: column.name, // Maps the "name" to "id"
-                    label: column.comment || column.name, // Maps the "comment" to "label", falls back to "name" if "comment" is missing
+                    label: column.comment, // Maps the "comment" to "label",
                     type: column.type, // Maps the "type" to "type"
-                }))
+                }));
 
-                // console.log('Mapped Checkbox Options:', options) // Log the mapped options
+                console.log('Mapped Checkbox Options:', options); // Log the mapped options
 
-                setFilterAnomalyOptions(options) // Update state with fetched options
+                setFilterAnomalyOptions(options); // Update state with fetched options
             } else {
-                console.error('Response data or columns are missing')
+                console.error('Response data or columns are missing');
+                setHasErrorAnomalyFilter(true); // Set error state if response is invalid
             }
         } catch (error) {
-            handleApiError(error)
-            setHasErrorAnomalyFilter(true)
+            handleApiError(error);
+            setHasErrorAnomalyFilter(true); // Set error state on catch
         }
-    }
+    };
 
     const loadServicesFilterOptions = async () => {
         try {
@@ -699,20 +732,24 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
     };
 
     useEffect(() => {
-        const type = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : '';
+        console.log(selectedAnomalyOptions)
+    }, [selectedAnomalyOptions]),
 
-        if (type) {
-            // Fetch data based on the selected log
-            fetchDataByLog(type, pagination.pageIndex, pagination.pageSize, []);
+        useEffect(() => {
+            const type = selectedLog === 'Log APM' ? 'apm' : selectedLog === 'Log Brimo' ? 'brimo' : '';
 
-            // Load filter options and reset the selected range
-            loadAnomalyFilterOptions();
-            loadServicesFilterOptions();
+            if (type) {
+                // Fetch data based on the selected log
+                fetchDataByLog(type, pagination.pageIndex, pagination.pageSize, []);
 
-            // Reset Time Range to the default 15 minutes
-            setSelectedRange('Last 15 minutes');
-        }
-    }, [selectedLog]);
+                // Load filter options and reset the selected range
+                loadAnomalyFilterOptions();
+                loadServicesFilterOptions();
+
+                // Reset Time Range to the default 15 minutes
+                setSelectedRange('Last 15 minutes');
+            }
+        }, [selectedLog]);
 
     useEffect(() => {
         // Update the time difference every second
@@ -722,35 +759,57 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
         return () => clearInterval(intervalId);
     }, [lastRefreshTime]);
 
-    // Setup auto-refresh if enabled
     useEffect(() => {
         let intervalId: NodeJS.Timeout | null = null;
-        if (autoRefresh && refreshInterval) {
-            intervalId = setInterval(() => {
-                const logType = getLogType(selectedLog);
 
-                if (logType) {
-                    // Call fetchDataByLog with or without time range depending on the case
-                    fetchDataByLog(
-                        logType,
-                        pagination.pageIndex,     // Page number
-                        pagination.pageSize,      // Page size (limit)
-                        selectedAnomalyOptions,    // Anomaly filter options
-                        selectedServicesOptions,   // Service filter options
-                        startTime,
-                        endTime
-                    );
-                    console.log('Auto-refresh triggered');
-                }
+        if (autoRefresh && refreshInterval) {
+            // Setup a repeating interval
+            intervalId = setInterval(() => {
+                // Perform the refresh operation inside the interval
+                const performRefresh = async () => {
+                    setIsTableLoading(true); // Show loading state before fetching
+
+                    const logType = getLogType(selectedLog);
+
+                    if (logType) {
+                        try {
+                            // Introduce a small artificial delay to show the loading state
+                            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                            // Call fetchDataByLog with the required parameters
+                            await fetchDataByLog(
+                                logType,
+                                pagination.pageIndex,     // Page number
+                                pagination.pageSize,      // Page size (limit)
+                                selectedAnomalyOptions,    // Anomaly filter options
+                                selectedServicesOptions,   // Service filter options
+                                startTime,
+                                endTime
+                            );
+                            console.log('Auto-refresh triggered');
+                        } catch (error) {
+                            console.error('Error fetching data during auto-refresh:', error);
+                        } finally {
+                            setIsTableLoading(false); // Hide loading state once data is fetched
+                        }
+                    } else {
+                        console.warn('Invalid log type selected during auto-refresh');
+                        setIsTableLoading(false); // Hide loading if no valid log type is selected
+                    }
+                };
+
+                // Call the refresh function
+                performRefresh();
             }, refreshInterval);
         }
 
+        // Cleanup the interval on unmount or when auto-refresh is disabled
         return () => {
             if (intervalId) {
                 clearInterval(intervalId);
             }
         };
-    }, [autoRefresh, refreshInterval, selectedLog, pagination.pageIndex, pagination.pageSize, selectedAnomalyOptions, selectedServicesOptions]);
+    }, [autoRefresh, refreshInterval, selectedLog, pagination.pageIndex, pagination.pageSize, selectedAnomalyOptions, selectedServicesOptions, startTime, endTime]);
 
     return (
         <div className='flex flex-col gap-4'>
@@ -767,21 +826,60 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
 
                 </div>
                 <AutoRefreshButton onRefresh={handleRefreshNow} onAutoRefreshChange={handleAutoRefreshChange} />
+                <button onClick={handle.enter} className='text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm py-3 px-4 text-center rounded-l items-center'>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                    >
+                        <path d="M3 4a1 1 0 011-1h3a1 1 0 110 2H5v2a1 1 0 11-2 0V5a1 1 0 010-1zM3 14a1 1 0 011 1v2h2a1 1 0 110 2H4a1 1 0 01-1-1v-3a1 1 0 011-1zm13-1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 110-2h2v-2a1 1 0 011-1zm0-8a1 1 0 011 1v3a1 1 0 11-2 0V5h-2a1 1 0 110-2h3a1 1 0 011 1z" />
+                    </svg>
+                </button>
+
+
             </div>
-            <div className="flex flex-col gap-10 p-12 card-style">
-                <div className="flex flex-col gap-10">
-                    <div className="flex flex-col gap-8">
-                        <FilterPanel
-                            servicesOptions={filterServicesOptions}
-                            checkboxOptions={filterAnomalyOptions}
-                            onApplyFilters={handleApplyFilters}
-                            onResetFilters={handleResetFilters}
-                            hasErrorFilterAnomaly={hasErrorFilterAnomaly}
-                            hasErrorFilterService={hasErrorFilterService}
-                        />
-                        <Typography variant="h5" component="h5" color="white">
-                            Historical Anomaly Records
-                        </Typography>
+            <FullScreen handle={handle}>
+                {/* Conditionally apply h-screen overflow-auto classes when fullscreen is active */}
+                <div className={`flex flex-col gap-10 p-12 card-style ${handle.active ? 'h-screen overflow-auto' : ''}`}>
+                    <div className="flex flex-col gap-10">
+                        {/* Conditionally hide the FilterPanel when in fullscreen */}
+                        {!handle.active && (
+                            <FilterPanel
+                                servicesOptions={filterServicesOptions}
+                                checkboxOptions={filterAnomalyOptions}
+                                onApplyFilters={handleApplyFilters}
+                                onResetFilters={handleResetFilters}
+                                hasErrorFilterAnomaly={hasErrorFilterAnomaly}
+                                hasErrorFilterService={hasErrorFilterService}
+                            />
+                        )}
+                        <div className='flex flex-col gap-2'>
+                            <Typography variant="h5" component="h5" color="white">
+                                {`Historical ${selectedLog} Anomaly Records`}
+                            </Typography>
+                            <Typography variant="body2" component="h6" color="white">
+                                {`Anomaly: `}
+                                {selectedAnomalyOptions.length === 0 ? (
+                                    <span className='font-bold text-gray-300'>-</span>
+                                ) : (
+                                    selectedAnomalyOptions.map((optionId, index) => {
+                                        // Find the corresponding option in filterAnomalyOptions
+                                        const option = filterAnomalyOptions.find(opt => opt.id === optionId);
+
+                                        // Display the label if found, otherwise display the id itself
+                                        return (
+                                            <span key={index} className='font-bold text-gray-300'>
+                                                {option ? option.label : optionId}
+                                                {index < selectedAnomalyOptions.length - 1 && ', '}
+                                            </span>
+                                        );
+                                    })
+                                )}
+                            </Typography>
+
+                        </div>
+
                         <Box>
                             <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
                                 <div className="min-w-full">
@@ -807,14 +905,14 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                                                                     onClick={header.column.getToggleSortingHandler()}
                                                                 >
                                                                     {typeof header.column.columnDef.header === 'function'
-                                                                        ? header.column.columnDef.header({} as any) // Pass a dummy context
+                                                                        ? header.column.columnDef.header({} as any)
                                                                         : header.column.columnDef.header}
                                                                     {header.column.getCanSort() && (
                                                                         <>
                                                                             {{
                                                                                 asc: '🔼',
                                                                                 desc: '🔽',
-                                                                                undefined: '🔽', // Default icon for unsorted state
+                                                                                undefined: '🔽',
                                                                             }[header.column.getIsSorted() as string] || '🔽'}
                                                                         </>
                                                                     )}
@@ -876,9 +974,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                                                 ))}
                                             </select>
                                         </div>
-                                        <div className="text-white">
-                                            Page {pagination.pageIndex} of {totalPages}
-                                        </div>
+                                        <div className="text-white">Page {pagination.pageIndex} of {totalPages}</div>
                                         <div className="d-flex">
                                             <button
                                                 className={`p-2 ${pagination.pageIndex === 1 ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
@@ -905,9 +1001,11 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                         servicesOptions={filterServicesOptions}
                         selectedTimeRangeKey={selectedRange}
                         timeRanges={timeRanges}
+                        autoRefresh={graphAutoRefresh}
+                        isFullScreen={handle.active}
                     />
                 </div>
-            </div>
+            </FullScreen>
         </div>
 
     )

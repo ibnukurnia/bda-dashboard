@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import './main-page.css'
 
@@ -14,7 +14,9 @@ import { getTimeDifference } from './helper'
 import { GetRootCauseAnalysisTree } from '@/modules/usecases/root-cause-analysis'
 import { RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis'
 import useInterval from '@/hooks/use-interval'
-import FullscreenComponent from '../FullScreenComponent'
+import { FullScreen, useFullScreenHandle } from 'react-full-screen'
+import Button from '@/components/system/Button/Button'
+import { Maximize } from 'react-feather'
 
 const defaultTimeRanges: Record<string, number> = {
   'Last 5 minutes': 5,
@@ -49,7 +51,8 @@ const MainPageRootCauseAnalysis = () => {
   })
   const [initialLoading, setInitialLoading] = useState(true)
   const [modalServices, setModalServices] = useState(false)
-  const componentToFullscreenedRef = useRef<HTMLDivElement>(null)
+
+  const handle = useFullScreenHandle();
 
   useEffect(() => {
     fetchData()
@@ -123,32 +126,37 @@ const MainPageRootCauseAnalysis = () => {
     <>
       <div className='flex flex-col gap-8'>
         <div className='flex flex-row gap-2 self-end items-center'>
-            <div className="flex flex-row gap-2 self-end items-center">
-                <Typography variant="body2" component="p" color="white">
-                    {lastUpdateString}
-                </Typography>
-                <DropdownRange
-                    timeRanges={defaultTimeRanges}
-                    onRangeChange={handleRangeChange}
-                    selectedRange={selectedRange} // Pass selectedRange as a prop
-                />
-            </div>
-            <AutoRefreshButton onRefresh={fetchData} onAutoRefreshChange={handleAutoRefreshChange} />
-            <FullscreenComponent elementRef={componentToFullscreenedRef}/>
-        </div>
-        <div className="flex flex-col gap-10 px-2 py-8 card-style" ref={componentToFullscreenedRef}>
-          <div className="w-full flex flex-col gap-8">
-            {initialLoading ?
-              <div className="flex justify-center items-center">
-                  <div className="spinner"></div>
-              </div>
-              : <RCATree
-                data={dataTree}
-                handleDetail={handleDetail}
-              />
-            }
+          <div className="flex flex-row gap-2 self-end items-center">
+            <Typography variant="body2" component="p" color="white">
+              {lastUpdateString}
+            </Typography>
+            <DropdownRange
+              timeRanges={defaultTimeRanges}
+              onRangeChange={handleRangeChange}
+              selectedRange={selectedRange} // Pass selectedRange as a prop
+            />
           </div>
+          <AutoRefreshButton onRefresh={fetchData} onAutoRefreshChange={handleAutoRefreshChange} />
+          <Button onClick={handle.enter}>
+            <Maximize className='w-6 h-5'/>
+          </Button>
         </div>
+        <FullScreen handle={handle}>
+          <div className={`flex flex-col gap-10 px-2 py-8 card-style ${handle.active ? "my-8 mx-6" : ""}`}>
+            <div className="w-full flex flex-col gap-8">
+              {initialLoading ?
+                <div className="flex justify-center items-center">
+                  <div className="spinner"></div>
+                </div>
+                : <RCATree
+                  data={dataTree}
+                  handleDetail={handleDetail}
+                  fullScreenHandle={handle}
+                />
+              }
+            </div>
+          </div>
+        </FullScreen>
       </div>
       {modalServices && (
         <TableModal

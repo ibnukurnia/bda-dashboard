@@ -4,6 +4,7 @@ import { TreeNodeType } from './types';
 import TopBar from '../bar/top-bar';
 import { RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis';
 import { Typography } from '@mui/material';
+import { FullScreenHandle } from 'react-full-screen';
 
 const nodeHeight = 80
 
@@ -15,10 +16,12 @@ type ExpandedNodesType = {
 interface RCATreeProps {
   data: RootCauseAnalysisTreeResponse[] | null;
   handleDetail: () => void;
+  fullScreenHandle: FullScreenHandle; // From react-full-screen
 }
 const RCATree: React.FC<RCATreeProps> = ({
   data,
   handleDetail,
+  fullScreenHandle, // Use handle from react-full-screen
 }) => {
   // State to manage expanded nodes
   const [expandedNodes, setExpandedNodes] = useState<ExpandedNodesType[]>([]);
@@ -154,6 +157,7 @@ const RCATree: React.FC<RCATreeProps> = ({
           expandedIndex={expandedNodes[0]?.nodeIndex}
           expandedChildIndex={expandedNodes[1]?.nodeIndex - scrollTopPositions[1] / nodeHeight}
           handleOnScroll={(scrollTop) => handleOnScroll(0, scrollTop)}
+          fullScreenHandle={fullScreenHandle}
         />
         {expandedNodes.map((expNode, i) => {
           if (expNode.node.children != null && Array.isArray(expNode.node.children) && expNode.node.children.length > 0) {
@@ -166,6 +170,7 @@ const RCATree: React.FC<RCATreeProps> = ({
                 expandedChildIndex={expandedNodes[i+2]?.nodeIndex - scrollTopPositions[i+2] / nodeHeight}
                 handleOnScroll={(scrollTop) => handleOnScroll(i + 1, scrollTop)}
                 handleOpenDetail={i === 1 ? handleDetail : undefined}
+                fullScreenHandle={fullScreenHandle}
               />
             );
           }
