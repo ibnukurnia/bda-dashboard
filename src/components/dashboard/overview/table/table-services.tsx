@@ -16,7 +16,7 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight }: TableServices
         <table className="w-full text-white">
           <thead>
             <tr>
-              {tableHeader.map((ths, thsid) => (
+              {tableHeader?.map((ths, thsid) => (
                 <th key={thsid} className={`${thsid === 0 ? 'text-left' : ''} py-2 px-1 sticky top-0 th`}>
                   {ths}
                 </th>
