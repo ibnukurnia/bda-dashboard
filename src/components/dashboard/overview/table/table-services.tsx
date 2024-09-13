@@ -64,7 +64,7 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight }: TableServices
                 </td>
               </tr>
             )}
-            {data.length > 0 && (
+            {/* {data.length > 0 && (
               <tr>
                 <td className="py-1 px-1 td">
                   <div className={`flex items-center gap-2 'text-left' font-semibold`}>
@@ -75,7 +75,7 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight }: TableServices
                   </div>
                 </td>
               </tr>
-            )}
+            )} */}
           </tbody>
         </table>
       </div>
