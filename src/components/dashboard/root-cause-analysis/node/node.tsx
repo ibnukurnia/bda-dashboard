@@ -21,7 +21,7 @@ const Node: React.FC<NodeProps> = ({
   handleOpenDetail,
  }) => {
   return (
-    <button className="w-full h-20 relative flex flex-col outline-none snap-center" onClick={handleOnClickNode}>
+    <button className="w-full min-h-20 relative flex flex-col outline-none snap-center" onClick={handleOnClickNode}>
       <ProgressBar progress={percentage} />
       <Typography
         variant="subtitle1"
