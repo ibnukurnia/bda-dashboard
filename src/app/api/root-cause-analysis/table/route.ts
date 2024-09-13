@@ -277,7 +277,7 @@ export async function GET(req: NextRequest) {
       columns: columns,
       rows: returnedData(page, limit),
       page: page,
-      totalPage: Math.ceil(data.length / limit),
+      total_pages: Math.ceil(data.length / limit),
       status_code: 200,
     },
     { status: 200 }
