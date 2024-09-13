@@ -186,7 +186,22 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             return "Prometheus DB";
         }
         else if (activeType === "ivat") {
-            return "ivat"
+            return "Ivat"
+        }
+        else if (activeType === "panw") {
+            return "Palo Alto"
+        }
+        else if (activeType === "fortinet") {
+            return "Fortinet"
+        }
+        else if (activeType === "waf") {
+            return "Web Application Security"
+        }
+        else if (activeType === "prtg") {
+            return "Prtg"
+        }
+        else if (activeType === "zabbix") {
+            return "Zabbix"
         }
         return activeType; // Default case, return the original activeType if no match
     };
