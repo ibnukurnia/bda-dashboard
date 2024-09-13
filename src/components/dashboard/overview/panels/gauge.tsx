@@ -17,7 +17,9 @@ const Gauge = ({ value, divider = 100, label }: GaugeProps) => {
           <div className="st slice-item"></div>
         </div>
         <div className="needle" style={{ transform: `rotate(${Math.round((value / divider) * 180)}deg)` }} />
-        <div className="gauge-center">{Number.isInteger(value) ? value : value.toFixed(2)}</div>
+        <div className="gauge-center">
+          {Number.isInteger(value) ? value : value.toFixed(4).slice(0, value.toFixed(4).length - 2)}
+        </div>
       </div>
       <span className="text-white text-center">{label}</span>
     </div>
