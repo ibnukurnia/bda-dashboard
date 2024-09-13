@@ -194,7 +194,7 @@ const MainPageForecasting = () => {
       <Stack sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
         <FilterPanel onApplyFilters={handleApplyFilters} activeFilter={filter} />
       </Stack>
-      {statistics.length > 0 && (
+      {/* {statistics.length > 0 && (
         <Stack sx={{ display: 'flex', gap: 4, flexDirection: 'row' }}>
           {statistics?.map((statistic, statsid) => (
             <div key={statsid} className="flex flex-col gap-2 p-6 bg-[#0A1635] rounded-2xl border border-[#373737]">
@@ -217,7 +217,7 @@ const MainPageForecasting = () => {
             </div>
           ))}
         </Stack>
-      )}
+      )} */}
       <div className="flex flex-col gap-10 px-14 py-12 card-style">
         {(() => {
           if (!filter.sourceData) {

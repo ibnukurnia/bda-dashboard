@@ -21,7 +21,9 @@ const TableSeverity = ({ tableHeader, data, onClickSeverity }: TableSeverityProp
           {data.map((sdt, sdtid) => (
             <tr key={sdtid}>
               <td className="flex items-center gap-2 p-1">
-                <span className={`w-4 h-4 ${sdt.color}`} />
+                <span
+                  className={`w-4 h-4 ${sdt.severity.toLowerCase() === 'critical' ? 'bg-red-600' : sdt.severity.toLowerCase() === 'major' ? 'bg-orange-600' : 'bg-yellow-400'}`}
+                />
                 <span className="cursor-pointer" onClick={() => onClickSeverity && onClickSeverity(sdt.severity)}>
                   {sdt.severity}
                 </span>

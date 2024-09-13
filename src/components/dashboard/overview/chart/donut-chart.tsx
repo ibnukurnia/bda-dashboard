@@ -33,7 +33,7 @@ const DonutChart = ({ series, labels }: DonutChartProps) => {
             return '#ea580c'
           } else if (seriesIndex === 2) {
             return '#facc15'
-          } else if (seriesIndex === 3) {
+          } else {
             return '#16a34a'
           }
         },
@@ -48,11 +48,12 @@ const DonutChart = ({ series, labels }: DonutChartProps) => {
           return '#ea580c'
         } else if (seriesIndex === 2) {
           return '#facc15'
-        } else if (seriesIndex === 3) {
+        } else {
           return '#16a34a'
         }
       },
     ],
+    noData: { text: 'no data' },
     chart: {
       type: 'donut',
       height: 120,

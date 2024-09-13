@@ -48,4 +48,40 @@ const GetChartsOverview = async (params?: any) => {
   return response
 }
 
-export { GetCurrentSituation, GetTeamOverview, GetServiceOverview, GetMetricsOverview, GetChartsOverview }
+const GetPieChartsOverview = async (params?: { type: string; time_range: number }) => {
+  const response: ApiResponse<any> = await get('overview/piechart', {
+    withAuth: true,
+    queries: params,
+  })
+
+  return response
+}
+
+const GetTopServicesOverview = async (params?: { type: string; time_range: number }) => {
+  const response: ApiResponse<any> = await get('overview/top-services', {
+    withAuth: true,
+    queries: params,
+  })
+
+  return response
+}
+
+const GetHealthScoreOverview = async (params?: { time_range: number }) => {
+  const response: ApiResponse<any> = await get('overview/health-score', {
+    withAuth: true,
+    queries: params,
+  })
+
+  return response
+}
+
+export {
+  GetCurrentSituation,
+  GetTeamOverview,
+  GetServiceOverview,
+  GetMetricsOverview,
+  GetChartsOverview,
+  GetHealthScoreOverview,
+  GetPieChartsOverview,
+  GetTopServicesOverview,
+}

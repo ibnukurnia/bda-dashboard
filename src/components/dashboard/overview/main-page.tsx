@@ -4,17 +4,25 @@ import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'r
 
 import './main-page.css'
 
-import { GetChartsOverview } from '@/modules/usecases/overviews'
+import {
+  GetChartsOverview,
+  GetHealthScoreOverview,
+  GetPieChartsOverview,
+  GetTopServicesOverview,
+} from '@/modules/usecases/overviews'
 import { Typography } from '@mui/material'
 import { format } from 'date-fns'
 import { Check, Minus, Plus } from 'react-feather'
 
 import Button from '@/components/system/Button/Button'
 
+import FullscreenComponent from '../FullScreenComponent'
+import DropdownDS from './button/dropdown-ds'
 import DropdownTime from './button/dropdown-time'
 import DonutChart from './chart/donut-chart'
 import DynamicUpdatingChart from './chart/dynamic-updating-chart'
 import OverviewModal from './modal/overview-modal'
+import Gauge from './panels/gauge'
 import TablePanel from './panels/table-panel'
 import TableServices from './table/table-services'
 import TableSeverity from './table/table-severity'
@@ -22,7 +30,7 @@ import TableSeverity from './table/table-severity'
 // Define your data
 const sourceData = [
   {
-    name: 'APM',
+    name: 'apm',
     count: 1865,
     services: [
       { name: 'Windows', count: 1625, data: [28, 70, 49, 80, 132, 129, 134, 80, 132, 129, 134] },
@@ -30,7 +38,7 @@ const sourceData = [
     ],
   },
   {
-    name: 'BRIMO',
+    name: 'brimo',
     count: 1862,
     services: [
       { name: 'Windows', count: 1102, data: [28, 133, 124, 127, 132, 129, 134] }, // Same service name as APM
@@ -38,7 +46,7 @@ const sourceData = [
     ],
   },
   {
-    name: 'PROMETHEUS API',
+    name: 'k8s_prometheus',
     count: 1567,
     services: [
       { name: 'Winqowdkoqk', count: 980, data: [28, 133, 124, 127, 132, 129, 134] },
@@ -46,7 +54,7 @@ const sourceData = [
     ],
   },
   {
-    name: 'PROMETHEUS DB',
+    name: 'k8s_db',
     count: 1567,
     services: [
       { name: 'Winqowdkoqk', count: 980, data: [28, 133, 124, 127, 132, 129, 134] },
@@ -128,217 +136,67 @@ const dates = [
 const toMiliseconds = 1000 * 60
 
 const defaultTimeRanges: Record<string, number> = {
-  'Last 5 minutes': 5 * toMiliseconds,
-  'Last 15 minutes': 15 * toMiliseconds,
-  'Last 30 minutes': 30 * toMiliseconds,
-  'Last 1 hours': 60 * toMiliseconds,
-  'Last 6 hours': 360 * toMiliseconds,
-  'Last 24 hours': 1440 * toMiliseconds,
+  'Last 5 minutes': 5,
+  'Last 15 minutes': 15,
+  'Last 30 minutes': 30,
+  'Last 1 hours': 60,
+  'Last 6 hours': 360,
+  'Last 24 hours': 1440,
 }
 
 const MainPageOverview = () => {
-  const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
+  // const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
+  const [selectedDataSource, setSelectedDataSource] = useState<string>('')
   const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
   const [modalServices, setModalServices] = useState(false)
   const [modalSeverity, setModalSeverity] = useState(false)
+  const [tableMaxHeight, setTableMaxHeight] = useState(192)
+  const [pieChartData, setPieChartData] = useState([])
+  const [topServicesData, setTopServicesData] = useState({ total: [], data: [] })
+  const [healthScoreData, setHealthScoreData] = useState([])
   const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
   const [chartData, setChartData] = useState<any[]>([])
+  // const []
   const mainRef = useRef<HTMLDivElement>(null)
+  const healthinessRef = useRef<HTMLDivElement>(null)
 
-  const dummyData = [
-    {
-      title: 'Aplikasi BRIMO',
-      data: [
-        {
-          name: 'livik',
-          data: [
-            ['2024-08-23 13:41:10', 4962],
-            ['2024-08-23 13:41:11', 5122],
-            ['2024-08-23 13:41:12', 7133],
-            ['2024-08-23 13:41:13', 8001],
-            ['2024-08-23 13:41:14', 5450],
-            ['2024-08-23 13:41:15', 4962],
-            ['2024-08-23 13:41:16', 5122],
-            ['2024-08-23 13:41:17', 7133],
-            ['2024-08-23 13:41:18', 8001],
-            ['2024-08-23 13:41:19', 4450],
-          ],
-          group: 'apexcharts-axis-0',
-        },
-        {
-          name: 'pochinkisaldo',
-          data: [
-            ['2024-08-23 13:41:10', 2233],
-            ['2024-08-23 13:41:11', 1122],
-            ['2024-08-23 13:41:12', 3322],
-            ['2024-08-23 13:41:13', 5542],
-            ['2024-08-23 13:41:14', 6879],
-            ['2024-08-23 13:41:15', 4962],
-            ['2024-08-23 13:41:16', 6898],
-            ['2024-08-23 13:41:17', 7133],
-            ['2024-08-23 13:41:18', 7766],
-            ['2024-08-23 13:41:19', 4330],
-          ],
-          group: 'apexcharts-axis-0',
-        },
-      ],
-    },
-    {
-      title: 'Database',
-      data: [
-        {
-          name: 'livik',
-          data: [
-            ['2024-08-23 13:41:10', 4962],
-            ['2024-08-23 13:41:11', 5122],
-            ['2024-08-23 13:41:12', 7133],
-            ['2024-08-23 13:41:13', 8001],
-            ['2024-08-23 13:41:14', 5450],
-            ['2024-08-23 13:41:15', 4962],
-            ['2024-08-23 13:41:16', 5122],
-            ['2024-08-23 13:41:17', 7133],
-            ['2024-08-23 13:41:18', 8001],
-            ['2024-08-23 13:41:19', 4450],
-          ],
-          group: 'apexcharts-axis-0',
-        },
-        {
-          name: 'pochinkisaldo',
-          data: [
-            ['2024-08-23 13:41:10', 2233],
-            ['2024-08-23 13:41:11', 1122],
-            ['2024-08-23 13:41:12', 3322],
-            ['2024-08-23 13:41:13', 5542],
-            ['2024-08-23 13:41:14', 6879],
-            ['2024-08-23 13:41:15', 4962],
-            ['2024-08-23 13:41:16', 6898],
-            ['2024-08-23 13:41:17', 7133],
-            ['2024-08-23 13:41:18', 7766],
-            ['2024-08-23 13:41:19', 4330],
-          ],
-          group: 'apexcharts-axis-0',
-        },
-      ],
-    },
-    {
-      title: 'OpenShift Platform',
-      data: [
-        {
-          name: 'livik',
-          data: [
-            ['2024-08-23 13:41:10', 4962],
-            ['2024-08-23 13:41:11', 5122],
-            ['2024-08-23 13:41:12', 7133],
-            ['2024-08-23 13:41:13', 8001],
-            ['2024-08-23 13:41:14', 5450],
-            ['2024-08-23 13:41:15', 4962],
-            ['2024-08-23 13:41:16', 5122],
-            ['2024-08-23 13:41:17', 7133],
-            ['2024-08-23 13:41:18', 8001],
-            ['2024-08-23 13:41:19', 4450],
-          ],
-          group: 'apexcharts-axis-0',
-        },
-        {
-          name: 'pochinkisaldo',
-          data: [
-            ['2024-08-23 13:41:10', 2233],
-            ['2024-08-23 13:41:11', 1122],
-            ['2024-08-23 13:41:12', 3322],
-            ['2024-08-23 13:41:13', 5542],
-            ['2024-08-23 13:41:14', 6879],
-            ['2024-08-23 13:41:15', 4962],
-            ['2024-08-23 13:41:16', 6898],
-            ['2024-08-23 13:41:17', 7133],
-            ['2024-08-23 13:41:18', 7766],
-            ['2024-08-23 13:41:19', 4330],
-          ],
-          group: 'apexcharts-axis-0',
-        },
-      ],
-    },
-    {
-      title: 'Network',
-      data: [
-        {
-          name: 'livik',
-          data: [
-            ['2024-08-23 13:41:10', 4962],
-            ['2024-08-23 13:41:11', 5122],
-            ['2024-08-23 13:41:12', 7133],
-            ['2024-08-23 13:41:13', 8001],
-            ['2024-08-23 13:41:14', 5450],
-            ['2024-08-23 13:41:15', 4962],
-            ['2024-08-23 13:41:16', 5122],
-            ['2024-08-23 13:41:17', 7133],
-            ['2024-08-23 13:41:18', 8001],
-            ['2024-08-23 13:41:19', 4450],
-          ],
-          group: 'apexcharts-axis-0',
-        },
-        {
-          name: 'pochinkisaldo',
-          data: [
-            ['2024-08-23 13:41:10', 2233],
-            ['2024-08-23 13:41:11', 1122],
-            ['2024-08-23 13:41:12', 3322],
-            ['2024-08-23 13:41:13', 5542],
-            ['2024-08-23 13:41:14', 6879],
-            ['2024-08-23 13:41:15', 4962],
-            ['2024-08-23 13:41:16', 6898],
-            ['2024-08-23 13:41:17', 7133],
-            ['2024-08-23 13:41:18', 7766],
-            ['2024-08-23 13:41:19', 4330],
-          ],
-          group: 'apexcharts-axis-0',
-        },
-      ],
-    },
-    {
-      title: 'Security',
-      data: [
-        {
-          name: 'livik',
-          data: [
-            ['2024-08-23 13:41:10', 4962],
-            ['2024-08-23 13:41:11', 5122],
-            ['2024-08-23 13:41:12', 7133],
-            ['2024-08-23 13:41:13', 8001],
-            ['2024-08-23 13:41:14', 5450],
-            ['2024-08-23 13:41:15', 4962],
-            ['2024-08-23 13:41:16', 5122],
-            ['2024-08-23 13:41:17', 7133],
-            ['2024-08-23 13:41:18', 8001],
-            ['2024-08-23 13:41:19', 4450],
-          ],
-          group: 'apexcharts-axis-0',
-        },
-        {
-          name: 'pochinkisaldo',
-          data: [
-            ['2024-08-23 13:41:10', 2233],
-            ['2024-08-23 13:41:11', 1122],
-            ['2024-08-23 13:41:12', 3322],
-            ['2024-08-23 13:41:13', 5542],
-            ['2024-08-23 13:41:14', 6879],
-            ['2024-08-23 13:41:15', 4962],
-            ['2024-08-23 13:41:16', 6898],
-            ['2024-08-23 13:41:17', 7133],
-            ['2024-08-23 13:41:18', 7766],
-            ['2024-08-23 13:41:19', 4330],
-          ],
-          group: 'apexcharts-axis-0',
-        },
-      ],
-    },
-  ]
-
-  const handleApplyFilter = (sDataSource: any[], sService: { name: string; data: number[]; count?: number }[]) => {
-    setSelectedDataSource(sDataSource)
-    setSelectedServices(sService)
+  const handleApplyFilter = (sDataSource: any[]) => {
+    // const handleApplyFilter = (sDataSource: any[], sService: { name: string; data: number[]; count?: number }[]) => {
+    // setSelectedDataSource(sDataSource)
+    // setSelectedServices(sService)
     setModalServices(false)
+  }
+
+  const handleChangeTimeRange = (time: string) => {
+    const selectedTR = timeRanges[time]
+    setSelectedRange(time)
+    GetPieChartsOverview({ type: selectedDataSource, time_range: selectedTR })
+      .then((res) => {
+        console.log(
+          res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)),
+          'ini sorted'
+        )
+        setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)))
+      })
+      .catch(() => setPieChartData([]))
+    GetTopServicesOverview({ type: selectedDataSource, time_range: selectedTR })
+      .then((res) => setTopServicesData(res.data))
+      .catch(() => setTopServicesData({ total: [], data: [] }))
+    GetHealthScoreOverview({ time_range: selectedTR })
+      .then((res) => setHealthScoreData(res.data))
+      .catch(() => setHealthScoreData([]))
+  }
+
+  const handleChangeFilterDS = (value: string) => {
+    setSelectedDataSource(value)
+    GetPieChartsOverview({ type: value, time_range: timeRanges[selectedRange] })
+      .then((res) => setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity))))
+      .catch(() => setPieChartData([]))
+    GetTopServicesOverview({ type: value, time_range: timeRanges[selectedRange] })
+      .then((res) => setTopServicesData(res.data))
+      .catch(() => setTopServicesData({ total: [], data: [] }))
   }
 
   useEffect(() => {
@@ -362,6 +220,18 @@ const MainPageOverview = () => {
   }, [])
 
   useEffect(() => {
+    GetPieChartsOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+      .then((res) => setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity))))
+      .catch(() => setPieChartData([]))
+    GetTopServicesOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+      .then((res) => setTopServicesData(res.data))
+      .catch(() => setTopServicesData({ total: [], data: [] }))
+    GetHealthScoreOverview({ time_range: timeRanges[selectedRange] })
+      .then((res) => setHealthScoreData(res.data))
+      .catch(() => setHealthScoreData([]))
+  }, [])
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
         setModalServices(false) // Close the panel when clicking outside of it
@@ -380,35 +250,20 @@ const MainPageOverview = () => {
   }, [modalServices])
 
   const thSeverity = ['Severity', 'Count']
-  const severityData = [
-    { severity: 'Critical', count: 0, color: 'bg-red-600' },
-    { severity: 'Major', count: 3, color: 'bg-orange-600' },
-    { severity: 'Minor', count: 2, color: 'bg-yellow-400' },
-    { severity: 'OK', count: 1, color: 'bg-green-600' },
-  ]
+  const configDataKey = ['service_name', 'count_anomaly']
 
-  const thServices = ['Top Services', 'Health Score', 'Event Trend']
-  const configDataKey = ['name', 'health_score', 'event_trend']
-  const servicesData = [
-    {
-      name: 'APM',
-      health_score: 30,
-      event_trend: '5%',
-      event_trend_up: true,
-    },
-    {
-      name: 'BRIMO',
-      health_score: 70,
-      event_trend: '10%',
-      event_trend_up: true,
-    },
-    {
-      name: 'PROMETHEUS DB',
-      health_score: 65,
-      event_trend: '12%',
-      event_trend_up: true,
-    },
-  ]
+  useLayoutEffect(() => {
+    if (healthinessRef.current) {
+      const calculatedTableHeight = healthinessRef.current.offsetHeight - 310
+      if (calculatedTableHeight > 192 && window.innerWidth >= 1440) {
+        setTableMaxHeight(healthinessRef.current.offsetHeight - 310)
+      } else if (window.innerWidth < 1440) {
+        setTableMaxHeight(260 - 16)
+      } else {
+        setTableMaxHeight(192)
+      }
+    }
+  }, [healthinessRef.current?.offsetHeight])
 
   return (
     <div className="flex flex-row" ref={mainRef}>
@@ -425,67 +280,98 @@ const MainPageOverview = () => {
         </div>
         <div className="flex gap-3 items-center justify-between card">
           <div className="flex gap-4 items-center">
-            <span className="text-2xl text-white font-bold">Filter</span>
+            {/* <span className="text-2xl text-white font-bold">Filter</span> */}
             <DropdownTime
               timeRanges={timeRanges}
-              // onRangeChange={handleRangeChange}
-              // selectedRange={selectedRange}
-              onRangeChange={(e) => {
-                setSelectedRange(e)
-                // console.log(new Date(new Date().setSeconds(0, 0)).getTime() + timeRanges[e], 'ini')
-                console.log(format(new Date(new Date().setSeconds(0, 0)).getTime(), 'yyyy-MM-dd HH:mm:ss'), 'ini end')
-                console.log(
-                  format(new Date(new Date().setSeconds(0, 0)).getTime() - timeRanges[e], 'yyyy-MM-dd HH:mm:ss'),
-                  'ini start'
-                )
-              }}
+              onRangeChange={(e) => handleChangeTimeRange(e)}
               selectedRange={selectedRange}
             />
+            {/* <FullscreenComponent elementRef={mainRef} /> */}
           </div>
           <span className="font-bold text-white">Updated at 5:21:11 PM</span>
         </div>
-        <div className="grid grid-cols-1 gap-4">
-          {/* <div className="grid grid-cols-2 gap-4"> */}
-          <div className="flex flex-col gap-4 card">
-            <span className="font-bold text-white text-2xl">Services Overview</span>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid grid-cols-2 gap-4">
-                <DonutChart
-                  series={severityData.map((item) => item.count)}
-                  labels={severityData.map((sditem) => sditem.severity)}
-                />
-                <TableSeverity
-                  tableHeader={thSeverity}
-                  data={severityData}
-                  onClickSeverity={(e) => setModalSeverity(true)}
+        {/* <div className="flex gap-8"> */}
+        <div className="grid 2xl:grid-cols-2 grid-cols-1 gap-8">
+          <div className="grid grid-cols-1 gap-4">
+            <div className="flex flex-col gap-8 card">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-white text-2xl">Services Overview</span>
+                <div>
+                  {/* <Button onClick={() => setModalServices(true)}>
+                    <Typography>Filter</Typography>
+                  </Button> */}
+                  <DropdownDS
+                    data={[
+                      { id: 'semua-data-source', value: '', label: 'All Data Source' },
+                      ...sourceData.map((item) => ({ id: item.name, value: item.name, label: item.name })),
+                    ]}
+                    onSelectData={(e) => handleChangeFilterDS(e)}
+                    selectedData={selectedDataSource}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 2xl:flex 2xl:flex-col gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <DonutChart
+                    series={pieChartData.map((item: any) => item.count)}
+                    labels={pieChartData.map((sditem: any) => sditem.severity)}
+                  />
+                  <TableSeverity
+                    tableHeader={thSeverity}
+                    data={pieChartData}
+                    onClickSeverity={() => setModalSeverity(true)}
+                  />
+                </div>
+                {/* <hr /> */}
+                <TableServices
+                  // data={servicesData}
+                  data={topServicesData.data}
+                  tableHeader={topServicesData.total}
+                  dataKeys={configDataKey}
+                  maxHeight={tableMaxHeight}
                 />
               </div>
-              <TableServices data={servicesData} tableHeader={thServices} dataKeys={configDataKey} />
             </div>
-          </div>
-          {/* <div className="flex flex-col gap-4">
+            {/* <div className="flex flex-col gap-4">
             <span className="font-bold text-white">Severity Detail</span>
             <TablePanel
               selectedServices={selectedServices}
               handleAddServices={() => setModalServices(!modalServices)}
             />
           </div> */}
-        </div>
-        <div className="flex flex-col gap-4 card">
-          <span className="font-bold text-white text-2xl">Showing {selectedServices.length} Services</span>
-          <TablePanel selectedServices={selectedServices} handleAddServices={() => setModalServices(!modalServices)} />
+          </div>
+          <div className="flex flex-col gap-8 card">
+            <span className="font-bold text-white text-2xl">Healthiness</span>
+            <div className="flex flex-wrap gap-8" ref={healthinessRef}>
+              {[...healthScoreData, { score: 99, data_source: 'Network' }, { score: 99, data_source: 'Security' }].map(
+                (hd: any, hdid: number) => {
+                  const label =
+                    hd.data_source?.toLowerCase() === 'apm'
+                      ? 'Log APM BRIMO'
+                      : hd.data_source?.toLowerCase() === 'brimo'
+                        ? 'Log Transaksi BRIMO'
+                        : hd.data_source?.toLowerCase() === 'k8s_db'
+                          ? 'DB'
+                          : hd.data_source?.toLowerCase() === 'k8s_prometheus'
+                            ? 'OCP'
+                            : hd.data_source
+                  return <Gauge value={hd.score} label={label} key={hdid} />
+                }
+              )}
+            </div>
+          </div>
         </div>
       </div>
-      {modalServices && (
+      {/* {modalServices && (
         <OverviewModal
           open={modalServices}
           listDataSource={sourceData}
           handleOpenModal={setModalServices}
           handleApplyFilter={handleApplyFilter}
           prevSelectedDataSource={selectedDataSource}
-          prevSelectedServices={selectedServices}
+          // prevSelectedServices={selectedServices}
         />
-      )}
+      )} */}
     </div>
   )
 }
