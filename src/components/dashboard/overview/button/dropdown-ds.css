@@ -1,0 +1,25 @@
+.scrollbar {
+  /* max-height: calc(100vh - 200px); */
+  /* height: calc(100vh - 220px); */
+  /* position: relative; */
+}
+
+.scrollbar::-webkit-scrollbar {
+  /* display: none; */
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  background-color: #ededed;
+  z-index: 2;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  background-color: #bdbdbd;
+  z-index: 2;
+}

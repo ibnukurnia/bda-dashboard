@@ -1001,6 +1001,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                         servicesOptions={filterServicesOptions}
                         selectedTimeRangeKey={selectedRange}
                         timeRanges={timeRanges}
+                        autoRefresh={graphAutoRefresh}
                         isFullScreen={handle.active}
                     />
                 </div>

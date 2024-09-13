@@ -5,6 +5,7 @@ import useOnClickOutside from '@/hooks/use-on-click-outside'
 import { ColumnDef, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table'
 import { ArrowLeft, ArrowRight } from 'react-feather'
 import { GetRootCauseAnalysisTableData } from '@/modules/usecases/root-cause-analysis'
+import { dummyTableResult } from '.'
 
 interface TableWrapperProps {
   isLoading: boolean;
@@ -42,7 +43,7 @@ const TableModal = ({
 }: TableModalProps) => {
   const panelRef = useRef<HTMLDivElement>(null)
   const [isTableLoading, setIsTableLoading] = useState(true)
-  const [data, setData] = useState([])
+  const [data, setData] = useState<any>([])
   const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
   const [pagination, setPagination] = useState({
       pageIndex: 1, // Start from page 1
@@ -69,8 +70,6 @@ const TableModal = ({
   useEffect(() => {
     GetRootCauseAnalysisTableData({ page: pagination.pageIndex, limit: pagination.pageSize })
       .then(result => {
-        console.log(result);
-        
         if (result) {
           const { columns, rows, total_pages } = result;
 
@@ -101,13 +100,39 @@ const TableModal = ({
           console.warn('API response data is null or undefined');
         }
       })
-      // .catch((error) => {
-      //   console.error('Error fetching data:', error)
-      // });
+      .catch((error) => {
+        console.error('Error fetching data:', error)
+        
+        const { columns, rows, total_pages } = dummyTableResult;
+
+        // Update the total number of pages based on the API response
+        setTotalPages(total_pages);
+
+        // Map the columns from the API response to the format required by the table
+        const newColumns = columns.map((column: any) => ({
+            id: column.key,
+            header: column.title,
+            accessorKey: column.key,
+        }));
+        setColumns(newColumns);
+
+        // Map the rows from the API response to the format required by the table
+        const newData = rows.map((row: any) => {
+            const mappedRow: any = {};
+            columns.forEach((col: any) => {
+                mappedRow[col.key] = row[col.key];
+            });
+            return mappedRow;
+        });
+
+        // Update the table data
+        setData(newData);
+        setIsTableLoading(false);
+      });
   }, [])
   
   return (
-    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1200]">
+    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[9999999]">
       <div ref={panelRef} className="rounded-lg p-6 w-4/5 flex flex-col gap-3 card-style">
         <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
           <div className="min-w-full">
