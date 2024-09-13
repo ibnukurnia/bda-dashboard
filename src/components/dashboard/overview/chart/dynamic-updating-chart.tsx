@@ -70,6 +70,7 @@ const DynamicUpdatingChart = ({ series, title, id }: DynamicUpdatingChartProps) 
       axisBorder: { show: false },
     },
     yaxis: {
+      // decimalsInFloat: 0,
       min(min) {
         if (min > 0) {
           return min - 1
@@ -77,14 +78,23 @@ const DynamicUpdatingChart = ({ series, title, id }: DynamicUpdatingChartProps) 
         return min
       },
       max(max) {
-        return max + 1
+        if (title?.includes('apm')) {
+          return max
+        } else if (max >= 4) {
+          return max + 1
+        } else {
+          return 4
+        }
       },
       labels: {
         style: {
           colors: 'white', // White color for y-axis text
         },
+        formatter: function (val) {
+          return title?.includes('apm') ? val.toFixed(4) : val.toFixed(0)
+        },
       },
-      tickAmount: 6,
+      tickAmount: 4,
     },
     stroke: {
       curve: 'smooth',
