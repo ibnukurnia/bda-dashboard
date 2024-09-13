@@ -174,10 +174,6 @@ const MainPageOverview = () => {
     setSelectedRange(time)
     GetPieChartsOverview({ type: selectedDataSource, time_range: selectedTR })
       .then((res) => {
-        console.log(
-          res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)),
-          'ini sorted'
-        )
         setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)))
       })
       .catch(() => setPieChartData([]))
