@@ -27,17 +27,14 @@ import { OverviewContext } from '@/contexts/overview-context'
 
 const MainPageAnomaly = () => {
 
-  const [mostRecentAnomalyData, setMostRecentAnomalyData] = useState([{ data: [400, 430, 448, 470] }]);
-  const [mostRecentAnomalyCategory, setMostRecentAnomalyCategory] = useState(['mylta', 'impala', 'pochinkisaldo', 'rozhok']);
-  const { metricsOverviews, getMetricsOverview } = useContext(OverviewContext);
+
   const logs = ['Log APM', 'Log Brimo']; // Example logs
   const utilizations = ['Prometheus OCP', 'Prometheus DB']; // Example logs
-  const security = ['Palo Alto', 'Fortinet', 'Web Application Security']
+  const security = ['Palo Alto', 'Fortinet', 'Web Application Security', 'Prtg', 'Zabbix']
   const [selectedLog, setSelectedLog] = useState(logs[0]);
   const [selectedUtilization, setSelectedUtilization] = useState('');
   const [selectedSecurity, setSelectedSecurity] = useState('');
   const [activeTab, setActiveTab] = useState('');
-  const [data, setData] = useState(updatedAnomalyData);
   const [isDropdownOpenLog, setIsDropdownOpenLog] = useState(false);
   const [isDropdownOpenUtilization, setIsDropdownOpenUtilization] = useState(false);
   const [isDropdownOpenSecurity, setIsDropdownOpenSecurity] = useState(false);
