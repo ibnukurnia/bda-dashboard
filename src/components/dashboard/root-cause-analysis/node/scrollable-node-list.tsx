@@ -8,10 +8,11 @@ import { FullScreenHandle } from 'react-full-screen';
 
 const nodeHeight = 80
 const headerHeight = 96
+const titleHeight = 64
 const filterHeight = 44
 const gapHeight = 32
 const otherElementHeight = (isFullScreen: boolean) =>
-  !isFullScreen ? headerHeight + filterHeight + gapHeight + 32 + 64 + 96 : 32 * 5 + 64
+  !isFullScreen ? headerHeight + filterHeight + gapHeight * 6 + titleHeight : gapHeight * 6 + titleHeight
 
 interface ScrollableNodeListProps {
   nodes: TreeNodeType[];
