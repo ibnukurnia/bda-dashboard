@@ -152,7 +152,7 @@ const MainPageOverview = () => {
   const [modalSeverity, setModalSeverity] = useState(false)
   const [tableMaxHeight, setTableMaxHeight] = useState(192)
   const [pieChartData, setPieChartData] = useState([])
-  const [topServicesData, setTopServicesData] = useState({ total: [], data: [] })
+  const [topServicesData, setTopServicesData] = useState({ header: [], data: [] })
   const [healthScoreData, setHealthScoreData] = useState([])
   const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
@@ -179,7 +179,7 @@ const MainPageOverview = () => {
       .catch(() => setPieChartData([]))
     GetTopServicesOverview({ type: selectedDataSource, time_range: selectedTR })
       .then((res) => setTopServicesData(res.data))
-      .catch(() => setTopServicesData({ total: [], data: [] }))
+      .catch(() => setTopServicesData({ header: [], data: [] }))
     GetHealthScoreOverview({ time_range: selectedTR })
       .then((res) => setHealthScoreData(res.data))
       .catch(() => setHealthScoreData([]))
@@ -192,7 +192,7 @@ const MainPageOverview = () => {
       .catch(() => setPieChartData([]))
     GetTopServicesOverview({ type: value, time_range: timeRanges[selectedRange] })
       .then((res) => setTopServicesData(res.data))
-      .catch(() => setTopServicesData({ total: [], data: [] }))
+      .catch(() => setTopServicesData({ header: [], data: [] }))
   }
 
   useEffect(() => {
@@ -221,7 +221,7 @@ const MainPageOverview = () => {
       .catch(() => setPieChartData([]))
     GetTopServicesOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
       .then((res) => setTopServicesData(res.data))
-      .catch(() => setTopServicesData({ total: [], data: [] }))
+      .catch(() => setTopServicesData({ header: [], data: [] }))
     GetHealthScoreOverview({ time_range: timeRanges[selectedRange] })
       .then((res) => setHealthScoreData(res.data))
       .catch(() => setHealthScoreData([]))
@@ -322,7 +322,7 @@ const MainPageOverview = () => {
                 <TableServices
                   // data={servicesData}
                   data={topServicesData.data}
-                  tableHeader={topServicesData.total}
+                  tableHeader={topServicesData.header}
                   dataKeys={configDataKey}
                   maxHeight={tableMaxHeight}
                 />
