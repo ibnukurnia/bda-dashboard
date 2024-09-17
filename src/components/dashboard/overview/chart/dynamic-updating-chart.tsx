@@ -41,7 +41,7 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
       },
     },
     subtitle: {
-      text: title?.toLowerCase()?.includes('apm') ? 'Error rate' : 'Anomaly count',
+      text: title?.toLowerCase()?.includes('apm') ? 'error rate' : 'anomaly count',
       style: {
         color: 'white',
       },
@@ -51,8 +51,7 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
     },
     xaxis: {
       max: new Date().getTime(),
-      // min: new Date().getTime() - 1000 * 60 * 30,
-      min: new Date().getTime() - 1000 * 60 * 15,
+      min: new Date().getTime() - 1000 * 60 * 30,
       categories: '',
       tooltip: {
         enabled: false,

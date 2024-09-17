@@ -199,29 +199,29 @@ const MainPageOverview = () => {
 
   const handleLogicTitle = (title: string) => {
     if (title.toLowerCase().includes('apm')) {
-      return 'Error Rate APM & BRIMO'
+      return 'error rate apm & brimo'
     } else if (title.toLowerCase().includes('prometheus')) {
-      return 'OCP'
+      return 'ocp'
     } else if (title.toLowerCase().includes('k8s_db')) {
-      return 'DB'
+      return 'db'
     } else if (title.toLowerCase().includes('ivat')) {
-      return 'Network'
+      return 'network'
     } else if (title.toLowerCase().includes('panw')) {
-      return 'Security'
+      return 'security'
     } else {
       return title
     }
   }
 
   useEffect(() => {
-    GetChartsOverview()
+    GetChartsOverview({ time_range: 30 })
       .then((res) => {
         setChartData(res.data)
       })
       .catch(() => setChartData([]))
 
     const intervalChartId = setInterval(() => {
-      GetChartsOverview()
+      GetChartsOverview({ time_range: 30 })
         .then((res) => {
           setChartData(res.data)
         })
@@ -372,21 +372,22 @@ const MainPageOverview = () => {
           <div className="flex flex-col gap-8 card">
             <span className="font-bold text-white text-2xl">Healthiness</span>
             <div className="flex flex-wrap gap-8" ref={healthinessRef}>
-              {[...healthScoreData, { score: 99, data_source: 'Network' }, { score: 99, data_source: 'Security' }].map(
-                (hd: any, hdid: number) => {
-                  const label =
-                    hd.data_source?.toLowerCase() === 'apm'
-                      ? 'Log APM BRIMO'
-                      : hd.data_source?.toLowerCase() === 'brimo'
-                        ? 'Log Transaksi BRIMO'
-                        : hd.data_source?.toLowerCase() === 'k8s_db'
-                          ? 'DB'
-                          : hd.data_source?.toLowerCase() === 'k8s_prometheus'
-                            ? 'OCP' 
-                            : hd.data_source
-                  return <Gauge value={hd.score} label={label} key={hdid} />
+              {[...healthScoreData, { score: 99, data_source: 'Network' }].map((hd: any, hdid: number) => {
+                const label = (dataSource: string) => {
+                  if (dataSource?.toLowerCase() === 'apm') {
+                    return 'log apm brimo'
+                  } else if (dataSource?.toLowerCase() === 'brimo') {
+                    return 'log transaksi brimo'
+                  } else if (dataSource?.toLowerCase() === 'k8s_db') {
+                    return 'db'
+                  } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
+                    return 'ocp'
+                  } else {
+                    return dataSource
+                  }
                 }
-              )}
+                return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
+              })}
             </div>
           </div>
         </div>
