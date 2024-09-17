@@ -189,6 +189,7 @@ const MainPageForecasting = () => {
         setZoom={(e) => handleZoom(e)}
         maxZoom={zoomLevel.maxZoom}
         minZoom={zoomLevel.minZoom}
+        selectedDate={filter.selectedDate}
       />
     )
   }, [graphData])
