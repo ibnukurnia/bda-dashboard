@@ -18,7 +18,8 @@ import SynchronizedCharts from '../chart/synchronized-charts'
 import FilterPanel from '../button/filterPanel'
 import { format } from 'date-fns';
 import GraphAnomalyCard from '../card/graph-anomaly-card'
-
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
+import AutoRefreshButton from '../button/refreshButton'
 interface TabSecurityContentProps {
     selectedSecurity: string
 }
@@ -44,6 +45,8 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [startTime, setStartTime] = useState<string>('')
     const [endTime, setEndTime] = useState<string>('')
+    const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
+    const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([])
     const [filterServicesOptions, setFilterServiceOptions] = useState<string[]>([])
@@ -59,6 +62,8 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
         pageIndex: 1, // Start from page 1
         pageSize: 10, // Default page size
     })
+
+    const handle = useFullScreenHandle();
 
     const table = useReactTable({
         data,
@@ -102,12 +107,16 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
 
     const getSecurityType = (selectedSecurity: string): string => {
         switch (selectedSecurity) {
-            case 'Prometheus OCP    ':
-                return 'k8s_prometheus';
-            case 'Prometheus DB':
-                return 'k8s_db';
-            case 'Prometheus DB':
-                return 'k8s_db';
+            case 'Palo Alto':
+                return 'panw';
+            case 'Fortinet':
+                return 'fortinet';
+            case 'Web Application Security':
+                return 'wap';
+            case 'Prtg':
+                return 'prtg';
+            case 'Zabbix':
+                return 'zabbix';
             default:
                 return '';
         }
@@ -256,6 +265,46 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
         }
     };
 
+    // Function to refresh data manually (on "Refresh Now" button click)
+    const handleRefreshNow = async () => {
+        setIsTableLoading(true); // Show loading state
+
+        // Small delay to ensure loading state is shown before fetching data
+        setTimeout(async () => {
+
+
+            if (selectedSecurity) {
+                try {
+                    // Call fetchDataByLog with time range values
+                    await fetchDataBySecurity(
+                        selectedSecurity,
+                        pagination.pageIndex,     // Page number
+                        pagination.pageSize,      // Page size (limit)
+                        selectedAnomalyOptions,    // Anomaly filter options
+                        selectedServicesOptions,   // Service filter options
+                        startTime,
+                        endTime
+                    );
+                    console.log('Manual refresh triggered');
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                } finally {
+                    setIsTableLoading(false); // Hide loading state once data arrives
+                }
+            } else {
+                console.warn('Invalid log type selected');
+                setIsTableLoading(false); // Hide loading state in case of invalid log type
+            }
+        }, 0);
+    };
+
+    // Handle auto-refresh toggling and interval selection
+    const handleAutoRefreshChange = (autoRefresh: boolean, interval: number) => {
+        setAutoRefresh(autoRefresh);
+        setRefreshInterval(autoRefresh ? interval : null); // Set the interval if auto-refresh is on
+    };
+
+
     const handlePageSizeChange = async (
         newPageSize: number,
         securityType: string,
@@ -326,28 +375,34 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
         }
     };
 
-    const fetchDataByUtilization = async (
-        securityType: string,
+
+    const fetchDataBySecurity = async (
+        selectedSecurity: string,
         page: number,
         limit: number,
-        filter: string[] = []
+        anomalyOptions: string[] = [],
+        serviceOptions: string[] = [],
+        startTime?: string, // Optional
+        endTime?: string    // Optional
     ) => {
-
-        // Get startTime and endTime using the helper function
+        // Use passed startTime and endTime, or default to helper function values
         const { startTimeValue, endTimeValue } = getTimeRange();
 
-        // Start both API calls concurrently
+        const finalStartTime = startTime || startTimeValue; // Use passed startTime or fallback to default
+        const finalEndTime = endTime || endTimeValue;       // Use passed endTime or fallback to default
+
+        // Start the API call with either the passed or default start/end time values
         const logAnomaliesPromise = GetHistoricalLogAnomalies(
-            securityType,
+            selectedSecurity,
             limit,
             page,
-            selectedAnomalyOptions,
-            selectedServicesOptions,
-            startTimeValue, // Use formatted startTimeToUse
-            endTimeValue// Use formatted endTimeToUse
+            anomalyOptions,      // Pass anomaly filter options
+            serviceOptions,      // Pass service filter options
+            finalStartTime,      // Use finalStartTime (either passed or default)
+            finalEndTime         // Use finalEndTime (either passed or default)
         );
 
-        // Handle the result of the first API call
+        // Handle the result of the API call
         logAnomaliesPromise
             .then((result) => {
                 if (result.data) {
@@ -459,7 +514,7 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
     const loadAnomalyFilterOptions = async () => {
 
         try {
-            const response = await fetchAnomalyOption(selectedSecurity === 'Prometheus DB' ? 'k8s_db' : '')
+            const response = await fetchAnomalyOption(getSecurityType(selectedSecurity))
             console.log('API Response:', response) // Log the entire API response
 
             if (response.data && response.data.columns) {
@@ -483,7 +538,8 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
 
     const loadServicesFilterOptions = async () => {
         try {
-            const response = await fetchServicesOption(selectedSecurity === 'Prometheus DB' ? 'k8s_db' : '')
+            const response = await fetchServicesOption(getSecurityType(selectedSecurity))
+
             console.log('API Response:', response) // Log the entire API response
 
             if (response.data && response.data.services) {
@@ -674,7 +730,7 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
 
         if (securityType) {
             // Fetch data based on the selected log
-            fetchDataByUtilization(securityType, pagination.pageIndex, pagination.pageSize, []);
+            fetchDataBySecurity(securityType, pagination.pageIndex, pagination.pageSize, []);
 
             // Load filter options and reset the selected range
             loadAnomalyFilterOptions();
@@ -685,6 +741,7 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
         }
     }, [selectedSecurity]);
 
+
     useEffect(() => {
         // Update the time difference every second
         const intervalId = setInterval(updateTimeDifference, 1000);
@@ -693,10 +750,61 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
         return () => clearInterval(intervalId);
     }, [lastRefreshTime]);
 
+    useEffect(() => {
+        let intervalId: NodeJS.Timeout | null = null;
+
+        if (autoRefresh && refreshInterval) {
+            // Setup a repeating interval
+            intervalId = setInterval(() => {
+                // Perform the refresh operation inside the interval
+                const performRefresh = async () => {
+                    setIsTableLoading(true); // Show loading state before fetching
+
+                    if (selectedSecurity) {
+                        try {
+                            // Introduce a small artificial delay to show the loading state
+                            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                            // Call fetchDataByLog with the required parameters
+                            await fetchDataBySecurity(
+                                selectedSecurity,
+                                pagination.pageIndex,     // Page number
+                                pagination.pageSize,      // Page size (limit)
+                                selectedAnomalyOptions,    // Anomaly filter options
+                                selectedServicesOptions,   // Service filter options
+                                startTime,
+                                endTime
+                            );
+                            console.log('Auto-refresh triggered');
+                        } catch (error) {
+                            console.error('Error fetching data during auto-refresh:', error);
+                        } finally {
+                            setIsTableLoading(false); // Hide loading state once data is fetched
+                        }
+                    } else {
+                        console.warn('Invalid log type selected during auto-refresh');
+                        setIsTableLoading(false); // Hide loading if no valid log type is selected
+                    }
+                };
+
+                // Call the refresh function
+                performRefresh();
+            }, refreshInterval);
+        }
+
+        // Cleanup the interval on unmount or when auto-refresh is disabled
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        };
+    }, [autoRefresh, refreshInterval, selectedSecurity, pagination.pageIndex, pagination.pageSize, selectedAnomalyOptions, selectedServicesOptions, startTime, endTime]);
+
+
     return (
-        <div className="flex flex-col gap-10 px-14 py-12 card-style z-50">
-            <div className="flex flex-row items-center self-end">
-                <div className="flex flex-row gap-2 self-center items-center">
+        <div className='flex flex-col gap-4'>
+            <div className='flex flex-row gap-2 self-end items-center'>
+                <div className="flex flex-row gap-2 self-end items-center">
                     <Typography variant="body2" component="p" color="white">
                         {timeDifference}
                     </Typography>
@@ -705,146 +813,184 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
                         onRangeChange={handleRangeChange}
                         selectedRange={selectedRange} // Pass selectedRange as a prop
                     />
+
                 </div>
+                <AutoRefreshButton onRefresh={handleRefreshNow} onAutoRefreshChange={handleAutoRefreshChange} />
+                <button onClick={handle.enter} className='text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm py-3 px-4 text-center rounded-l items-center'>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                    >
+                        <path d="M3 4a1 1 0 011-1h3a1 1 0 110 2H5v2a1 1 0 11-2 0V5a1 1 0 010-1zM3 14a1 1 0 011 1v2h2a1 1 0 110 2H4a1 1 0 01-1-1v-3a1 1 0 011-1zm13-1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 110-2h2v-2a1 1 0 011-1zm0-8a1 1 0 011 1v3a1 1 0 11-2 0V5h-2a1 1 0 110-2h3a1 1 0 011 1z" />
+                    </svg>
+                </button>
             </div>
-            <div className="flex flex-col gap-10">
-                <div className="flex flex-col gap-8">
-                    <FilterPanel
-                        servicesOptions={filterServicesOptions}
-                        checkboxOptions={filterAnomalyOptions}
-                        onApplyFilters={handleApplyFilters}
-                        onResetFilters={handleResetFilters}
-                        hasErrorFilterAnomaly={hasErrorFilterAnomaly}
-                        hasErrorFilterService={hasErrorFilterService}
-                    />
-                    <Typography variant="h5" component="h5" color="white">
-                        Historical Anomaly Records
-                    </Typography>
-                    <Box>
-                        <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
-                            <div className="min-w-full">
-                                {isTableLoading ? (
-                                    <div className="flex justify-center items-center">
-                                        <div className="spinner"></div>
-                                    </div>
-                                ) : data.length === 0 && !isTableLoading ? (
-                                    <div className="text-center py-4">
-                                        <Typography variant="subtitle1" color="white" align="center">
-                                            No data available.
-                                        </Typography>
-                                    </div>
+            <FullScreen handle={handle}>
+                {/* Conditionally apply h-screen overflow-auto classes when fullscreen is active */}
+                <div className={`flex flex-col gap-10 p-12 card-style ${handle.active ? 'h-screen overflow-auto' : ''}`}>
+                    <div className="flex flex-col gap-10">
+                        {/* Conditionally hide the FilterPanel when in fullscreen */}
+                        {!handle.active && (
+                            <FilterPanel
+                                servicesOptions={filterServicesOptions}
+                                checkboxOptions={filterAnomalyOptions}
+                                onApplyFilters={handleApplyFilters}
+                                onResetFilters={handleResetFilters}
+                                hasErrorFilterAnomaly={hasErrorFilterAnomaly}
+                                hasErrorFilterService={hasErrorFilterService}
+                            />
+                        )}
+                        <div className='flex flex-col gap-2'>
+                            <Typography variant="h5" component="h5" color="white">
+                                {`Historical ${selectedSecurity} Anomaly Records`}
+                            </Typography>
+                            <Typography variant="body2" component="h6" color="white">
+                                {`Anomaly: `}
+                                {selectedAnomalyOptions.length === 0 ? (
+                                    <span className='font-bold text-gray-300'>-</span>
                                 ) : (
-                                    <table id="person" className="table-auto divide-y divide-gray-200 w-full">
-                                        <thead>
-                                            {table.getHeaderGroups().map((headerGroup) => (
-                                                <tr key={headerGroup.id}>
-                                                    {headerGroup.headers.map((header) => (
-                                                        <th key={header.id} colSpan={header.colSpan} className="p-2">
-                                                            <div
-                                                                className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3`}
-                                                                onClick={header.column.getToggleSortingHandler()}
-                                                            >
-                                                                {typeof header.column.columnDef.header === 'function'
-                                                                    ? header.column.columnDef.header({} as any) // Pass a dummy context
-                                                                    : header.column.columnDef.header}
-                                                                {header.column.getCanSort() && (
-                                                                    <>
-                                                                        {{
-                                                                            asc: '🔼',
-                                                                            desc: '🔽',
-                                                                            undefined: '🔽', // Default icon for unsorted state
-                                                                        }[header.column.getIsSorted() as string] || '🔽'}
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        </th>
-                                                    ))}
-                                                </tr>
-                                            ))}
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-200 text-gray-600">
-                                            {table.getRowModel().rows.map((row) => (
-                                                <tr key={row.id}>
-                                                    {row.getVisibleCells().map((cell) => (
-                                                        <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
-                                                            <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
-                                                                {cell.column.id === 'severity' && (
-                                                                    <svg
-                                                                        width="14"
-                                                                        height="15"
-                                                                        viewBox="0 0 14 15"
-                                                                        fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                    >
-                                                                        <path
-                                                                            d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
-                                                                            fill="#F59823"
-                                                                        />
-                                                                    </svg>
-                                                                )}
-                                                                {typeof cell.column.columnDef.cell === 'function'
-                                                                    ? cell.column.columnDef.cell(cell.getContext())
-                                                                    : cell.column.columnDef.cell}
-                                                            </div>
-                                                        </td>
-                                                    ))}
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                    selectedAnomalyOptions.map((optionId, index) => {
+                                        // Find the corresponding option in filterAnomalyOptions
+                                        const option = filterAnomalyOptions.find(opt => opt.id === optionId);
+
+                                        // Display the label if found, otherwise display the id itself
+                                        return (
+                                            <span key={index} className='font-bold text-gray-300'>
+                                                {option ? option.label : optionId}
+                                                {index < selectedAnomalyOptions.length - 1 && ', '}
+                                            </span>
+                                        );
+                                    })
+                                )}
+                            </Typography>
+
+                        </div>
+                        <Box>
+                            <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
+                                <div className="min-w-full">
+                                    {isTableLoading ? (
+                                        <div className="flex justify-center items-center">
+                                            <div className="spinner"></div>
+                                        </div>
+                                    ) : data.length === 0 && !isTableLoading ? (
+                                        <div className="text-center py-4">
+                                            <Typography variant="subtitle1" color="white" align="center">
+                                                No data available.
+                                            </Typography>
+                                        </div>
+                                    ) : (
+                                        <table id="person" className="table-auto divide-y divide-gray-200 w-full">
+                                            <thead>
+                                                {table.getHeaderGroups().map((headerGroup) => (
+                                                    <tr key={headerGroup.id}>
+                                                        {headerGroup.headers.map((header) => (
+                                                            <th key={header.id} colSpan={header.colSpan} className="p-2">
+                                                                <div
+                                                                    className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3`}
+                                                                    onClick={header.column.getToggleSortingHandler()}
+                                                                >
+                                                                    {typeof header.column.columnDef.header === 'function'
+                                                                        ? header.column.columnDef.header({} as any)
+                                                                        : header.column.columnDef.header}
+                                                                    {header.column.getCanSort() && (
+                                                                        <>
+                                                                            {{
+                                                                                asc: '🔼',
+                                                                                desc: '🔽',
+                                                                                undefined: '🔽',
+                                                                            }[header.column.getIsSorted() as string] || '🔽'}
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </th>
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-200 text-gray-600">
+                                                {table.getRowModel().rows.map((row) => (
+                                                    <tr key={row.id}>
+                                                        {row.getVisibleCells().map((cell) => (
+                                                            <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                                                                <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
+                                                                    {cell.column.id === 'severity' && (
+                                                                        <svg
+                                                                            width="14"
+                                                                            height="15"
+                                                                            viewBox="0 0 14 15"
+                                                                            fill="none"
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                        >
+                                                                            <path
+                                                                                d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
+                                                                                fill="#F59823"
+                                                                            />
+                                                                        </svg>
+                                                                    )}
+                                                                    {typeof cell.column.columnDef.cell === 'function'
+                                                                        ? cell.column.columnDef.cell(cell.getContext())
+                                                                        : cell.column.columnDef.cell}
+                                                                </div>
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
+                                {data.length > 0 && !isTableLoading && (
+                                    <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
+                                        <div className="flex gap-1">
+                                            <span className="text-white">Rows per page:</span>
+                                            <select
+                                                value={table.getState().pagination.pageSize}
+                                                onChange={(e) => {
+                                                    const newPageSize = Number(e.target.value);
+                                                    handlePageSizeChange(newPageSize, selectedSecurity, 1, selectedAnomalyOptions);
+                                                }}
+                                                className="select-button-assesment"
+                                            >
+                                                {[5, 10, 15, 25].map((pageSize) => (
+                                                    <option key={pageSize} value={pageSize}>
+                                                        {pageSize}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="text-white">Page {pagination.pageIndex} of {totalPages}</div>
+                                        <div className="d-flex">
+                                            <button
+                                                className={`p-2 ${pagination.pageIndex === 1 ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
+                                                onClick={previousPage}
+                                                disabled={pagination.pageIndex === 1}
+                                            >
+                                                <ArrowLeft />
+                                            </button>
+                                            <button
+                                                className={`p-2 ${pagination.pageIndex === totalPages ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
+                                                onClick={nextPage}
+                                                disabled={pagination.pageIndex === totalPages}
+                                            >
+                                                <ArrowRight />
+                                            </button>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
-                            {data.length > 0 && !isTableLoading && (
-                                <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
-                                    <div className="flex gap-1">
-                                        <span className="text-white">Rows per page:</span>
-                                        <select
-                                            value={table.getState().pagination.pageSize}
-                                            onChange={(e) => {
-                                                const newPageSize = Number(e.target.value);
-                                                const securityType = getSecurityType(selectedSecurity);
-                                                handlePageSizeChange(newPageSize, securityType, 1, selectedAnomalyOptions);
-                                            }}
-                                            className="select-button-assesment"
-                                        >
-                                            {[5, 10, 15, 25].map((pageSize) => (
-                                                <option key={pageSize} value={pageSize}>
-                                                    {pageSize}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="text-white">
-                                        Page {pagination.pageIndex} of {totalPages}
-                                    </div>
-                                    <div className="d-flex">
-                                        <button
-                                            className={`p-2 ${pagination.pageIndex === 1 ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
-                                            onClick={previousPage}
-                                            disabled={pagination.pageIndex === 1}
-                                        >
-                                            <ArrowLeft />
-                                        </button>
-                                        <button
-                                            className={`p-2 ${pagination.pageIndex === totalPages ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
-                                            onClick={nextPage}
-                                            disabled={pagination.pageIndex === totalPages}
-                                        >
-                                            <ArrowRight />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </Box>
+                        </Box>
+                    </div>
+                    <GraphAnomalyCard
+                        selectedSecurity={selectedSecurity}
+                        servicesOptions={filterServicesOptions}
+                        selectedTimeRangeKey={selectedRange}
+                        timeRanges={timeRanges}
+                        isFullScreen={handle.active}
+                    />
                 </div>
-                <GraphAnomalyCard
-                    selectedSecurity={getSecurityType(selectedSecurity)}
-                    servicesOptions={filterServicesOptions}
-                    selectedTimeRangeKey={selectedRange}
-                    timeRanges={timeRanges}
-                />
-            </div>
+            </FullScreen>
         </div>
     )
 }

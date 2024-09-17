@@ -19,11 +19,11 @@ interface OverviewModalProps {
     }[]
   }[]
   handleApplyFilter: (
-    selectedDataSource: any[],
-    selectedServices: { name: string; data: number[]; count?: number }[]
+    selectedDataSource: any[]
+    // selectedServices: { name: string; data: number[]; count?: number }[]
   ) => void
   prevSelectedDataSource: any[]
-  prevSelectedServices: { name: string; data: number[]; count?: number }[]
+  // prevSelectedServices: { name: string; data: number[]; count?: number }[]
 }
 
 const OverviewModal = ({
@@ -32,11 +32,11 @@ const OverviewModal = ({
   listDataSource,
   handleApplyFilter,
   prevSelectedDataSource,
-  prevSelectedServices,
+  // prevSelectedServices,
 }: OverviewModalProps) => {
   const panelRef = useRef<HTMLDivElement>(null)
   const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
-  const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
+  // const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
   const [servicesList, setServicesList] = useState<any[]>([])
 
   const handleCheckboxDS = (value: any) => {
@@ -45,7 +45,7 @@ const OverviewModal = ({
 
     if (selectedDataSource.some((item) => item.id === value.id)) {
       newDataSource = selectedDataSource.filter((sds) => sds.id !== value.id)
-      setSelectedServices([])
+      // setSelectedServices([])
     } else {
       newDataSource = [...selectedDataSource, value]
     }
@@ -61,24 +61,24 @@ const OverviewModal = ({
 
     setSelectedDataSource(newDataSource)
     setServicesList(resNewSL)
-    setSelectedServices(
-      selectedServices.filter((filteredSS) => resNewSL.map((item) => item.name).includes(filteredSS.name))
-    )
+    // setSelectedServices(
+    //   selectedServices.filter((filteredSS) => resNewSL.map((item) => item.name).includes(filteredSS.name))
+    // )
   }
 
-  const handleCheckboxServices = (value: any) => {
-    let newSS
-    if (selectedServices.some((ss) => ss.name === value.id)) {
-      newSS = selectedServices.filter((ssf) => ssf.name !== value.id)
-    } else {
-      newSS = [...selectedServices, servicesList.find((sl) => sl.name === value.id)]
-    }
-    setSelectedServices(newSS)
-  }
+  // const handleCheckboxServices = (value: any) => {
+  //   let newSS
+  //   if (selectedServices.some((ss) => ss.name === value.id)) {
+  //     newSS = selectedServices.filter((ssf) => ssf.name !== value.id)
+  //   } else {
+  //     newSS = [...selectedServices, servicesList.find((sl) => sl.name === value.id)]
+  //   }
+  //   setSelectedServices(newSS)
+  // }
 
   const handleReset = () => {
     setSelectedDataSource([])
-    setSelectedServices([])
+    // setSelectedServices([])
     setServicesList([])
   }
 
@@ -94,7 +94,7 @@ const OverviewModal = ({
       .map((el) => el.services.map((srv) => ({ name: `${el.name} - ${srv.name}`, count: srv.count, data: srv.data })))
 
     setSelectedDataSource(prevSelectedDataSource)
-    setSelectedServices(prevSelectedServices)
+    // setSelectedServices(prevSelectedServices)
     setServicesList(newListService.length > 0 ? newListService.reduce((prev, next) => prev.concat(next)) : [])
 
     if (open) {
@@ -110,9 +110,11 @@ const OverviewModal = ({
 
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1200]">
-      <div ref={panelRef} className="bg-white rounded-lg p-6 w-3/5 flex flex-col gap-3">
+      {/* <div ref={panelRef} className="bg-white rounded-lg p-6 w-3/5 flex flex-col gap-3"> */}
+      <div ref={panelRef} className="bg-white rounded-lg p-6 w-2/5 flex flex-col gap-3">
         <h2 className="text-xl font-semibold mb-4 text-center">Add Services</h2>
-        <div className="grid grid-cols-2 gap-6">
+        {/* <div className="grid grid-cols-2 gap-6"> */}
+        <div className="grid grid-cols-1 gap-6">
           <div className="flex flex-col gap-3">
             <Typography fontWeight={600}>Data Source</Typography>
             <div className="checkbox">
@@ -126,7 +128,7 @@ const OverviewModal = ({
               />
             </div>
           </div>
-          <div className="flex flex-col gap-3">
+          {/* <div className="flex flex-col gap-3">
             <Typography fontWeight={600}>Services</Typography>
             {servicesList.length > 0 ? (
               <div className="checkbox">
@@ -144,15 +146,17 @@ const OverviewModal = ({
                 <Typography>Please select data source first to show available services</Typography>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
         <div className="flex justify-between mt-6 space-x-4">
           <Button variant="secondary" onClick={handleReset}>
             RESET
           </Button>
           <Button
-            disabled={selectedServices.length === 0}
-            onClick={() => handleApplyFilter(selectedDataSource, selectedServices)}
+            // disabled={selectedServices.length === 0}
+            disabled={selectedDataSource.length === 0}
+            // onClick={() => handleApplyFilter(selectedDataSource, selectedServices)}
+            onClick={() => handleApplyFilter(selectedDataSource)}
           >
             TERAPKAN
           </Button>

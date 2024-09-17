@@ -110,6 +110,7 @@ const DynamicUpdatingChart = ({ series, title, id }: DynamicUpdatingChartProps) 
 
   return (
     <Chart
+      // key={`chart-${Math.random()}`}
       options={options}
       series={series as ApexAxisChartSeries}
       type="line"
