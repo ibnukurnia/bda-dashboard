@@ -9,8 +9,19 @@ interface DynamicUpdatingChartProps {
   id?: string | number
 }
 
-const DynamicUpdatingChart = ({ series, title, id }: DynamicUpdatingChartProps) => {
+const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
   const options: ApexOptions = {
+    // colors: ['#dc2626', '#dc2626'],
+    // colors: (() => {
+    //   if (title?.toLowerCase()?.includes('apm')) {
+    //     return [
+    //       series?.[0]?.data?.[0][1] > 0.0004 ? '#dc2626' : '#2E93fA',
+    //       series?.[1]?.data?.[0][1] > 0.002 ? '#dc2626' : '#66DA26',
+    //     ]
+    //   } else if (title?.toLowerCase()?.includes('db')) {
+    //     return [series?.[0]?.data?.[0][1] > 3 ? '#dc2626' : '#2E93fA']
+    //   }
+    // })(),
     chart: {
       // id: `chart-${id}`,
       group: 'overview',
@@ -30,7 +41,7 @@ const DynamicUpdatingChart = ({ series, title, id }: DynamicUpdatingChartProps) 
       },
     },
     subtitle: {
-      text: 'Dynamic Updating Chart',
+      text: title?.toLowerCase()?.includes('apm') ? 'Error rate' : 'Anomaly count',
       style: {
         color: 'white',
       },
@@ -40,6 +51,7 @@ const DynamicUpdatingChart = ({ series, title, id }: DynamicUpdatingChartProps) 
     },
     xaxis: {
       max: new Date().getTime(),
+      // min: new Date().getTime() - 1000 * 60 * 30,
       min: new Date().getTime() - 1000 * 60 * 15,
       categories: '',
       tooltip: {
@@ -70,20 +82,14 @@ const DynamicUpdatingChart = ({ series, title, id }: DynamicUpdatingChartProps) 
       axisBorder: { show: false },
     },
     yaxis: {
-      // decimalsInFloat: 0,
-      min(min) {
-        if (min > 0) {
-          return min - 1
-        }
-        return min
-      },
+      min: 0,
       max(max) {
-        if (title?.includes('apm')) {
+        if (title?.toLowerCase()?.includes('apm')) {
           return max
-        } else if (max >= 4) {
+        } else if (max >= 5) {
           return max + 1
         } else {
-          return 4
+          return 5
         }
       },
       labels: {
@@ -91,14 +97,18 @@ const DynamicUpdatingChart = ({ series, title, id }: DynamicUpdatingChartProps) 
           colors: 'white', // White color for y-axis text
         },
         formatter: function (val) {
-          return title?.includes('apm') ? val.toFixed(4) : val.toFixed(0)
+          return title?.toLowerCase()?.includes('apm') ? val.toFixed(4) : val.toFixed(0)
         },
       },
-      tickAmount: 4,
+      // title: {
+      //   text: title?.toLowerCase()?.includes('apm') ? 'Error rate' : 'Anomaly count',
+      //   style: { color: '#ffffff' },
+      // },
+      tickAmount: 5,
     },
     stroke: {
       curve: 'smooth',
-      width: 1,
+      width: 1.5,
     },
     grid: {
       borderColor: '#bdbdbd',
@@ -122,7 +132,7 @@ const DynamicUpdatingChart = ({ series, title, id }: DynamicUpdatingChartProps) 
     <Chart
       // key={`chart-${Math.random()}`}
       options={options}
-      series={series as ApexAxisChartSeries}
+      series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
       type="line"
       height={300}
       width={'100%'}

@@ -161,6 +161,8 @@ const MainPageOverview = () => {
   // const []
   const mainRef = useRef<HTMLDivElement>(null)
   const healthinessRef = useRef<HTMLDivElement>(null)
+  const thSeverity = ['Severity', 'Count']
+  const configDataKey = ['service_name', 'count_anomaly']
 
   const handleApplyFilter = (sDataSource: any[]) => {
     // const handleApplyFilter = (sDataSource: any[], sService: { name: string; data: number[]; count?: number }[]) => {
@@ -195,6 +197,22 @@ const MainPageOverview = () => {
       .catch(() => setTopServicesData({ header: [], data: [] }))
   }
 
+  const handleLogicTitle = (title: string) => {
+    if (title.toLowerCase().includes('apm')) {
+      return 'Error Rate APM & BRIMO'
+    } else if (title.toLowerCase().includes('prometheus')) {
+      return 'OCP'
+    } else if (title.toLowerCase().includes('k8s_db')) {
+      return 'DB'
+    } else if (title.toLowerCase().includes('ivat')) {
+      return 'Network'
+    } else if (title.toLowerCase().includes('panw')) {
+      return 'Security'
+    } else {
+      return title
+    }
+  }
+
   useEffect(() => {
     GetChartsOverview()
       .then((res) => {
@@ -208,7 +226,7 @@ const MainPageOverview = () => {
           setChartData(res.data)
         })
         .catch(() => setChartData([]))
-    }, 10000)
+    }, 5000)
 
     return () => {
       clearInterval(intervalChartId)
@@ -227,6 +245,24 @@ const MainPageOverview = () => {
       .catch(() => setHealthScoreData([]))
   }, [])
 
+  // useEffect(() => {
+  //   const intervalOverview = setInterval(() => {
+  //     GetPieChartsOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+  //       .then((res) => setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity))))
+  //       .catch(() => setPieChartData([]))
+  //     GetTopServicesOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+  //       .then((res) => setTopServicesData(res.data))
+  //       .catch(() => setTopServicesData({ header: [], data: [] }))
+  //     GetHealthScoreOverview({ time_range: timeRanges[selectedRange] })
+  //       .then((res) => setHealthScoreData(res.data))
+  //       .catch(() => setHealthScoreData([]))
+  //   }, 5000)
+
+  //   return () => {
+  //     clearInterval(intervalOverview)
+  //   }
+  // }, [selectedDataSource, timeRanges])
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
@@ -244,9 +280,6 @@ const MainPageOverview = () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [modalServices])
-
-  const thSeverity = ['Severity', 'Count']
-  const configDataKey = ['service_name', 'count_anomaly']
 
   useLayoutEffect(() => {
     if (healthinessRef.current) {
@@ -269,7 +302,7 @@ const MainPageOverview = () => {
           {chartData.map((item, id) => {
             return (
               <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
-                <DynamicUpdatingChart title={item.title} series={item.data} id={id} />
+                <DynamicUpdatingChart title={handleLogicTitle(item.title)} series={item.data} id={id} />
               </div>
             )
           })}
@@ -349,7 +382,7 @@ const MainPageOverview = () => {
                         : hd.data_source?.toLowerCase() === 'k8s_db'
                           ? 'DB'
                           : hd.data_source?.toLowerCase() === 'k8s_prometheus'
-                            ? 'OCP'
+                            ? 'OCP' 
                             : hd.data_source
                   return <Gauge value={hd.score} label={label} key={hdid} />
                 }
