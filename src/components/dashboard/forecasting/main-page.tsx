@@ -178,7 +178,11 @@ const MainPageForecasting = () => {
     return (
       <SynchronizedCharts
         chartTitle={filter.serviceName?.length ? `${filter.serviceName} - ${filter.sourceData}` : ''}
-        dataCharts={graphData}
+        // dataCharts={graphData}
+        dataCharts={graphData.map((el) => ({
+          ...el,
+          title: el?.title?.toLowerCase()?.includes('existing') ? 'Actual' : el?.title,
+        }))}
         height={400}
         width="100%"
         loading={chartLoading}
