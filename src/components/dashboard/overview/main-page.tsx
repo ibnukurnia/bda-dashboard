@@ -4,7 +4,7 @@ import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'r
 
 import './main-page.css'
 
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import {
   GetChartsOverview,
   GetHealthScoreOverview,
@@ -349,68 +349,52 @@ const MainPageOverview = () => {
       })
   }, [])
 
-  // useEffect(() => {
-  //   const intervalOverview = setInterval(() => {
-  //     if (!isLoadingHealthScore && !isLoadingPieChart && !isLoadingTopServices) {
-  //       // setIsLoadingHealthScore(true)
-  //       // setIsLoadingPieChart(true)
-  //       // setIsLoadingTopServices(true)
-  //       const timeSplit = selectedRange.split(' - ')
+  useEffect(() => {
+    const intervalOverview = setInterval(() => {
+      if (
+        !isLoadingHealthScore &&
+        !isLoadingPieChart &&
+        !isLoadingTopServices &&
+        selectedRange.split(' - ').length <= 1
+      ) {
+        const timeSplit = selectedRange.split(' - ')
 
-  //       let startTime: string | Date
-  //       let endTime: string | Date
+        let startTime: string | Date
+        let endTime: string | Date
 
-  //       if (timeSplit.length > 1) {
-  //         startTime = timeSplit?.[0]
-  //         endTime = timeSplit?.[1]
-  //       } else {
-  //         startTime = format(
-  //           new Date(new Date().getTime() - toMiliseconds * timeRanges[selectedRange]),
-  //           'yyyy-MM-dd HH:mm:ss'
-  //         )
-  //         endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-  //       }
+        if (timeSplit.length > 1) {
+          startTime = timeSplit?.[0]
+          endTime = timeSplit?.[1]
+        } else {
+          startTime = format(
+            new Date(new Date().getTime() - toMiliseconds * timeRanges[selectedRange]),
+            'yyyy-MM-dd HH:mm:ss'
+          )
+          endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+        }
 
-  //       const paramsTime = { start_time: startTime, end_time: endTime }
-  //       const params = {
-  //         type: selectedDataSource,
-  //         ...paramsTime,
-  //       }
+        const paramsTime = { start_time: startTime, end_time: endTime }
+        const params = {
+          type: selectedDataSource,
+          ...paramsTime,
+        }
 
-  //       GetPieChartsOverview(params)
-  //         .then((res) => {
-  //           setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)))
-  //           // setIsLoadingPieChart(false)
-  //         })
-  //         .catch(() => {
-  //           setPieChartData([])
-  //           // setIsLoadingPieChart(false)
-  //         })
-  //       GetTopServicesOverview(params)
-  //         .then((res) => {
-  //           setTopServicesData(res.data)
-  //           // setIsLoadingTopServices(false)
-  //         })
-  //         .catch(() => {
-  //           setTopServicesData({ header: [], data: [] })
-  //           // setIsLoadingTopServices(false)
-  //         })
-  //       GetHealthScoreOverview(paramsTime)
-  //         .then((res) => {
-  //           setHealthScoreData(res.data)
-  //           // setIsLoadingHealthScore(false)
-  //         })
-  //         .catch(() => {
-  //           setHealthScoreData([])
-  //           // setIsLoadingHealthScore(false)
-  //         })
-  //     }
-  //   }, 5000)
+        GetPieChartsOverview(params)
+          .then((res) => setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity))))
+          .catch(() => setPieChartData([]))
+        GetTopServicesOverview(params)
+          .then((res) => setTopServicesData(res.data))
+          .catch(() => setTopServicesData({ header: [], data: [] }))
+        GetHealthScoreOverview(paramsTime)
+          .then((res) => setHealthScoreData(res.data))
+          .catch(() => setHealthScoreData([]))
+      }
+    }, 5000)
 
-  //   return () => {
-  //     clearInterval(intervalOverview)
-  //   }
-  // }, [selectedDataSource, timeRanges, isLoadingPieChart, isLoadingHealthScore, isLoadingTopServices])
+    return () => {
+      clearInterval(intervalOverview)
+    }
+  }, [selectedDataSource, timeRanges, isLoadingPieChart, isLoadingHealthScore, isLoadingTopServices, selectedRange])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -499,11 +483,10 @@ const MainPageOverview = () => {
                     tableHeader={thSeverity}
                     data={pieChartData}
                     onClickSeverity={(severity) => handleClickSeverity(severity)}
+                    clickable={selectedDataSource?.length > 0}
                   />
                 </div>
-                {/* <hr /> */}
                 <TableServices
-                  // data={servicesData}
                   data={topServicesData.data}
                   tableHeader={topServicesData.header}
                   dataKeys={configDataKey}
@@ -522,24 +505,27 @@ const MainPageOverview = () => {
           <div className="flex flex-col gap-8 card">
             <span className="font-bold text-white text-2xl">Healthiness</span>
             <div className="flex flex-wrap gap-8" ref={healthinessRef}>
-              {isLoadingHealthScore
-                ? Array.from({ length: 5 }).map((_item, itemId) => <Skeleton height={206} width={300} key={itemId} />)
-                : healthScoreData.map((hd: any, hdid: number) => {
-                    const label = (dataSource: string) => {
-                      if (dataSource?.toLowerCase() === 'apm') {
-                        return 'log apm brimo'
-                      } else if (dataSource?.toLowerCase() === 'brimo') {
-                        return 'log transaksi brimo'
-                      } else if (dataSource?.toLowerCase() === 'k8s_db') {
-                        return 'db'
-                      } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
-                        return 'ocp'
-                      } else {
-                        return dataSource
-                      }
+              {
+                // isLoadingHealthScore
+                //   ? Array.from({ length: 5 }).map((_item, itemId) => <Skeleton height={206} width={300} key={itemId} />)
+                //   :
+                healthScoreData.map((hd: any, hdid: number) => {
+                  const label = (dataSource: string) => {
+                    if (dataSource?.toLowerCase() === 'apm') {
+                      return 'log apm brimo'
+                    } else if (dataSource?.toLowerCase() === 'brimo') {
+                      return 'log transaksi brimo'
+                    } else if (dataSource?.toLowerCase() === 'k8s_db') {
+                      return 'db'
+                    } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
+                      return 'ocp'
+                    } else {
+                      return dataSource
                     }
-                    return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
-                  })}
+                  }
+                  return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
+                })
+              }
             </div>
           </div>
         </div>
