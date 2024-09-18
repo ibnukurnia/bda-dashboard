@@ -245,23 +245,23 @@ const MainPageOverview = () => {
       .catch(() => setHealthScoreData([]))
   }, [])
 
-  // useEffect(() => {
-  //   const intervalOverview = setInterval(() => {
-  //     GetPieChartsOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
-  //       .then((res) => setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity))))
-  //       .catch(() => setPieChartData([]))
-  //     GetTopServicesOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
-  //       .then((res) => setTopServicesData(res.data))
-  //       .catch(() => setTopServicesData({ header: [], data: [] }))
-  //     GetHealthScoreOverview({ time_range: timeRanges[selectedRange] })
-  //       .then((res) => setHealthScoreData(res.data))
-  //       .catch(() => setHealthScoreData([]))
-  //   }, 5000)
+  useEffect(() => {
+    const intervalOverview = setInterval(() => {
+      GetPieChartsOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+        .then((res) => setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity))))
+        .catch(() => setPieChartData([]))
+      GetTopServicesOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+        .then((res) => setTopServicesData(res.data))
+        .catch(() => setTopServicesData({ header: [], data: [] }))
+      GetHealthScoreOverview({ time_range: timeRanges[selectedRange] })
+        .then((res) => setHealthScoreData(res.data))
+        .catch(() => setHealthScoreData([]))
+    }, 5000)
 
-  //   return () => {
-  //     clearInterval(intervalOverview)
-  //   }
-  // }, [selectedDataSource, timeRanges])
+    return () => {
+      clearInterval(intervalOverview)
+    }
+  }, [selectedDataSource, timeRanges])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -372,7 +372,7 @@ const MainPageOverview = () => {
           <div className="flex flex-col gap-8 card">
             <span className="font-bold text-white text-2xl">Healthiness</span>
             <div className="flex flex-wrap gap-8" ref={healthinessRef}>
-              {[...healthScoreData, { score: 99, data_source: 'Network' }].map((hd: any, hdid: number) => {
+              {healthScoreData.map((hd: any, hdid: number) => {
                 const label = (dataSource: string) => {
                   if (dataSource?.toLowerCase() === 'apm') {
                     return 'log apm brimo'
