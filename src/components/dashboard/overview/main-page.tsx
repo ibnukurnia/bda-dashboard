@@ -269,10 +269,20 @@ const MainPageOverview = () => {
 
   const handleClickSeverity = (severity: string) => {
     const { startTime, endTime } = handleStartEnd(selectedRange)
+    const logicSelectedRange = selectedRange.split(' - ').length > 1 ? 'Custom' : selectedRange
 
     if (selectedDataSource?.length > 0) {
       router.push(
-        `/dashboard/anomaly-detection?data_source=${selectedDataSource}&severity=${severity}&start=${startTime}&end=${endTime}`
+        '/dashboard/anomaly-detection?data_source=' +
+          selectedDataSource +
+          '&severity=' +
+          severity +
+          '&time_range=' +
+          logicSelectedRange +
+          '&start=' +
+          startTime +
+          '&end=' +
+          endTime
       )
     }
   }
