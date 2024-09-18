@@ -17,6 +17,7 @@ interface SynchronizedChartsProps {
   minZoom?: number
   maxZoom?: number
   setZoom?: (params?: { minZoom?: number; maxZoom?: number }) => void
+  selectedDate: string | Date
 }
 
 const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
@@ -28,14 +29,18 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   minZoom,
   maxZoom,
   setZoom,
+  selectedDate,
 }) => {
-  const today = new Date()
+  const today = new Date(selectedDate)
   const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
   const todayMaxTime = todayZero + 1000 * 60 * 60 * 24 - 1
+  const selectedDateTime = new Date(
+    new Date().setDate(new Date().getDate() + Math.abs(new Date().getDate() - new Date(selectedDate).getDate()))
+  )
 
   const [zoomX, setZoomX] = useState({
-    min: minZoom ?? new Date().getTime() - 1000 * 60 * 60 * 2,
-    max: maxZoom ?? new Date().getTime() + 1000 * 60 * 60 * 2,
+    min: minZoom ?? selectedDateTime.getTime() - 1000 * 60 * 60 * 2,
+    max: maxZoom ?? selectedDateTime.getTime() + 1000 * 60 * 60 * 2,
   })
   const chartOptions: ApexOptions = {
     chart: {
@@ -56,8 +61,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
       events: {
         beforeResetZoom() {
           const resResetZoom = {
-            min: new Date().getTime() - 1000 * 60 * 60 * 2,
-            max: new Date().getTime() + 1000 * 60 * 60 * 2,
+            min: selectedDateTime.getTime() - 1000 * 60 * 60 * 2,
+            max: selectedDateTime.getTime() + 1000 * 60 * 60 * 2,
           }
 
           return {
@@ -129,6 +134,9 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
         style: {
           colors: 'white', // White color for y-axis text
         },
+        formatter(val) {
+          return val?.toFixed(0)
+        },
       },
     },
     stroke: {
@@ -177,6 +185,13 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
       setZoomX({ min: minZoom, max: maxZoom })
     }
   }, [minZoom, maxZoom])
+
+  useEffect(() => {
+    const min = selectedDateTime.getTime() - 1000 * 60 * 60 * 2
+    const max = selectedDateTime.getTime() + 1000 * 60 * 60 * 2
+    setZoomX({ min, max })
+    setZoom && setZoom({ minZoom: min, maxZoom: max })
+  }, [selectedDate])
 
   return (
     <div className="flex flex-col gap-4">

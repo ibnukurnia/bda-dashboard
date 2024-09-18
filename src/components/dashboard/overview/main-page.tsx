@@ -161,6 +161,8 @@ const MainPageOverview = () => {
   // const []
   const mainRef = useRef<HTMLDivElement>(null)
   const healthinessRef = useRef<HTMLDivElement>(null)
+  const thSeverity = ['Severity', 'Count']
+  const configDataKey = ['service_name', 'count_anomaly']
 
   const handleApplyFilter = (sDataSource: any[]) => {
     // const handleApplyFilter = (sDataSource: any[], sService: { name: string; data: number[]; count?: number }[]) => {
@@ -195,20 +197,36 @@ const MainPageOverview = () => {
       .catch(() => setTopServicesData({ header: [], data: [] }))
   }
 
+  const handleLogicTitle = (title: string) => {
+    if (title.toLowerCase().includes('apm')) {
+      return 'error rate apm & brimo'
+    } else if (title.toLowerCase().includes('prometheus')) {
+      return 'ocp'
+    } else if (title.toLowerCase().includes('k8s_db')) {
+      return 'db'
+    } else if (title.toLowerCase().includes('ivat')) {
+      return 'network'
+    } else if (title.toLowerCase().includes('panw')) {
+      return 'security'
+    } else {
+      return title
+    }
+  }
+
   useEffect(() => {
-    GetChartsOverview()
+    GetChartsOverview({ time_range: 30 })
       .then((res) => {
         setChartData(res.data)
       })
       .catch(() => setChartData([]))
 
     const intervalChartId = setInterval(() => {
-      GetChartsOverview()
+      GetChartsOverview({ time_range: 30 })
         .then((res) => {
           setChartData(res.data)
         })
         .catch(() => setChartData([]))
-    }, 10000)
+    }, 5000)
 
     return () => {
       clearInterval(intervalChartId)
@@ -228,6 +246,24 @@ const MainPageOverview = () => {
   }, [])
 
   useEffect(() => {
+    const intervalOverview = setInterval(() => {
+      GetPieChartsOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+        .then((res) => setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity))))
+        .catch(() => setPieChartData([]))
+      GetTopServicesOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+        .then((res) => setTopServicesData(res.data))
+        .catch(() => setTopServicesData({ header: [], data: [] }))
+      GetHealthScoreOverview({ time_range: timeRanges[selectedRange] })
+        .then((res) => setHealthScoreData(res.data))
+        .catch(() => setHealthScoreData([]))
+    }, 5000)
+
+    return () => {
+      clearInterval(intervalOverview)
+    }
+  }, [selectedDataSource, timeRanges])
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
         setModalServices(false) // Close the panel when clicking outside of it
@@ -244,9 +280,6 @@ const MainPageOverview = () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [modalServices])
-
-  const thSeverity = ['Severity', 'Count']
-  const configDataKey = ['service_name', 'count_anomaly']
 
   useLayoutEffect(() => {
     if (healthinessRef.current) {
@@ -269,7 +302,7 @@ const MainPageOverview = () => {
           {chartData.map((item, id) => {
             return (
               <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
-                <DynamicUpdatingChart title={item.title} series={item.data} id={id} />
+                <DynamicUpdatingChart title={handleLogicTitle(item.title)} series={item.data} id={id} />
               </div>
             )
           })}
@@ -339,21 +372,22 @@ const MainPageOverview = () => {
           <div className="flex flex-col gap-8 card">
             <span className="font-bold text-white text-2xl">Healthiness</span>
             <div className="flex flex-wrap gap-8" ref={healthinessRef}>
-              {[...healthScoreData, { score: 99, data_source: 'Network' }, { score: 99, data_source: 'Security' }].map(
-                (hd: any, hdid: number) => {
-                  const label =
-                    hd.data_source?.toLowerCase() === 'apm'
-                      ? 'Log APM BRIMO'
-                      : hd.data_source?.toLowerCase() === 'brimo'
-                        ? 'Log Transaksi BRIMO'
-                        : hd.data_source?.toLowerCase() === 'k8s_db'
-                          ? 'DB'
-                          : hd.data_source?.toLowerCase() === 'k8s_prometheus'
-                            ? 'OCP'
-                            : hd.data_source
-                  return <Gauge value={hd.score} label={label} key={hdid} />
+              {healthScoreData.map((hd: any, hdid: number) => {
+                const label = (dataSource: string) => {
+                  if (dataSource?.toLowerCase() === 'apm') {
+                    return 'log apm brimo'
+                  } else if (dataSource?.toLowerCase() === 'brimo') {
+                    return 'log transaksi brimo'
+                  } else if (dataSource?.toLowerCase() === 'k8s_db') {
+                    return 'db'
+                  } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
+                    return 'ocp'
+                  } else {
+                    return dataSource
+                  }
                 }
-              )}
+                return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
+              })}
             </div>
           </div>
         </div>
