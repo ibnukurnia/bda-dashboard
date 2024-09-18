@@ -64,8 +64,6 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
     }
   }
 
-  console.log(validationMessage, 'vm')
-
   useEffect(() => {
     if (new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60) {
       setValidationMessage('Maximum range of time that can be selected is 1 hour')
@@ -104,6 +102,12 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
     }
   }, [isOpen])
 
+  useEffect(() => {
+    if (selectedRange?.split(' - ')?.length > 1) {
+      setIsCustomRange(true)
+    }
+  }, [selectedRange, isOpen])
+
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
@@ -130,16 +134,17 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
               <li key={rangeKey}>
                 <div
                   onClick={() => handleRangeChange(rangeKey)}
-                  className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
+                  className={`cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg flex justify-between items-center`}
                 >
-                  {rangeKey}
+                  <span>{rangeKey}</span>
+                  {/* {rangeKey === selectedRange && <CheckCircle color='rgb(30 64 175)' size={'20px'} />} */}
                 </div>
               </li>
             ))}
             <li key="custom">
               <div
                 onClick={() => handleRangeChange('Custom')}
-                className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
+                className={`cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg`}
               >
                 Custom
               </div>
