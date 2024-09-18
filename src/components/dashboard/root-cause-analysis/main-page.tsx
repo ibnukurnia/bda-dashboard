@@ -7,7 +7,7 @@ import './main-page.css'
 import RCATree from './tree/rca-tree'
 import TableModal from './modal/table-modal'
 import { Typography } from '@mui/material'
-import DropdownRange from '../dropdownRange'
+// import DropdownRange from '../dropdownRange'
 import AutoRefreshButton from './button/refreshButton'
 import { format } from 'date-fns'
 import { getTimeDifference } from './helper'
@@ -17,6 +17,7 @@ import useInterval from '@/hooks/use-interval'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import Button from '@/components/system/Button/Button'
 import { Maximize } from 'react-feather'
+import DropdownTime from './button/dropdown-time'
 
 const defaultTimeRanges: Record<string, number> = {
   'Last 5 minutes': 5,
@@ -130,7 +131,12 @@ const MainPageRootCauseAnalysis = () => {
             <Typography variant="body2" component="p" color="white">
               {lastUpdateString}
             </Typography>
-            <DropdownRange
+            {/* <DropdownRange
+              timeRanges={defaultTimeRanges}
+              onRangeChange={handleRangeChange}
+              selectedRange={selectedRange} // Pass selectedRange as a prop
+            /> */}
+            <DropdownTime
               timeRanges={defaultTimeRanges}
               onRangeChange={handleRangeChange}
               selectedRange={selectedRange} // Pass selectedRange as a prop
