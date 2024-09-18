@@ -164,9 +164,8 @@ const MainPageOverview = () => {
     setModalServices(false)
   }
 
-  const handleChangeTimeRange = (time: string) => {
+  const handleStartEnd = (time: string) => {
     const timeSplit = time.split(' - ')
-    const selectedTR = timeRanges[time]
 
     let startTime: string | Date
     let endTime: string | Date
@@ -178,6 +177,12 @@ const MainPageOverview = () => {
       startTime = format(new Date(new Date().getTime() - toMiliseconds * timeRanges[time]), 'yyyy-MM-dd HH:mm:ss')
       endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
     }
+
+    return { startTime, endTime }
+  }
+
+  const handleChangeTimeRange = (time: string) => {
+    const { startTime, endTime } = handleStartEnd(time)
 
     setSelectedRange(time)
 
@@ -218,22 +223,7 @@ const MainPageOverview = () => {
   }
 
   const handleChangeFilterDS = (value: string) => {
-    const timeSplit = selectedRange.split(' - ')
-
-    let startTime: string | Date
-    let endTime: string | Date
-
-    if (timeSplit.length > 1) {
-      startTime = timeSplit?.[0]
-      endTime = timeSplit?.[1]
-    } else {
-      startTime = format(
-        new Date(new Date().getTime() - toMiliseconds * timeRanges[selectedRange]),
-        'yyyy-MM-dd HH:mm:ss'
-      )
-      endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-    }
-
+    const { startTime, endTime } = handleStartEnd(selectedRange)
     const params = { type: value, start_time: startTime, end_time: endTime }
 
     setSelectedDataSource(value)
@@ -278,8 +268,12 @@ const MainPageOverview = () => {
   }
 
   const handleClickSeverity = (severity: string) => {
+    const { startTime, endTime } = handleStartEnd(selectedRange)
+
     if (selectedDataSource?.length > 0) {
-      router.push(`/dashboard/anomaly-detection?data_source=${selectedDataSource}&severity=${severity}`)
+      router.push(
+        `/dashboard/anomaly-detection?data_source=${selectedDataSource}&severity=${severity}&start=${startTime}&end=${endTime}`
+      )
     }
   }
 
@@ -304,21 +298,7 @@ const MainPageOverview = () => {
   }, [])
 
   useEffect(() => {
-    const timeSplit = selectedRange.split(' - ')
-
-    let startTime: string | Date
-    let endTime: string | Date
-
-    if (timeSplit.length > 1) {
-      startTime = timeSplit?.[0]
-      endTime = timeSplit?.[1]
-    } else {
-      startTime = format(
-        new Date(new Date().getTime() - toMiliseconds * timeRanges[selectedRange]),
-        'yyyy-MM-dd HH:mm:ss'
-      )
-      endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-    }
+    const { startTime, endTime } = handleStartEnd(selectedRange)
 
     setIsLoadingHealthScore(true)
     setIsLoadingPieChart(true)
@@ -362,36 +342,57 @@ const MainPageOverview = () => {
   // useEffect(() => {
   //   const intervalOverview = setInterval(() => {
   //     if (!isLoadingHealthScore && !isLoadingPieChart && !isLoadingTopServices) {
-  //       setIsLoadingHealthScore(true)
-  //       setIsLoadingPieChart(true)
-  //       setIsLoadingTopServices(true)
+  //       // setIsLoadingHealthScore(true)
+  //       // setIsLoadingPieChart(true)
+  //       // setIsLoadingTopServices(true)
+  //       const timeSplit = selectedRange.split(' - ')
 
-  //       GetPieChartsOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+  //       let startTime: string | Date
+  //       let endTime: string | Date
+
+  //       if (timeSplit.length > 1) {
+  //         startTime = timeSplit?.[0]
+  //         endTime = timeSplit?.[1]
+  //       } else {
+  //         startTime = format(
+  //           new Date(new Date().getTime() - toMiliseconds * timeRanges[selectedRange]),
+  //           'yyyy-MM-dd HH:mm:ss'
+  //         )
+  //         endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+  //       }
+
+  //       const paramsTime = { start_time: startTime, end_time: endTime }
+  //       const params = {
+  //         type: selectedDataSource,
+  //         ...paramsTime,
+  //       }
+
+  //       GetPieChartsOverview(params)
   //         .then((res) => {
   //           setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)))
-  //           setIsLoadingPieChart(false)
+  //           // setIsLoadingPieChart(false)
   //         })
   //         .catch(() => {
   //           setPieChartData([])
-  //           setIsLoadingPieChart(false)
+  //           // setIsLoadingPieChart(false)
   //         })
-  //       GetTopServicesOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+  //       GetTopServicesOverview(params)
   //         .then((res) => {
   //           setTopServicesData(res.data)
-  //           setIsLoadingTopServices(false)
+  //           // setIsLoadingTopServices(false)
   //         })
   //         .catch(() => {
   //           setTopServicesData({ header: [], data: [] })
-  //           setIsLoadingTopServices(false)
+  //           // setIsLoadingTopServices(false)
   //         })
-  //       GetHealthScoreOverview({ time_range: timeRanges[selectedRange] })
+  //       GetHealthScoreOverview(paramsTime)
   //         .then((res) => {
   //           setHealthScoreData(res.data)
-  //           setIsLoadingHealthScore(false)
+  //           // setIsLoadingHealthScore(false)
   //         })
   //         .catch(() => {
   //           setHealthScoreData([])
-  //           setIsLoadingHealthScore(false)
+  //           // setIsLoadingHealthScore(false)
   //         })
   //     }
   //   }, 5000)
