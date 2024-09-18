@@ -162,8 +162,6 @@ const MainPageOverview = () => {
     setModalServices(false)
   }
 
-  console.log(selectedRange, 'sr')
-
   const handleChangeTimeRange = (time: string) => {
     const timeSplit = time.split(' - ')
     const selectedTR = timeRanges[time]
@@ -185,7 +183,8 @@ const MainPageOverview = () => {
     setIsLoadingPieChart(true)
     setIsLoadingTopServices(true)
 
-    const params = { type: selectedDataSource, time_range: selectedTR }
+    const paramsTime = { start_time: startTime, end_time: endTime }
+    const params = { type: selectedDataSource, ...paramsTime }
 
     GetPieChartsOverview(params)
       .then((res) => {
@@ -205,7 +204,7 @@ const MainPageOverview = () => {
         setTopServicesData({ header: [], data: [] })
         setIsLoadingTopServices(false)
       })
-    GetHealthScoreOverview({ time_range: selectedTR })
+    GetHealthScoreOverview(paramsTime)
       .then((res) => {
         setHealthScoreData(res.data)
         setIsLoadingHealthScore(false)
@@ -218,7 +217,6 @@ const MainPageOverview = () => {
 
   const handleChangeFilterDS = (value: string) => {
     const timeSplit = selectedRange.split(' - ')
-    const params = { type: value, time_range: timeRanges[selectedRange] }
 
     let startTime: string | Date
     let endTime: string | Date
@@ -233,6 +231,8 @@ const MainPageOverview = () => {
       )
       endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
     }
+
+    const params = { type: value, start_time: startTime, end_time: endTime }
 
     setSelectedDataSource(value)
 
@@ -316,7 +316,13 @@ const MainPageOverview = () => {
     setIsLoadingPieChart(true)
     setIsLoadingTopServices(true)
 
-    GetPieChartsOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+    const paramsTime = { start_time: startTime, end_time: endTime }
+    const params = {
+      type: selectedDataSource,
+      ...paramsTime,
+    }
+
+    GetPieChartsOverview(params)
       .then((res) => {
         setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)))
         setIsLoadingPieChart(false)
@@ -325,7 +331,7 @@ const MainPageOverview = () => {
         setPieChartData([])
         setIsLoadingPieChart(false)
       })
-    GetTopServicesOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+    GetTopServicesOverview(params)
       .then((res) => {
         setTopServicesData(res.data)
         setIsLoadingTopServices(false)
@@ -334,7 +340,7 @@ const MainPageOverview = () => {
         setTopServicesData({ header: [], data: [] })
         setIsLoadingTopServices(false)
       })
-    GetHealthScoreOverview({ time_range: timeRanges[selectedRange] })
+    GetHealthScoreOverview(paramsTime)
       .then((res) => {
         setHealthScoreData(res.data)
         setIsLoadingHealthScore(false)
