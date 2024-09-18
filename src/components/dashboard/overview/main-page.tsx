@@ -502,29 +502,35 @@ const MainPageOverview = () => {
             />
           </div> */}
           </div>
-          <div className="flex flex-col gap-8 card">
+          <div className="flex flex-col gap-8 card relative">
             <span className="font-bold text-white text-2xl">Healthiness</span>
+            {!healthScoreData.length && (
+              <span className="text-center text-white absolute top-1/2 w-full left-0">
+                Terjadi kesalahan. Silakan refresh halaman ini atau coba beberapa saat lagi
+              </span>
+            )}
             <div className="flex flex-wrap gap-8" ref={healthinessRef}>
               {
                 // isLoadingHealthScore
                 //   ? Array.from({ length: 5 }).map((_item, itemId) => <Skeleton height={206} width={300} key={itemId} />)
                 //   :
-                healthScoreData.map((hd: any, hdid: number) => {
-                  const label = (dataSource: string) => {
-                    if (dataSource?.toLowerCase() === 'apm') {
-                      return 'log apm brimo'
-                    } else if (dataSource?.toLowerCase() === 'brimo') {
-                      return 'log transaksi brimo'
-                    } else if (dataSource?.toLowerCase() === 'k8s_db') {
-                      return 'db'
-                    } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
-                      return 'ocp'
-                    } else {
-                      return dataSource
+                healthScoreData.length &&
+                  healthScoreData.map((hd: any, hdid: number) => {
+                    const label = (dataSource: string) => {
+                      if (dataSource?.toLowerCase() === 'apm') {
+                        return 'log apm brimo'
+                      } else if (dataSource?.toLowerCase() === 'brimo') {
+                        return 'log transaksi brimo'
+                      } else if (dataSource?.toLowerCase() === 'k8s_db') {
+                        return 'db'
+                      } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
+                        return 'ocp'
+                      } else {
+                        return dataSource
+                      }
                     }
-                  }
-                  return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
-                })
+                    return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
+                  })
               }
             </div>
           </div>
