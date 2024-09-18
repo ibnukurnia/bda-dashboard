@@ -242,7 +242,7 @@ const TabNetworkContent: React.FC<TabNetworkContentProps> = ({
             if (selectedNetwork) {
                 try {
                     // Call fetchDataByLog with time range values
-                    await fetchDataByLog(
+                    await fetchDataByNetwork(
                         selectedNetwork,
                         pagination.pageIndex,     // Page number
                         pagination.pageSize,      // Page size (limit)
@@ -344,7 +344,7 @@ const TabNetworkContent: React.FC<TabNetworkContentProps> = ({
         }
     };
 
-    const fetchDataByLog = async (
+    const fetchDataByNetwork = async (
         selectedNetwork: string,
         page: number,
         limit: number,
@@ -709,25 +709,24 @@ const TabNetworkContent: React.FC<TabNetworkContentProps> = ({
         });
     };
 
+    // useEffect(() => {
+    //     console.log(selectedAnomalyOptions)
+    // }, [selectedAnomalyOptions]),
+
     useEffect(() => {
-        console.log(selectedAnomalyOptions)
-    }, [selectedAnomalyOptions]),
 
-        useEffect(() => {
+        if (selectedNetwork) {
+            // Fetch data based on the selected log
+            fetchDataByNetwork(selectedNetwork, pagination.pageIndex, pagination.pageSize, []);
 
+            // Load filter options and reset the selected range
+            loadAnomalyFilterOptions();
+            loadServicesFilterOptions();
 
-            if (selectedNetwork) {
-                // Fetch data based on the selected log
-                fetchDataByLog(selectedNetwork, pagination.pageIndex, pagination.pageSize, []);
-
-                // Load filter options and reset the selected range
-                loadAnomalyFilterOptions();
-                loadServicesFilterOptions();
-
-                // Reset Time Range to the default 15 minutes
-                setSelectedRange('Last 15 minutes');
-            }
-        }, [selectedNetwork]);
+            // Reset Time Range to the default 15 minutes
+            setSelectedRange('Last 15 minutes');
+        }
+    }, [selectedNetwork]);
 
     useEffect(() => {
         // Update the time difference every second
@@ -753,7 +752,7 @@ const TabNetworkContent: React.FC<TabNetworkContentProps> = ({
                             await new Promise((resolve) => setTimeout(resolve, 1000));
 
                             // Call fetchDataByLog with the required parameters
-                            await fetchDataByLog(
+                            await fetchDataByNetwork(
                                 selectedNetwork,
                                 pagination.pageIndex,     // Page number
                                 pagination.pageSize,      // Page size (limit)
@@ -812,8 +811,6 @@ const TabNetworkContent: React.FC<TabNetworkContentProps> = ({
                         <path d="M3 4a1 1 0 011-1h3a1 1 0 110 2H5v2a1 1 0 11-2 0V5a1 1 0 010-1zM3 14a1 1 0 011 1v2h2a1 1 0 110 2H4a1 1 0 01-1-1v-3a1 1 0 011-1zm13-1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 110-2h2v-2a1 1 0 011-1zm0-8a1 1 0 011 1v3a1 1 0 11-2 0V5h-2a1 1 0 110-2h3a1 1 0 011 1z" />
                     </svg>
                 </button>
-
-
             </div>
             <FullScreen handle={handle}>
                 {/* Conditionally apply h-screen overflow-auto classes when fullscreen is active */}

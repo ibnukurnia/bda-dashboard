@@ -139,7 +139,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
           backgroundColor: '#05061e',
           position: 'sticky',
           top: 0,
-          zIndex: '999999',
+          zIndex: '99',
           paddingTop: 2,
           paddingBottom: 2,
         }}
