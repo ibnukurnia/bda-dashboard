@@ -26,8 +26,12 @@ const TableSeverity = ({ tableHeader, data, onClickSeverity, clickable }: TableS
                   className={`w-4 h-4 ${sdt.severity.toLowerCase() === 'critical' ? 'bg-red-600' : sdt.severity.toLowerCase() === 'major' ? 'bg-orange-600' : 'bg-yellow-400'}`}
                 />
                 <span
-                  className={`${clickable ? 'cursor-pointer' : ''}`}
-                  onClick={() => onClickSeverity && onClickSeverity(sdt.severity)}
+                  className={`${clickable && sdt.count > 0 ? 'cursor-pointer' : ''}`}
+                  onClick={() => {
+                    if (onClickSeverity && sdt.count > 0) {
+                      onClickSeverity(sdt.severity)
+                    }
+                  }}
                 >
                   {sdt.severity}
                 </span>
