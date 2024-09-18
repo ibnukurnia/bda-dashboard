@@ -80,7 +80,7 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {selectedRange || 'Select time range'}
+        {selectedRange?.split(' - ')?.length > 1 ? 'Custom' : selectedRange}
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"
@@ -109,14 +109,14 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
                 </div>
               </li>
             ))}
-            {/* <li key="custom">
+            <li key="custom">
               <div
                 onClick={() => handleRangeChange('Custom')}
                 className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
               >
                 Custom
               </div>
-            </li> */}
+            </li>
           </ul>
 
           {isCustomRange && (
