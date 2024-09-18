@@ -15,6 +15,7 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
   const [customRangeStart, setCustomRangeStart] = useState<string>(format(new Date(), "yyyy-MM-dd'T'HH:mm"))
   const [customRangeEnd, setCustomRangeEnd] = useState<string>(format(new Date(), "yyyy-MM-dd'T'HH:mm"))
   const [position, setPosition] = useState<number>(0)
+  const [validationMessage, setValidationMessage] = useState('')
   const dropdownRef = useRef<HTMLDivElement | null>(null)
   const dropdownContainerRef = useRef<HTMLDivElement | null>(null)
 
@@ -50,6 +51,32 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
       setIsOpen(false)
     }
   }
+
+  const logicValidationDateTime = () => {
+    if (
+      new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60 ||
+      new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() < 0 ||
+      new Date(customRangeEnd).getTime() === new Date(customRangeStart).getTime()
+    ) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  console.log(validationMessage, 'vm')
+
+  useEffect(() => {
+    if (new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60) {
+      setValidationMessage('Maximum range of time that can be selected is 1 hour')
+    } else if (new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() < 0) {
+      setValidationMessage('Invalid time selected')
+    } else if (new Date(customRangeEnd).getTime() === new Date(customRangeStart).getTime()) {
+      setValidationMessage('Minimum range of time that can be selected is 1 minute')
+    } else {
+      setValidationMessage('')
+    }
+  }, [customRangeStart, customRangeEnd])
 
   useEffect(() => {
     if (isOpen) {
@@ -131,15 +158,20 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
                 />
                 <label className="text-xs font-semibold text-gray-700">End Date and Time</label>
                 <input
+                  min={customRangeStart ?? ''}
                   type="datetime-local"
                   value={customRangeEnd}
                   onChange={(e) => setCustomRangeEnd(e.target.value)}
                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                 />
+                {validationMessage.length > 0 && (
+                  <span className="text-xs font-semibold text-gray-700 text-red-600">{validationMessage}</span>
+                )}
               </div>
               <button
                 onClick={handleCustomRangeChange}
-                className="bg-blue-600 text-white py-1 px-4 rounded hover:bg-blue-700 w-full text-sm mt-6"
+                className="bg-blue-600 text-white py-1 px-4 rounded hover:bg-blue-700 w-full text-sm mt-6 disabled:text-gray-400 disabled:bg-gray-200"
+                disabled={logicValidationDateTime()}
               >
                 Apply
               </button>
