@@ -206,11 +206,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         return activeType; // Default case, return the original activeType if no match
     };
 
-
-    // Get the keys of the object as an array
-    const keys = Object.keys(timeRanges);
-    // Find the index of the key
-    const selectedKeyIndex = keys.indexOf(currentZoomDateRange);
     const selectedTimeRange = timeRanges[currentZoomDateRange] ?? 15
 
     // Calculate endDate as the current time, rounding down the seconds to 00
@@ -223,7 +218,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     // Convert startDate and endDate to strings
     const predefinedStartTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
     const predefinedEndTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
-    console.log("atoekfowkfw " + activeType)
 
     const getMinX = () => {
         if (dateRangeMode === "predefined") {
@@ -309,8 +303,9 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
     useInterval(
         () => fetchMetricLog(
-            lastTimeRangeParam.startTime ?? predefinedStartTime,
-            lastTimeRangeParam.endTime ?? predefinedEndTime
+            lastTimeRangeParam.startTime ?
+                timeParamPlusInterval(lastTimeRangeParam.startTime) : predefinedStartTime,
+            predefinedEndTime,
         ),
         autoRefresh.interval,
         autoRefresh.enabled
@@ -355,22 +350,11 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 setInitialLoading(false)
             })
     }
-    const handleGraphZoomIn = async (minX: any, maxX: any) => {
-        if (dateRangeMode === "custom" && minX && maxX) {
-            setCustomTime({
-                startTime: minX,
-                endTime: maxX,
-            })
-            return
-        }
+    
+    const timeParamPlusInterval = (time: string) => {
+        return format(new Date(time).setMilliseconds(autoRefresh.interval ?? 0), 'yyyy-MM-dd HH:mm:ss')
+    } 
 
-        // Do nothing if already at max zoomed in
-        if (selectedKeyIndex <= 0) return
-
-        // Select new range
-        const newSelect = keys[selectedKeyIndex - 1];
-        setCurrentZoomDateRange(newSelect)
-    }
     const handleGraphZoomOut = async (minX: any, maxX: any) => {
         if ((lastTimeRangeParam.startTime != null && lastTimeRangeParam.endTime != null) &&
             (isBefore(lastTimeRangeParam.startTime, minX) || isAfter(lastTimeRangeParam.endTime, maxX))) {
@@ -393,8 +377,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         setSelectedGraphToggle(value)
     }
 
-    console.log(dataColumn)
-
     return (
         <div className="flex flex-col gap-8">
             {!isFullScreen && <FilterGraphAnomaly
@@ -408,8 +390,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 <Typography variant="h5" component="h5" color="white">
                     {`Graphic ${transformSelectedActiveType(activeType)} Anomaly Records`}
                 </Typography>
-
-
             </div>
             <div className="flex gap-2 items-center">
                 {selectedFilter.service &&

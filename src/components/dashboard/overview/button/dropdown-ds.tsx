@@ -61,7 +61,7 @@ const DropdownDS: React.FC<DropdownDSProps> = ({ data, onSelectData, selectedDat
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {selectedData || 'All Data Source'}
+        {data.find((el) => el.value === selectedData)?.label || 'All Data Source'}
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"
