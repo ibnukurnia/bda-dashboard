@@ -14,3 +14,10 @@ export const getTimeDifference = (date?: Date) => {
     return `Refreshed ${hours} hour${hours > 1 ? 's' : ''} ago`
   }
 };
+
+export const replaceWordingDataSource = (dataSource: string) => {
+  if (!dataSource) return dataSource
+  if (dataSource.toLowerCase() === "log brimo") return "Log Transaksi Brimo"
+  if (dataSource.toLowerCase() === "log apm") return "Log APM Brimo"
+  return dataSource
+}

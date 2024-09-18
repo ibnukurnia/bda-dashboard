@@ -102,7 +102,10 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                     // Zoomed out
                     if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {
                         if (!zoomOutDisabled) {
-                            onZoomOut && onZoomOut(xaxis.min, xaxis.max)
+                            onZoomOut && onZoomOut(
+                                minX >= xaxis.min ? minX : xaxis.min,
+                                maxX <= xaxis.max ? maxX : xaxis.max,
+                            )
                         }
 
                         if (minX >= xaxis.min && maxX <= xaxis.max) {
@@ -115,6 +118,12 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                             }
                         } else {
                             setZoomOutDisabled(false)
+                        }
+                        return {                                                                                                      
+                            xaxis: {
+                                min: minX >= xaxis.min ? minX : xaxis.min,
+                                max: maxX <= xaxis.max ? maxX : xaxis.max,
+                            }
                         }
                     }
                 },
