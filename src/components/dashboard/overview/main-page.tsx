@@ -4,6 +4,7 @@ import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'r
 
 import './main-page.css'
 
+import { useRouter } from 'next/navigation'
 import {
   GetChartsOverview,
   GetHealthScoreOverview,
@@ -154,6 +155,7 @@ const MainPageOverview = () => {
   const healthinessRef = useRef<HTMLDivElement>(null)
   const thSeverity = ['Severity', 'Count']
   const configDataKey = ['service_name', 'count_anomaly']
+  const router = useRouter()
 
   const handleApplyFilter = (sDataSource: any[]) => {
     // const handleApplyFilter = (sDataSource: any[], sService: { name: string; data: number[]; count?: number }[]) => {
@@ -272,6 +274,12 @@ const MainPageOverview = () => {
       return 'security'
     } else {
       return title
+    }
+  }
+
+  const handleClickSeverity = (severity: string) => {
+    if (selectedDataSource?.length > 0) {
+      router.push(`/dashboard/anomaly-detection?data_source=${selectedDataSource}&severity=${severity}`)
     }
   }
 
@@ -479,7 +487,7 @@ const MainPageOverview = () => {
                   <TableSeverity
                     tableHeader={thSeverity}
                     data={pieChartData}
-                    onClickSeverity={() => setModalSeverity(true)}
+                    onClickSeverity={(severity) => handleClickSeverity(severity)}
                   />
                 </div>
                 {/* <hr /> */}
