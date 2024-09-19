@@ -54,7 +54,7 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
 
   const logicValidationDateTime = () => {
     if (
-      new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60 ||
+      new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60 * 2 ||
       new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() < 0 ||
       new Date(customRangeEnd).getTime() === new Date(customRangeStart).getTime()
     ) {
@@ -65,8 +65,8 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
   }
 
   useEffect(() => {
-    if (new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60) {
-      setValidationMessage('Maximum range of time that can be selected is 1 hour')
+    if (new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60 * 2) {
+      setValidationMessage('Maximum range of time that can be selected is 2 hours')
     } else if (new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() < 0) {
       setValidationMessage('Invalid time selected')
     } else if (new Date(customRangeEnd).getTime() === new Date(customRangeStart).getTime()) {

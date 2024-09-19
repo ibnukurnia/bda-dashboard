@@ -11,7 +11,7 @@ import {
 } from '@tanstack/react-table'
 import { ArrowLeft, ArrowRight } from 'react-feather'
 import { CheckboxOption, fetchAnomalyOption, fetchServicesOption } from '@/lib/api'
-import DropdownRange from '../../dropdownRange'
+import DropdownTime from '../button/dropdown-time'
 import FilterPanel from '../button/filterPanel'
 import GraphAnomalyCard from '../card/graph-anomaly-card'
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
@@ -728,7 +728,7 @@ const TabContent: React.FC<TabContentProps> = ({
                     <Typography variant="body2" component="p" color="white">
                         {timeDifference}
                     </Typography>
-                    <DropdownRange
+                    <DropdownTime
                         timeRanges={PREDEFINED_TIME_RANGES}
                         onRangeChange={handleRangeChange}
                         selectedRange={selectedTimeRange} // Pass selectedRange as a prop
