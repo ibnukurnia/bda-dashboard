@@ -50,16 +50,10 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
       enabled: true,
     },
     xaxis: {
-      max: new Date().getTime(),
-      min: new Date().getTime() - 1000 * 60 * 30,
-      categories: '',
-      tooltip: {
-        enabled: false,
-      },
-      type: 'datetime',
+      type: 'datetime', // Ensure the x-axis is of datetime type
       labels: {
         formatter(value, _, __) {
-          const date = new Date(value)
+          const date = new Date(value);
           const formattedDate = date.toLocaleDateString('id-ID', {
             year: 'numeric',
             month: 'short',
@@ -67,8 +61,8 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
-          })
-          return formattedDate.split(', ')
+          });
+          return formattedDate.split(', ');
         },
         style: {
           colors: 'white', // White color for x-axis text
@@ -135,7 +129,7 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
       type="line"
       height={300}
       width={'100%'}
-      // data-chart-id={`chart${index + 1}`}
+    // data-chart-id={`chart${index + 1}`}
     />
   )
 }
