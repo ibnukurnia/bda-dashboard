@@ -99,7 +99,7 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
                                 </button>
                             </li>
                         ))}
-                        {/* <li key="custom">
+                        <li key="custom">
                             <button
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -109,10 +109,10 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
                             >
                                 Custom
                             </button>
-                        </li> */}
+                        </li>
                     </ul>
 
-                    {/* {isCustomRange && (
+                    {isCustomRange && (
                         <div className="p-4 border-l-2 w-full">
                             <div className="flex flex-col space-y-3">
                                 <label className="text-xs font-semibold text-gray-700">Start Date and Time</label>
@@ -146,7 +146,7 @@ const DropdownRange: React.FC<DropdownRangeProps> = ({ timeRanges, onRangeChange
                                 </button>
                             )}
                         </div>
-                    )} */}
+                    )}
                 </div>
             )}
         </div>

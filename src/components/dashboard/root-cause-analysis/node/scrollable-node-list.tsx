@@ -22,7 +22,7 @@ interface ScrollableNodeListProps {
   expandedIndex: number;
   expandedChildIndex: number;
   handleOnScroll: (scrollTop: number) => void;
-  handleOpenDetail?: () => void;
+  handleOpenDetail?: (node: TreeNodeType) => void;
   fullScreenHandle: FullScreenHandle; // From react-full-screen
   maxCount: number;
 }
@@ -67,10 +67,6 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
     handleSliderHeight()
     handleContainerWidth()
     handleContainerHeight()
-    // setMaxCount(nodes.reduce((count, node) => {
-    //   if (!node.anomalyCount) return count
-    //   return node.anomalyCount > count ? node.anomalyCount : count
-    // }, 0))
   }, [nodes])
 
   useUpdateEffect(() => {
@@ -176,7 +172,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
             count={node.anomalyCount}
             expanded={expandedIndex === index}
             handleOnClickNode={()=> handleOnClickNode(index)}
-            handleOpenDetail={handleOpenDetail}
+            handleOpenDetail={handleOpenDetail ? () => handleOpenDetail(node) : undefined}
           />
         ))}
       </div>

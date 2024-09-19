@@ -16,7 +16,7 @@ type ExpandedNodesType = {
 
 interface RCATreeProps {
   data: RootCauseAnalysisTreeResponse[] | null;
-  handleDetail: () => void;
+  handleDetail: (dataSource: string, metricAnomaly: string, service: string) => void;
   fullScreenHandle: FullScreenHandle; // From react-full-screen
 }
 const RCATree: React.FC<RCATreeProps> = ({
@@ -34,6 +34,7 @@ const RCATree: React.FC<RCATreeProps> = ({
     if (!data) return
     setMappedData(data.map(s => ({
       name: s.source,
+      namespace: s.type,
       anomalyCount: s.routes.reduce((count, r) => count + r.total, 0),
       children: s.routes.map(r => ({
         name: r.anomaly,
@@ -115,6 +116,12 @@ const RCATree: React.FC<RCATreeProps> = ({
     })
   }
 
+  const handleClickDetail = (service: string) => {
+    const dataSource = expandedNodes[0].node.namespace ?? expandedNodes[0].node.name
+    const metricAnomaly = expandedNodes[1].node.name
+    handleDetail(dataSource, metricAnomaly, expandedNodes[2]?.node?.name ?? service)
+  }
+
   return (
     <div className='w-full px-6 pb-8 flex flex-col gap-8'>
       <div
@@ -174,7 +181,7 @@ const RCATree: React.FC<RCATreeProps> = ({
                 expandedIndex={expandedNodes[i+1]?.nodeIndex}
                 expandedChildIndex={expandedNodes[i+2]?.nodeIndex - scrollTopPositions[i+2] / nodeHeight}
                 handleOnScroll={(scrollTop) => handleOnScroll(i + 1, scrollTop)}
-                handleOpenDetail={i === 1 ? handleDetail : undefined}
+                handleOpenDetail={i === 1 ? (node) => handleClickDetail(node.name) : undefined}
                 fullScreenHandle={fullScreenHandle}
                 maxCount={totalAnomaly}
               />

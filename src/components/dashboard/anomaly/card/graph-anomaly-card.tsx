@@ -10,6 +10,7 @@ import { ColumnOption } from "@/types/anomaly";
 import { format, isAfter, isBefore } from "date-fns";
 import Toggle, { ToggleOption } from "../button/toggle";
 import useInterval from "@/hooks/use-interval";
+import { NAMESPACE_LABELS } from "@/constants";
 
 const toggleList: ToggleOption[] = [
     {
@@ -174,37 +175,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
 
     const abortControllerRef = useRef<AbortController | null>(null); // Ref to store the AbortController
-
-    const transformSelectedActiveType = (activeType: string | undefined) => {
-        if (activeType === "apm") {
-            return "Log  APM";
-        } else if (activeType === "brimo") {
-            return "Log Brimo";
-        } else if (activeType === "k8s_prometheus")
-            return "Prometheus OCP";
-        else if (activeType === "k8s_db") {
-            return "Prometheus DB";
-        }
-        else if (activeType === "ivat") {
-            return "Ivat"
-        }
-        else if (activeType === "panw") {
-            return "Palo Alto"
-        }
-        else if (activeType === "fortinet") {
-            return "Fortinet"
-        }
-        else if (activeType === "waf") {
-            return "Web Application Security"
-        }
-        else if (activeType === "prtg") {
-            return "Prtg"
-        }
-        else if (activeType === "zabbix") {
-            return "Zabbix"
-        }
-        return activeType; // Default case, return the original activeType if no match
-    };
 
     const selectedTimeRange = timeRanges[currentZoomDateRange] ?? 15
 
@@ -388,7 +358,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             />}
             <div className='flex flex-col gap-2'>
                 <Typography variant="h5" component="h5" color="white">
-                    {`Graphic ${transformSelectedActiveType(activeType)} Anomaly Records`}
+                    {`Graphic ${NAMESPACE_LABELS[activeType]} Anomaly Records`}
                 </Typography>
             </div>
             <div className="flex gap-2 items-center">

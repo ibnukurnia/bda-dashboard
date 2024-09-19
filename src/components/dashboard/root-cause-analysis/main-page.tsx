@@ -18,18 +18,8 @@ import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import Button from '@/components/system/Button/Button'
 import { Maximize } from 'react-feather'
 import DropdownTime from './button/dropdown-time'
-
-const defaultTimeRanges: Record<string, number> = {
-  'Last 5 minutes': 5,
-  'Last 15 minutes': 15,
-  'Last 30 minutes': 30,
-  'Last 1 hours': 60,
-  'Last 6 hours': 360,
-  'Last 24 hours': 1440,
-  'Last 3 days': 4320,
-  'Last 1 week': 10080,
-  'Last 1 month': 43800,
-}
+import { useRouter } from 'next/navigation'
+import { PREDEFINED_TIME_RANGES } from '@/constants'
 
 const MainPageRootCauseAnalysis = () => {
   const [selectedRange, setSelectedRange] = useState<string>('Last 24 hours')
@@ -52,7 +42,8 @@ const MainPageRootCauseAnalysis = () => {
   })
   const [initialLoading, setInitialLoading] = useState(true)
   const [modalServices, setModalServices] = useState(false)
-
+  
+  const router = useRouter()
   const handle = useFullScreenHandle();
 
   useEffect(() => {
@@ -87,7 +78,7 @@ const MainPageRootCauseAnalysis = () => {
         endDate = end;
     } else {
         // Handle predefined ranges
-        const selectedTimeRange = defaultTimeRanges[rangeKey]; // Get the selected time range in minutes
+        const selectedTimeRange = PREDEFINED_TIME_RANGES[rangeKey]; // Get the selected time range in minutes
 
         // Calculate endDate as the current time, rounding down the seconds to 00
         const endDateObj = new Date();
@@ -119,8 +110,13 @@ const MainPageRootCauseAnalysis = () => {
     });
   };
 
-  const handleDetail = () => {
-    setModalServices(true)
+  const handleDetail = (dataSource: string, metricAnomaly: string, service: string, ) => {
+    const params = new URLSearchParams();
+    params.set("data_source", dataSource)
+    params.set("anomaly", metricAnomaly)
+    params.set("service", service)
+    params.set("time_range", selectedRange)
+    router.push(`/dashboard/anomaly-detection?${params.toString()}`)
   }
 
   return (
@@ -137,7 +133,7 @@ const MainPageRootCauseAnalysis = () => {
               selectedRange={selectedRange} // Pass selectedRange as a prop
             /> */}
             <DropdownTime
-              timeRanges={defaultTimeRanges}
+              timeRanges={PREDEFINED_TIME_RANGES}
               onRangeChange={handleRangeChange}
               selectedRange={selectedRange} // Pass selectedRange as a prop
             />
