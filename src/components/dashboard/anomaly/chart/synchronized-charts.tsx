@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
-import { Typography } from '@mui/material';
 import './custom-chart-styles.css';
 import { MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions';
 import { formatDate } from 'date-fns';
@@ -99,7 +98,10 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                 // Zoomed out
                                 if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {
                                     if (!zoomOutDisabled) {
-                                        onZoomOut && onZoomOut(xaxis.min, xaxis.max)
+                                        onZoomOut && onZoomOut(
+                                            minX >= xaxis.min ? minX : xaxis.min,
+                                            maxX <= xaxis.max ? maxX : xaxis.max,
+                                        )
                                     }
             
                                     if (minX >= xaxis.min && maxX <= xaxis.max) {
@@ -112,6 +114,12 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                         }
                                     } else {
                                         setZoomOutDisabled(false)
+                                    }
+                                    return {                                                                                                      
+                                        xaxis: {
+                                            min: minX >= xaxis.min ? minX : xaxis.min,
+                                            max: maxX <= xaxis.max ? maxX : xaxis.max,
+                                        }
                                     }
                                 }
                             },

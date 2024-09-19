@@ -93,6 +93,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         };
     }, [isOpen]);
 
+    useEffect(() => {
+        setSelectedAnomalyOptions([])
+    }, [checkboxOptions])
+
+    useEffect(() => {
+        setSelectedServiceOptions([])
+    }, [servicesOptions])
+    
     return (
         <div className="flex self-start z-50">
             <button

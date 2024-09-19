@@ -5,6 +5,7 @@ import TopBar from '../bar/top-bar';
 import { RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis';
 import { Typography } from '@mui/material';
 import { FullScreenHandle } from 'react-full-screen';
+import { replaceWordingDataSource } from '../helper';
 
 const nodeHeight = 80
 
@@ -15,7 +16,7 @@ type ExpandedNodesType = {
 
 interface RCATreeProps {
   data: RootCauseAnalysisTreeResponse[] | null;
-  handleDetail: () => void;
+  handleDetail: (dataSource: string, metricAnomaly: string, service: string) => void;
   fullScreenHandle: FullScreenHandle; // From react-full-screen
 }
 const RCATree: React.FC<RCATreeProps> = ({
@@ -27,11 +28,13 @@ const RCATree: React.FC<RCATreeProps> = ({
   const [expandedNodes, setExpandedNodes] = useState<ExpandedNodesType[]>([]);
   const [scrollTopPositions, setScrollTopPositions] = useState<number[]>([])
   const [mappedData, setMappedData] = useState<TreeNodeType[]>([])
+  const [totalAnomaly, setTotalAnomaly] = useState<number>(0)
 
   useEffect(() => {
     if (!data) return
     setMappedData(data.map(s => ({
       name: s.source,
+      namespace: s.type,
       anomalyCount: s.routes.reduce((count, r) => count + r.total, 0),
       children: s.routes.map(r => ({
         name: r.anomaly,
@@ -48,6 +51,7 @@ const RCATree: React.FC<RCATreeProps> = ({
   }, [data])
 
   useEffect(() => {
+    setTotalAnomaly(mappedData.reduce((total, data) => total + (data.anomalyCount ?? 0), 0))
     setExpandedNodes(prev => {
       const newArr: ExpandedNodesType[] = []
       let tempNode: TreeNodeType
@@ -112,6 +116,12 @@ const RCATree: React.FC<RCATreeProps> = ({
     })
   }
 
+  const handleClickDetail = (service: string) => {
+    const dataSource = expandedNodes[0].node.namespace ?? expandedNodes[0].node.name
+    const metricAnomaly = expandedNodes[1].node.name
+    handleDetail(dataSource, metricAnomaly, expandedNodes[2]?.node?.name ?? service)
+  }
+
   return (
     <div className='w-full px-6 pb-8 flex flex-col gap-8'>
       <div
@@ -123,7 +133,7 @@ const RCATree: React.FC<RCATreeProps> = ({
         {mappedData &&
           <TopBar
             title={"Data Source"}
-            subtitle={expandedNodes[0]?.node?.name}
+            subtitle={replaceWordingDataSource(expandedNodes[0]?.node?.name)}
           />
         }
         {expandedNodes[0] &&
@@ -148,7 +158,7 @@ const RCATree: React.FC<RCATreeProps> = ({
       <div
         className="grid gap-16 justify-center items-center"
           style={{
-            gridTemplateColumns: "repeat(4, 1fr)"
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))"
           }}
       >
         <ScrollableNodeList
@@ -158,8 +168,10 @@ const RCATree: React.FC<RCATreeProps> = ({
           expandedChildIndex={expandedNodes[1]?.nodeIndex - scrollTopPositions[1] / nodeHeight}
           handleOnScroll={(scrollTop) => handleOnScroll(0, scrollTop)}
           fullScreenHandle={fullScreenHandle}
+          maxCount={totalAnomaly}
         />
         {expandedNodes.map((expNode, i) => {
+          if (i >= 3) return null
           if (expNode.node.children != null && Array.isArray(expNode.node.children) && expNode.node.children.length > 0) {
             return (
               <ScrollableNodeList
@@ -169,8 +181,9 @@ const RCATree: React.FC<RCATreeProps> = ({
                 expandedIndex={expandedNodes[i+1]?.nodeIndex}
                 expandedChildIndex={expandedNodes[i+2]?.nodeIndex - scrollTopPositions[i+2] / nodeHeight}
                 handleOnScroll={(scrollTop) => handleOnScroll(i + 1, scrollTop)}
-                handleOpenDetail={i === 1 ? handleDetail : undefined}
+                handleOpenDetail={i === 1 ? (node) => handleClickDetail(node.name) : undefined}
                 fullScreenHandle={fullScreenHandle}
+                maxCount={totalAnomaly}
               />
             );
           }

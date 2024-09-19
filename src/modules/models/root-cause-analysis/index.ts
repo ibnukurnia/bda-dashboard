@@ -10,5 +10,6 @@ type ImpactedService = {
 }
 export interface RootCauseAnalysisTreeResponse {
   source: string;
+  type: string;
   routes: Route[];
 }

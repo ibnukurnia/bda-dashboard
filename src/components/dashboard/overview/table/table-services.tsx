@@ -53,6 +53,16 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight }: TableServices
                   ))}
                 </tr>
               ))
+            ) : data.length === 0 ? (
+              <tr>
+                <td className="py-1 px-1 td">
+                  <div className={`flex items-center gap-2 'text-left' font-regular`}>
+                    <div className="flex items-center gap-2 cursor-pointer">
+                      <span>No anomalies</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
             ) : (
               <tr>
                 <td className="py-1 px-1 td">

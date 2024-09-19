@@ -2,9 +2,10 @@ interface TableSeverityProps {
   tableHeader: string[]
   data: { count: number; severity: string; color: string }[]
   onClickSeverity?: (severity: string) => void
+  clickable: boolean
 }
 
-const TableSeverity = ({ tableHeader, data, onClickSeverity }: TableSeverityProps) => {
+const TableSeverity = ({ tableHeader, data, onClickSeverity, clickable }: TableSeverityProps) => {
   return (
     <div>
       <table className="w-full text-white">
@@ -24,7 +25,14 @@ const TableSeverity = ({ tableHeader, data, onClickSeverity }: TableSeverityProp
                 <span
                   className={`w-4 h-4 ${sdt.severity.toLowerCase() === 'critical' ? 'bg-red-600' : sdt.severity.toLowerCase() === 'major' ? 'bg-orange-600' : 'bg-yellow-400'}`}
                 />
-                <span className="cursor-pointer" onClick={() => onClickSeverity && onClickSeverity(sdt.severity)}>
+                <span
+                  className={`${clickable && sdt.count > 0 ? 'cursor-pointer' : ''}`}
+                  onClick={() => {
+                    if (onClickSeverity && sdt.count > 0) {
+                      onClickSeverity(sdt.severity)
+                    }
+                  }}
+                >
                   {sdt.severity}
                 </span>
               </td>

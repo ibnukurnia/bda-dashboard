@@ -5,13 +5,16 @@ import './scrollable-node-list.css'
 import Path from '../path/path';
 import { ChevronDown, ChevronUp } from 'react-feather';
 import { FullScreenHandle } from 'react-full-screen';
+import useUpdateEffect from '@/hooks/use-update-effect';
 
 const nodeHeight = 80
 const headerHeight = 96
+const titleHeight = 64
 const filterHeight = 44
 const gapHeight = 32
+const otherHeight = 35
 const otherElementHeight = (isFullScreen: boolean) =>
-  !isFullScreen ? headerHeight + filterHeight + gapHeight + 32 + 64 + 96 : 32 * 5 + 64
+  !isFullScreen ? headerHeight + filterHeight + gapHeight * 6 + titleHeight + otherHeight : gapHeight * 6 + titleHeight
 
 interface ScrollableNodeListProps {
   nodes: TreeNodeType[];
@@ -19,8 +22,9 @@ interface ScrollableNodeListProps {
   expandedIndex: number;
   expandedChildIndex: number;
   handleOnScroll: (scrollTop: number) => void;
-  handleOpenDetail?: () => void;
+  handleOpenDetail?: (node: TreeNodeType) => void;
   fullScreenHandle: FullScreenHandle; // From react-full-screen
+  maxCount: number;
 }
 
 const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
@@ -31,12 +35,12 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   handleOnScroll,
   handleOpenDetail,
   fullScreenHandle, // Use handle from react-full-screen
+  maxCount,
 }) => {
   const [hideButtonUp, setHideButtonUp] = useState<boolean>(true);
   const [hideButtonDown, setHideButtonDown] = useState<boolean>(true);
   const [sliderHeight, setSliderHeight] = useState<number>(0);
   const [scrollTopPositions, setScrollTopPositions] = useState<number>(0)
-  const [maxCount, setMaxCount] = useState<number>(0)
   const [containerWidth, setContainerWidth] = useState(0)
   const [containerHeight, setContainerHeight] = useState(window.innerHeight - otherElementHeight(fullScreenHandle.active))
 
@@ -47,13 +51,15 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
     window.addEventListener('resize', handleContainerWidth);
     window.addEventListener('resize', handleContainerHeight);
     return () => {
-        window.removeEventListener('resize', handleSliderHeight);
-        window.removeEventListener('resize', handleContainerWidth);
-        window.removeEventListener('resize', handleContainerHeight);
+      window.removeEventListener('resize', handleSliderHeight);
+      window.removeEventListener('resize', handleContainerWidth);
+      window.removeEventListener('resize', handleContainerHeight);
     };
   }, [])
 
-  useEffect(() => {
+  useUpdateEffect(() => {
+    handleSliderHeight()
+    handleContainerWidth()
     handleContainerHeight()
   }, [fullScreenHandle.active])
 
@@ -61,13 +67,9 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
     handleSliderHeight()
     handleContainerWidth()
     handleContainerHeight()
-    setMaxCount(nodes.reduce((count, node) => {
-      if (!node.anomalyCount) return count
-      return node.anomalyCount > count ? node.anomalyCount : count
-    }, 0))
   }, [nodes])
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     handleScrollButtonVisibility()
   }, [sliderHeight])
 
@@ -170,7 +172,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
             count={node.anomalyCount}
             expanded={expandedIndex === index}
             handleOnClickNode={()=> handleOnClickNode(index)}
-            handleOpenDetail={handleOpenDetail}
+            handleOpenDetail={handleOpenDetail ? () => handleOpenDetail(node) : undefined}
           />
         ))}
       </div>

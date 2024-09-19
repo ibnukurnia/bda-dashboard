@@ -102,16 +102,12 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
     }
   }, [isOpen])
 
-  useEffect(() => {
-    if (selectedRange?.split(' - ')?.length > 1) {
-      setIsCustomRange(true)
-    }
-  }, [selectedRange, isOpen])
-
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {selectedRange?.split(' - ')?.length > 1 ? 'Custom' : selectedRange}
+        <span className='h-5 flex items-center'>
+          {selectedRange?.split(' - ')?.length > 1 ? 'Custom' : selectedRange}
+        </span>
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"
@@ -127,24 +123,23 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
         <div
           ref={dropdownContainerRef}
           style={{ top: position }}
-          className={`absolute left-0 bg-white rounded-lg shadow-lg z-50 flex ${isCustomRange ? 'w-[600px]' : 'w-[auto]'}`}
+          className={`absolute right-0 bg-white rounded-lg shadow-lg z-50 flex ${isCustomRange ? 'w-[600px]' : 'w-[auto]'}`}
         >
           <ul className="text-sm text-gray-800 w-48">
             {Object.keys(timeRanges).map((rangeKey) => (
               <li key={rangeKey}>
                 <div
                   onClick={() => handleRangeChange(rangeKey)}
-                  className={`cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg flex justify-between items-center`}
+                  className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
                 >
-                  <span>{rangeKey}</span>
-                  {/* {rangeKey === selectedRange && <CheckCircle color='rgb(30 64 175)' size={'20px'} />} */}
+                  {rangeKey}
                 </div>
               </li>
             ))}
             <li key="custom">
               <div
                 onClick={() => handleRangeChange('Custom')}
-                className={`cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg`}
+                className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
               >
                 Custom
               </div>
