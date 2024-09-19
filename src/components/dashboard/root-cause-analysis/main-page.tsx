@@ -127,11 +127,6 @@ const MainPageRootCauseAnalysis = () => {
             <Typography variant="body2" component="p" color="white">
               {lastUpdateString}
             </Typography>
-            {/* <DropdownRange
-              timeRanges={defaultTimeRanges}
-              onRangeChange={handleRangeChange}
-              selectedRange={selectedRange} // Pass selectedRange as a prop
-            /> */}
             <DropdownTime
               timeRanges={PREDEFINED_TIME_RANGES}
               onRangeChange={handleRangeChange}

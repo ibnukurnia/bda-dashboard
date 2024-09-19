@@ -25,8 +25,6 @@ export default function Page({ searchParams }: PageProps): React.JSX.Element {
         searchParams.time_range = DEFAULT_TIME_RANGE
     }
     
-    console.log(correctedSearchParams, searchParams);
-    
     if (correctedSearchParams) {
         const filteredSearchParams = Object.fromEntries(
             Object.entries(searchParams)
