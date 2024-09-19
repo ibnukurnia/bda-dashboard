@@ -1,3 +1,4 @@
+import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState, ChangeEvent } from 'react';
 
 interface CheckboxOption {
@@ -23,6 +24,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     hasErrorFilterAnomaly,
     hasErrorFilterService
 }) => {
+    const searchParams = useSearchParams();
+
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
@@ -93,13 +96,16 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         };
     }, [isOpen]);
 
+    
     useEffect(() => {
-        setSelectedAnomalyOptions([])
-    }, [checkboxOptions])
+        const anomalies = searchParams.getAll("anomaly")
+        const services = searchParams.getAll("service")
 
-    useEffect(() => {
-        setSelectedServiceOptions([])
-    }, [servicesOptions])
+        setSelectedAnomalyOptions(anomalies.filter(anomaly =>
+            checkboxOptions.some(option => option.id === anomaly)))
+        setSelectedServiceOptions(services.filter(service =>
+            servicesOptions.some(option => option === service)))
+    }, [searchParams, checkboxOptions, servicesOptions])
     
     return (
         <div className="flex self-start z-50">

@@ -32,7 +32,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
   const handleDropdownClick = (dataSource: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('data_source', dataSource);
-    
+
     // Clear the selected options
     params.delete("anomaly")
     params.delete("service")
@@ -45,7 +45,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
     <div className='flex flex-row justify-between'>
       <div className='flex flex-row gap-6 container-button-x p-3' ref={dropdownRef}>
         {TAB_DATA_SOURCE.map((ds, i) =>
-          <div className="container-button relative inline-block z-[98]" key={ds.textLabel}>
+          <div className="container-button relative inline-block z-50" key={ds.textLabel}>
             <button
               onClick={() => ds.children ? handleTabClick(i) : handleDropdownClick(ds.namespace)}
               className={`flex items-center px-4 py-2 border rounded text-white ${activeTab?.textLabel === ds.textLabel ? 'active' : 'bg-transparent'} transition duration-300 ease-in-out`}
