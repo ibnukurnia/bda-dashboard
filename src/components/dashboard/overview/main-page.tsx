@@ -4,6 +4,7 @@ import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'r
 
 import './main-page.css'
 
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import {
   GetChartsOverview,
   GetHealthScoreOverview,
@@ -154,6 +155,7 @@ const MainPageOverview = () => {
   const healthinessRef = useRef<HTMLDivElement>(null)
   const thSeverity = ['Severity', 'Count']
   const configDataKey = ['service_name', 'count_anomaly']
+  const router = useRouter()
 
   const handleApplyFilter = (sDataSource: any[]) => {
     // const handleApplyFilter = (sDataSource: any[], sService: { name: string; data: number[]; count?: number }[]) => {
@@ -162,11 +164,8 @@ const MainPageOverview = () => {
     setModalServices(false)
   }
 
-  console.log(selectedRange, 'sr')
-
-  const handleChangeTimeRange = (time: string) => {
+  const handleStartEnd = (time: string) => {
     const timeSplit = time.split(' - ')
-    const selectedTR = timeRanges[time]
 
     let startTime: string | Date
     let endTime: string | Date
@@ -179,13 +178,20 @@ const MainPageOverview = () => {
       endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
     }
 
+    return { startTime, endTime }
+  }
+
+  const handleChangeTimeRange = (time: string) => {
+    const { startTime, endTime } = handleStartEnd(time)
+
     setSelectedRange(time)
 
     setIsLoadingHealthScore(true)
     setIsLoadingPieChart(true)
     setIsLoadingTopServices(true)
 
-    const params = { type: selectedDataSource, time_range: selectedTR }
+    const paramsTime = { start_time: startTime, end_time: endTime }
+    const params = { type: selectedDataSource, ...paramsTime }
 
     GetPieChartsOverview(params)
       .then((res) => {
@@ -205,7 +211,7 @@ const MainPageOverview = () => {
         setTopServicesData({ header: [], data: [] })
         setIsLoadingTopServices(false)
       })
-    GetHealthScoreOverview({ time_range: selectedTR })
+    GetHealthScoreOverview(paramsTime)
       .then((res) => {
         setHealthScoreData(res.data)
         setIsLoadingHealthScore(false)
@@ -217,22 +223,8 @@ const MainPageOverview = () => {
   }
 
   const handleChangeFilterDS = (value: string) => {
-    const timeSplit = selectedRange.split(' - ')
-    const params = { type: value, time_range: timeRanges[selectedRange] }
-
-    let startTime: string | Date
-    let endTime: string | Date
-
-    if (timeSplit.length > 1) {
-      startTime = timeSplit?.[0]
-      endTime = timeSplit?.[1]
-    } else {
-      startTime = format(
-        new Date(new Date().getTime() - toMiliseconds * timeRanges[selectedRange]),
-        'yyyy-MM-dd HH:mm:ss'
-      )
-      endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-    }
+    const { startTime, endTime } = handleStartEnd(selectedRange)
+    const params = { type: value, start_time: startTime, end_time: endTime }
 
     setSelectedDataSource(value)
 
@@ -275,6 +267,26 @@ const MainPageOverview = () => {
     }
   }
 
+  const handleClickSeverity = (severity: string) => {
+    const { startTime, endTime } = handleStartEnd(selectedRange)
+    const logicSelectedRange = selectedRange.split(' - ').length > 1 ? 'Custom' : selectedRange
+
+    if (selectedDataSource?.length > 0) {
+      router.push(
+        '/dashboard/anomaly-detection?data_source=' +
+          selectedDataSource +
+          '&severity=' +
+          severity +
+          '&time_range=' +
+          logicSelectedRange +
+          '&start=' +
+          startTime +
+          '&end=' +
+          endTime
+      )
+    }
+  }
+
   useEffect(() => {
     GetChartsOverview({ time_range: 30 })
       .then((res) => {
@@ -296,27 +308,19 @@ const MainPageOverview = () => {
   }, [])
 
   useEffect(() => {
-    const timeSplit = selectedRange.split(' - ')
-
-    let startTime: string | Date
-    let endTime: string | Date
-
-    if (timeSplit.length > 1) {
-      startTime = timeSplit?.[0]
-      endTime = timeSplit?.[1]
-    } else {
-      startTime = format(
-        new Date(new Date().getTime() - toMiliseconds * timeRanges[selectedRange]),
-        'yyyy-MM-dd HH:mm:ss'
-      )
-      endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-    }
+    const { startTime, endTime } = handleStartEnd(selectedRange)
 
     setIsLoadingHealthScore(true)
     setIsLoadingPieChart(true)
     setIsLoadingTopServices(true)
 
-    GetPieChartsOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+    const paramsTime = { start_time: startTime, end_time: endTime }
+    const params = {
+      type: selectedDataSource,
+      ...paramsTime,
+    }
+
+    GetPieChartsOverview(params)
       .then((res) => {
         setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)))
         setIsLoadingPieChart(false)
@@ -325,7 +329,7 @@ const MainPageOverview = () => {
         setPieChartData([])
         setIsLoadingPieChart(false)
       })
-    GetTopServicesOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
+    GetTopServicesOverview(params)
       .then((res) => {
         setTopServicesData(res.data)
         setIsLoadingTopServices(false)
@@ -334,7 +338,7 @@ const MainPageOverview = () => {
         setTopServicesData({ header: [], data: [] })
         setIsLoadingTopServices(false)
       })
-    GetHealthScoreOverview({ time_range: timeRanges[selectedRange] })
+    GetHealthScoreOverview(paramsTime)
       .then((res) => {
         setHealthScoreData(res.data)
         setIsLoadingHealthScore(false)
@@ -345,47 +349,52 @@ const MainPageOverview = () => {
       })
   }, [])
 
-  // useEffect(() => {
-  //   const intervalOverview = setInterval(() => {
-  //     if (!isLoadingHealthScore && !isLoadingPieChart && !isLoadingTopServices) {
-  //       setIsLoadingHealthScore(true)
-  //       setIsLoadingPieChart(true)
-  //       setIsLoadingTopServices(true)
+  useEffect(() => {
+    const intervalOverview = setInterval(() => {
+      if (
+        !isLoadingHealthScore &&
+        !isLoadingPieChart &&
+        !isLoadingTopServices &&
+        selectedRange.split(' - ').length <= 1
+      ) {
+        const timeSplit = selectedRange.split(' - ')
 
-  //       GetPieChartsOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
-  //         .then((res) => {
-  //           setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)))
-  //           setIsLoadingPieChart(false)
-  //         })
-  //         .catch(() => {
-  //           setPieChartData([])
-  //           setIsLoadingPieChart(false)
-  //         })
-  //       GetTopServicesOverview({ type: selectedDataSource, time_range: timeRanges[selectedRange] })
-  //         .then((res) => {
-  //           setTopServicesData(res.data)
-  //           setIsLoadingTopServices(false)
-  //         })
-  //         .catch(() => {
-  //           setTopServicesData({ header: [], data: [] })
-  //           setIsLoadingTopServices(false)
-  //         })
-  //       GetHealthScoreOverview({ time_range: timeRanges[selectedRange] })
-  //         .then((res) => {
-  //           setHealthScoreData(res.data)
-  //           setIsLoadingHealthScore(false)
-  //         })
-  //         .catch(() => {
-  //           setHealthScoreData([])
-  //           setIsLoadingHealthScore(false)
-  //         })
-  //     }
-  //   }, 5000)
+        let startTime: string | Date
+        let endTime: string | Date
 
-  //   return () => {
-  //     clearInterval(intervalOverview)
-  //   }
-  // }, [selectedDataSource, timeRanges, isLoadingPieChart, isLoadingHealthScore, isLoadingTopServices])
+        if (timeSplit.length > 1) {
+          startTime = timeSplit?.[0]
+          endTime = timeSplit?.[1]
+        } else {
+          startTime = format(
+            new Date(new Date().getTime() - toMiliseconds * timeRanges[selectedRange]),
+            'yyyy-MM-dd HH:mm:ss'
+          )
+          endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+        }
+
+        const paramsTime = { start_time: startTime, end_time: endTime }
+        const params = {
+          type: selectedDataSource,
+          ...paramsTime,
+        }
+
+        GetPieChartsOverview(params)
+          .then((res) => setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity))))
+          .catch(() => setPieChartData([]))
+        GetTopServicesOverview(params)
+          .then((res) => setTopServicesData(res.data))
+          .catch(() => setTopServicesData({ header: [], data: [] }))
+        GetHealthScoreOverview(paramsTime)
+          .then((res) => setHealthScoreData(res.data))
+          .catch(() => setHealthScoreData([]))
+      }
+    }, 5000)
+
+    return () => {
+      clearInterval(intervalOverview)
+    }
+  }, [selectedDataSource, timeRanges, isLoadingPieChart, isLoadingHealthScore, isLoadingTopServices, selectedRange])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -473,12 +482,11 @@ const MainPageOverview = () => {
                   <TableSeverity
                     tableHeader={thSeverity}
                     data={pieChartData}
-                    onClickSeverity={() => setModalSeverity(true)}
+                    onClickSeverity={(severity) => handleClickSeverity(severity)}
+                    clickable={selectedDataSource?.length > 0}
                   />
                 </div>
-                {/* <hr /> */}
                 <TableServices
-                  // data={servicesData}
                   data={topServicesData.data}
                   tableHeader={topServicesData.header}
                   dataKeys={configDataKey}
@@ -494,12 +502,20 @@ const MainPageOverview = () => {
             />
           </div> */}
           </div>
-          <div className="flex flex-col gap-8 card">
+          <div className="flex flex-col gap-8 card relative">
             <span className="font-bold text-white text-2xl">Healthiness</span>
+            {!healthScoreData.length && (
+              <span className="text-center text-white absolute top-1/2 w-full left-0">
+                Terjadi kesalahan. Silakan refresh halaman ini atau coba beberapa saat lagi
+              </span>
+            )}
             <div className="flex flex-wrap gap-8" ref={healthinessRef}>
-              {isLoadingHealthScore
-                ? Array.from({ length: 5 }).map((_item, itemId) => <Skeleton height={206} width={300} key={itemId} />)
-                : healthScoreData.map((hd: any, hdid: number) => {
+              {
+                // isLoadingHealthScore
+                //   ? Array.from({ length: 5 }).map((_item, itemId) => <Skeleton height={206} width={300} key={itemId} />)
+                //   :
+                healthScoreData.length &&
+                  healthScoreData.map((hd: any, hdid: number) => {
                     const label = (dataSource: string) => {
                       if (dataSource?.toLowerCase() === 'apm') {
                         return 'log apm brimo'
@@ -514,7 +530,8 @@ const MainPageOverview = () => {
                       }
                     }
                     return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
-                  })}
+                  })
+              }
             </div>
           </div>
         </div>

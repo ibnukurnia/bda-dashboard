@@ -48,7 +48,7 @@ const GetChartsOverview = async (params?: any) => {
   return response
 }
 
-const GetPieChartsOverview = async (params?: { type: string; time_range: number }) => {
+const GetPieChartsOverview = async (params?: { type: string; start_time: string | Date; end_time: string | Date }) => {
   const response: ApiResponse<any> = await get('overview/piechart', {
     withAuth: true,
     queries: params,
@@ -57,7 +57,11 @@ const GetPieChartsOverview = async (params?: { type: string; time_range: number 
   return response
 }
 
-const GetTopServicesOverview = async (params?: { type: string; time_range: number }) => {
+const GetTopServicesOverview = async (params?: {
+  type: string
+  start_time: string | Date
+  end_time: string | Date
+}) => {
   const response: ApiResponse<any> = await get('overview/top-services', {
     withAuth: true,
     queries: params,
@@ -66,7 +70,7 @@ const GetTopServicesOverview = async (params?: { type: string; time_range: numbe
   return response
 }
 
-const GetHealthScoreOverview = async (params?: { time_range: number }) => {
+const GetHealthScoreOverview = async (params?: { start_time: string | Date; end_time: string | Date }) => {
   const response: ApiResponse<any> = await get('overview/health-score', {
     withAuth: true,
     queries: params,
