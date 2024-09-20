@@ -27,6 +27,11 @@ import Gauge from './panels/gauge'
 import TablePanel from './panels/table-panel'
 import TableServices from './table/table-services'
 import TableSeverity from './table/table-severity'
+import TableServicesWrapper from './wrapper/table-services-wrapper'
+import GraphWrapper from './wrapper/graph-wrapper'
+import DonutChartWrapper from './wrapper/donut-wrapper'
+import TableSeverityWrapper from './wrapper/table-severity-wrapper'
+import HealthinessChartWrapper from './wrapper/healthiness-wrapper'
 
 // Define your data
 const sourceData = [
@@ -148,10 +153,10 @@ const MainPageOverview = () => {
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
   const [chartData, setChartData] = useState<any[]>([])
-  const [isLoadingGraphic, setIsLoadingGraphic] = useState(false)
-  const [isLoadingPieChart, setIsLoadingPieChart] = useState(false)
-  const [isLoadingTopServices, setIsLoadingTopServices] = useState(false)
-  const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(false)
+  const [isLoadingGraphic, setIsLoadingGraphic] = useState(true)
+  const [isLoadingPieChart, setIsLoadingPieChart] = useState(true)
+  const [isLoadingTopServices, setIsLoadingTopServices] = useState(true)
+  const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
 
   const mainRef = useRef<HTMLDivElement>(null)
   const healthinessRef = useRef<HTMLDivElement>(null)
@@ -317,7 +322,8 @@ const MainPageOverview = () => {
         .then((res) => {
           setChartData(res.data);
         })
-        .catch(() => setChartData([]));
+        .catch(() => setChartData([]))
+        .finally(() => setIsLoadingGraphic(false))
     };
 
     // Fetch initial chart data when the component mounts
@@ -478,16 +484,20 @@ const MainPageOverview = () => {
       </div>
       <div className="flex flex-row" ref={mainRef}>
         <div className="flex-1 grid gap-8">
-          <div className="chart-section">
-            {/* {dummyData.map((item, id) => { */}
-            {chartData.map((item, id) => {
-              return (
-                <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
-                  <DynamicUpdatingChart title={handleLogicTitle(item.title)} series={item.data} id={id} />
-                </div>
-              )
-            })}
-          </div>
+          <GraphWrapper
+            isLoading={isLoadingGraphic}
+          >
+            <div className="chart-section">
+              {/* {dummyData.map((item, id) => { */}
+              {chartData.map((item, id) => {
+                return (
+                  <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
+                    <DynamicUpdatingChart title={handleLogicTitle(item.title)} series={item.data} id={id} />
+                  </div>
+                )
+              })}
+            </div>
+          </GraphWrapper>
 
           {/* <div className="flex gap-8"> */}
           <div className="grid 2xl:grid-cols-2 grid-cols-1 gap-8">
@@ -508,23 +518,35 @@ const MainPageOverview = () => {
                 </div>
                 <div className="grid grid-cols-2 2xl:flex 2xl:flex-col gap-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <DonutChart
-                      series={pieChartData.map((item: any) => item.count)}
-                      labels={pieChartData.map((sditem: any) => sditem.severity)}
-                    />
-                    <TableSeverity
-                      tableHeader={thSeverity}
-                      data={pieChartData}
-                      onClickSeverity={(severity) => handleClickSeverity(severity)}
-                      clickable={selectedDataSource?.length > 0}
-                    />
+                    <DonutChartWrapper
+                      isLoading={isLoadingPieChart}
+                    >
+                      <DonutChart
+                        series={pieChartData.map((item: any) => item.count)}
+                        labels={pieChartData.map((sditem: any) => sditem.severity)}
+                      />
+                    </DonutChartWrapper>
+                    <TableSeverityWrapper
+                      isLoading={isLoadingPieChart}
+                    >
+                      <TableSeverity
+                        tableHeader={thSeverity}
+                        data={pieChartData}
+                        onClickSeverity={(severity) => handleClickSeverity(severity)}
+                        clickable={selectedDataSource?.length > 0}
+                      />
+                    </TableSeverityWrapper>
                   </div>
-                  <TableServices
-                    data={topServicesData.data}
-                    tableHeader={topServicesData.header}
-                    dataKeys={configDataKey}
-                    maxHeight={tableMaxHeight}
-                  />
+                  <TableServicesWrapper
+                    isLoading={isLoadingTopServices}
+                  >
+                    <TableServices
+                      data={topServicesData.data}
+                      tableHeader={topServicesData.header}
+                      dataKeys={configDataKey}
+                      maxHeight={tableMaxHeight}
+                    />
+                  </TableServicesWrapper>
                 </div>
               </div>
 
@@ -537,26 +559,29 @@ const MainPageOverview = () => {
                 </span>
               )}
               <div className="flex flex-wrap gap-8" ref={healthinessRef}>
-                {
-
-                  healthScoreData.length &&
-                  healthScoreData.map((hd: any, hdid: number) => {
-                    const label = (dataSource: string) => {
-                      if (dataSource?.toLowerCase() === 'apm') {
-                        return 'log apm brimo'
-                      } else if (dataSource?.toLowerCase() === 'brimo') {
-                        return 'log transaksi brimo'
-                      } else if (dataSource?.toLowerCase() === 'k8s_db') {
-                        return 'db'
-                      } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
-                        return 'ocp'
-                      } else {
-                        return dataSource
+                <HealthinessChartWrapper
+                  isLoading={isLoadingHealthScore}
+                >
+                  {
+                    healthScoreData.length > 0 &&
+                    healthScoreData.map((hd: any, hdid: number) => {
+                      const label = (dataSource: string) => {
+                        if (dataSource?.toLowerCase() === 'apm') {
+                          return 'log apm brimo'
+                        } else if (dataSource?.toLowerCase() === 'brimo') {
+                          return 'log transaksi brimo'
+                        } else if (dataSource?.toLowerCase() === 'k8s_db') {
+                          return 'db'
+                        } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
+                          return 'ocp'
+                        } else {
+                          return dataSource
+                        }
                       }
-                    }
-                    return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
-                  })
-                }
+                      return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
+                    })
+                  }
+                </HealthinessChartWrapper>
               </div>
             </div>
           </div>
