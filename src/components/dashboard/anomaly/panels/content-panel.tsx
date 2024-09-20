@@ -34,6 +34,7 @@ const TabContent: React.FC<TabContentProps> = ({
     const searchParams = useSearchParams();
     const selectedAnomalyOptions = searchParams.getAll("anomaly")
     const selectedServicesOptions = searchParams.getAll("service")
+    const selectedSeverityOptions = searchParams.getAll("severity")
 
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
@@ -48,6 +49,7 @@ const TabContent: React.FC<TabContentProps> = ({
     })
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
     const [filterServicesOptions, setFilterServiceOptions] = useState<string[]>([])
+    const [filterSeverityOptions, setFilterSeverityOptions] = useState<string[]>([])
     const [hasErrorFilterAnomaly, setHasErrorAnomalyFilter] = useState<boolean>(false)
     const [hasErrorFilterService, setHasErrorServiceFilter] = useState<boolean>(false)
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
@@ -207,7 +209,7 @@ const TabContent: React.FC<TabContentProps> = ({
         // Small delay to ensure loading state is shown before fetching data
         setTimeout(async () => {
             try {
-                const {startTime, endTime} = getTimeRange()
+                const { startTime, endTime } = getTimeRange()
                 // Call fetchDataByLog with time range values
                 await fetchDataByLog(
                     selectedDataSource,
@@ -758,6 +760,7 @@ const TabContent: React.FC<TabContentProps> = ({
                             <FilterPanel
                                 servicesOptions={filterServicesOptions}
                                 checkboxOptions={filterAnomalyOptions}
+                                severityOptions={filterSeverityOptions}
                                 onApplyFilters={handleApplyFilters}
                                 onResetFilters={handleResetFilters}
                                 hasErrorFilterAnomaly={hasErrorFilterAnomaly}

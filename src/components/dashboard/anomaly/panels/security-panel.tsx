@@ -49,6 +49,8 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
     const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([])
+    const [selectedSeverityOptions, setSelectedSeverityOptions] = useState<string[]>([])
+    const [filterSeverityOptions, setFilterSeverityOptions] = useState<string[]>([])
     const [filterServicesOptions, setFilterServiceOptions] = useState<string[]>([])
     const [selectedServicesOptions, setSelectedServiceOptions] = useState<string[]>([])
     const [hasErrorFilterAnomaly, setHasErrorAnomalyFilter] = useState<boolean>(false)
@@ -112,7 +114,7 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
             case 'Fortinet':
                 return 'fortinet';
             case 'Web Application Security':
-                return 'wap';
+                return 'waf';
             case 'Prtg':
                 return 'prtg';
             case 'Zabbix':
@@ -836,6 +838,7 @@ const TabSecurityContent: React.FC<TabSecurityContentProps> = ({
                             <FilterPanel
                                 servicesOptions={filterServicesOptions}
                                 checkboxOptions={filterAnomalyOptions}
+                                severityOptions={filterSeverityOptions}
                                 onApplyFilters={handleApplyFilters}
                                 onResetFilters={handleResetFilters}
                                 hasErrorFilterAnomaly={hasErrorFilterAnomaly}

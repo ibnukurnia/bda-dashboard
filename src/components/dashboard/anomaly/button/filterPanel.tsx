@@ -10,7 +10,8 @@ interface CheckboxOption {
 interface FilterPanelProps {
     checkboxOptions: CheckboxOption[];
     servicesOptions: string[];
-    onApplyFilters: (filters: { selectedAnomalies: string[], selectedServices: string[] }) => void;
+    severityOptions: string[];
+    onApplyFilters: (filters: { selectedAnomalies: string[], selectedSeverities: string[], selectedServices: string[] }) => void;
     onResetFilters: () => void;
     hasErrorFilterAnomaly: boolean;
     hasErrorFilterService: boolean;
@@ -19,16 +20,19 @@ interface FilterPanelProps {
 const FilterPanel: React.FC<FilterPanelProps> = ({
     checkboxOptions,
     servicesOptions,
+    severityOptions,
     onApplyFilters,
     onResetFilters,
     hasErrorFilterAnomaly,
     hasErrorFilterService
 }) => {
     const searchParams = useSearchParams();
+    const hardcodedSeverityOptions = ['Critical', 'Major', 'Minor'];
 
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
+    const [selectedSeverityOptions, setSelectedSeverityOptions] = useState<string[]>([]);
     const [searchValue, setSearchValue] = useState<string>(''); // For search input
     const [resetMessage, setResetMessage] = useState<boolean>(false); // State for temporary reset message
     const panelRef = useRef<HTMLDivElement>(null);
@@ -48,6 +52,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         );
     };
 
+    const handleSeverityChange = (value: string) => {
+        setSelectedSeverityOptions((prev) =>
+            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
+        );
+    };
+
     const handleServiceChange = (value: string) => {
         setSelectedServiceOptions((prev) =>
             prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
@@ -58,12 +68,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         onApplyFilters({
             selectedAnomalies: selectedAnomalyOptions,
             selectedServices: selectedServiceOptions,
+            selectedSeverities: selectedSeverityOptions,
         });
         setIsOpen(false); // Close the panel after applying filters
     };
 
     const handleReset = () => {
         setSelectedAnomalyOptions([]);
+        setSelectedSeverityOptions([]);
         setSelectedServiceOptions([]);
         setSearchValue('');
         onResetFilters();
@@ -96,17 +108,22 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         };
     }, [isOpen]);
 
-    
+
     useEffect(() => {
         const anomalies = searchParams.getAll("anomaly")
+        const severities = searchParams.getAll("severity")
         const services = searchParams.getAll("service")
+
 
         setSelectedAnomalyOptions(anomalies.filter(anomaly =>
             checkboxOptions.some(option => option.id === anomaly)))
+        setSelectedSeverityOptions(
+            severities.filter((severity) => hardcodedSeverityOptions.some((option) => option === severity))
+        );
         setSelectedServiceOptions(services.filter(service =>
             servicesOptions.some(option => option === service)))
-    }, [searchParams, checkboxOptions, servicesOptions])
-    
+    }, [searchParams, checkboxOptions, servicesOptions, severityOptions])
+
     return (
         <div className="flex self-start z-50">
             <button
@@ -134,11 +151,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
                     <div
                         ref={panelRef}
-                        className="bg-white rounded-lg p-6 w-full max-w-2xl mx-auto flex flex-col gap-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                        className="bg-white rounded-lg p-6 w-full max-w-max mx-auto flex flex-col gap-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
                     >
                         <h2 className="text-xl font-semibold text-center mb-2">Multiple Filter</h2>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-3 gap-4">
                             {/* Anomaly Section */}
                             <div className='flex flex-col gap-3'>
                                 <div className='flex flex-col gap-2'>
@@ -168,6 +185,42 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                                         className="mr-2"
                                                     />
                                                     {option.label}
+                                                </div>
+                                            </label>
+                                        ))
+                                    ) : (
+                                        <p>No options available</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Severity Section */}
+                            {/* Severity Section */}
+                            <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-2">
+                                    <h3 className="font-semibold text-lg">Severity</h3>
+                                    <p className="text-sm text-gray-600">
+                                        Selected Severities: <span className="text-blue-600">{selectedSeverityOptions.length}</span>
+                                    </p>
+                                </div>
+
+                                <div className="overflow-y-auto max-h-40">
+                                    {hasErrorFilterAnomaly ? (
+                                        <p className="text-red-500">
+                                            An error occurred while loading options. Please try again later.
+                                        </p>
+                                    ) : hardcodedSeverityOptions.length > 0 ? (
+                                        hardcodedSeverityOptions.map((option) => (
+                                            <label key={option} className="flex items-center justify-between mb-1">
+                                                <div className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={option}
+                                                        checked={selectedSeverityOptions.includes(option)}
+                                                        onChange={() => handleSeverityChange(option)}
+                                                        className="mr-2"
+                                                    />
+                                                    {option}
                                                 </div>
                                             </label>
                                         ))
