@@ -32,6 +32,7 @@ import GraphWrapper from './wrapper/graph-wrapper'
 import DonutChartWrapper from './wrapper/donut-wrapper'
 import TableSeverityWrapper from './wrapper/table-severity-wrapper'
 import HealthinessChartWrapper from './wrapper/healthiness-wrapper'
+import TableCriticalAnomaly from './table/table-critical-anomaly'
 
 // Define your data
 const sourceData = [
@@ -124,6 +125,24 @@ const sourceData = [
       { name: 'Server', count: 450, data: [28, 133, 124, 127, 132, 129, 134] },
       { name: 'Processor', count: 234, data: [28, 133, 124, 127, 132, 129, 134] },
     ],
+  },
+]
+
+const dummySeverities = [
+  {
+    id: 3,
+    label: "Critical",
+    value: 3,
+  },
+  {
+    id: 2,
+    label: "Major",
+    value: 2,
+  },
+  {
+    id: 1,
+    label: "Minor",
+    value: 1,
   },
 ]
 
@@ -584,6 +603,25 @@ const MainPageOverview = () => {
                 </HealthinessChartWrapper>
               </div>
             </div>
+          </div>
+          <div className='card flex flex-col '>
+            <div className='flex justify-between'>
+              <span className="font-bold text-white text-2xl">Latest Critical Anomaly</span>
+              <DropdownDS
+                data={[
+                  { id: 'semua-severity', value: '', label: 'All Severity' },
+                  ...dummySeverities.map((item) => ({ id: item.id, value: item.value, label: item.label })),
+                ]}
+                onSelectData={(e) => handleChangeFilterDS(e)}
+                selectedData={selectedDataSource}
+              />
+            </div>
+            <TableCriticalAnomaly
+              data={topServicesData.data}
+              tableHeader={topServicesData.header}
+              dataKeys={configDataKey}
+              maxHeight={tableMaxHeight}
+            />
           </div>
         </div>
 
