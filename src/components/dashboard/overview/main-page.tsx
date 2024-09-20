@@ -524,7 +524,7 @@ const MainPageOverview = () => {
               {chartData.map((item, id) => (
                 <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
                   <DynamicUpdatingChart
-                    title={item.title}
+                    title={handleLogicTitle(item.title)}
                     series={item.data}
                     id={id}
                     startTime={startTime} // Pass the calculated startTime
