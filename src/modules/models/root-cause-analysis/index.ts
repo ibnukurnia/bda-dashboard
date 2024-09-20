@@ -1,5 +1,6 @@
 type Route = {
   anomaly:           string;
+  name:              string;
   impacted_services: ImpactedService[];
   total:             number;
 }

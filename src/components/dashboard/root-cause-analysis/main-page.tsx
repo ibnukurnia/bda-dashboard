@@ -40,7 +40,7 @@ const MainPageRootCauseAnalysis = () => {
     enabled: false,
     interval: null,
   })
-  const [initialLoading, setInitialLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [modalServices, setModalServices] = useState(false)
   
   const router = useRouter()
@@ -63,11 +63,13 @@ const MainPageRootCauseAnalysis = () => {
       setLastRefreshTime(new Date())
     })
     .finally(() => {
-      setInitialLoading(false)
+      setIsLoading(false)
     })
   }
 
   const handleRangeChange = async (rangeKey: string) => {
+    setIsLoading(true)
+
     let startDate: string;
     let endDate: string;
 
@@ -141,16 +143,12 @@ const MainPageRootCauseAnalysis = () => {
         <FullScreen handle={handle}>
           <div className={`flex flex-col gap-10 px-2 py-8 card-style ${handle.active ? "my-8 mx-6" : ""}`}>
             <div className="w-full flex flex-col gap-8">
-              {initialLoading ?
-                <div className="flex justify-center items-center">
-                  <div className="spinner"></div>
-                </div>
-                : <RCATree
-                  data={dataTree}
-                  handleDetail={handleDetail}
-                  fullScreenHandle={handle}
-                />
-              }
+              <RCATree
+                data={dataTree}
+                handleDetail={handleDetail}
+                fullScreenHandle={handle}
+                isLoading={isLoading}
+              />
             </div>
           </div>
         </FullScreen>
