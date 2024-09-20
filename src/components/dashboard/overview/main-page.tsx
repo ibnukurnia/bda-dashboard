@@ -580,6 +580,7 @@ const MainPageOverview = () => {
               <HealthinessGaugesWrapper
                 isLoading={isLoadingHealthScore}
                 isError={isErrorHealthScore}
+                healthinessRef={healthinessRef}
               >
                 <div className="flex flex-wrap gap-8" ref={healthinessRef}>
                   {healthScoreData.length > 0 &&
