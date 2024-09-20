@@ -31,7 +31,7 @@ import TableServicesWrapper from './wrapper/table-services-wrapper'
 import GraphWrapper from './wrapper/graph-wrapper'
 import DonutChartWrapper from './wrapper/donut-wrapper'
 import TableSeverityWrapper from './wrapper/table-severity-wrapper'
-import HealthinessChartWrapper from './wrapper/healthiness-wrapper'
+import HealthinessGaugesWrapper from './wrapper/healthiness-gauge-wrapper'
 import TableCriticalAnomaly from './table/table-critical-anomaly'
 
 // Define your data
@@ -176,6 +176,7 @@ const MainPageOverview = () => {
   const [isLoadingPieChart, setIsLoadingPieChart] = useState(true)
   const [isLoadingTopServices, setIsLoadingTopServices] = useState(true)
   const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
+  const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
 
   const mainRef = useRef<HTMLDivElement>(null)
   const healthinessRef = useRef<HTMLDivElement>(null)
@@ -245,12 +246,14 @@ const MainPageOverview = () => {
     GetHealthScoreOverview(paramsTime)
       .then((res) => {
         setHealthScoreData(res.data);
-        setIsLoadingHealthScore(false);
+        setIsErrorHealthScore(false);
       })
       .catch(() => {
-        setHealthScoreData([]);
+        setIsErrorHealthScore(true);
+      })
+      .finally(() => {
         setIsLoadingHealthScore(false);
-      });
+      })
 
     // Fetch Chart Data (Updated part) (if custom need to re-render the chart)
     GetChartsOverview(paramsTime)
@@ -393,11 +396,13 @@ const MainPageOverview = () => {
     GetHealthScoreOverview(paramsTime)
       .then((res) => {
         setHealthScoreData(res.data)
-        setIsLoadingHealthScore(false)
+        setIsErrorHealthScore(false);
       })
       .catch(() => {
-        setHealthScoreData([])
-        setIsLoadingHealthScore(false)
+        setIsErrorHealthScore(true)
+      })
+      .finally(() => {
+        setIsLoadingHealthScore(false);
       })
   }, [])
 
@@ -572,17 +577,12 @@ const MainPageOverview = () => {
             </div>
             <div className="flex flex-col gap-8 card relative">
               <span className="font-bold text-white text-2xl">Healthiness</span>
-              {!healthScoreData.length && (
-                <span className="text-center text-white absolute top-1/2 w-full left-0">
-                  Terjadi kesalahan. Silakan refresh halaman ini atau coba beberapa saat lagi
-                </span>
-              )}
-              <div className="flex flex-wrap gap-8" ref={healthinessRef}>
-                <HealthinessChartWrapper
-                  isLoading={isLoadingHealthScore}
-                >
-                  {
-                    healthScoreData.length > 0 &&
+              <HealthinessGaugesWrapper
+                isLoading={isLoadingHealthScore}
+                isError={isErrorHealthScore}
+              >
+                <div className="flex flex-wrap gap-8" ref={healthinessRef}>
+                  {healthScoreData.length > 0 &&
                     healthScoreData.map((hd: any, hdid: number) => {
                       const label = (dataSource: string) => {
                         if (dataSource?.toLowerCase() === 'apm') {
@@ -600,8 +600,8 @@ const MainPageOverview = () => {
                       return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
                     })
                   }
-                </HealthinessChartWrapper>
-              </div>
+                </div>
+              </HealthinessGaugesWrapper>
             </div>
           </div>
           <div className='card flex flex-col '>
