@@ -7,23 +7,13 @@ interface DynamicUpdatingChartProps {
   series: any[]
   title?: string
   id?: string | number
+  startTime: string // Add startTime prop
+  endTime: string // Add endTime prop
 }
 
-const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
+const DynamicUpdatingChart = ({ series, title, startTime, endTime }: DynamicUpdatingChartProps) => {
   const options: ApexOptions = {
-    // colors: ['#dc2626', '#dc2626'],
-    // colors: (() => {
-    //   if (title?.toLowerCase()?.includes('apm')) {
-    //     return [
-    //       series?.[0]?.data?.[0][1] > 0.0004 ? '#dc2626' : '#2E93fA',
-    //       series?.[1]?.data?.[0][1] > 0.002 ? '#dc2626' : '#66DA26',
-    //     ]
-    //   } else if (title?.toLowerCase()?.includes('db')) {
-    //     return [series?.[0]?.data?.[0][1] > 3 ? '#dc2626' : '#2E93fA']
-    //   }
-    // })(),
     chart: {
-      // id: `chart-${id}`,
       group: 'overview',
       type: 'line',
       height: 120,
@@ -50,10 +40,13 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
       enabled: true,
     },
     xaxis: {
-      type: 'datetime', // Ensure the x-axis is of datetime type
+      // Set min and max based on user-selected start and end time
+      min: new Date(startTime).getTime(),
+      max: new Date(endTime).getTime(),
+      type: 'datetime',
       labels: {
-        formatter(value, _, __) {
-          const date = new Date(value);
+        formatter(value) {
+          const date = new Date(value)
           const formattedDate = date.toLocaleDateString('id-ID', {
             year: 'numeric',
             month: 'short',
@@ -61,8 +54,8 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
-          });
-          return formattedDate.split(', ');
+          })
+          return formattedDate.split(', ')
         },
         style: {
           colors: 'white', // White color for x-axis text
@@ -89,14 +82,10 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
         style: {
           colors: 'white', // White color for y-axis text
         },
-        formatter: function (val) {
+        formatter(val) {
           return title?.toLowerCase()?.includes('apm') ? val.toFixed(4) : val.toFixed(0)
         },
       },
-      // title: {
-      //   text: title?.toLowerCase()?.includes('apm') ? 'Error rate' : 'Anomaly count',
-      //   style: { color: '#ffffff' },
-      // },
       tickAmount: 5,
     },
     stroke: {
@@ -123,13 +112,11 @@ const DynamicUpdatingChart = ({ series, title }: DynamicUpdatingChartProps) => {
 
   return (
     <Chart
-      // key={`chart-${Math.random()}`}
       options={options}
       series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
       type="line"
       height={300}
       width={'100%'}
-    // data-chart-id={`chart${index + 1}`}
     />
   )
 }

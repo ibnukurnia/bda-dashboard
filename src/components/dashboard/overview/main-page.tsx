@@ -177,6 +177,7 @@ const MainPageOverview = () => {
   const [isLoadingTopServices, setIsLoadingTopServices] = useState(true)
   const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
   const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
+  const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
   const mainRef = useRef<HTMLDivElement>(null)
   const healthinessRef = useRef<HTMLDivElement>(null)
@@ -351,15 +352,21 @@ const MainPageOverview = () => {
     // Fetch initial chart data when the component mounts
     fetchMetrics();
 
-    // Set interval to refresh chart data every 5 seconds
-    const intervalChartId = setInterval(() => {
-      fetchMetrics(); // Recalculate startTime and endTime every time the interval fires
-    }, 5000);
+    let intervalChartId: NodeJS.Timeout | null = null;
+
+    // Only set the interval if a custom range is NOT selected
+    if (!isCustomRangeSelected) {
+      intervalChartId = setInterval(() => {
+        fetchMetrics(); // Recalculate startTime and endTime every time the interval fires
+      }, 5000);
+    }
 
     return () => {
-      clearInterval(intervalChartId); // Clean up the interval on component unmount
+      if (intervalChartId) {
+        clearInterval(intervalChartId); // Clean up the interval on component unmount
+      }
     };
-  }, [selectedRange, selectedDataSource]);
+  }, [selectedRange, selectedDataSource, isCustomRangeSelected]);
 
 
   useEffect(() => {
@@ -491,9 +498,12 @@ const MainPageOverview = () => {
     }
   }, [healthinessRef.current?.offsetHeight])
 
+  // Get start and end times from selected range for passing to DynamicUpdatingChart
+  const { startTime, endTime } = handleStartEnd(selectedRange)
+
   return (
 
-    <div className='flex flex-col gap-3 '>
+    <div className='flex flex-col gap-6'>
       <div className="flex gap-3 items-center justify-between">
         <div className="flex gap-4 items-center">
           {/* <span className="text-2xl text-white font-bold">Filter</span> */}
@@ -501,6 +511,7 @@ const MainPageOverview = () => {
             timeRanges={timeRanges}
             onRangeChange={(e) => handleChangeTimeRange(e)}
             selectedRange={selectedRange}
+            onCustomRangeSelected={setIsCustomRangeSelected} // Pass down handler for custom range detection
           />
           {/* <Button>Auto Refresh</Button> */}
           {/* <FullscreenComponent elementRef={mainRef} /> */}
@@ -508,18 +519,19 @@ const MainPageOverview = () => {
       </div>
       <div className="flex flex-row" ref={mainRef}>
         <div className="flex-1 grid gap-8">
-          <GraphWrapper
-            isLoading={isLoadingGraphic}
-          >
+          <GraphWrapper isLoading={isLoadingGraphic}>
             <div className="chart-section">
-              {/* {dummyData.map((item, id) => { */}
-              {chartData.map((item, id) => {
-                return (
-                  <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
-                    <DynamicUpdatingChart title={handleLogicTitle(item.title)} series={item.data} id={id} />
-                  </div>
-                )
-              })}
+              {chartData.map((item, id) => (
+                <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
+                  <DynamicUpdatingChart
+                    title={item.title}
+                    series={item.data}
+                    id={id}
+                    startTime={startTime} // Pass the calculated startTime
+                    endTime={endTime} // Pass the calculated endTime
+                  />
+                </div>
+              ))}
             </div>
           </GraphWrapper>
 
@@ -528,7 +540,7 @@ const MainPageOverview = () => {
             <div className="grid grid-cols-1 gap-4">
               <div className="flex flex-col gap-8 card">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-white text-2xl">Services Overview</span>
+                  <span className="font-bold text-white text-2xl">Anomaly Overview</span>
                   <div>
                     <DropdownDS
                       data={[
@@ -605,9 +617,9 @@ const MainPageOverview = () => {
               </HealthinessGaugesWrapper>
             </div>
           </div>
-          <div className='card flex flex-col '>
+          <div className='card flex flex-col gap-6'>
             <div className='flex justify-between'>
-              <span className="font-bold text-white text-2xl">Latest Critical Anomaly</span>
+              <span className="font-bold text-white text-2xl content-center">Latest Critical Anomaly</span>
               <DropdownDS
                 data={[
                   { id: 'semua-severity', value: '', label: 'All Severity' },

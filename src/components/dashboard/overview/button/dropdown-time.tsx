@@ -7,9 +7,10 @@ interface DropdownTimeProps {
   timeRanges: Record<string, number>
   onRangeChange: (rangeKey: string) => void
   selectedRange: string // Receive selectedRange as a prop
+  onCustomRangeSelected: (isCustom: boolean) => void;
 }
 
-const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, selectedRange }) => {
+const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, selectedRange, onCustomRangeSelected }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isCustomRange, setIsCustomRange] = useState(false)
   const [customRangeStart, setCustomRangeStart] = useState<string>(format(new Date(), "yyyy-MM-dd'T'HH:mm"))
@@ -32,25 +33,28 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
 
   const handleRangeChange = (rangeKey: string) => {
     if (rangeKey === 'Custom') {
-      setIsCustomRange(true)
+      setIsCustomRange(true);
+      onCustomRangeSelected(true); // Notify parent about custom range
     } else {
-      onRangeChange(rangeKey)
-      setIsCustomRange(false)
-      setIsOpen(false)
+      onRangeChange(rangeKey);
+      setIsCustomRange(false);
+      onCustomRangeSelected(false); // Notify parent that it's a predefined range
+      setIsOpen(false);
     }
-  }
+  };
 
   const handleCustomRangeChange = () => {
     if (customRangeStart && customRangeEnd) {
-      const formattedStart = format(new Date(customRangeStart), 'yyyy-MM-dd HH:mm:ss')
-      const formattedEnd = format(new Date(customRangeEnd), 'yyyy-MM-dd HH:mm:ss')
-      const customRangeLabel = `${formattedStart} - ${formattedEnd}`
+      const formattedStart = format(new Date(customRangeStart), 'yyyy-MM-dd HH:mm:ss');
+      const formattedEnd = format(new Date(customRangeEnd), 'yyyy-MM-dd HH:mm:ss');
+      const customRangeLabel = `${formattedStart} - ${formattedEnd}`;
 
-      onRangeChange(customRangeLabel)
-      setIsCustomRange(false)
-      setIsOpen(false)
+      onRangeChange(customRangeLabel);
+      onCustomRangeSelected(true); // Custom range is applied, so notify parent
+      setIsCustomRange(false);
+      setIsOpen(false);
     }
-  }
+  };
 
   const logicValidationDateTime = () => {
     if (
