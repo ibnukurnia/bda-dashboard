@@ -17,6 +17,7 @@ const TableSeverity = ({ tableHeader, data, onClickSeverity, clickable }: TableS
               </th>
             ))}
           </tr>
+
         </thead>
         <tbody>
           {data.map((sdt, sdtid) => (
