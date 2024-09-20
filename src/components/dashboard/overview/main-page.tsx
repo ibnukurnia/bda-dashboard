@@ -604,9 +604,9 @@ const MainPageOverview = () => {
               </HealthinessGaugesWrapper>
             </div>
           </div>
-          <div className='card flex flex-col '>
+          <div className='card flex flex-col gap-6'>
             <div className='flex justify-between'>
-              <span className="font-bold text-white text-2xl">Latest Critical Anomaly</span>
+              <span className="font-bold text-white text-2xl content-center">Latest Critical Anomaly</span>
               <DropdownDS
                 data={[
                   { id: 'semua-severity', value: '', label: 'All Severity' },

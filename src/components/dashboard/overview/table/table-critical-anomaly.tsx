@@ -127,7 +127,7 @@ const TableCriticalAnomaly = ({ tableHeader, dataKeys, maxHeight }: TableCritica
   
   return (
     // <div className="bg-black bg-opacity-50 flex justify-center items-center">
-      <div ref={panelRef} className="rounded-lg p-6 w-full flex flex-col gap-3 card-style">
+      <div ref={panelRef} className="rounded-lg w-full flex flex-col gap-3">
         <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
           <div className="min-w-full">
             <TableWrapper isLoading={isTableLoading} isEmpty={data.length === 0}>
