@@ -150,7 +150,7 @@ const MainPageRootCauseAnalysis = () => {
           <div className={`flex flex-col gap-10 px-2 py-8 card-style ${handle.active ? "my-8 mx-6" : ""}`}>
             <div className="w-full flex flex-col gap-8">
               <RCATreeWrapper
-                isError={true}
+                isError={isError}
               >
                 <RCATree
                   data={dataTree}
