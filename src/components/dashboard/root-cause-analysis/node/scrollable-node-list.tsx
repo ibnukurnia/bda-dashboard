@@ -168,7 +168,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
         onScroll={onScroll}
       >
         <NodeListWrapper
-          nodeCount={containerHeight/80}
+          nodeCount={Math.floor(containerHeight / 80)}
           isLoading={isLoading}
         >
           {nodes.map((node, index) => (
