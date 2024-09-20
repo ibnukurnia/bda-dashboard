@@ -15,11 +15,13 @@ type ExpandedNodesType = {
 }
 
 interface RCATreeProps {
+  isLoading: boolean;
   data: RootCauseAnalysisTreeResponse[] | null;
   handleDetail: (dataSource: string, metricAnomaly: string, service: string) => void;
   fullScreenHandle: FullScreenHandle; // From react-full-screen
 }
 const RCATree: React.FC<RCATreeProps> = ({
+  isLoading,
   data,
   handleDetail,
   fullScreenHandle, // Use handle from react-full-screen
@@ -37,7 +39,8 @@ const RCATree: React.FC<RCATreeProps> = ({
       namespace: s.type,
       anomalyCount: s.routes.reduce((count, r) => count + r.total, 0),
       children: s.routes.map(r => ({
-        name: r.anomaly,
+        name: r.name,
+        namespace: r.anomaly,
         anomalyCount: r.total,
         children: r.impacted_services.map(is => ({
           name: is.service,
@@ -118,7 +121,7 @@ const RCATree: React.FC<RCATreeProps> = ({
 
   const handleClickDetail = (service: string) => {
     const dataSource = expandedNodes[0].node.namespace ?? expandedNodes[0].node.name
-    const metricAnomaly = expandedNodes[1].node.name
+    const metricAnomaly = expandedNodes[1].node.namespace ?? expandedNodes[1].node.name
     handleDetail(dataSource, metricAnomaly, expandedNodes[2]?.node?.name ?? service)
   }
 
@@ -134,24 +137,28 @@ const RCATree: React.FC<RCATreeProps> = ({
           <TopBar
             title={"Data Source"}
             subtitle={replaceWordingDataSource(expandedNodes[0]?.node?.name)}
+            isLoading={isLoading}
           />
         }
         {expandedNodes[0] &&
           <TopBar
             title={"Matric Anomaly"}
             subtitle={expandedNodes[1]?.node?.name}
+            isLoading={isLoading}
           />
         }
         {expandedNodes[1] &&
           <TopBar
             title={"Service"}
             subtitle={expandedNodes[2]?.node?.name}
+            isLoading={isLoading}
           />
         }
         {expandedNodes[2] &&
           <TopBar
             title={"Impacted Service"}
             subtitle={expandedNodes[3]?.node?.name}
+            isLoading={isLoading}
           />
         }
       </div>
@@ -169,6 +176,7 @@ const RCATree: React.FC<RCATreeProps> = ({
           handleOnScroll={(scrollTop) => handleOnScroll(0, scrollTop)}
           fullScreenHandle={fullScreenHandle}
           maxCount={totalAnomaly}
+          isLoading={isLoading}
         />
         {expandedNodes.map((expNode, i) => {
           if (i >= 3) return null
@@ -184,6 +192,7 @@ const RCATree: React.FC<RCATreeProps> = ({
                 handleOpenDetail={i === 1 ? (node) => handleClickDetail(node.name) : undefined}
                 fullScreenHandle={fullScreenHandle}
                 maxCount={totalAnomaly}
+                isLoading={isLoading}
               />
             );
           }

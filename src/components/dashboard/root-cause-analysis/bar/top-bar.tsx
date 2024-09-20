@@ -1,12 +1,13 @@
 import React from 'react';
-import { Typography } from '@mui/material';
+import { Skeleton, Typography } from '@mui/material';
 
 interface TopBarProps {
   title: string;
   subtitle?: string;
+  isLoading?: boolean;
 }
 
-const TopBar: React.FC<TopBarProps> = ({ title, subtitle }) => {
+const TopBar: React.FC<TopBarProps> = ({ title, subtitle, isLoading }) => {
   return (
     <div className="w-full h-16">
       <Typography
@@ -16,12 +17,20 @@ const TopBar: React.FC<TopBarProps> = ({ title, subtitle }) => {
         {title}
       </Typography>
       <hr />
-      <Typography
-        variant="subtitle1"
-        color={'white'}
-      >
-        {subtitle}
-      </Typography>
+      {isLoading ?
+        <Skeleton
+          animation="wave"
+          sx={{ bgcolor: 'grey.800', fontSize: '1.5rem' }}
+          variant="text"
+          width={"100%"}
+        /> :
+        <Typography
+          variant="subtitle1"
+          color={'white'}
+        >
+          {subtitle}
+        </Typography>
+      }
     </div>
   );
 };

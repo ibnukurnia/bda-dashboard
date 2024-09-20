@@ -27,6 +27,12 @@ import Gauge from './panels/gauge'
 import TablePanel from './panels/table-panel'
 import TableServices from './table/table-services'
 import TableSeverity from './table/table-severity'
+import TableServicesWrapper from './wrapper/table-services-wrapper'
+import GraphWrapper from './wrapper/graph-wrapper'
+import DonutChartWrapper from './wrapper/donut-wrapper'
+import TableSeverityWrapper from './wrapper/table-severity-wrapper'
+import HealthinessGaugesWrapper from './wrapper/healthiness-gauge-wrapper'
+import TableCriticalAnomaly from './table/table-critical-anomaly'
 
 // Define your data
 const sourceData = [
@@ -122,6 +128,24 @@ const sourceData = [
   },
 ]
 
+const dummySeverities = [
+  {
+    id: 3,
+    label: "Critical",
+    value: 3,
+  },
+  {
+    id: 2,
+    label: "Major",
+    value: 2,
+  },
+  {
+    id: 1,
+    label: "Minor",
+    value: 1,
+  },
+]
+
 const toMiliseconds = 1000 * 60
 
 const defaultTimeRanges: Record<string, number> = {
@@ -148,10 +172,11 @@ const MainPageOverview = () => {
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
   const [chartData, setChartData] = useState<any[]>([])
-  const [isLoadingGraphic, setIsLoadingGraphic] = useState(false)
-  const [isLoadingPieChart, setIsLoadingPieChart] = useState(false)
-  const [isLoadingTopServices, setIsLoadingTopServices] = useState(false)
-  const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(false)
+  const [isLoadingGraphic, setIsLoadingGraphic] = useState(true)
+  const [isLoadingPieChart, setIsLoadingPieChart] = useState(true)
+  const [isLoadingTopServices, setIsLoadingTopServices] = useState(true)
+  const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
+  const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
   const mainRef = useRef<HTMLDivElement>(null)
@@ -222,12 +247,14 @@ const MainPageOverview = () => {
     GetHealthScoreOverview(paramsTime)
       .then((res) => {
         setHealthScoreData(res.data);
-        setIsLoadingHealthScore(false);
+        setIsErrorHealthScore(false);
       })
       .catch(() => {
-        setHealthScoreData([]);
+        setIsErrorHealthScore(true);
+      })
+      .finally(() => {
         setIsLoadingHealthScore(false);
-      });
+      })
 
     // Fetch Chart Data (Updated part) (if custom need to re-render the chart)
     GetChartsOverview(paramsTime)
@@ -318,7 +345,8 @@ const MainPageOverview = () => {
         .then((res) => {
           setChartData(res.data);
         })
-        .catch(() => setChartData([]));
+        .catch(() => setChartData([]))
+        .finally(() => setIsLoadingGraphic(false))
     };
 
     // Fetch initial chart data when the component mounts
@@ -375,11 +403,13 @@ const MainPageOverview = () => {
     GetHealthScoreOverview(paramsTime)
       .then((res) => {
         setHealthScoreData(res.data)
-        setIsLoadingHealthScore(false)
+        setIsErrorHealthScore(false);
       })
       .catch(() => {
-        setHealthScoreData([])
-        setIsLoadingHealthScore(false)
+        setIsErrorHealthScore(true)
+      })
+      .finally(() => {
+        setIsLoadingHealthScore(false);
       })
   }, [])
 
@@ -489,37 +519,21 @@ const MainPageOverview = () => {
       </div>
       <div className="flex flex-row" ref={mainRef}>
         <div className="flex-1 grid gap-8">
-          <div className="chart-section">
-            {/* Show loading state when chart data is being fetched */}
-            {isLoadingGraphic ? (
-              <div className="loading-indicator">Loading charts...</div> // Add your custom loading indicator here
-            ) : (
-              chartData.map((item, id) => {
-                // Handle case where item.data might be empty
-                if (item.data.length === 0) {
-                  return (
-                    <div className={`text-white chart-section-col chart-section-col-${id + 1}`} key={id}>
-                      <p>No data available for {item.title}</p> {/* Display a message if no data is available */}
-                    </div>
-                  );
-                }
-
-                // Otherwise, render the chart
-                return (
-                  <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
-                    <DynamicUpdatingChart
-                      title={item.title}
-                      series={item.data}
-                      id={id}
-                      startTime={startTime} // Pass the calculated startTime
-                      endTime={endTime} // Pass the calculated endTime
-                    />
-                  </div>
-                );
-              })
-            )}
-          </div>
-
+          <GraphWrapper isLoading={isLoadingGraphic}>
+            <div className="chart-section">
+              {chartData.map((item, id) => (
+                <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
+                  <DynamicUpdatingChart
+                    title={item.title}
+                    series={item.data}
+                    id={id}
+                    startTime={startTime} // Pass the calculated startTime
+                    endTime={endTime} // Pass the calculated endTime
+                  />
+                </div>
+              ))}
+            </div>
+          </GraphWrapper>
 
           {/* <div className="flex gap-8"> */}
           <div className="grid 2xl:grid-cols-2 grid-cols-1 gap-8">
@@ -540,57 +554,86 @@ const MainPageOverview = () => {
                 </div>
                 <div className="grid grid-cols-2 2xl:flex 2xl:flex-col gap-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <DonutChart
-                      series={pieChartData.map((item: any) => item.count)}
-                      labels={pieChartData.map((sditem: any) => sditem.severity)}
-                    />
-                    <TableSeverity
-                      tableHeader={thSeverity}
-                      data={pieChartData}
-                      onClickSeverity={(severity) => handleClickSeverity(severity)}
-                      clickable={selectedDataSource?.length > 0}
-                    />
+                    <DonutChartWrapper
+                      isLoading={isLoadingPieChart}
+                    >
+                      <DonutChart
+                        series={pieChartData.map((item: any) => item.count)}
+                        labels={pieChartData.map((sditem: any) => sditem.severity)}
+                      />
+                    </DonutChartWrapper>
+                    <TableSeverityWrapper
+                      isLoading={isLoadingPieChart}
+                    >
+                      <TableSeverity
+                        tableHeader={thSeverity}
+                        data={pieChartData}
+                        onClickSeverity={(severity) => handleClickSeverity(severity)}
+                        clickable={selectedDataSource?.length > 0}
+                      />
+                    </TableSeverityWrapper>
                   </div>
-                  <TableServices
-                    data={topServicesData.data}
-                    tableHeader={topServicesData.header}
-                    dataKeys={configDataKey}
-                    maxHeight={tableMaxHeight}
-                  />
+                  <TableServicesWrapper
+                    isLoading={isLoadingTopServices}
+                  >
+                    <TableServices
+                      data={topServicesData.data}
+                      tableHeader={topServicesData.header}
+                      dataKeys={configDataKey}
+                      maxHeight={tableMaxHeight}
+                    />
+                  </TableServicesWrapper>
                 </div>
               </div>
 
             </div>
             <div className="flex flex-col gap-8 card relative">
               <span className="font-bold text-white text-2xl">Healthiness</span>
-              {!healthScoreData.length && (
-                <span className="text-center text-white absolute top-1/2 w-full left-0">
-                  Terjadi kesalahan. Silakan refresh halaman ini atau coba beberapa saat lagi
-                </span>
-              )}
-              <div className="flex flex-wrap gap-8" ref={healthinessRef}>
-                {
-
-                  healthScoreData.length &&
-                  healthScoreData.map((hd: any, hdid: number) => {
-                    const label = (dataSource: string) => {
-                      if (dataSource?.toLowerCase() === 'apm') {
-                        return 'log apm brimo'
-                      } else if (dataSource?.toLowerCase() === 'brimo') {
-                        return 'log transaksi brimo'
-                      } else if (dataSource?.toLowerCase() === 'k8s_db') {
-                        return 'db'
-                      } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
-                        return 'ocp'
-                      } else {
-                        return dataSource
+              <HealthinessGaugesWrapper
+                isLoading={isLoadingHealthScore}
+                isError={isErrorHealthScore}
+              >
+                <div className="flex flex-wrap gap-8" ref={healthinessRef}>
+                  {healthScoreData.length > 0 &&
+                    healthScoreData.map((hd: any, hdid: number) => {
+                      const label = (dataSource: string) => {
+                        if (dataSource?.toLowerCase() === 'apm') {
+                          return 'log apm brimo'
+                        } else if (dataSource?.toLowerCase() === 'brimo') {
+                          return 'log transaksi brimo'
+                        } else if (dataSource?.toLowerCase() === 'k8s_db') {
+                          return 'db'
+                        } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
+                          return 'ocp'
+                        } else {
+                          return dataSource
+                        }
                       }
-                    }
-                    return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
-                  })
-                }
-              </div>
+                      return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
+                    })
+                  }
+                </div>
+              </HealthinessGaugesWrapper>
             </div>
+          </div>
+          <div className='card flex flex-col gap-6'>
+            <div className='flex justify-between'>
+              <span className="font-bold text-white text-2xl content-center">Latest Critical Anomaly</span>
+              <DropdownDS
+                data={[
+                  { id: 'semua-severity', value: '', label: 'All Severity' },
+                  ...dummySeverities.map((item) => ({ id: item.id, value: item.value, label: item.label })),
+                ]}
+                onSelectData={(e) => handleChangeFilterDS(e)}
+                selectedData={selectedDataSource}
+              />
+            </div>
+            <TableCriticalAnomaly
+              data={topServicesData.data}
+              tableHeader={topServicesData.header}
+              dataKeys={configDataKey}
+              maxHeight={tableMaxHeight}
+            />
           </div>
         </div>
 

@@ -20,6 +20,7 @@ import { Maximize } from 'react-feather'
 import DropdownTime from './button/dropdown-time'
 import { useRouter } from 'next/navigation'
 import { PREDEFINED_TIME_RANGES } from '@/constants'
+import RCATreeWrapper from './wrapper/rca-tree-wrapper'
 
 const MainPageRootCauseAnalysis = () => {
   const [selectedRange, setSelectedRange] = useState<string>('Last 24 hours')
@@ -40,7 +41,8 @@ const MainPageRootCauseAnalysis = () => {
     enabled: false,
     interval: null,
   })
-  const [initialLoading, setInitialLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isError, setIsError] = useState(false)
   const [modalServices, setModalServices] = useState(false)
   
   const router = useRouter()
@@ -61,13 +63,19 @@ const MainPageRootCauseAnalysis = () => {
     .then(result => {
       setDataTree(result.data)
       setLastRefreshTime(new Date())
+      setIsError(false)
+    })
+    .catch(() => {
+      setIsError(true)
     })
     .finally(() => {
-      setInitialLoading(false)
+      setIsLoading(false)
     })
   }
 
   const handleRangeChange = async (rangeKey: string) => {
+    setIsLoading(true)
+
     let startDate: string;
     let endDate: string;
 
@@ -141,16 +149,16 @@ const MainPageRootCauseAnalysis = () => {
         <FullScreen handle={handle}>
           <div className={`flex flex-col gap-10 px-2 py-8 card-style ${handle.active ? "my-8 mx-6" : ""}`}>
             <div className="w-full flex flex-col gap-8">
-              {initialLoading ?
-                <div className="flex justify-center items-center">
-                  <div className="spinner"></div>
-                </div>
-                : <RCATree
+              <RCATreeWrapper
+                isError={isError}
+              >
+                <RCATree
                   data={dataTree}
                   handleDetail={handleDetail}
                   fullScreenHandle={handle}
+                  isLoading={isLoading}
                 />
-              }
+              </RCATreeWrapper>
             </div>
           </div>
         </FullScreen>

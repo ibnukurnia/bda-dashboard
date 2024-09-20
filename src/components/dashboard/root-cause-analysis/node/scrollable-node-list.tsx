@@ -6,6 +6,7 @@ import Path from '../path/path';
 import { ChevronDown, ChevronUp } from 'react-feather';
 import { FullScreenHandle } from 'react-full-screen';
 import useUpdateEffect from '@/hooks/use-update-effect';
+import NodeListWrapper from '../wrapper/node-list-wrapper';
 
 const nodeHeight = 80
 const headerHeight = 96
@@ -25,6 +26,7 @@ interface ScrollableNodeListProps {
   handleOpenDetail?: (node: TreeNodeType) => void;
   fullScreenHandle: FullScreenHandle; // From react-full-screen
   maxCount: number;
+  isLoading: boolean;
 }
 
 const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
@@ -36,6 +38,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   handleOpenDetail,
   fullScreenHandle, // Use handle from react-full-screen
   maxCount,
+  isLoading,
 }) => {
   const [hideButtonUp, setHideButtonUp] = useState<boolean>(true);
   const [hideButtonDown, setHideButtonDown] = useState<boolean>(true);
@@ -144,7 +147,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
 
   return (
     <div className='relative'>
-      {!hideButtonUp &&
+      {!isLoading && !hideButtonUp &&
         <div
           className='absolute -top-8 w-full flex justify-center'
         >
@@ -164,17 +167,22 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
         }}
         onScroll={onScroll}
       >
-        {nodes.map((node, index) => (
-          <Node
-            key={node.name}
-            title={node.name}
-            percentage={getPercentageValue(node.anomalyCount)}
-            count={node.anomalyCount}
-            expanded={expandedIndex === index}
-            handleOnClickNode={()=> handleOnClickNode(index)}
-            handleOpenDetail={handleOpenDetail ? () => handleOpenDetail(node) : undefined}
-          />
-        ))}
+        <NodeListWrapper
+          nodeCount={containerHeight/80}
+          isLoading={isLoading}
+        >
+          {nodes.map((node, index) => (
+            <Node
+              key={node.name}
+              title={node.name}
+              percentage={getPercentageValue(node.anomalyCount)}
+              count={node.anomalyCount}
+              expanded={expandedIndex === index}
+              handleOnClickNode={()=> handleOnClickNode(index)}
+              handleOpenDetail={handleOpenDetail ? () => handleOpenDetail(node) : undefined}
+            />
+          ))}
+        </NodeListWrapper>
       </div>
       <Path
         sourceIndex={expandedIndex - scrollTopPositions / nodeHeight}
@@ -182,7 +190,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
         childCount={getPathCount()}
         nodeWidth={containerWidth}
       />
-      {!hideButtonDown &&
+      {!isLoading && !hideButtonDown &&
         <div
           className='absolute -bottom-4 w-full flex justify-center'
         >
