@@ -1,10 +1,15 @@
-import { ArrowLeft, ArrowRight, Check, Minus, Plus } from 'react-feather'
+import { ArrowLeft, ArrowRight } from 'react-feather'
 
 import './table-services.css'
 import { Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react';
 import { ColumnDef, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
-import { dummyTableResult } from './dummy';
+import { GetLatestCritical } from '@/modules/usecases/overviews';
+import { format } from 'date-fns';
+import { PREDEFINED_TIME_RANGES } from '@/constants';
+import useUpdateEffect from '@/hooks/use-update-effect';
+
+const toMiliseconds = 1000 * 60
 
 interface TableWrapperProps {
   isLoading: boolean;
@@ -32,13 +37,11 @@ const TableWrapper: React.FC<TableWrapperProps> = ({
 }
 
 interface TableCriticalAnomalyProps {
-  tableHeader: string[]
-  dataKeys: string[]
-  data: any[]
-  maxHeight?: number | string
+  timeRange: string
+  severity?: { value: any; id: number; label: string } | null
 }
 
-const TableCriticalAnomaly = ({ tableHeader, dataKeys, maxHeight }: TableCriticalAnomalyProps) => {
+const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps) => {
   const panelRef = useRef<HTMLDivElement>(null)
   const [isTableLoading, setIsTableLoading] = useState(true)
   const [data, setData] = useState<any>([])
@@ -62,69 +65,78 @@ const TableCriticalAnomaly = ({ tableHeader, dataKeys, maxHeight }: TableCritica
   })
 
   useEffect(() => {
-    // GetRootCauseAnalysisTableData({ page: pagination.pageIndex, limit: pagination.pageSize })
-    //   .then(result => {
-    //     if (result) {
-    //       const { columns, rows, total_pages } = result;
-
-    //       // Update the total number of pages based on the API response
-    //       setTotalPages(total_pages);
-
-    //       // Map the columns from the API response to the format required by the table
-    //       const newColumns = columns.map((column: any) => ({
-    //           id: column.key,
-    //           header: column.title,
-    //           accessorKey: column.key,
-    //       }));
-    //       setColumns(newColumns);
-
-    //       // Map the rows from the API response to the format required by the table
-    //       const newData = rows.map((row: any) => {
-    //           const mappedRow: any = {};
-    //           columns.forEach((col: any) => {
-    //               mappedRow[col.key] = row[col.key];
-    //           });
-    //           return mappedRow;
-    //       });
-
-    //       // Update the table data
-    //       setData(newData);
-    //       setIsTableLoading(false);
-    //     } else {
-    //       console.warn('API response data is null or undefined');
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.error('Error fetching data:', error)
-        
-        const { columns, rows, total_pages } = dummyTableResult;
-
-        // Update the total number of pages based on the API response
-        setTotalPages(total_pages);
-
-        // Map the columns from the API response to the format required by the table
-        const newColumns = columns.map((column: any) => ({
-            id: column.key,
-            header: column.title,
-            accessorKey: column.key,
-        }));
-        setColumns(newColumns);
-
-        // Map the rows from the API response to the format required by the table
-        const newData = rows.map((row: any) => {
-            const mappedRow: any = {};
-            columns.forEach((col: any) => {
-                mappedRow[col.key] = row[col.key];
-            });
-            return mappedRow;
-        });
-
-        // Update the table data
-        setData(newData);
-        setIsTableLoading(false);
-      // });
+    fetchData()
   }, [])
   
+  useUpdateEffect(() => {
+    fetchData()
+  }, [timeRange, severity, pagination])
+
+  function fetchData() {
+    const { startTime, endTime } = handleStartEnd(timeRange)
+
+    GetLatestCritical({
+      start_time: startTime,
+      end_time: endTime,
+      severity: severity?.id,
+      page: pagination.pageIndex,
+      limit: pagination.pageSize
+    })
+      .then(result => {
+        if (result?.data) {
+          const { columns, rows, total_pages } = result.data;
+
+          // Update the total number of pages based on the API response
+          setTotalPages(total_pages);
+
+          // Map the columns from the API response to the format required by the table
+          const newColumns = columns.map((column: any) => ({
+              id: column.key,
+              header: column.title,
+              accessorKey: column.key,
+          }));
+          setColumns(newColumns);
+
+          // Map the rows from the API response to the format required by the table
+          const newData = rows.map((row: any) => {
+              const mappedRow: any = {};
+              columns.forEach((col: any) => {
+                  mappedRow[col.key] = row[col.key];
+              });
+              return mappedRow;
+          });
+
+          // Update the table data
+          setData(newData);
+        } else {
+          console.warn('API response data is null or undefined');
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching data latest critical:', error)
+      })
+      .finally(() => {
+        setIsTableLoading(false);
+      });
+  }
+
+  const handleStartEnd = (time: string) => {
+    const timeSplit = time.split(' - ')
+
+    let startTime: string | Date
+    let endTime: string | Date
+
+    if (timeSplit.length > 1) {
+      startTime = timeSplit?.[0]
+      endTime = timeSplit?.[1]
+    } else {
+      startTime = format(new Date(new Date().getTime() - toMiliseconds * PREDEFINED_TIME_RANGES[time]), 'yyyy-MM-dd HH:mm:ss')
+      endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+    }
+
+    return { startTime, endTime }
+  }
+
   return (
     // <div className="bg-black bg-opacity-50 flex justify-center items-center">
       <div ref={panelRef} className="rounded-lg w-full flex flex-col gap-3">

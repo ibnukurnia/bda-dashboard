@@ -8,6 +8,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import {
   GetChartsOverview,
   GetHealthScoreOverview,
+  GetLatestCritical,
   GetPieChartsOverview,
   GetTopServicesOverview,
 } from '@/modules/usecases/overviews'
@@ -24,7 +25,6 @@ import DonutChart from './chart/donut-chart'
 import DynamicUpdatingChart from './chart/dynamic-updating-chart'
 import OverviewModal from './modal/overview-modal'
 import Gauge from './panels/gauge'
-import TablePanel from './panels/table-panel'
 import TableServices from './table/table-services'
 import TableSeverity from './table/table-severity'
 import TableServicesWrapper from './wrapper/table-services-wrapper'
@@ -33,6 +33,7 @@ import DonutChartWrapper from './wrapper/donut-wrapper'
 import TableSeverityWrapper from './wrapper/table-severity-wrapper'
 import HealthinessGaugesWrapper from './wrapper/healthiness-gauge-wrapper'
 import TableCriticalAnomaly from './table/table-critical-anomaly'
+import DropdownSeverity from './button/dropdown-severity'
 
 // Define your data
 const sourceData = [
@@ -161,6 +162,7 @@ const defaultTimeRanges: Record<string, number> = {
 const MainPageOverview = () => {
   // const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
+  const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string } | null | undefined>(null)
   const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
   const [modalServices, setModalServices] = useState(false)
   const [modalSeverity, setModalSeverity] = useState(false)
@@ -295,6 +297,10 @@ const MainPageOverview = () => {
         setTopServicesData({ header: [], data: [] })
         setIsLoadingTopServices(false)
       })
+  }
+
+  const handleChangeFilterSeverity = (value?: { value: any; id: number; label: string } | null) => {
+    setSelectedSeverity(value)
   }
 
   const handleLogicTitle = (title: string) => {
@@ -620,20 +626,15 @@ const MainPageOverview = () => {
           <div className='card flex flex-col gap-6'>
             <div className='flex justify-between'>
               <span className="font-bold text-white text-2xl content-center">Latest Critical Anomaly</span>
-              <DropdownDS
-                data={[
-                  { id: 'semua-severity', value: '', label: 'All Severity' },
-                  ...dummySeverities.map((item) => ({ id: item.id, value: item.value, label: item.label })),
-                ]}
-                onSelectData={(e) => handleChangeFilterDS(e)}
-                selectedData={selectedDataSource}
+              <DropdownSeverity
+                data={dummySeverities}
+                onSelectData={(e) => handleChangeFilterSeverity(e)}
+                selectedData={selectedSeverity}
               />
             </div>
             <TableCriticalAnomaly
-              data={topServicesData.data}
-              tableHeader={topServicesData.header}
-              dataKeys={configDataKey}
-              maxHeight={tableMaxHeight}
+              timeRange={selectedRange}
+              severity={selectedSeverity}
             />
           </div>
         </div>

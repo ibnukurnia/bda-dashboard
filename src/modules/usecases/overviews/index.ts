@@ -1,5 +1,5 @@
 import { get } from '@/common/api'
-import { ApiResponse } from '@/common/api/type'
+import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 import {
   InsightOverviewResponse,
   MetricsOverviewResponse,
@@ -79,6 +79,21 @@ const GetHealthScoreOverview = async (params?: { start_time: string | Date; end_
   return response
 }
 
+const GetLatestCritical = async (params?: {
+  start_time: string | Date;
+  end_time: string | Date;
+  severity: number | null | undefined;
+  limit: number;
+  page: number;
+}) => {
+  const response: ApiResponse<PaginatedResponse> = await get('latest-critical', {
+    withAuth: true,
+    queries: params,
+  })
+
+  return response
+}
+
 export {
   GetCurrentSituation,
   GetTeamOverview,
@@ -88,4 +103,5 @@ export {
   GetHealthScoreOverview,
   GetPieChartsOverview,
   GetTopServicesOverview,
+  GetLatestCritical,
 }

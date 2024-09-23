@@ -147,7 +147,7 @@ const MainPageRootCauseAnalysis = () => {
           </Button>
         </div>
         <FullScreen handle={handle}>
-          <div className={`flex flex-col gap-10 px-2 py-8 card-style ${handle.active ? "my-8 mx-6" : ""}`}>
+          <div className={`flex flex-col gap-10 px-2 py-8 overflow-hidden card-style ${handle.active ? "my-8 mx-6" : ""}`}>
             <div className="w-full flex flex-col gap-8">
               <RCATreeWrapper
                 isError={isError}
