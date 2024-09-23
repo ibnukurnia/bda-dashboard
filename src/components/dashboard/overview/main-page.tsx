@@ -183,7 +183,7 @@ const MainPageOverview = () => {
 
   const healthinessRef = useRef<HTMLDivElement>(null)
   const thSeverity = ['Severity', 'Count']
-  const configDataKey = ['service_name', 'count_anomaly']
+  const configDataKey = ['service_name', 'critical', 'major', 'minor']
   const router = useRouter()
   const handle = useFullScreenHandle();
 
@@ -585,7 +585,7 @@ const MainPageOverview = () => {
                       </TableSeverityWrapper>
                     </div>
                     <TableServicesWrapper
-                      isLoading={isLoadingTopServices}
+                      isLoading={true}
                     >
                       <TableServices
                         data={topServicesData.data}
