@@ -529,7 +529,7 @@ const MainPageOverview = () => {
           </Button>
         </div>
       </div>
-      <FullScreen className='p-6 bg-[#05061E] overflow-auto' handle={handle}>
+      <FullScreen className={`${handle.active ? "p-6" : ""} bg-[#05061E] overflow-auto`} handle={handle}>
         <div className="flex flex-row">
           <div className="flex-1 grid gap-8">
             <GraphWrapper isLoading={isLoadingGraphic}>
