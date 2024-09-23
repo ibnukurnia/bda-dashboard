@@ -76,6 +76,7 @@ export const PREDEFINED_TIME_RANGES: Record<string, number> = {
   'Last 15 minutes': 15,
   'Last 30 minutes': 30,
   'Last 1 hours': 60,
+  'Last 3 hours': 180,
   'Last 6 hours': 360,
   'Last 24 hours': 1440,
   // 'Last 3 days': 4320,
