@@ -60,7 +60,7 @@ const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData,
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {data.find((el) => el.value === selectedData)?.label || 'All Data Source'}
+        {data.find((el) => el.id === selectedData?.id)?.label || 'All Severity'}
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"

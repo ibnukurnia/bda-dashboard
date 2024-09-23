@@ -129,7 +129,7 @@ const sourceData = [
   },
 ]
 
-const dummySeverities = [
+const dataDropdownSeverity = [
   {
     id: 3,
     label: "Critical",
@@ -162,7 +162,7 @@ const defaultTimeRanges: Record<string, number> = {
 const MainPageOverview = () => {
   // const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
-  const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string } | null | undefined>(null)
+  const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string } | null | undefined>(dataDropdownSeverity[0])
   const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
   const [modalServices, setModalServices] = useState(false)
   const [modalSeverity, setModalSeverity] = useState(false)
@@ -630,9 +630,9 @@ const MainPageOverview = () => {
             </div>
             <div className='card flex flex-col gap-6'>
               <div className='flex justify-between'>
-                <span className="font-bold text-white text-2xl content-center">Latest Critical Anomaly</span>
+                <span className="font-bold text-white text-2xl content-center">Latest Anomaly</span>
                 {!handle.active && <DropdownSeverity
-                  data={dummySeverities}
+                  data={dataDropdownSeverity}
                   onSelectData={(e) => handleChangeFilterSeverity(e)}
                   selectedData={selectedSeverity}
                 />}
