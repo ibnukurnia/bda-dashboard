@@ -585,7 +585,7 @@ const MainPageOverview = () => {
                       </TableSeverityWrapper>
                     </div>
                     <TableServicesWrapper
-                      isLoading={true}
+                      isLoading={isLoadingTopServices}
                     >
                       <TableServices
                         data={topServicesData.data}
