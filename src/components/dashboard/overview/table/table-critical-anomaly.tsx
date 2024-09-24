@@ -1,12 +1,9 @@
-import { ArrowLeft, ArrowRight } from 'react-feather'
-
-import './table-services.css'
-import { Typography } from '@mui/material'
-import { useEffect, useRef, useState } from 'react';
+import { TablePagination, Typography } from '@mui/material'
+import { useEffect, useState } from 'react';
 import { ColumnDef, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { GetLatestCritical } from '@/modules/usecases/overviews';
 import { format } from 'date-fns';
-import { PREDEFINED_TIME_RANGES } from '@/constants';
+import { PREDEFINED_TIME_RANGES, ROWS_PER_PAGE_OPTIONS } from '@/constants';
 import useUpdateEffect from '@/hooks/use-update-effect';
 
 const toMiliseconds = 1000 * 60
@@ -42,7 +39,6 @@ interface TableCriticalAnomalyProps {
 }
 
 const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps) => {
-  const panelRef = useRef<HTMLDivElement>(null)
   const [isTableLoading, setIsTableLoading] = useState(true)
   const [data, setData] = useState<any>([])
   const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
@@ -50,7 +46,7 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
       pageIndex: 1, // Start from page 1
       pageSize: 10, // Default page size
   })
-  const [totalPages, setTotalPages] = useState<number>(1)
+  const [totalRows, setTotalRows] = useState<number>(1)
 
   const table = useReactTable({
     data,
@@ -84,10 +80,10 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
     })
       .then(result => {
         if (result?.data) {
-          const { columns, rows, total_pages } = result.data;
+          const { columns, rows, total_rows } = result.data;
 
           // Update the total number of pages based on the API response
-          setTotalPages(total_pages);
+          setTotalRows(total_rows);
 
           // Map the columns from the API response to the format required by the table
           const newColumns = columns.map((column: any) => ({
@@ -138,116 +134,103 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
   }
 
   return (
-    // <div className="bg-black bg-opacity-50 flex justify-center items-center">
-      <div ref={panelRef} className="rounded-lg w-full flex flex-col gap-3">
-        <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
-          <div className="min-w-full">
-            <TableWrapper isLoading={isTableLoading} isEmpty={data.length === 0}>
-              <table className="table-auto divide-y divide-gray-200 w-full">
-                <thead>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <th key={header.id} colSpan={header.colSpan} className="p-2">
-                          <button
-                            className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3 text-gray-100`}
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            {typeof header.column.columnDef.header === 'function'
-                              ? header.column.columnDef.header({} as any) // Pass a dummy context
-                              : header.column.columnDef.header}
-                            {header.column.getCanSort() && (
-                              <>
-                                {{
-                                  asc: '🔼',
-                                  desc: '🔽',
-                                  undefined: '🔽', // Default icon for unsorted state
-                                }[header.column.getIsSorted() as string] || '🔽'}
-                              </>
-                            )}
-                          </button>
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody className="divide-y divide-gray-200 text-gray-600">
-                  {table.getRowModel().rows.map((row) => (
-                    <tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
-                          <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
-                            {cell.column.id === 'severity' && (
-                              <svg
-                                width="14"
-                                height="15"
-                                viewBox="0 0 14 15"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
-                                  fill="#F59823"
-                                />
-                              </svg>
-                            )}
-                            {typeof cell.column.columnDef.cell === 'function'
-                              ? cell.column.columnDef.cell(cell.getContext())
-                              : cell.column.columnDef.cell}
-                          </div>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </TableWrapper>
-          </div>
-        </div>
-        {data.length > 0 && !isTableLoading && (
-          <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
-            <div className="flex gap-1">
-                <span className="text-white">Rows per page:</span>
-                <select
-                    value={table.getState().pagination.pageSize}
-                    onChange={(e) => {
-                        setPagination(prev => ({
-                          ...prev,
-                          pageSize: Number(e.target.value)
-                        }))
-                    }}
-                    className="select-button-assesment"
-                >
-                    {[5, 10, 15, 25].map((pageSize) => (
-                        <option key={pageSize} value={pageSize}>
-                            {pageSize}
-                        </option>
+    <div className="rounded-lg w-full flex flex-col gap-3">
+      <div className={`w-full max-h-[75dvh] ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
+        <div className="min-w-full">
+          <TableWrapper isLoading={isTableLoading} isEmpty={data.length === 0}>
+            <table className="table-auto divide-y divide-gray-200 w-full">
+              <thead>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th key={header.id} colSpan={header.colSpan} className="p-2">
+                        <button
+                          className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3 text-gray-100`}
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          {typeof header.column.columnDef.header === 'function'
+                            ? header.column.columnDef.header({} as any) // Pass a dummy context
+                            : header.column.columnDef.header}
+                          {header.column.getCanSort() && (
+                            <>
+                              {{
+                                asc: '🔼',
+                                desc: '🔽',
+                                undefined: '🔽', // Default icon for unsorted state
+                              }[header.column.getIsSorted() as string] || '🔽'}
+                            </>
+                          )}
+                        </button>
+                      </th>
                     ))}
-                </select>
-            </div>
-            <div className="text-white">
-                Page {pagination.pageIndex} of {totalPages}
-            </div>
-            <div className="d-flex">
-              <button
-                className={`p-2 ${pagination.pageIndex === 1 ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
-                onClick={() => setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex-1}))}
-                disabled={pagination.pageIndex === 1}
-              >
-                <ArrowLeft />
-              </button>
-              <button
-                className={`p-2 ${pagination.pageIndex === totalPages ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
-                onClick={() => setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex+1}))}
-                disabled={pagination.pageIndex === totalPages}
-              >
-                <ArrowRight />
-              </button>
-            </div>
-          </div>
-        )}
+                  </tr>
+                ))}
+              </thead>
+              <tbody className="divide-y divide-gray-200 text-gray-600">
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                        <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
+                          {cell.column.id === 'severity' && (
+                            <svg
+                              width="14"
+                              height="15"
+                              viewBox="0 0 14 15"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
+                                fill="#F59823"
+                              />
+                            </svg>
+                          )}
+                          {typeof cell.column.columnDef.cell === 'function'
+                            ? cell.column.columnDef.cell(cell.getContext())
+                            : cell.column.columnDef.cell}
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TableWrapper>
+        </div>
       </div>
-    // </div>
+      {data.length > 0 && !isTableLoading && (
+        <TablePagination
+          component={"div"}
+          count={totalRows}
+          onPageChange={(_, page) => setPagination(prev => ({ ...prev, pageIndex: page+1}))}
+          page={pagination.pageIndex-1}
+          rowsPerPage={table.getState().pagination.pageSize}
+          onRowsPerPageChange={(e) => setPagination({ pageSize: Number(e.target.value), pageIndex: 1})}
+          rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
+          showFirstButton
+          showLastButton
+          sx={{
+            color: 'white', // Text color
+            '.MuiTablePagination-actions': {
+              color: 'white',
+            },
+            '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+              color: 'white', // Labels and displayed rows text color
+            },
+            '.MuiSelect-select': {
+              color: 'white', // Dropdown text color
+            },
+            '.MuiSvgIcon-root': {
+              fill: 'white', // Default color for icons
+            },
+            '.MuiButtonBase-root.Mui-disabled svg': {
+              fill: 'grey', // Set your desired disabled color (e.g., light grey)
+            },
+          }}
+        />
+      )}
+    </div>
   )
 }
 

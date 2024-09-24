@@ -84,3 +84,5 @@ export const PREDEFINED_TIME_RANGES: Record<string, number> = {
   // 'Last 1 week': 10080,
   // 'Last 1 month': 43800,
 }
+
+export const ROWS_PER_PAGE_OPTIONS = [5, 10, 15, 25, 50]
