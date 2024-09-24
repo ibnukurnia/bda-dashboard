@@ -794,7 +794,7 @@ const TabContent: React.FC<TabContentProps> = ({
                         </div>
 
                         <Box>
-                            <div className={`w-full ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
+                            <div className={`w-full max-h-[750px] ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
                                 <div className="min-w-full">
                                     {isTableLoading ? (
                                         <div className="flex justify-center items-center">
@@ -867,45 +867,45 @@ const TabContent: React.FC<TabContentProps> = ({
                                         </table>
                                     )}
                                 </div>
-                                {data.length > 0 && !isTableLoading && (
-                                    <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
-                                        <div className="flex gap-1">
-                                            <span className="text-white">Rows per page:</span>
-                                            <select
-                                                value={table.getState().pagination.pageSize}
-                                                onChange={(e) => {
-                                                    const newPageSize = Number(e.target.value);
-                                                    handlePageSizeChange(newPageSize, selectedDataSource, 1, selectedAnomalyOptions);
-                                                }}
-                                                className="select-button-assesment"
-                                            >
-                                                {[5, 10, 15, 25].map((pageSize) => (
-                                                    <option key={pageSize} value={pageSize}>
-                                                        {pageSize}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="text-white">Page {pagination.pageIndex} of {totalPages}</div>
-                                        <div className="d-flex">
-                                            <button
-                                                className={`p-2 ${pagination.pageIndex === 1 ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
-                                                onClick={previousPage}
-                                                disabled={pagination.pageIndex === 1}
-                                            >
-                                                <ArrowLeft />
-                                            </button>
-                                            <button
-                                                className={`p-2 ${pagination.pageIndex === totalPages ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
-                                                onClick={nextPage}
-                                                disabled={pagination.pageIndex === totalPages}
-                                            >
-                                                <ArrowRight />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
+                            {data.length > 0 && !isTableLoading && (
+                                <div className="flex mt-4 justify-content-between items-center gap-4 place-content-end">
+                                    <div className="flex gap-1">
+                                        <span className="text-white">Rows per page:</span>
+                                        <select
+                                            value={table.getState().pagination.pageSize}
+                                            onChange={(e) => {
+                                                const newPageSize = Number(e.target.value);
+                                                handlePageSizeChange(newPageSize, selectedDataSource, 1, selectedAnomalyOptions);
+                                            }}
+                                            className="select-button-assesment"
+                                        >
+                                            {[5, 10, 15, 25].map((pageSize) => (
+                                                <option key={pageSize} value={pageSize}>
+                                                    {pageSize}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="text-white">Page {pagination.pageIndex} of {totalPages}</div>
+                                    <div className="d-flex">
+                                        <button
+                                            className={`p-2 ${pagination.pageIndex === 1 ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
+                                            onClick={previousPage}
+                                            disabled={pagination.pageIndex === 1}
+                                        >
+                                            <ArrowLeft />
+                                        </button>
+                                        <button
+                                            className={`p-2 ${pagination.pageIndex === totalPages ? 'text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
+                                            onClick={nextPage}
+                                            disabled={pagination.pageIndex === totalPages}
+                                        >
+                                            <ArrowRight />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </Box>
                     </div>
                     <GraphAnomalyCard
