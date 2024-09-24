@@ -118,15 +118,6 @@ const MainPageRootCauseAnalysis = () => {
     });
   };
 
-  const handleDetail = (dataSource: string, metricAnomaly: string, service: string, ) => {
-    const params = new URLSearchParams();
-    params.set("data_source", dataSource)
-    params.set("anomaly", metricAnomaly)
-    params.set("service", service)
-    params.set("time_range", selectedRange)
-    router.push(`/dashboard/anomaly-detection?${params.toString()}`)
-  }
-
   return (
     <>
       <div className='flex flex-col gap-8'>
@@ -154,9 +145,9 @@ const MainPageRootCauseAnalysis = () => {
               >
                 <RCATree
                   data={dataTree}
-                  handleDetail={handleDetail}
                   fullScreenHandle={handle}
                   isLoading={isLoading}
+                  timeRange={selectedRange}
                 />
               </RCATreeWrapper>
             </div>
