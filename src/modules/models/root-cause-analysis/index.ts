@@ -6,6 +6,7 @@ type Route = {
 }
 type ImpactedService = {
   service:  string;
+  service_alias:  string;
   total:    number;
   impacted: string[];
 }

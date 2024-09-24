@@ -44,6 +44,7 @@ const RCATree: React.FC<RCATreeProps> = ({
         anomalyCount: r.total,
         children: r.impacted_services.map(is => ({
           name: is.service,
+          namespace: is.service_alias,
           anomalyCount: is.total,
           children: is.impacted.map(i => ({
             name: i,
