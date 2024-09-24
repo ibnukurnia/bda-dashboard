@@ -47,6 +47,7 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
       pageSize: 10, // Default page size
   })
   const [totalRows, setTotalRows] = useState<number>(1)
+  const [pauseEffectPagination, setPauseEffectPagination] = useState(false)
 
   const table = useReactTable({
     data,
@@ -65,17 +66,28 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
   }, [])
   
   useUpdateEffect(() => {
+    setPauseEffectPagination(true)
+    setPagination(prev => ({ ...prev, pageIndex: 1}))
+    fetchData(1)
+  }, [timeRange, severity])
+  
+  useUpdateEffect(() => {
+    if (pauseEffectPagination) {
+      setPauseEffectPagination(false)
+    }
     fetchData()
-  }, [timeRange, severity, pagination])
+  }, [pagination])
 
-  function fetchData() {
+  function fetchData(
+    page?: number
+  ) {
     const { startTime, endTime } = handleStartEnd(timeRange)
 
     GetLatestCritical({
       start_time: startTime,
       end_time: endTime,
       severity: severity?.id,
-      page: pagination.pageIndex,
+      page: page ?? pagination.pageIndex,
       limit: pagination.pageSize
     })
       .then(result => {
