@@ -131,9 +131,9 @@ const sourceData = [
 
 const dataDropdownSeverity = [
   {
-    id: 3,
+    id: 1,
     label: "Critical",
-    value: 3,
+    value: 1,
   },
   {
     id: 2,
@@ -141,9 +141,9 @@ const dataDropdownSeverity = [
     value: 2,
   },
   {
-    id: 1,
+    id: 3,
     label: "Minor",
-    value: 1,
+    value: 3,
   },
 ]
 
