@@ -218,7 +218,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
 
                             {/* Severity Section */}
-                            {/* Severity Section */}
                             <div className="flex flex-col gap-3">
                                 <div className="flex flex-col gap-2">
                                     <h3 className="font-semibold text-lg">Severity</h3>
@@ -322,7 +321,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                             </p>
                         )}
                     </div>
-
                 </div>
             )}
         </div>

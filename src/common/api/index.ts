@@ -99,6 +99,7 @@ const buildQueryParam = (queries: Record<string, any>): string => {
     const key = keys[i]
     const value = queries[key]
 
+    if (value == null) continue
     if (value instanceof Array) {
       value.forEach((m, j) => {
         i === 0 && j === 0 ? (param += `?${key}=${m}`) : (param += `&${key}=${m}`)

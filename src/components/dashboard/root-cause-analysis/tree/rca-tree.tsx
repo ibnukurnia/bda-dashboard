@@ -17,13 +17,13 @@ type ExpandedNodesType = {
 interface RCATreeProps {
   isLoading: boolean;
   data: RootCauseAnalysisTreeResponse[] | null;
-  handleDetail: (dataSource: string, metricAnomaly: string, service: string) => void;
+  timeRange: string;
   fullScreenHandle: FullScreenHandle; // From react-full-screen
 }
 const RCATree: React.FC<RCATreeProps> = ({
   isLoading,
   data,
-  handleDetail,
+  timeRange,
   fullScreenHandle, // Use handle from react-full-screen
 }) => {
   // State to manage expanded nodes
@@ -43,7 +43,8 @@ const RCATree: React.FC<RCATreeProps> = ({
         namespace: r.anomaly,
         anomalyCount: r.total,
         children: r.impacted_services.map(is => ({
-          name: is.service,
+          name: is.service_alias,
+          namespace: is.service,
           anomalyCount: is.total,
           children: is.impacted.map(i => ({
             name: i,
@@ -119,12 +120,6 @@ const RCATree: React.FC<RCATreeProps> = ({
     })
   }
 
-  const handleClickDetail = (service: string) => {
-    const dataSource = expandedNodes[0].node.namespace ?? expandedNodes[0].node.name
-    const metricAnomaly = expandedNodes[1].node.namespace ?? expandedNodes[1].node.name
-    handleDetail(dataSource, metricAnomaly, expandedNodes[2]?.node?.name ?? service)
-  }
-
   return (
     <div className='w-full px-6 pb-8 flex flex-col gap-8'>
       <div
@@ -178,7 +173,7 @@ const RCATree: React.FC<RCATreeProps> = ({
           maxCount={totalAnomaly}
           isLoading={isLoading}
         />
-        {expandedNodes.map((expNode, i) => {
+        {expandedNodes.map((expNode: ExpandedNodesType, i: number) => {
           if (i >= 3) return null
           if (expNode.node.children != null && Array.isArray(expNode.node.children) && expNode.node.children.length > 0) {
             return (
@@ -189,7 +184,12 @@ const RCATree: React.FC<RCATreeProps> = ({
                 expandedIndex={expandedNodes[i+1]?.nodeIndex}
                 expandedChildIndex={expandedNodes[i+2]?.nodeIndex - scrollTopPositions[i+2] / nodeHeight}
                 handleOnScroll={(scrollTop) => handleOnScroll(i + 1, scrollTop)}
-                handleOpenDetail={i === 1 ? (node) => handleClickDetail(node.name) : undefined}
+                hasDetail={i === 1}
+                queryParams={{
+                  time_range: timeRange,
+                  data_source: expandedNodes[0].node.namespace ?? expandedNodes[0].node.name,
+                  metric_anomaly: expandedNodes[1]?.node.namespace ?? expandedNodes[1]?.node.name,
+                }}
                 fullScreenHandle={fullScreenHandle}
                 maxCount={totalAnomaly}
                 isLoading={isLoading}

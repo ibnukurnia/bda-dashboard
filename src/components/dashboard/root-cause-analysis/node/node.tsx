@@ -3,6 +3,7 @@ import ProgressBar from '../bar/progress-bar';
 import { Typography } from '@mui/material';
 import { ChevronRight } from 'react-feather';
 import { replaceWordingDataSource } from '../helper';
+import Link from 'next/link';
 
 interface NodeProps {
   percentage: number; // Accepts a number between 0 and 100
@@ -10,7 +11,13 @@ interface NodeProps {
   count?: number;
   expanded: boolean;
   handleOnClickNode: () => void;
-  handleOpenDetail?: () => void;
+  hasDetail?: boolean;
+  queryParams?: {
+    time_range?: string;
+    data_source?: string;
+    metric_anomaly?: string;
+    service?: string;
+  };
 }
 
 const Node: React.FC<NodeProps> = ({ 
@@ -19,7 +26,8 @@ const Node: React.FC<NodeProps> = ({
   count,
   expanded,
   handleOnClickNode,
-  handleOpenDetail,
+  hasDetail,
+  queryParams,
  }) => {
   const [containerWidth, setContainerWidth] = useState(0)
   const containerRef = useRef<HTMLButtonElement>(null)
@@ -70,8 +78,13 @@ const Node: React.FC<NodeProps> = ({
             {count}
           </Typography>
         }
-        {handleOpenDetail &&
-          <div className='pl-2 flex gap-0 items-center hover:bg-gray-600 active:bg-gray-500 rounded-lg' onClick={handleOpenDetail}>
+        {hasDetail &&
+          <Link
+            href={{ pathname: '/dashboard/anomaly-detection', query: queryParams }}
+            passHref
+            rel="noopener noreferrer"
+            className='pl-2 flex gap-0 items-center hover:bg-gray-600 active:bg-gray-500 rounded-lg'
+          >
             <Typography
               variant="caption"
               color={'white'}
@@ -79,7 +92,8 @@ const Node: React.FC<NodeProps> = ({
               Detail
             </Typography>
             <ChevronRight size={16} color='white'/>
-          </div>
+        </Link>
+
         }
       </div>
     </button>

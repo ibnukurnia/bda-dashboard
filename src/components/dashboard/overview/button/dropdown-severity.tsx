@@ -5,9 +5,9 @@ import Button from '@/components/system/Button/Button'
 import './dropdown-ds.css'
 
 interface DropdownSeverityProps {
-  data: { value: any; id: string | number; label: string }[]
-  onSelectData: (id: string) => void
-  selectedData: string
+  data: { value: any; id: number; label: string }[]
+  onSelectData: (value?: { value: any; id: number; label: string } | null) => void
+  selectedData?: { value: any; id: number; label: string } | null | undefined
 }
 
 const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData, selectedData }) => {
@@ -26,7 +26,7 @@ const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData,
     }
   }
 
-  const handleSelectData = (dataSelection: string) => {
+  const handleSelectData = (dataSelection?: { value: any; id: number; label: string } | null) => {
     onSelectData(dataSelection)
     setIsOpen(false)
   }
@@ -60,7 +60,7 @@ const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData,
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {data.find((el) => el.value === selectedData)?.label || 'All Data Source'}
+        {data.find((el) => el.id === selectedData?.id)?.label || 'All Severity'}
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"
@@ -79,10 +79,18 @@ const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData,
           className={`absolute right-0 bg-white rounded-lg shadow-lg z-50 flex w-[auto] max-h-96 overflow-auto scrollbar`}
         >
           <ul className="text-sm text-gray-800 w-48">
+            <li>
+              <div
+                onClick={() => handleSelectData(null)}
+                className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
+              >
+                All Severity
+              </div>
+            </li>
             {data.map((dataSelection, dsid) => (
               <li key={dsid}>
                 <div
-                  onClick={() => handleSelectData(dataSelection.value)}
+                  onClick={() => handleSelectData(dataSelection)}
                   className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
                 >
                   {dataSelection.label}

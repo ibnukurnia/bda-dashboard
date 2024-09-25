@@ -12,42 +12,56 @@ const TableServicesWrapper: React.FC<TableServicesWrapperProps> = ({
 }) => {
   if (isLoading) return (
     <div className='w-full flex flex-col gap-6'>
-      <div className='grid grid-cols-2'>
+      <div className='flex justify-between'>
         <div className="h-5 flex items-center">
           <Skeleton
             animation="wave"
-            sx={{ bgcolor: 'grey.800', fontSize: '1.5rem' }}
-            variant="text"
+            sx={{ bgcolor: 'grey.800' }}
+            variant="rounded"
             width={"100px"}
           />
         </div>
-        <div className="h-5 flex items-center m-auto">
-          <Skeleton
-            animation="wave"
-            sx={{ bgcolor: 'grey.800', fontSize: '1.5rem' }}
-            variant="text"
-            width={"100px"}
-          />
-        </div>
+          <div
+            className="h-5 flex gap-2 items-center"
+          >
+            {Array.from(Array(3), (_, i) => (
+              <Skeleton
+                key={i}
+                animation="wave"
+                sx={{ bgcolor: 'grey.800' }}
+                variant="rounded"
+                width={"100px"}
+              />
+            ))}
+          </div>
       </div>
       <div className='flex flex-col gap-4'>
         {Array.from(Array(5), (_, i) => (
-          <div key={i} className='grid grid-cols-2'>
+          <div key={i} className='flex justify-between'>
             <div className="h-5 flex items-center">
               <Skeleton
                 animation="wave"
-                sx={{ bgcolor: 'grey.800', fontSize: '1.5rem' }}
-                variant="text"
+                sx={{ bgcolor: 'grey.800' }}
+                variant="rounded"
                 width={"75px"}
               />
             </div>
-            <div className="h-5 flex items-center m-auto">
-              <Skeleton
-                animation="wave"
-                sx={{ bgcolor: 'grey.800', fontSize: '1.5rem' }}
-                variant="text"
-                width={"75px"}
-              />
+            <div
+              className="h-5 flex gap-2 items-center"
+            >
+              {Array.from(Array(3), (_, i) => (
+                <div
+                  key={i}
+                  className="w-[100px] flex justify-center"
+                >
+                  <Skeleton
+                    animation="wave"
+                    sx={{ bgcolor: 'grey.800' }}
+                    variant="rounded"
+                    width={"75px"}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         ))}

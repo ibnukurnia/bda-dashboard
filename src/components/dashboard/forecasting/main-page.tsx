@@ -11,7 +11,7 @@ import {
   PaginationState,
   useReactTable,
 } from '@tanstack/react-table'
-import { ArrowLeft, ArrowRight, Info } from 'react-feather'
+import { ArrowLeft, ArrowRight, Info, Maximize } from 'react-feather'
 
 import './main-page.css'
 
@@ -27,6 +27,8 @@ import { useLocalStorage } from '@/hooks/use-storage'
 import FilterPanel from './button/filter-panel'
 import SynchronizedCharts from './chart/synchronized-charts'
 import ForecastingTable from './table/forecasting-table'
+import { FullScreen, useFullScreenHandle } from 'react-full-screen'
+import Button from '@/components/system/Button/Button'
 
 const MainPageForecasting = () => {
   const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
@@ -49,6 +51,8 @@ const MainPageForecasting = () => {
     maxZoom: undefined as number | undefined,
     minZoom: undefined as number | undefined,
   })
+
+  const handle = useFullScreenHandle()
 
   const table = useReactTable({
     data: data,
@@ -198,6 +202,13 @@ const MainPageForecasting = () => {
     <div className="flex flex-col gap-8">
       <Stack sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
         <FilterPanel onApplyFilters={handleApplyFilters} activeFilter={filter} />
+        <div className="ml-auto flex">
+          <Button
+            onClick={handle.enter}
+          >
+            <Maximize className='w-6 h-6'/>
+          </Button>
+        </div>
       </Stack>
       {/* {statistics.length > 0 && (
         <Stack sx={{ display: 'flex', gap: 4, flexDirection: 'row' }}>
@@ -223,51 +234,53 @@ const MainPageForecasting = () => {
           ))}
         </Stack>
       )} */}
-      <div className="flex flex-col gap-10 px-14 py-12 card-style">
-        {(() => {
-          if (!filter.sourceData) {
-            return (
-              <div className="flex flex-col gap-8">
-                <Typography variant="h5" component="h5" color="white" align="center">
-                  PLEASE USE FILTER BUTTON TO FORECAST DATA
-                </Typography>
-              </div>
-            )
-          } else {
-            return (
-              <Fragment>
+      <FullScreen className={`${handle.active ? "p-6" : ""} bg-[#05061E] overflow-auto`} handle={handle}>
+        <div className="flex flex-col gap-10 px-14 py-12 card-style">
+          {(() => {
+            if (!filter.sourceData) {
+              return (
                 <div className="flex flex-col gap-8">
-                  <Typography variant="h5" component="h5" color="white">
-                    Graphic Anomaly Forecasting
+                  <Typography variant="h5" component="h5" color="white" align="center">
+                    PLEASE USE FILTER BUTTON TO FORECAST DATA
                   </Typography>
-                  {chartIntervalUpdate}
-                  {/* <SynchronizedCharts
-                    chartTitle={filter.serviceName?.length ? `${filter.serviceName} - ${filter.sourceData}` : ''}
-                    dataCharts={graphData}
-                    height={400}
-                    width="100%"
-                    loading={chartLoading}
-                  /> */}
                 </div>
-                {/* <div className="flex flex-col gap-8">
-                  <Typography variant="h5" component="h5" color="white">
-                    Table Anomaly Forecasting
-                  </Typography>
-                  <ForecastingTable
-                    table={table}
-                    data={data}
-                    changePaginationSize={handleChangePaginationSize}
-                    totalPages={totalPages}
-                    previousPage={previousPage}
-                    nextPage={nextPage}
-                    pagination={pagination}
-                  />
-                </div> */}
-              </Fragment>
-            )
-          }
-        })()}
-      </div>
+              )
+            } else {
+              return (
+                <Fragment>
+                  <div className="flex flex-col gap-8">
+                    <Typography variant="h5" component="h5" color="white">
+                      Graphic Anomaly Forecasting
+                    </Typography>
+                    {chartIntervalUpdate}
+                    {/* <SynchronizedCharts
+                      chartTitle={filter.serviceName?.length ? `${filter.serviceName} - ${filter.sourceData}` : ''}
+                      dataCharts={graphData}
+                      height={400}
+                      width="100%"
+                      loading={chartLoading}
+                    /> */}
+                  </div>
+                  {/* <div className="flex flex-col gap-8">
+                    <Typography variant="h5" component="h5" color="white">
+                      Table Anomaly Forecasting
+                    </Typography>
+                    <ForecastingTable
+                      table={table}
+                      data={data}
+                      changePaginationSize={handleChangePaginationSize}
+                      totalPages={totalPages}
+                      previousPage={previousPage}
+                      nextPage={nextPage}
+                      pagination={pagination}
+                    />
+                  </div> */}
+                </Fragment>
+              )
+            }
+          })()}
+        </div>
+      </FullScreen>
     </div>
   )
 }

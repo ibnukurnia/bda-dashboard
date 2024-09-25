@@ -147,3 +147,17 @@
   right: 60px;
   top: 0;
 }
+
+th:first-child,
+td:first-child {
+  position: sticky;
+  z-index: 2;
+  left: 0;
+  background: #0A1635;
+}
+thead {
+    position: sticky;
+    top: 0;
+    background: #0A1635;
+    z-index: 3;
+}

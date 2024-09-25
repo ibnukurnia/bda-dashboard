@@ -118,15 +118,6 @@ const MainPageRootCauseAnalysis = () => {
     });
   };
 
-  const handleDetail = (dataSource: string, metricAnomaly: string, service: string, ) => {
-    const params = new URLSearchParams();
-    params.set("data_source", dataSource)
-    params.set("anomaly", metricAnomaly)
-    params.set("service", service)
-    params.set("time_range", selectedRange)
-    router.push(`/dashboard/anomaly-detection?${params.toString()}`)
-  }
-
   return (
     <>
       <div className='flex flex-col gap-8'>
@@ -146,17 +137,17 @@ const MainPageRootCauseAnalysis = () => {
             <Maximize className='w-6 h-5'/>
           </Button>
         </div>
-        <FullScreen handle={handle}>
-          <div className={`flex flex-col gap-10 px-2 py-8 card-style ${handle.active ? "my-8 mx-6" : ""}`}>
+        <FullScreen className="bg-[#05061E]" handle={handle}>
+          <div className={`flex flex-col gap-10 px-2 py-8 overflow-hidden card-style ${handle.active ? "my-8 mx-6" : ""}`}>
             <div className="w-full flex flex-col gap-8">
               <RCATreeWrapper
                 isError={isError}
               >
                 <RCATree
                   data={dataTree}
-                  handleDetail={handleDetail}
                   fullScreenHandle={handle}
                   isLoading={isLoading}
+                  timeRange={selectedRange}
                 />
               </RCATreeWrapper>
             </div>

@@ -23,7 +23,12 @@ interface ScrollableNodeListProps {
   expandedIndex: number;
   expandedChildIndex: number;
   handleOnScroll: (scrollTop: number) => void;
-  handleOpenDetail?: (node: TreeNodeType) => void;
+  hasDetail?: boolean;
+  queryParams?: {
+    time_range: string;
+    data_source: string;
+    metric_anomaly: string;
+  };
   fullScreenHandle: FullScreenHandle; // From react-full-screen
   maxCount: number;
   isLoading: boolean;
@@ -35,7 +40,8 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   expandedIndex,
   expandedChildIndex,
   handleOnScroll,
-  handleOpenDetail,
+  hasDetail,
+  queryParams,
   fullScreenHandle, // Use handle from react-full-screen
   maxCount,
   isLoading,
@@ -179,7 +185,11 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
               count={node.anomalyCount}
               expanded={expandedIndex === index}
               handleOnClickNode={()=> handleOnClickNode(index)}
-              handleOpenDetail={handleOpenDetail ? () => handleOpenDetail(node) : undefined}
+              hasDetail={hasDetail}
+              queryParams={{
+                ...queryParams,
+                service: node.namespace ?? node.name,
+              }}
             />
           ))}
         </NodeListWrapper>
