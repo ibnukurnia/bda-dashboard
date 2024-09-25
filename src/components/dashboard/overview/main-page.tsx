@@ -526,6 +526,7 @@ const MainPageOverview = () => {
                   <DynamicUpdatingChart
                     title={handleLogicTitle(item.title)}
                     series={item.data}
+                    spike={item.last_spike}
                     id={id}
                     startTime={startTime} // Pass the calculated startTime
                     endTime={endTime} // Pass the calculated endTime
