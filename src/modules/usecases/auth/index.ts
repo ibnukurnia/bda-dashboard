@@ -5,6 +5,7 @@ const LoginUsecase = async (request: LoginRequest) => {
   const response = await post<LoginRequest, LoginResponse>('login', request)
   if (response.valid) {
     localStorage.setItem('token', response.data?.token as string)
+    localStorage.setItem('username', response.data?.username as string)
   }
 
   return response

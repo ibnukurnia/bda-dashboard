@@ -18,11 +18,26 @@ interface MainNavProps {
   toggleSideNav: () => void;
 }
 
+interface UserInfo {
+  name: string
+  avatar: string
+  country: string
+  city: string
+  timezone: string
+}
+
 export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
   const [openNav, setOpenNav] = React.useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState<boolean>(false);
   const [isNotifDetailsOpen, setIsNotifDetailsOpen] = React.useState<boolean>(false);
   const [isUserDetailsOpen, setIsUserDetailsOpen] = React.useState<boolean>(false);
+  const [userInfo, setuserInfo] = React.useState<UserInfo>({
+    name: "",
+    avatar: '/assets/avatar.png',
+    country: 'Indonesia',
+    city: 'Jakarta',
+    timezone: 'GTM-7',
+  });
 
   const notifRef = React.useRef<HTMLDivElement | null>(null);
   const userRef = React.useRef<HTMLDivElement | null>(null);
@@ -30,12 +45,6 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
 
 
   const user = {
-    name: 'Fadhli',
-    avatar: '/assets/avatar.png',
-    jobTitle: 'Data Scientist',
-    country: 'Indonesia',
-    city: 'Jakarta',
-    timezone: 'GTM-7',
   } as const;
 
   const pathname = usePathname();
@@ -126,6 +135,15 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
 
   React.useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
+    const username = localStorage.getItem('username')
+
+    setuserInfo({
+      name: username as string,
+      avatar: '/assets/avatar.png',
+      country: 'Indonesia',
+      city: 'Jakarta',
+      timezone: 'GTM-7',
+    })
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -183,11 +201,11 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
         >
           <Stack direction="column" gap={1} p={1}>
             <Typography variant="h6" component="h2" color="black">
-              {user.name}
+              {userInfo.name}
             </Typography>
-            <Typography variant="body2" component="p" color="black">
+            {/* <Typography variant="body2" component="p" color="black">
               {user.jobTitle}
-            </Typography>
+            </Typography> */}
             <Typography variant="body2" component="p" color="black">
               {formattedDate}
             </Typography>
