@@ -467,8 +467,13 @@ const TabContent: React.FC<TabContentProps> = ({
 
     const loadServicesFilterOptions = async () => {
         try {
-            const response = await fetchServicesOption(selectedDataSource)
-            // console.log('API Response:', response) // Log the entire API response
+            const { startTime, endTime } = getTimeRange()
+
+            const response = await fetchServicesOption({
+                type: selectedDataSource,
+                start_time: startTime,
+                end_time: endTime
+            })
 
             if (response.data && response.data.services) {
                 // No need to map as it's already an array of strings
@@ -567,7 +572,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
     const handleChangePage = (page: number) => {
         console.log(page);
-        
+
         setIsTableLoading(true); // Set loading to true before making the API call
 
         setPagination((prev) => {
@@ -833,30 +838,30 @@ const TabContent: React.FC<TabContentProps> = ({
                                 <TablePagination
                                     component={"div"}
                                     count={totalRows}
-                                    onPageChange={(_, page) => handleChangePage(page+1)}
-                                    page={pagination.pageIndex-1}
+                                    onPageChange={(_, page) => handleChangePage(page + 1)}
+                                    page={pagination.pageIndex - 1}
                                     rowsPerPage={table.getState().pagination.pageSize}
                                     onRowsPerPageChange={(e) => handlePageSizeChange(Number(e.target.value))}
                                     rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
                                     showFirstButton
                                     showLastButton
                                     sx={{
-                                      color: 'white', // Text color
-                                      '.MuiTablePagination-actions': {
-                                        color: 'white',
-                                      },
-                                      '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-                                        color: 'white', // Labels and displayed rows text color
-                                      },
-                                      '.MuiSelect-select': {
-                                        color: 'white', // Dropdown text color
-                                      },
-                                      '.MuiSvgIcon-root': {
-                                        fill: 'white', // Default color for icons
-                                      },
-                                      '.MuiButtonBase-root.Mui-disabled svg': {
-                                        fill: 'grey', // Set your desired disabled color (e.g., light grey)
-                                      },
+                                        color: 'white', // Text color
+                                        '.MuiTablePagination-actions': {
+                                            color: 'white',
+                                        },
+                                        '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+                                            color: 'white', // Labels and displayed rows text color
+                                        },
+                                        '.MuiSelect-select': {
+                                            color: 'white', // Dropdown text color
+                                        },
+                                        '.MuiSvgIcon-root': {
+                                            fill: 'white', // Default color for icons
+                                        },
+                                        '.MuiButtonBase-root.Mui-disabled svg': {
+                                            fill: 'grey', // Set your desired disabled color (e.g., light grey)
+                                        },
                                     }}
                                 />
                             )}
