@@ -70,6 +70,12 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'zabbix': "Zabbix",
 }
 
+export const SEVERITY_LABELS: Record<string, string> = {
+  'critical': "Very High",
+  'major': "High",
+  'minor': "Medium",
+}
+
 export const DEFAULT_TIME_RANGE = 'Last 15 minutes'
 export const PREDEFINED_TIME_RANGES: Record<string, number> = {
   'Last 5 minutes': 5,

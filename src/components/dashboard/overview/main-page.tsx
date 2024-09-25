@@ -34,6 +34,7 @@ import HealthinessGaugesWrapper from './wrapper/healthiness-gauge-wrapper'
 import TableCriticalAnomaly from './table/table-critical-anomaly'
 import DropdownSeverity from './button/dropdown-severity'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
+import { SEVERITY_LABELS } from '@/constants'
 
 // Define your data
 const sourceData = [
@@ -132,17 +133,17 @@ const sourceData = [
 const dataDropdownSeverity = [
   {
     id: 1,
-    label: "Critical",
+    label: "Very High",
     value: 1,
   },
   {
     id: 2,
-    label: "Major",
+    label: "High",
     value: 2,
   },
   {
     id: 3,
-    label: "Minor",
+    label: "Medium",
     value: 3,
   },
 ]
@@ -589,7 +590,7 @@ const MainPageOverview = () => {
                     >
                       <TableServices
                         data={topServicesData.data}
-                        tableHeader={topServicesData.header}
+                        tableHeader={[topServicesData.header[0], ...Object.values(SEVERITY_LABELS)]}
                         dataKeys={configDataKey}
                         maxHeight={tableMaxHeight}
                       />

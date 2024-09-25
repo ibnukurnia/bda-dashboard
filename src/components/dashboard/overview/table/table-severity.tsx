@@ -1,3 +1,4 @@
+import { SEVERITY_LABELS } from "@/constants";
 import Link from "next/link";
 
 interface TableSeverityProps {
@@ -44,7 +45,7 @@ const TableSeverity = ({ tableHeader, data, queryParams, clickable }: TableSever
                   rel={clickable && sdt.count > 0 ? "noopener noreferrer" : undefined}
                   className={`${clickable && sdt.count > 0 ? '' : 'cursor-not-allowed pointer-events-none'}`}
                 >
-                  {sdt.severity}
+                  {SEVERITY_LABELS[sdt.severity]}
                 </Link>
               </td>
               <td className="text-center">{sdt.count}</td>
