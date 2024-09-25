@@ -82,7 +82,6 @@ const Node: React.FC<NodeProps> = ({
           <Link
             href={{ pathname: '/dashboard/anomaly-detection', query: queryParams }}
             passHref
-            target="_blank"
             rel="noopener noreferrer"
             className='pl-2 flex gap-0 items-center hover:bg-gray-600 active:bg-gray-500 rounded-lg'
           >

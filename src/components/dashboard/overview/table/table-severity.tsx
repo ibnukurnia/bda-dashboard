@@ -1,11 +1,17 @@
+import Link from "next/link";
+
 interface TableSeverityProps {
   tableHeader: string[]
   data: { count: number; severity: string; color: string }[]
   onClickSeverity?: (severity: string) => void
   clickable: boolean
+  queryParams?: {
+    time_range?: string
+    data_source?: string
+  }
 }
 
-const TableSeverity = ({ tableHeader, data, onClickSeverity, clickable }: TableSeverityProps) => {
+const TableSeverity = ({ tableHeader, data, queryParams, clickable }: TableSeverityProps) => {
   return (
     <div>
       <table className="w-full text-white">
@@ -26,16 +32,20 @@ const TableSeverity = ({ tableHeader, data, onClickSeverity, clickable }: TableS
                 <span
                   className={`w-4 h-4 ${sdt.severity.toLowerCase() === 'critical' ? 'bg-red-600' : sdt.severity.toLowerCase() === 'major' ? 'bg-orange-600' : 'bg-yellow-400'}`}
                 />
-                <span
-                  className={`${clickable && sdt.count > 0 ? 'cursor-pointer' : ''}`}
-                  onClick={() => {
-                    if (onClickSeverity && sdt.count > 0) {
-                      onClickSeverity(sdt.severity)
+                <Link
+                  href={{
+                    pathname: '/dashboard/anomaly-detection',
+                    query: {
+                      ...queryParams,
+                      severity: sdt.severity
                     }
                   }}
+                  passHref
+                  rel={clickable && sdt.count > 0 ? "noopener noreferrer" : undefined}
+                  className={`${clickable && sdt.count > 0 ? '' : 'cursor-not-allowed pointer-events-none'}`}
                 >
                   {sdt.severity}
-                </span>
+                </Link>
               </td>
               <td className="text-center">{sdt.count}</td>
             </tr>
