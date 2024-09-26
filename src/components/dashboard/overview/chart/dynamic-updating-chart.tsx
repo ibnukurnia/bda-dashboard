@@ -6,12 +6,13 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 interface DynamicUpdatingChartProps {
   series: any[]
   title?: string
+  spike: string
   id?: string | number
   startTime: string // Add startTime prop
   endTime: string // Add endTime prop
 }
 
-const DynamicUpdatingChart = ({ series, title, startTime, endTime }: DynamicUpdatingChartProps) => {
+const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: DynamicUpdatingChartProps) => {
   const options: ApexOptions = {
     chart: {
       group: 'overview',
@@ -111,13 +112,20 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime }: DynamicUpda
   }
 
   return (
-    <Chart
-      options={options}
-      series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
-      type="line"
-      height={300}
-      width={'100%'}
-    />
+    <>
+      <Chart
+        options={options}
+        series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
+        type="line"
+        height={300}
+        width={'100%'}
+      />
+      <p className="text-white text-sm mt-1 ml-2">
+        Last Spike: {spike}
+      </p>
+    </>
+
+
   )
 }
 

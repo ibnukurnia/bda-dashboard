@@ -14,7 +14,6 @@ import DropdownTime from '../button/dropdown-time'
 import FilterPanel from '../button/filterPanel'
 import GraphAnomalyCard from '../card/graph-anomaly-card'
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
-
 import { format } from 'date-fns';
 import AutoRefreshButton from '../button/refreshButton'
 import { NAMESPACE_LABELS, PREDEFINED_TIME_RANGES, ROWS_PER_PAGE_OPTIONS } from '@/constants'
@@ -31,10 +30,10 @@ const TabContent: React.FC<TabContentProps> = ({
 }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
+
     const selectedAnomalyOptions = searchParams.getAll("anomaly")
     const selectedServicesOptions = searchParams.getAll("service")
-    const selectedSeverityOptions = searchParams.getAll("severity")
-
+    const selectedSeverityOptions = searchParams.getAll("severity").map(Number);
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
@@ -48,7 +47,7 @@ const TabContent: React.FC<TabContentProps> = ({
     })
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
     const [filterServicesOptions, setFilterServiceOptions] = useState<string[]>([])
-    const [filterSeverityOptions, setFilterSeverityOptions] = useState<string[]>([])
+    const [filterSeverityOptions, setFilterSeverityOptions] = useState<{ id: number; label: string; type: string }[]>([]);
     const [hasErrorFilterAnomaly, setHasErrorAnomalyFilter] = useState<boolean>(false)
     const [hasErrorFilterService, setHasErrorServiceFilter] = useState<boolean>(false)
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
@@ -104,7 +103,9 @@ const TabContent: React.FC<TabContentProps> = ({
     };
 
     const handleRangeChange = async (rangeKey: string) => {
-        const { startTime, endTime } = getTimeRange(rangeKey)
+        const { startTime, endTime } = getTimeRange(rangeKey);
+
+        console.log(selectedSeverityOptions)
 
         // Update the selected range state
         const params = new URLSearchParams(searchParams.toString());
@@ -115,6 +116,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
         const filtersAnomaly = selectedAnomalyOptions.length > 0 ? selectedAnomalyOptions : [];
         const filterServices = selectedServicesOptions.length > 0 ? selectedServicesOptions : [];
+        const filterSeverities = selectedSeverityOptions.length > 0 ? selectedSeverityOptions : []; // These are now numbers
 
         try {
             // Initiate both API calls concurrently and independently
@@ -124,6 +126,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 1,
                 filtersAnomaly,
                 filterServices,
+                filterSeverities,
                 startTime,
                 endTime
             );
@@ -262,6 +265,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 page, // Reset to the first page
                 selectedAnomalyOptions,
                 selectedServicesOptions,
+                selectedSeverityOptions,
                 startTime, // Pass startTime as a string
                 endTime // Pass endTime as a string
             );
@@ -316,6 +320,7 @@ const TabContent: React.FC<TabContentProps> = ({
         limit: number,
         anomalyOptions?: string[],
         serviceOptions?: string[],
+        severityOptions?: number[],
     ) => {
         // Use passed startTime and endTime, or default to helper function values
         const { startTime, endTime } = getTimeRange();
@@ -327,6 +332,7 @@ const TabContent: React.FC<TabContentProps> = ({
             page,
             anomalyOptions ?? selectedAnomalyOptions,      // Pass anomaly filter options
             serviceOptions ?? selectedServicesOptions,      // Pass service filter options
+            severityOptions ?? selectedSeverityOptions,
             startTime,      // Use finalStartTime (either passed or default)
             endTime         // Use finalEndTime (either passed or default)
         );
@@ -385,7 +391,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
         try {
             // Make the API call with startTime and endTime instead of date_range
-            const result = await GetHistoricalLogAnomalies(selectedDataSource, limit, page, filter, selectedServicesOptions, startTime, endTime);
+            const result = await GetHistoricalLogAnomalies(selectedDataSource, limit, page, filter, selectedServicesOptions, selectedSeverityOptions, startTime, endTime);
 
             if (result.data) {
                 // Update columns and data
@@ -465,6 +471,23 @@ const TabContent: React.FC<TabContentProps> = ({
         }
     };
 
+    const loadSeverityFilterOptions = async () => {
+        try {
+            // Hardcode the severity options
+            const severityOptions = [
+                { id: 1, label: 'Critical', type: 'severity' },
+                { id: 2, label: 'Major', type: 'severity' },
+                { id: 3, label: 'Minor', type: 'severity' }
+            ];
+
+            setFilterSeverityOptions(severityOptions); // Set the severity options into state
+            console.log(severityOptions)
+        } catch (error) {
+            console.error('Error loading severity options:', error);
+
+        }
+    };
+
     const loadServicesFilterOptions = async () => {
         try {
             const { startTime, endTime } = getTimeRange()
@@ -495,16 +518,87 @@ const TabContent: React.FC<TabContentProps> = ({
         params.delete("service")
         router.push(`/dashboard/anomaly-detection?${params.toString()}`);
     }
+    const handleChangePage = (page: number) => {
+        console.log(page);
 
-    const handleApplyFilters = async (filters: { selectedAnomalies: string[]; selectedServices: string[] }) => {
-        const { selectedAnomalies, selectedServices } = filters;
+        setIsTableLoading(true); // Set loading to true before making the API call
+
+        setPagination((prev) => {
+            const { startTime, endTime } = getTimeRange();
+
+            // Determine the appropriate API call based on the selected filters
+            const logAnomaliesPromise = (() => {
+                if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length === 0) {
+                    // If only anomaly options are selected
+                    return GetHistoricalLogAnomalies(
+                        selectedDataSource,
+                        prev.pageSize,
+                        page,
+                        selectedAnomalyOptions,
+                        [],
+                        selectedSeverityOptions,
+                        startTime,
+                        endTime
+                    );
+                } else if (selectedServicesOptions.length !== 0 && selectedAnomalyOptions.length === 0) {
+                    // If only service options are selected
+                    return GetHistoricalLogAnomalies(
+                        selectedDataSource,
+                        prev.pageSize,
+                        page,
+                        [],
+                        selectedServicesOptions,
+                        selectedSeverityOptions,
+                        startTime,
+                        endTime
+                    );
+                } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0) {
+                    // If both anomaly and service options are selected
+                    return GetHistoricalLogAnomalies(
+                        selectedDataSource,
+                        prev.pageSize,
+                        page,
+                        selectedAnomalyOptions,
+                        selectedServicesOptions,
+                        selectedSeverityOptions,
+                        startTime,
+                        endTime
+                    );
+                } else {
+                    // If no filters are selected, proceed with normal pagination
+                    return fetchDataByPagination(page, prev.pageSize, []);
+                }
+            })();
+
+            // Handle the API call response
+            logAnomaliesPromise
+                .then((result) => processApiResult(result))
+                .catch((error) => handleApiError(error))
+                .finally(() => {
+                    setIsTableLoading(false); // Set loading to false after the API call completes
+                });
+
+            return { ...prev, pageIndex: page };
+        });
+    };
+    const handleApplyFilters = async (filters: { selectedAnomalies: string[]; selectedServices: string[]; selectedSeverities: number[] }) => {
+        const { selectedAnomalies, selectedServices, selectedSeverities } = filters;
+
+        console.log(filters)
 
         // Update the state with the selected options
         const params = new URLSearchParams(searchParams.toString());
+
         params.delete("anomaly")
         selectedAnomalies.forEach(anomaly => params.append("anomaly", anomaly))
+
         params.delete("service")
         selectedServices.forEach(service => params.append("service", service))
+
+        params.delete("severity");
+        selectedSeverities.forEach(severity => params.append("severity", severity.toString()));  // Add severities to URL
+        // Clear old severity params
+
         router.push(`/dashboard/anomaly-detection?${params.toString()}`);
 
         // Determine the log type
@@ -520,6 +614,7 @@ const TabContent: React.FC<TabContentProps> = ({
             1, // Start from the first page
             selectedAnomalies,
             selectedServices,
+            selectedSeverities,
             startTime, // Pass startTime
             endTime // Pass endTime
         );
@@ -570,72 +665,140 @@ const TabContent: React.FC<TabContentProps> = ({
             });
     };
 
-    const handleChangePage = (page: number) => {
-        console.log(page);
+    // const nextPage = () => {
+    //     setIsTableLoading(true); // Set loading to true before making the API call
+    //     console.log(selectedSeverityOptions)
 
-        setIsTableLoading(true); // Set loading to true before making the API call
+    //     setPagination((prev) => {
+    //         const newPageIndex = Math.min(prev.pageIndex + 1, totalPages);
+    //         const { startTime, endTime } = getTimeRange();
 
-        setPagination((prev) => {
-            const { startTime, endTime } = getTimeRange();
+    //         // Define a function to call the API with the appropriate filters
+    //         const callApi = (anomalyOptions: string[], serviceOptions: string[], severityOptions: number[]) => {
+    //             GetHistoricalLogAnomalies(
+    //                 selectedDataSource,
+    //                 prev.pageSize,
+    //                 newPageIndex,
+    //                 anomalyOptions,
+    //                 serviceOptions,
+    //                 severityOptions,
+    //                 startTime,
+    //                 endTime
+    //             )
+    //                 .then((result) => processApiResult(result))
+    //                 .catch((error) => handleApiError(error))
+    //                 .finally(() => {
+    //                     setIsTableLoading(false); // Set loading to false after the API call completes
+    //                 });
+    //         };
 
-            // Determine the appropriate API call based on the selected filters
-            const logAnomaliesPromise = (() => {
-                if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length === 0) {
-                    // If only anomaly options are selected
-                    return GetHistoricalLogAnomalies(
-                        selectedDataSource,
-                        prev.pageSize,
-                        page,
-                        selectedAnomalyOptions,
-                        [],
-                        startTime,
-                        endTime
-                    );
-                } else if (selectedServicesOptions.length !== 0 && selectedAnomalyOptions.length === 0) {
-                    // If only service options are selected
-                    return GetHistoricalLogAnomalies(
-                        selectedDataSource,
-                        prev.pageSize,
-                        page,
-                        [],
-                        selectedServicesOptions,
-                        startTime,
-                        endTime
-                    );
-                } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0) {
-                    // If both anomaly and service options are selected
-                    return GetHistoricalLogAnomalies(
-                        selectedDataSource,
-                        prev.pageSize,
-                        page,
-                        selectedAnomalyOptions,
-                        selectedServicesOptions,
-                        startTime,
-                        endTime
-                    );
-                } else {
-                    // If no filters are selected, proceed with normal pagination
-                    return fetchDataByPagination(page, prev.pageSize, []);
-                }
-            })();
+    //         // Log selected filters to verify they are correct
+    //         console.log('Selected Severity Options:', selectedSeverityOptions); // Check this log
 
-            // Handle the API call response
-            logAnomaliesPromise
-                .then((result) => processApiResult(result))
-                .catch((error) => handleApiError(error))
-                .finally(() => {
-                    setIsTableLoading(false); // Set loading to false after the API call completes
-                });
+    //         // Handle different filter scenarios
+    //         if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length === 0 && selectedSeverityOptions.length === 0) {
+    //             // If only anomaly options are selected
+    //             callApi(selectedAnomalyOptions, [], []);
+    //         } else if (selectedServicesOptions.length !== 0 && selectedAnomalyOptions.length === 0 && selectedSeverityOptions.length === 0) {
+    //             // If only service options are selected
+    //             callApi([], selectedServicesOptions, []);
+    //         } else if (selectedSeverityOptions.length !== 0 && selectedAnomalyOptions.length === 0 && selectedServicesOptions.length === 0) {
+    //             // If only severity options are selected
+    //             callApi([], [], selectedSeverityOptions);
+    //         } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0 && selectedSeverityOptions.length === 0) {
+    //             // If both anomaly and service options are selected
+    //             callApi(selectedAnomalyOptions, selectedServicesOptions, []);
+    //         } else if (selectedAnomalyOptions.length !== 0 && selectedSeverityOptions.length !== 0 && selectedServicesOptions.length === 0) {
+    //             // If both anomaly and severity options are selected
+    //             callApi(selectedAnomalyOptions, [], selectedSeverityOptions);
+    //         } else if (selectedServicesOptions.length !== 0 && selectedSeverityOptions.length !== 0 && selectedAnomalyOptions.length === 0) {
+    //             // If both service and severity options are selected
+    //             callApi([], selectedServicesOptions, selectedSeverityOptions);
+    //         } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0 && selectedSeverityOptions.length !== 0) {
+    //             // If all three filters are selected
+    //             callApi(selectedAnomalyOptions, selectedServicesOptions, selectedSeverityOptions);
+    //         } else {
+    //             // If no filters are selected, proceed with normal pagination
+    //             fetchDataByPagination(newPageIndex, prev.pageSize, [])
+    //                 .then((result) => processApiResult(result))
+    //                 .catch((error) => handleApiError(error))
+    //                 .finally(() => {
+    //                     setIsTableLoading(false); // Set loading to false after the API call completes
+    //                 });
+    //         }
 
-            return { ...prev, pageIndex: page };
-        });
-    };
+    //         return { ...prev, pageIndex: newPageIndex };
+    //     });
+    // };
+
+
+    // const previousPage = () => {
+    //     setIsTableLoading(true); // Set loading to true before making the API call
+
+    //     setPagination((prev) => {
+    //         const { startTime, endTime } = getTimeRange();
+
+    //         // Define a function to call the API with the appropriate filters
+    //         const callApi = (anomalyOptions: string[], serviceOptions: string[], severityOptions: number[]) => {
+    //             return GetHistoricalLogAnomalies(
+    //                 selectedDataSource,
+    //                 prev.pageSize,
+    //                 newPageIndex,
+    //                 anomalyOptions,
+    //                 serviceOptions,
+    //                 severityOptions,
+    //                 startTime,
+    //                 endTime
+    //             );
+    //         };
+
+    //         // Handle different filter scenarios
+    //         const logAnomaliesPromise = (() => {
+    //             if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length === 0 && selectedSeverityOptions.length === 0) {
+    //                 // If only anomaly options are selected
+    //                 return callApi(selectedAnomalyOptions, [], []);
+    //             } else if (selectedServicesOptions.length !== 0 && selectedAnomalyOptions.length === 0 && selectedSeverityOptions.length === 0) {
+    //                 // If only service options are selected
+    //                 return callApi([], selectedServicesOptions, []);
+    //             } else if (selectedSeverityOptions.length !== 0 && selectedAnomalyOptions.length === 0 && selectedServicesOptions.length === 0) {
+    //                 // If only severity options are selected
+    //                 return callApi([], [], selectedSeverityOptions);
+    //             } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0 && selectedSeverityOptions.length === 0) {
+    //                 // If both anomaly and service options are selected
+    //                 return callApi(selectedAnomalyOptions, selectedServicesOptions, []);
+    //             } else if (selectedAnomalyOptions.length !== 0 && selectedSeverityOptions.length !== 0 && selectedServicesOptions.length === 0) {
+    //                 // If both anomaly and severity options are selected
+    //                 return callApi(selectedAnomalyOptions, [], selectedSeverityOptions);
+    //             } else if (selectedServicesOptions.length !== 0 && selectedSeverityOptions.length !== 0 && selectedAnomalyOptions.length === 0) {
+    //                 // If both service and severity options are selected
+    //                 return callApi([], selectedServicesOptions, selectedSeverityOptions);
+    //             } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0 && selectedSeverityOptions.length !== 0) {
+    //                 // If all three filters are selected
+    //                 return callApi(selectedAnomalyOptions, selectedServicesOptions, selectedSeverityOptions);
+    //             } else {
+    //                 // If no filters are selected, proceed with normal pagination
+    //                 return fetchDataByPagination(page, prev.pageSize, []);
+    //             }
+    //         })();
+
+    //         // Handle the API call response
+    //         logAnomaliesPromise
+    //             .then((result) => processApiResult(result))
+    //             .catch((error) => handleApiError(error))
+    //             .finally(() => {
+    //                 setIsTableLoading(false); // Set loading to false after the API call completes
+    //             });
+
+    //         return { ...prev, pageIndex: page };
+    //     });
+    // };
 
     useEffect(() => {
         fetchDataByLog(selectedDataSource, pagination.pageIndex, pagination.pageSize);
         // Load filter options
         loadAnomalyFilterOptions();
         loadServicesFilterOptions();
+        loadSeverityFilterOptions();
     }, [selectedDataSource]);
 
     useEffect(() => {
@@ -667,6 +830,7 @@ const TabContent: React.FC<TabContentProps> = ({
                             pagination.pageSize,      // Page size (limit)
                             selectedAnomalyOptions,    // Anomaly filter options
                             selectedServicesOptions,   // Service filter options
+                            selectedSeverityOptions
                         );
                         console.log('Auto-refresh triggered');
                     } catch (error) {
@@ -687,7 +851,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 clearInterval(intervalId);
             }
         };
-    }, [autoRefresh, refreshInterval, selectedDataSource, pagination.pageIndex, pagination.pageSize, selectedAnomalyOptions, selectedServicesOptions, selectedTimeRange]);
+    }, [autoRefresh, refreshInterval, selectedDataSource, pagination.pageIndex, pagination.pageSize, selectedAnomalyOptions, selectedServicesOptions, selectedSeverityOptions, selectedTimeRange]);
 
     return (
         <div className='flex flex-col gap-4'>
@@ -714,7 +878,6 @@ const TabContent: React.FC<TabContentProps> = ({
                         <path d="M3 4a1 1 0 011-1h3a1 1 0 110 2H5v2a1 1 0 11-2 0V5a1 1 0 010-1zM3 14a1 1 0 011 1v2h2a1 1 0 110 2H4a1 1 0 01-1-1v-3a1 1 0 011-1zm13-1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 110-2h2v-2a1 1 0 011-1zm0-8a1 1 0 011 1v3a1 1 0 11-2 0V5h-2a1 1 0 110-2h3a1 1 0 011 1z" />
                     </svg>
                 </button>
-
 
             </div>
             <FullScreen handle={handle}>

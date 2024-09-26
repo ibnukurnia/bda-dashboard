@@ -526,7 +526,7 @@ const MainPageOverview = () => {
           <Button
             onClick={handle.enter}
           >
-            <Maximize className='w-6 h-6'/>
+            <Maximize className='w-6 h-6' />
           </Button>
         </div>
       </div>
@@ -643,6 +643,7 @@ const MainPageOverview = () => {
                     <DynamicUpdatingChart
                       title={handleLogicTitle(item.title)}
                       series={item.data}
+                      spike={item.last_spike}
                       id={id}
                       startTime={startTime} // Pass the calculated startTime
                       endTime={endTime} // Pass the calculated endTime

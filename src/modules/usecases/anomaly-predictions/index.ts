@@ -14,6 +14,7 @@ const GetHistoricalLogAnomalies = async (
   page: number,
   filterAnomaly: string[],
   filterServices: string[],
+  filterSeverities: number[],
   start_time: string,
   end_time: string
 ) => {
@@ -25,6 +26,10 @@ const GetHistoricalLogAnomalies = async (
 
   filterServices.forEach((f) => {
     endPoint += `&service_name=${f}`
+  })
+
+  filterSeverities.forEach((f) => {
+    endPoint += `&severity=${f}`
   })
 
   const response: ApiResponse<PaginatedResponse> = await get(endPoint, {

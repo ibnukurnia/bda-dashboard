@@ -51,3 +51,8 @@ interface Overviews {
   contributor: number
   alert_attempt: number
 }
+
+export interface HealthScoreResponse {
+  data_source: string;
+  score: number;
+}

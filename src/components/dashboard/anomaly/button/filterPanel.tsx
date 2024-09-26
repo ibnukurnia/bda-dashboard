@@ -7,11 +7,17 @@ interface CheckboxOption {
     type: string;
 }
 
+interface SeverityOption {
+    id: number;
+    label: string;
+    type: string;
+}
+
 interface FilterPanelProps {
     checkboxOptions: CheckboxOption[];
     servicesOptions: string[];
-    severityOptions: string[];
-    onApplyFilters: (filters: { selectedAnomalies: string[], selectedSeverities: string[], selectedServices: string[] }) => void;
+    severityOptions: SeverityOption[];
+    onApplyFilters: (filters: { selectedAnomalies: string[], selectedSeverities: number[], selectedServices: string[] }) => void;
     onResetFilters: () => void;
     hasErrorFilterAnomaly: boolean;
     hasErrorFilterService: boolean;
@@ -27,12 +33,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     hasErrorFilterService
 }) => {
     const searchParams = useSearchParams();
-    const hardcodedSeverityOptions = ['Critical', 'Major', 'Minor'];
-
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
-    const [selectedSeverityOptions, setSelectedSeverityOptions] = useState<string[]>([]);
+    const [selectedSeverityOptions, setSelectedSeverityOptions] = useState<number[]>([]);
     const [searchValue, setSearchValue] = useState<string>(''); // For search input
     const [resetMessage, setResetMessage] = useState<boolean>(false); // State for temporary reset message
     const panelRef = useRef<HTMLDivElement>(null);
@@ -52,9 +56,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         );
     };
 
-    const handleSeverityChange = (value: string) => {
+    const handleSeverityChange = (id: number) => {
         setSelectedSeverityOptions((prev) =>
-            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
+            prev.includes(id) ? prev.filter((option) => option !== id) : [...prev, id]
         );
     };
 
@@ -68,9 +72,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         onApplyFilters({
             selectedAnomalies: selectedAnomalyOptions,
             selectedServices: selectedServiceOptions,
-            selectedSeverities: selectedSeverityOptions,
+            selectedSeverities: selectedSeverityOptions // Use the mapped numeric values
         });
         setIsOpen(false); // Close the panel after applying filters
+        console.log(selectedSeverityOptions)
     };
 
     const handleReset = () => {
@@ -110,19 +115,36 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
 
     useEffect(() => {
-        const anomalies = searchParams.getAll("anomaly")
-        const severities = searchParams.getAll("severity")
-        const services = searchParams.getAll("service")
+        const anomalies = searchParams.getAll("anomaly");
+        const severities = searchParams.getAll("severity");
+        const services = searchParams.getAll("service");
 
-
-        setSelectedAnomalyOptions(anomalies.filter(anomaly =>
-            checkboxOptions.some(option => option.id === anomaly)))
-        setSelectedSeverityOptions(
-            severities.filter((severity) => hardcodedSeverityOptions.some((option) => option === severity))
+        // Filter anomalies based on available checkbox options
+        setSelectedAnomalyOptions(
+            anomalies.filter((anomaly) =>
+                checkboxOptions.some((option) => option.id === anomaly)
+            )
         );
-        setSelectedServiceOptions(services.filter(service =>
-            servicesOptions.some(option => option === service)))
-    }, [searchParams, checkboxOptions, servicesOptions, severityOptions])
+
+        // Filter severities based on available severity options using the id
+        setSelectedSeverityOptions(
+            severities
+                .map(Number) // Convert the severity strings to numbers since we're using ids now
+                .filter((severityId) =>
+                    severityOptions.some((option) => option.id === severityId)
+                )
+        );
+
+        // Filter services based on available service options
+        setSelectedServiceOptions(
+            services.filter((service) =>
+                servicesOptions.some((option) => option === service)
+            )
+        );
+
+        console.log(severityOptions)
+    }, [searchParams, checkboxOptions, servicesOptions, severityOptions]);
+
 
     return (
         <div className="flex self-start z-50">
@@ -194,7 +216,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                 </div>
                             </div>
 
-                            {/* Severity Section */}
+
                             {/* Severity Section */}
                             <div className="flex flex-col gap-3">
                                 <div className="flex flex-col gap-2">
@@ -209,18 +231,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                         <p className="text-red-500">
                                             An error occurred while loading options. Please try again later.
                                         </p>
-                                    ) : hardcodedSeverityOptions.length > 0 ? (
-                                        hardcodedSeverityOptions.map((option) => (
-                                            <label key={option} className="flex items-center justify-between mb-1">
+                                    ) : severityOptions.length > 0 ? (
+                                        severityOptions.map((option) => (
+                                            <label key={option.id} className="flex items-center justify-between mb-1">
                                                 <div className="flex items-center">
                                                     <input
                                                         type="checkbox"
-                                                        value={option}
-                                                        checked={selectedSeverityOptions.includes(option)}
-                                                        onChange={() => handleSeverityChange(option)}
+                                                        value={option.id} // Using option.id (which is the number)
+                                                        checked={selectedSeverityOptions.includes(option.id)} // Check if the option ID is selected
+                                                        onChange={() => handleSeverityChange(option.id)} // Handle by the option's id
                                                         className="mr-2"
                                                     />
-                                                    {option}
+                                                    {option.label} {/* Display the label */}
                                                 </div>
                                             </label>
                                         ))
@@ -229,6 +251,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     )}
                                 </div>
                             </div>
+
 
                             {/* Services Section with Search */}
                             <div className='flex flex-col gap-3'>
@@ -298,7 +321,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                             </p>
                         )}
                     </div>
-
                 </div>
             )}
         </div>
