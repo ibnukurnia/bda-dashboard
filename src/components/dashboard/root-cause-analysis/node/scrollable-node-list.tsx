@@ -83,22 +83,22 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   }, [sliderHeight])
 
   const handleContainerWidth = () => {
-    if (!containerRef.current) return 
+    if (!containerRef.current) return
     setContainerWidth(containerRef.current?.clientWidth)
   }
 
   const handleSliderHeight = () => {
-    if (!containerRef.current) return 
-    
+    if (!containerRef.current) return
+
     setSliderHeight(
       containerRef.current.scrollHeight -
-        containerRef.current.offsetHeight
+      containerRef.current.offsetHeight
     )
   }
 
   const handleScrollButtonVisibility = () => {
-    if (!containerRef.current) return 
-    
+    if (!containerRef.current) return
+
     if (containerRef.current.scrollTop > 0) {
       setHideButtonUp(false);
     } else {
@@ -112,12 +112,12 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   }
 
   const scrollDown = () => {
-    if (!containerRef.current) return 
+    if (!containerRef.current) return
     containerRef.current.scrollTop += 200;
   };
-  
+
   const scrollUp = () => {
-    if (!containerRef.current) return 
+    if (!containerRef.current) return
     containerRef.current.scrollTop -= 200;
   };
 
@@ -135,17 +135,17 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
 
   const handleContainerHeight = () => {
     const isFullScreen = fullScreenHandle.node.current?.classList.contains('fullscreen-enabled') ?? false
-  
+
     const height = window.innerHeight - otherElementHeight(isFullScreen); // equivalent to calc(100vh - other element height)
     const roundedHeight = Math.floor(height / 80) * 80; // rounding down to nearest multiple of 80
-    
+
     setContainerHeight(Math.max(80, roundedHeight))
   }
-  
+
   const getPathCount = () => {
     const childCount = nodes[expandedIndex]?.children?.length
     const countByHeight = Math.floor(containerHeight / 80)
-    
+
     if (!childCount) return undefined
 
     return Math.min(childCount, Math.max(1, countByHeight))
@@ -161,7 +161,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
             className='hover:bg-gray-600 active:bg-gray-500 rounded-lg'
             onMouseDown={scrollUp}
           >
-            <ChevronUp color='white' size={24}/>
+            <ChevronUp color='white' size={24} />
           </button>
         </div>
       }
@@ -174,7 +174,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
         onScroll={onScroll}
       >
         <NodeListWrapper
-          nodeCount={Math.floor(containerHeight / 80)}
+          nodeCount={Math.floor(containerHeight / 80) > 0 ? Math.floor(containerHeight / 80) : 1}
           isLoading={isLoading}
         >
           {nodes.map((node, index) => (
@@ -184,7 +184,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
               percentage={getPercentageValue(node.anomalyCount)}
               count={node.anomalyCount}
               expanded={expandedIndex === index}
-              handleOnClickNode={()=> handleOnClickNode(index)}
+              handleOnClickNode={() => handleOnClickNode(index)}
               hasDetail={hasDetail}
               queryParams={{
                 ...queryParams,
@@ -208,7 +208,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
             className='hover:bg-gray-600 active:bg-gray-500 rounded-lg'
             onMouseDown={scrollDown}
           >
-            <ChevronDown color='white' size={24}/>
+            <ChevronDown color='white' size={24} />
           </button>
         </div>
       }

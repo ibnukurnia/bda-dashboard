@@ -60,13 +60,13 @@ export const TAB_DATA_SOURCE = [
 export const NAMESPACE_LABELS: Record<string, string> = {
   'apm': "Log APM Brimo",
   'brimo': "Log Transaksi Brimo",
-  'k8s_prometheus': "Prometheus OCP",
-  'k8s_db': "Prometheus DB",
+  'k8s_prometheus': "OCP",
+  'k8s_db': "Database",
   'ivat': "IVAT",
   'panw': "PANW",
   'fortinet': "Fortinet",
-  'waf': "Web Application Security",
-  'prtg': "Prtg",
+  'waf': "WAF",
+  'prtg': "PRTG",
   'zabbix': "Zabbix",
 }
 

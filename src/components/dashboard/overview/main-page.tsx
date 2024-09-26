@@ -328,7 +328,7 @@ const MainPageOverview = () => {
     } else if (title.toLowerCase().includes('prometheus')) {
       return 'ocp'
     } else if (title.toLowerCase().includes('k8s_db')) {
-      return 'db'
+      return 'database'
     } else if (title.toLowerCase().includes('ivat')) {
       return 'network'
     } else if (title.toLowerCase().includes('panw')) {

@@ -23,7 +23,7 @@ import { PREDEFINED_TIME_RANGES } from '@/constants'
 import RCATreeWrapper from './wrapper/rca-tree-wrapper'
 
 const MainPageRootCauseAnalysis = () => {
-  const [selectedRange, setSelectedRange] = useState<string>('Last 24 hours')
+  const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
   const [dataTree, setDataTree] = useState<RootCauseAnalysisTreeResponse[] | null>(null)
   const [filter, setFilter] = useState<{
     startTime: string;
@@ -44,33 +44,33 @@ const MainPageRootCauseAnalysis = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [modalServices, setModalServices] = useState(false)
-  
+
   const router = useRouter()
   const handle = useFullScreenHandle();
 
   useEffect(() => {
     fetchData()
   }, [filter])
-  
+
   useInterval(fetchData, autoRefresh.interval, autoRefresh.enabled)
 
   useInterval(() =>
     setLastUpdateString(getTimeDifference(lastRefreshTime)),
-  1000, lastRefreshTime != null)
+    1000, lastRefreshTime != null)
 
   async function fetchData() {
-    GetRootCauseAnalysisTree({ start_time: filter.startTime, end_time: filter.endTime})
-    .then(result => {
-      setDataTree(result.data)
-      setLastRefreshTime(new Date())
-      setIsError(false)
-    })
-    .catch(() => {
-      setIsError(true)
-    })
-    .finally(() => {
-      setIsLoading(false)
-    })
+    GetRootCauseAnalysisTree({ start_time: filter.startTime, end_time: filter.endTime })
+      .then(result => {
+        setDataTree(result.data)
+        setLastRefreshTime(new Date())
+        setIsError(false)
+      })
+      .catch(() => {
+        setIsError(true)
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
   }
 
   const handleRangeChange = async (rangeKey: string) => {
@@ -80,24 +80,24 @@ const MainPageRootCauseAnalysis = () => {
     let endDate: string;
 
     if (rangeKey.includes(' - ')) {
-        // Handle custom range
-        const [start, end] = rangeKey.split(' - ');
-        startDate = start;
-        endDate = end;
+      // Handle custom range
+      const [start, end] = rangeKey.split(' - ');
+      startDate = start;
+      endDate = end;
     } else {
-        // Handle predefined ranges
-        const selectedTimeRange = PREDEFINED_TIME_RANGES[rangeKey]; // Get the selected time range in minutes
+      // Handle predefined ranges
+      const selectedTimeRange = PREDEFINED_TIME_RANGES[rangeKey]; // Get the selected time range in minutes
 
-        // Calculate endDate as the current time, rounding down the seconds to 00
-        const endDateObj = new Date();
-        endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
+      // Calculate endDate as the current time, rounding down the seconds to 00
+      const endDateObj = new Date();
+      endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
 
-        // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
-        const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
+      // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
+      const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
 
-        // Convert startDate and endDate to strings
-        startDate = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
-        endDate = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
+      // Convert startDate and endDate to strings
+      startDate = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
+      endDate = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
     }
 
     // Update the state for startDate and endDate
@@ -134,7 +134,7 @@ const MainPageRootCauseAnalysis = () => {
           </div>
           <AutoRefreshButton onRefresh={fetchData} onAutoRefreshChange={handleAutoRefreshChange} />
           <Button onClick={handle.enter}>
-            <Maximize className='w-6 h-5'/>
+            <Maximize className='w-6 h-5' />
           </Button>
         </div>
         <FullScreen className="bg-[#05061E]" handle={handle}>
