@@ -1,6 +1,7 @@
 import { get } from '@/common/api'
 import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 import {
+  HealthScoreResponse,
   InsightOverviewResponse,
   MetricsOverviewResponse,
   ServiceOverviewResponse,
@@ -72,7 +73,7 @@ const GetTopServicesOverview = async (params?: {
 }
 
 const GetHealthScoreOverview = async (params?: { start_time: string | Date; end_time: string | Date }) => {
-  const response: ApiResponse<any> = await get('overview/health-score', {
+  const response: ApiResponse<HealthScoreResponse[]> = await get('overview/health-score', {
     withAuth: true,
     queries: params,
   })

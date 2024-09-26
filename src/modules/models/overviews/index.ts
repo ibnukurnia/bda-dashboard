@@ -58,3 +58,8 @@ export interface TopFiveLatestCritical {
   anomaly: string
   total: number
 }
+
+export interface HealthScoreResponse {
+  data_source: string
+  score: number
+}

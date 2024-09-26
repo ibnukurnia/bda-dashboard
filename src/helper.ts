@@ -17,3 +17,9 @@ export const validTimeRange = (timeRange: string) => {
 	// Check if timeRange matches the custom time range format
 	return customTimeRangeRegex.test(timeRange);
 }
+
+export const toFixed = (value: number, fixed: number) => {
+	const regex = new RegExp(`^-?\\d+(?:\\.\\d{0,${fixed}})?`)
+    const matches = value.toString().match(regex)
+    return matches ? matches[0] : value
+}
