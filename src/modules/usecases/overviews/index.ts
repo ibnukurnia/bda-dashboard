@@ -5,6 +5,7 @@ import {
   MetricsOverviewResponse,
   ServiceOverviewResponse,
   TeamOverviewResponse,
+  TopFiveLatestCritical,
 } from '@/modules/models/overviews'
 
 const GetCurrentSituation = async (): Promise<ApiResponse<InsightOverviewResponse>> => {
@@ -80,13 +81,22 @@ const GetHealthScoreOverview = async (params?: { start_time: string | Date; end_
 }
 
 const GetLatestCritical = async (params?: {
-  start_time: string | Date;
-  end_time: string | Date;
-  severity: number | null | undefined;
-  limit: number;
-  page: number;
+  start_time: string | Date
+  end_time: string | Date
+  severity: number | null | undefined
+  limit: number
+  page: number
 }) => {
   const response: ApiResponse<PaginatedResponse> = await get('latest-critical', {
+    withAuth: true,
+    queries: params,
+  })
+
+  return response
+}
+
+const GetTopFiveCritical = async (params?: { start_time: string | Date; end_time: string | Date }) => {
+  const response: ApiResponse<TopFiveLatestCritical[]> = await get('top-five-critical', {
     withAuth: true,
     queries: params,
   })
@@ -104,4 +114,5 @@ export {
   GetPieChartsOverview,
   GetTopServicesOverview,
   GetLatestCritical,
+  GetTopFiveCritical,
 }
