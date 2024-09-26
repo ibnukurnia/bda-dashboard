@@ -34,13 +34,13 @@ export interface ServiceOverviewResponse {
 }
 
 export interface Series {
-  name: string;
-  data: number[];
+  name: string
+  data: number[]
 }
 
 export interface MetricsOverviewResponse {
-  series: Series[];
-  categories: string[];
+  series: Series[]
+  categories: string[]
 }
 
 interface Overviews {
@@ -50,4 +50,16 @@ interface Overviews {
   open_issues: number
   contributor: number
   alert_attempt: number
+}
+
+export interface TopFiveLatestCritical {
+  datasource: string
+  identifier: string
+  anomaly: string
+  total: number
+}
+
+export interface HealthScoreResponse {
+  data_source: string;
+  score: number;
 }

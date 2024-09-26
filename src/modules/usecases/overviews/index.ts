@@ -1,10 +1,12 @@
 import { get } from '@/common/api'
 import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 import {
+  HealthScoreResponse,
   InsightOverviewResponse,
   MetricsOverviewResponse,
   ServiceOverviewResponse,
   TeamOverviewResponse,
+  TopFiveLatestCritical,
 } from '@/modules/models/overviews'
 
 const GetCurrentSituation = async (): Promise<ApiResponse<InsightOverviewResponse>> => {
@@ -71,7 +73,7 @@ const GetTopServicesOverview = async (params?: {
 }
 
 const GetHealthScoreOverview = async (params?: { start_time: string | Date; end_time: string | Date }) => {
-  const response: ApiResponse<any> = await get('overview/health-score', {
+  const response: ApiResponse<HealthScoreResponse[]> = await get('overview/health-score', {
     withAuth: true,
     queries: params,
   })
@@ -80,13 +82,22 @@ const GetHealthScoreOverview = async (params?: { start_time: string | Date; end_
 }
 
 const GetLatestCritical = async (params?: {
-  start_time: string | Date;
-  end_time: string | Date;
-  severity: number | null | undefined;
-  limit: number;
-  page: number;
+  start_time: string | Date
+  end_time: string | Date
+  severity: number | null | undefined
+  limit: number
+  page: number
 }) => {
   const response: ApiResponse<PaginatedResponse> = await get('latest-critical', {
+    withAuth: true,
+    queries: params,
+  })
+
+  return response
+}
+
+const GetTopFiveCritical = async (params?: { start_time: string | Date; end_time: string | Date }) => {
+  const response: ApiResponse<TopFiveLatestCritical[]> = await get('top-five-critical', {
     withAuth: true,
     queries: params,
   })
@@ -104,4 +115,5 @@ export {
   GetPieChartsOverview,
   GetTopServicesOverview,
   GetLatestCritical,
+  GetTopFiveCritical,
 }

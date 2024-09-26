@@ -1,0 +1,21 @@
+/* This will increase specificity to ensure it overrides the .rd3t-link class */
+.rd3t-tree-container .custom-link-path {
+    stroke: white !important;   /* Set the path color to white and add !important */
+    stroke-width: 2 !important; /* Adjust the thickness if needed */
+  }
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .75;
+  }
+  100% {
+    opacity: .5;
+  }
+}
+
+.blinking-node {
+  animation: blink 1s infinite;
+}
