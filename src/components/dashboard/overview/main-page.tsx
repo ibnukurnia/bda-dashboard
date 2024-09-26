@@ -9,6 +9,7 @@ import {
   GetChartsOverview,
   GetHealthScoreOverview,
   GetPieChartsOverview,
+  GetTopFiveCritical,
   GetTopServicesOverview,
 } from '@/modules/usecases/overviews'
 import { format } from 'date-fns'
@@ -33,6 +34,7 @@ import { SEVERITY_LABELS } from '@/constants'
 import HealthinessTree from './panels/healthiness-tree'
 import { HealthScoreResponse } from '@/modules/models/overviews'
 import HealthinessTreeWrapper from './wrapper/healthiness-tree-wrapper'
+import { TopFiveLatestCritical } from '@/modules/models/overviews'
 
 // Define your data
 const sourceData = [
@@ -169,6 +171,7 @@ const MainPageOverview = () => {
   const [pieChartData, setPieChartData] = useState([])
   const [topServicesData, setTopServicesData] = useState({ header: [], data: [] })
   const [healthScoreData, setHealthScoreData] = useState<HealthScoreResponse[]>([])
+  const [topFiveCritical, settopFiveCritical] = useState<TopFiveLatestCritical[]>([])
   const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
@@ -177,7 +180,9 @@ const MainPageOverview = () => {
   const [isLoadingPieChart, setIsLoadingPieChart] = useState(true)
   const [isLoadingTopServices, setIsLoadingTopServices] = useState(true)
   const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
+  const [isLoadingTopFiveCritical, setIsLoadingTopFiveCritical] = useState(true)
   const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
+  const [isErrorTopFiveCritical, setIsErrorTopFiveCritical] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
   const healthinessRef = useRef<HTMLDivElement>(null)
@@ -418,6 +423,18 @@ const MainPageOverview = () => {
       .finally(() => {
         setIsLoadingHealthScore(false);
       })
+
+    GetTopFiveCritical(paramsTime)
+      .then((res) => {
+        settopFiveCritical(res.data ?? [])
+        setIsErrorTopFiveCritical(false);
+      })
+      .catch(() => {
+        setIsErrorTopFiveCritical(true);
+      })
+      .finally(() => {
+        setIsLoadingTopFiveCritical(false);
+      })
   }, [])
 
   // useEffect(() => {
@@ -652,6 +669,21 @@ const MainPageOverview = () => {
                 ))}
               </div>
             </GraphWrapper>
+            <div className='card flex flex-col gap-6'>
+              <div className='flex justify-between'>
+                <span className="font-bold text-white text-2xl content-center">Top 5 Critical</span>
+              </div>
+              {topFiveCritical.map((service, index) => {
+                return (
+                  <>
+                    <p>{service.anomaly}</p>
+                    <p>{service.datasource}</p>
+                    <p>{service.identifier}</p>
+                    <p>{service.total}</p>
+                  </>
+                )
+              })}
+            </div>
           </div>
 
         </div>
