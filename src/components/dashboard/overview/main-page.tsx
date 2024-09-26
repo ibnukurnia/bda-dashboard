@@ -1,20 +1,18 @@
 'use client'
 
-import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import './main-page.css'
 
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import {
   GetChartsOverview,
   GetHealthScoreOverview,
-  GetLatestCritical,
   GetPieChartsOverview,
   GetTopServicesOverview,
 } from '@/modules/usecases/overviews'
-import { Skeleton, Typography } from '@mui/material'
 import { format } from 'date-fns'
-import { Check, Maximize, Minus, Plus } from 'react-feather'
+import { Maximize } from 'react-feather'
 
 import Button from '@/components/system/Button/Button'
 
@@ -22,19 +20,19 @@ import DropdownDS from './button/dropdown-ds'
 import DropdownTime from './button/dropdown-time'
 import DonutChart from './chart/donut-chart'
 import DynamicUpdatingChart from './chart/dynamic-updating-chart'
-import OverviewModal from './modal/overview-modal'
-import Gauge from './panels/gauge'
 import TableServices from './table/table-services'
 import TableSeverity from './table/table-severity'
 import TableServicesWrapper from './wrapper/table-services-wrapper'
 import GraphWrapper from './wrapper/graph-wrapper'
 import DonutChartWrapper from './wrapper/donut-wrapper'
 import TableSeverityWrapper from './wrapper/table-severity-wrapper'
-import HealthinessGaugesWrapper from './wrapper/healthiness-gauge-wrapper'
 import TableCriticalAnomaly from './table/table-critical-anomaly'
 import DropdownSeverity from './button/dropdown-severity'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import { SEVERITY_LABELS } from '@/constants'
+import HealthinessTree from './panels/healthiness-tree'
+import { HealthScoreResponse } from '@/modules/models/overviews'
+import HealthinessTreeWrapper from './wrapper/healthiness-tree-wrapper'
 
 // Define your data
 const sourceData = [
@@ -170,7 +168,7 @@ const MainPageOverview = () => {
   const [tableMaxHeight, setTableMaxHeight] = useState(192)
   const [pieChartData, setPieChartData] = useState([])
   const [topServicesData, setTopServicesData] = useState({ header: [], data: [] })
-  const [healthScoreData, setHealthScoreData] = useState([])
+  const [healthScoreData, setHealthScoreData] = useState<HealthScoreResponse[]>([])
   const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
@@ -249,6 +247,7 @@ const MainPageOverview = () => {
     // Fetch Health Score Data
     GetHealthScoreOverview(paramsTime)
       .then((res) => {
+        if (res.data == null) throw Error("Empty response data")
         setHealthScoreData(res.data);
         setIsErrorHealthScore(false);
       })
@@ -409,6 +408,7 @@ const MainPageOverview = () => {
       })
     GetHealthScoreOverview(paramsTime)
       .then((res) => {
+        if (res.data == null) throw Error("Empty response data")
         setHealthScoreData(res.data)
         setIsErrorHealthScore(false);
       })
@@ -530,28 +530,50 @@ const MainPageOverview = () => {
           </Button>
         </div>
       </div>
-      <FullScreen className={`${handle.active ? "p-6" : ""} bg-[#05061E] overflow-auto`} handle={handle}>
+      <FullScreen className={`${handle.active ? "p-6 bg-[#05061E] overflow-auto" : ""} `} handle={handle}>
         <div className="flex flex-row">
           <div className="flex-1 grid gap-8">
-            <GraphWrapper isLoading={isLoadingGraphic}>
-              <div className="chart-section">
-                {chartData.map((item, id) => (
-                  <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
-                    <DynamicUpdatingChart
-                      title={handleLogicTitle(item.title)}
-                      series={item.data}
-                      id={id}
-                      startTime={startTime} // Pass the calculated startTime
-                      endTime={endTime} // Pass the calculated endTime
-                    />
-                  </div>
-                ))}
-              </div>
-            </GraphWrapper>
+            <div className="flex flex-col gap-8 card relative">
+              <span className="font-bold text-white text-2xl">Healthiness</span>
+              <HealthinessTreeWrapper
+                isLoading={isLoadingHealthScore}
+                isError={isErrorHealthScore}
+              >
+                <HealthinessTree
+                  data={healthScoreData}
+                />
+              </HealthinessTreeWrapper>
+              {/* <HealthinessGaugesWrapper
+                isLoading={isLoadingHealthScore}
+                isError={isErrorHealthScore}
+                healthinessRef={healthinessRef}
+              >
+                <div className="flex flex-wrap gap-8" ref={healthinessRef}>
+                  {healthScoreData.length > 0 &&
+                    healthScoreData.map((hd: any, hdid: number) => {
+                      const label = (dataSource: string) => {
+                        if (dataSource?.toLowerCase() === 'apm') {
+                          return 'log apm brimo'
+                        } else if (dataSource?.toLowerCase() === 'brimo') {
+                          return 'log transaksi brimo'
+                        } else if (dataSource?.toLowerCase() === 'k8s_db') {
+                          return 'db'
+                        } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
+                          return 'ocp'
+                        } else {
+                          return dataSource
+                        }
+                      }
+                      return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
+                    })
+                  }
+                </div>
+              </HealthinessGaugesWrapper> */}
+            </div>
 
             {/* <div className="flex gap-8"> */}
-            <div className="grid 2xl:grid-cols-2 grid-cols-1 gap-8">
-              <div className="grid grid-cols-1 gap-4">
+            {/* <div className="grid 2xl:grid-cols-2 grid-cols-1 gap-8"> */}
+              {/* <div className="grid grid-cols-1 gap-4"> */}
                 <div className="flex flex-col gap-8 card">
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-white text-2xl">Anomaly Overview</span>
@@ -598,37 +620,8 @@ const MainPageOverview = () => {
                   </div>
                 </div>
 
-              </div>
-              <div className="flex flex-col gap-8 card relative">
-                <span className="font-bold text-white text-2xl">Healthiness</span>
-                <HealthinessGaugesWrapper
-                  isLoading={isLoadingHealthScore}
-                  isError={isErrorHealthScore}
-                  healthinessRef={healthinessRef}
-                >
-                  <div className="flex flex-wrap gap-8" ref={healthinessRef}>
-                    {healthScoreData.length > 0 &&
-                      healthScoreData.map((hd: any, hdid: number) => {
-                        const label = (dataSource: string) => {
-                          if (dataSource?.toLowerCase() === 'apm') {
-                            return 'log apm brimo'
-                          } else if (dataSource?.toLowerCase() === 'brimo') {
-                            return 'log transaksi brimo'
-                          } else if (dataSource?.toLowerCase() === 'k8s_db') {
-                            return 'db'
-                          } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
-                            return 'ocp'
-                          } else {
-                            return dataSource
-                          }
-                        }
-                        return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
-                      })
-                    }
-                  </div>
-                </HealthinessGaugesWrapper>
-              </div>
-            </div>
+              {/* </div> */}
+            {/* </div> */}
             <div className='card flex flex-col gap-6'>
               <div className='flex justify-between'>
                 <span className="font-bold text-white text-2xl content-center">Latest Anomaly</span>
@@ -643,6 +636,21 @@ const MainPageOverview = () => {
                 severity={selectedSeverity}
               />
             </div>
+            <GraphWrapper isLoading={isLoadingGraphic}>
+              <div className="chart-section">
+                {chartData.map((item, id) => (
+                  <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
+                    <DynamicUpdatingChart
+                      title={handleLogicTitle(item.title)}
+                      series={item.data}
+                      id={id}
+                      startTime={startTime} // Pass the calculated startTime
+                      endTime={endTime} // Pass the calculated endTime
+                    />
+                  </div>
+                ))}
+              </div>
+            </GraphWrapper>
           </div>
 
         </div>
