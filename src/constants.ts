@@ -19,11 +19,11 @@ export const TAB_DATA_SOURCE = [
     children: [
       {
         namespace: "k8s_prometheus",
-        textLabel: "Prometheus OCP",
+        textLabel: "OCP",
       },
       {
         namespace: "k8s_db",
-        textLabel: "Prometheus DB",
+        textLabel: "Database",
       },
     ],
   },
@@ -35,19 +35,19 @@ export const TAB_DATA_SOURCE = [
     textLabel: "Security",
     children: [
       {
-        namespace: "panw",
         textLabel: "PANW",
+        namespace: "panw",
       },
       {
         textLabel: "Fortinet",
         namespace: "forti",
       },
       {
-        textLabel: "Web Application Security",
+        textLabel: "WAF",
         namespace: "waf",
       },
       {
-        textLabel: "Prtg",
+        textLabel: "PRTG",
         namespace: "prtg",
       },
       {
