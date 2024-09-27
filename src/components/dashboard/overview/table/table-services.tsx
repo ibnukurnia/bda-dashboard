@@ -30,7 +30,7 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight }: TableServices
                   {dataKeys.map((cdk, cdkid) => (
                     <td key={cdkid} className="py-1 px-1 td">
                       <div
-                        className={`flex items-center gap-2 ${cdkid === 0 ? 'text-left' : 'text-center justify-center'} font-semibold color-${(() => {
+                        className={`flex items-center gap-2 ${cdkid === 0 ? 'text-left' : 'text-center justify-center'}  color-${(() => {
                           if (cdk === 'health_score') {
                             if (sdt?.[cdk] < 50) {
                               return 'red'

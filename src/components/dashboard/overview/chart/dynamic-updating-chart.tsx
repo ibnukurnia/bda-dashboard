@@ -42,6 +42,9 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
     },
     xaxis: {
       // Set min and max based on user-selected start and end time
+      axisTicks: {
+        show: false, // Hide ticks
+      },
       min: new Date(startTime).getTime(),
       max: new Date(endTime).getTime(),
       type: 'datetime',
@@ -64,8 +67,9 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
         rotate: 0,
         hideOverlappingLabels: true,
         trim: true,
+        show: false, // Hide labels
       },
-      crosshairs: { show: true },
+      crosshairs: { show: false },
       axisBorder: { show: false },
     },
     yaxis: {
@@ -113,16 +117,19 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
 
   return (
     <>
-      <Chart
-        options={options}
-        series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
-        type="line"
-        height={300}
-        width={'100%'}
-      />
-      <p className="text-white text-sm mt-1 ml-2">
-        Last Spike: {spike}
-      </p>
+      <div className='card'>
+        <Chart
+          options={options}
+          series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
+          type="line"
+          height={350}
+          width={'100%'}
+        />
+        <p className="text-white text-sm ml-3">
+          Last Spike: {spike ? spike : '-'}
+        </p>
+      </div>
+
     </>
 
 

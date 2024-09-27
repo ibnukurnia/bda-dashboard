@@ -185,10 +185,11 @@ const MainPageOverview = () => {
   const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
   const [isErrorTopFiveCritical, setIsErrorTopFiveCritical] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
+  const selectedDataSourceRef = useRef(selectedDataSource);
 
   const healthinessRef = useRef<HTMLDivElement>(null)
   const thSeverity = ['Severity', 'Count']
-  const configDataKey = ['service_name', 'critical', 'major', 'minor']
+  const configDataKey = ['service_name', 'very_high', 'high', 'medium']
   const router = useRouter()
   const handle = useFullScreenHandle();
 
@@ -293,6 +294,7 @@ const MainPageOverview = () => {
     const { startTime, endTime } = handleStartEnd(selectedRange)
     const params = { type: value, start_time: startTime, end_time: endTime }
 
+    console.log("Data source selected:", value);  // Debug here
     setSelectedDataSource(value)
 
     setIsLoadingPieChart(true)
@@ -338,25 +340,30 @@ const MainPageOverview = () => {
     }
   }
 
-  const handleClickSeverity = (severity: string) => {
-    const { startTime, endTime } = handleStartEnd(selectedRange)
-    const logicSelectedRange = selectedRange.split(' - ').length > 1 ? 'Custom' : selectedRange
+  // const handleClickSeverity = (severity: string) => {
+  //   console.log("Selected Data Source:", selectedDataSource); // Directly use the state variable
 
-    if (selectedDataSource?.length > 0) {
-      router.push(
-        '/dashboard/anomaly-detection?data_source=' +
-        selectedDataSource +
-        '&severity=' +
-        severity +
-        '&time_range=' +
-        logicSelectedRange +
-        '&start=' +
-        startTime +
-        '&end=' +
-        endTime
-      )
-    }
-  }
+  //   const { startTime, endTime } = handleStartEnd(selectedRange);
+  //   const logicSelectedRange = selectedRange.split(' - ').length > 1 ? 'Custom' : selectedRange;
+
+  //   if (selectedDataSource?.length > 0) {
+  //     router.push(
+  //       '/dashboard/anomaly-detection?data_source=' +
+  //       selectedDataSource +  // Use selectedDataSource directly here
+  //       '&severity=' +
+  //       severity +
+  //       '&time_range=' +
+  //       logicSelectedRange +
+  //       '&start=' +
+  //       startTime +
+  //       '&end=' +
+  //       endTime
+  //     );
+  //   } else {
+  //     console.log("failed to get data source");
+  //   }
+  // };
+
 
   useEffect(() => {
     const fetchMetrics = () => {
@@ -537,6 +544,10 @@ const MainPageOverview = () => {
     }
   }, [healthinessRef.current?.offsetHeight])
 
+  useEffect(() => {
+    selectedDataSourceRef.current = selectedDataSource;
+  }, [selectedDataSource]);
+
   // Get start and end times from selected range for passing to DynamicUpdatingChart
   const { startTime, endTime } = handleStartEnd(selectedRange)
 
@@ -634,9 +645,10 @@ const MainPageOverview = () => {
                         <TableSeverity
                           tableHeader={thSeverity}
                           data={pieChartData}
-                          onClickSeverity={(severity) => handleClickSeverity(severity)}
-                          clickable={selectedDataSource?.length > 0}
+                          clickable={true}
+                          queryParams={{ time_range: selectedRange, data_source: selectedDataSource }}  // Pass query params
                         />
+
                       </TableSeverityWrapper>
                     </div>
                     <TableServicesWrapper
@@ -676,7 +688,9 @@ const MainPageOverview = () => {
                 severity={selectedSeverity}
               />
             </div>
-            <GraphWrapper isLoading={isLoadingGraphic}>
+
+            <GraphWrapper isLoading={isLoadingGraphic} >
+              <span className="font-bold text-white text-2xl">Graphic</span>
               <div className="chart-section">
                 {chartData.map((item, id) => (
                   <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
@@ -692,6 +706,7 @@ const MainPageOverview = () => {
                 ))}
               </div>
             </GraphWrapper>
+
           </div>
 
         </div>

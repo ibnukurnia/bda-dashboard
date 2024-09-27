@@ -55,14 +55,14 @@ const TableWrapper: React.FC<TableWrapperProps> = ({
 }) => {
   if (isLoading) return (
     <div className="flex justify-center items-center">
-        <div className="spinner"></div>
+      <div className="spinner"></div>
     </div>
   )
   if (isEmpty) return (
     <div className="text-center py-4">
-        <Typography variant="subtitle1" color="white" align="center">
-            No data available.
-        </Typography>
+      <Typography variant="subtitle1" color="white" align="center">
+        No data available.
+      </Typography>
     </div>
   )
   return children
@@ -78,8 +78,8 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
   const [data, setData] = useState<any>([])
   const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
   const [pagination, setPagination] = useState({
-      pageIndex: 1, // Start from page 1
-      pageSize: 10, // Default page size
+    pageIndex: 1, // Start from page 1
+    pageSize: 10, // Default page size
   })
   const [totalRows, setTotalRows] = useState<number>(1)
   const [pauseEffectPagination, setPauseEffectPagination] = useState(false)
@@ -92,20 +92,20 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
     getFilteredRowModel: getFilteredRowModel(),
     manualPagination: true, // Disable table's internal pagination
     state: {
-        pagination,
+      pagination,
     },
   })
 
   useEffect(() => {
     fetchData()
   }, [])
-  
+
   useUpdateEffect(() => {
     setPauseEffectPagination(true)
-    setPagination(prev => ({ ...prev, pageIndex: 1}))
+    setPagination(prev => ({ ...prev, pageIndex: 1 }))
     fetchData(1)
   }, [timeRange, severity])
-  
+
   useUpdateEffect(() => {
     if (pauseEffectPagination) {
       setPauseEffectPagination(false)
@@ -134,19 +134,19 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
 
           // Map the columns from the API response to the format required by the table
           const newColumns = columns.map((column: any) => ({
-              id: column.key,
-              header: column.title,
-              accessorKey: column.key,
+            id: column.key,
+            header: column.title,
+            accessorKey: column.key,
           }));
           setColumns(newColumns);
 
           // Map the rows from the API response to the format required by the table
           const newData = rows.map((row: any) => {
-              const mappedRow: any = {};
-              columns.forEach((col: any) => {
-                  mappedRow[col.key] = row[col.key];
-              });
-              return mappedRow;
+            const mappedRow: any = {};
+            columns.forEach((col: any) => {
+              mappedRow[col.key] = row[col.key];
+            });
+            return mappedRow;
           });
 
           // Update the table data
@@ -188,7 +188,7 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
             <table className="table-auto divide-y divide-gray-200 w-full">
               <thead>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
+                  <tr key={headerGroup.id} className='text-left'>
                     {headerGroup.headers.map((header) => (
                       <th key={header.id} colSpan={header.colSpan} className="p-2">
                         <button
@@ -236,10 +236,10 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
         <TablePagination
           component={"div"}
           count={totalRows}
-          onPageChange={(_, page) => setPagination(prev => ({ ...prev, pageIndex: page+1}))}
-          page={pagination.pageIndex-1}
+          onPageChange={(_, page) => setPagination(prev => ({ ...prev, pageIndex: page + 1 }))}
+          page={pagination.pageIndex - 1}
           rowsPerPage={table.getState().pagination.pageSize}
-          onRowsPerPageChange={(e) => setPagination({ pageSize: Number(e.target.value), pageIndex: 1})}
+          onRowsPerPageChange={(e) => setPagination({ pageSize: Number(e.target.value), pageIndex: 1 })}
           rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
           showFirstButton
           showLastButton

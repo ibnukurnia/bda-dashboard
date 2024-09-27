@@ -18,6 +18,7 @@ import { format } from 'date-fns';
 import AutoRefreshButton from '../button/refreshButton'
 import { NAMESPACE_LABELS, PREDEFINED_TIME_RANGES, ROWS_PER_PAGE_OPTIONS } from '@/constants'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { formatNumberWithCommas } from '../../../../helper';
 
 interface TabContentProps {
     selectedDataSource: string
@@ -384,7 +385,7 @@ const TabContent: React.FC<TabContentProps> = ({
         limit: number,
         filter: string[] = [],
     ) => {
-        console.log('Fetching data for page:', page);
+        // console.log('Fetching data for page:', page);
 
         // Determine the log type based on the selected log
         const { startTime, endTime } = getTimeRange();
@@ -449,7 +450,7 @@ const TabContent: React.FC<TabContentProps> = ({
     const loadAnomalyFilterOptions = async () => {
         try {
             const response = await fetchAnomalyOption(selectedDataSource); // Pass the correct utilization type to the API call
-            console.log('API Response:', response); // Log the entire API response
+            // console.log('API Response:', response); // Log the entire API response
 
             if (response.data && response.data.columns) {
                 const options = response.data.columns.map((column: Column) => ({
@@ -458,7 +459,7 @@ const TabContent: React.FC<TabContentProps> = ({
                     type: column.type, // Maps the "type" to "type"
                 }));
 
-                console.log('Mapped Checkbox Options:', options); // Log the mapped options
+                // console.log('Mapped Checkbox Options:', options); // Log the mapped options
 
                 setFilterAnomalyOptions(options); // Update state with fetched options
             } else {
@@ -475,13 +476,13 @@ const TabContent: React.FC<TabContentProps> = ({
         try {
             // Hardcode the severity options
             const severityOptions = [
-                { id: 1, label: 'Critical', type: 'severity' },
-                { id: 2, label: 'Major', type: 'severity' },
-                { id: 3, label: 'Minor', type: 'severity' }
+                { id: 1, label: 'Very High', type: 'severity' },
+                { id: 2, label: 'High', type: 'severity' },
+                { id: 3, label: 'Meidum', type: 'severity' }
             ];
 
             setFilterSeverityOptions(severityOptions); // Set the severity options into state
-            console.log(severityOptions)
+            // console.log(severityOptions)
         } catch (error) {
             console.error('Error loading severity options:', error);
 
@@ -899,8 +900,8 @@ const TabContent: React.FC<TabContentProps> = ({
                         <div className='flex flex-col gap-2'>
                             <Typography variant="h5" component="h5" color="white">
                                 {`Historical ${NAMESPACE_LABELS[selectedDataSource] === 'Zabbix'
-                                        ? 'Zabbix Ping to Erangel'
-                                        : NAMESPACE_LABELS[selectedDataSource]
+                                    ? 'Zabbix Ping to Erangel'
+                                    : NAMESPACE_LABELS[selectedDataSource]
                                     } Anomaly Records`}
                             </Typography>
 
@@ -939,6 +940,7 @@ const TabContent: React.FC<TabContentProps> = ({
                                             </Typography>
                                         </div>
                                     ) : (
+
                                         <table id="person" className="table-auto divide-y divide-gray-200 w-full">
                                             <thead>
                                                 {table.getHeaderGroups().map((headerGroup) => (
@@ -946,7 +948,8 @@ const TabContent: React.FC<TabContentProps> = ({
                                                         {headerGroup.headers.map((header) => (
                                                             <th key={header.id} colSpan={header.colSpan} className="p-2">
                                                                 <div
-                                                                    className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3`}
+                                                                    className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''
+                                                                        } px-3`}
                                                                     onClick={header.column.getToggleSortingHandler()}
                                                                 >
                                                                     {typeof header.column.columnDef.header === 'function'
@@ -987,7 +990,7 @@ const TabContent: React.FC<TabContentProps> = ({
                                                                                 <path
                                                                                     d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
                                                                                     fill={
-                                                                                        cell.getValue() === 'very High'
+                                                                                        cell.getValue() === 'very high'
                                                                                             ? '#dc2626' // Red for Very High
                                                                                             : cell.getValue() === 'high'
                                                                                                 ? '#ea580c' // Orange for High
@@ -998,18 +1001,26 @@ const TabContent: React.FC<TabContentProps> = ({
                                                                                 />
                                                                             </svg>
                                                                         )}
-                                                                    {typeof cell.column.columnDef.cell === 'function'
-                                                                        ? cell.column.columnDef.cell(cell.getContext())
-                                                                        : cell.column.columnDef.cell}
+
+                                                                    {/* Format number with commas */}
+                                                                    {typeof cell.getValue() === 'number' ? (
+                                                                        <span>
+                                                                            {formatNumberWithCommas(cell.getValue() as number)} {/* Apply the formatting function here */}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span>
+                                                                            {cell.getValue() as string} {/* For non-numeric values */}
+                                                                        </span>
+                                                                    )}
                                                                 </div>
                                                             </td>
                                                         ))}
                                                     </tr>
                                                 ))}
                                             </tbody>
-
-
                                         </table>
+
+
                                     )}
                                 </div>
                             </div>

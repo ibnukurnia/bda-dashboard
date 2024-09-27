@@ -46,11 +46,9 @@ const MainPageAnomaly = () => {
   const dropdownRefLog = useRef<HTMLDivElement | null>(null);
   const dropdownRefUtilization = useRef<HTMLDivElement | null>(null);
   const dropdownRefSecurity = useRef<HTMLDivElement | null>(null);
-
   const searchParams = useSearchParams()
   const dataSource = searchParams.get("data_source") ?? DEFAULT_DATA_SOURCE_NAMESPACE
   const timeRange = searchParams.get("time_range") ?? DEFAULT_TIME_RANGE
-
   const columnHelper = createColumnHelper<Anomaly>();
 
   const columns: ColumnDef<Anomaly, any>[] = [
@@ -94,7 +92,6 @@ const MainPageAnomaly = () => {
     }
   };
 
-
   const handleDropdownSelection = (type: string, value: SetStateAction<string>) => {
     if (type === 'log') {
       setSelectedLog(value);
@@ -114,7 +111,6 @@ const MainPageAnomaly = () => {
       setIsDropdownOpenSecurity(false);
     }
   };
-
 
   useEffect(() => {
     setActiveTab('log'); // Set log as the active tab initially
