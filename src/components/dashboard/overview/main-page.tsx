@@ -160,6 +160,7 @@ const dataDropdownSeverity = [
 const toMiliseconds = 1000 * 60
 
 const defaultTimeRanges: Record<string, number> = {
+  'Last 5 minutes': 5,
   'Last 10 minutes': 10,
   'Last 15 minutes': 15,
   'Last 30 minutes': 30,
