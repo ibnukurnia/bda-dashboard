@@ -23,7 +23,7 @@ import { PREDEFINED_TIME_RANGES } from '@/constants'
 import RCATreeWrapper from './wrapper/rca-tree-wrapper'
 
 const MainPageRootCauseAnalysis = () => {
-  const [selectedRange, setSelectedRange] = useState<string>('Last 24 hours')
+  const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
   const [dataTree, setDataTree] = useState<RootCauseAnalysisTreeResponse[] | null>(null)
   const [filter, setFilter] = useState<{
     startTime: string;

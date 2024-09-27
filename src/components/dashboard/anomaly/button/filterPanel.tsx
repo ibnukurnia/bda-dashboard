@@ -72,10 +72,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         onApplyFilters({
             selectedAnomalies: selectedAnomalyOptions,
             selectedServices: selectedServiceOptions,
-            selectedSeverities: selectedSeverityOptions // Use the mapped numeric values
+            selectedSeverities: selectedSeverityOptions
         });
         setIsOpen(false); // Close the panel after applying filters
-        console.log(selectedSeverityOptions)
     };
 
     const handleReset = () => {
@@ -87,7 +86,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
         // Show reset confirmation message
         setResetMessage(true);
-        // Hide the message after 2 seconds
         setTimeout(() => setResetMessage(false), 2000);
     };
 
@@ -95,56 +93,55 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         setSearchValue(e.target.value);
     };
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
-                setIsOpen(false); // Close the panel when clicking outside of it
-            }
-        };
-
-        if (isOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
+    const handleSelectAllAnomalies = () => {
+        if (selectedAnomalyOptions.length === checkboxOptions.length) {
+            setSelectedAnomalyOptions([]); // Unselect all
         } else {
-            document.removeEventListener('mousedown', handleClickOutside);
+            setSelectedAnomalyOptions(checkboxOptions.map((option) => option.id)); // Select all
         }
+    };
 
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [isOpen]);
+    const handleSelectAllSeverities = () => {
+        if (selectedSeverityOptions.length === severityOptions.length) {
+            setSelectedSeverityOptions([]); // Unselect all
+        } else {
+            setSelectedSeverityOptions(severityOptions.map((option) => option.id)); // Select all
+        }
+    };
 
+    const handleSelectAllServices = () => {
+        if (selectedServiceOptions.length === servicesOptions.length) {
+            setSelectedServiceOptions([]); // Unselect all
+        } else {
+            setSelectedServiceOptions(servicesOptions); // Select all
+        }
+    };
 
     useEffect(() => {
         const anomalies = searchParams.getAll("anomaly");
         const severities = searchParams.getAll("severity");
         const services = searchParams.getAll("service");
 
-        // Filter anomalies based on available checkbox options
         setSelectedAnomalyOptions(
             anomalies.filter((anomaly) =>
                 checkboxOptions.some((option) => option.id === anomaly)
             )
         );
 
-        // Filter severities based on available severity options using the id
         setSelectedSeverityOptions(
             severities
-                .map(Number) // Convert the severity strings to numbers since we're using ids now
+                .map(Number)
                 .filter((severityId) =>
                     severityOptions.some((option) => option.id === severityId)
                 )
         );
 
-        // Filter services based on available service options
         setSelectedServiceOptions(
             services.filter((service) =>
                 servicesOptions.some((option) => option === service)
             )
         );
-
-        console.log(severityOptions)
     }, [searchParams, checkboxOptions, servicesOptions, severityOptions]);
-
 
     return (
         <div className="flex self-start z-50">
@@ -183,8 +180,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                 <div className='flex flex-col gap-2'>
                                     <h3 className="font-semibold text-lg">Anomaly</h3>
                                     <p className="text-sm text-gray-600">
-                                        Selected Anomalies: <span className='text-blue-600'>{selectedAnomalyOptions.length} </span>
+                                        Selected Anomalies: <span className='text-blue-600'>{selectedAnomalyOptions.length}</span>
                                     </p>
+                                    <button
+                                        onClick={handleSelectAllAnomalies}
+                                        className="text-blue-500 text-sm text-left"
+                                    >
+                                        {selectedAnomalyOptions.length === checkboxOptions.length ? 'Unselect All' : 'Select All'}
+                                    </button>
                                 </div>
 
                                 <div className="overflow-y-auto max-h-40">
@@ -216,7 +219,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                 </div>
                             </div>
 
-
                             {/* Severity Section */}
                             <div className="flex flex-col gap-3">
                                 <div className="flex flex-col gap-2">
@@ -224,6 +226,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     <p className="text-sm text-gray-600">
                                         Selected Severities: <span className="text-blue-600">{selectedSeverityOptions.length}</span>
                                     </p>
+                                    <button
+                                        onClick={handleSelectAllSeverities}
+                                        className="text-blue-500 text-sm text-blue-500 text-sm text-left"
+                                    >
+                                        {selectedSeverityOptions.length === severityOptions.length ? 'Unselect All' : 'Select All'}
+                                    </button>
                                 </div>
 
                                 <div className="overflow-y-auto max-h-40">
@@ -237,12 +245,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                                 <div className="flex items-center">
                                                     <input
                                                         type="checkbox"
-                                                        value={option.id} // Using option.id (which is the number)
-                                                        checked={selectedSeverityOptions.includes(option.id)} // Check if the option ID is selected
-                                                        onChange={() => handleSeverityChange(option.id)} // Handle by the option's id
+                                                        value={option.id}
+                                                        checked={selectedSeverityOptions.includes(option.id)}
+                                                        onChange={() => handleSeverityChange(option.id)}
                                                         className="mr-2"
                                                     />
-                                                    {option.label} {/* Display the label */}
+                                                    {option.label}
                                                 </div>
                                             </label>
                                         ))
@@ -252,14 +260,21 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                 </div>
                             </div>
 
-
-                            {/* Services Section with Search */}
+                            {/* Services Section */}
                             <div className='flex flex-col gap-3'>
                                 <div className='flex flex-col gap-2'>
                                     <h3 className="font-semibold text-lg">Services</h3>
                                     <p className="text-sm text-gray-600">
                                         Selected Services: <span className='text-blue-600'>{selectedServiceOptions.length}</span>
-                                    </p></div>
+                                    </p>
+                                    <button
+                                        onClick={handleSelectAllServices}
+                                        className="text-blue-500 text-sm text-blue-500 text-sm text-left"
+                                    >
+                                        {selectedServiceOptions.length === servicesOptions.length ? 'Unselect All' : 'Select All'}
+                                    </button>
+                                </div>
+
                                 <div className='flex flex-col gap-2'>
                                     <input
                                         className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:ring-2 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
@@ -295,7 +310,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                         )}
                                     </div>
                                 </div>
-
                             </div>
                         </div>
 
@@ -314,7 +328,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                             </button>
                         </div>
 
-                        {/* Show reset confirmation message */}
                         {resetMessage && (
                             <p className="text-center text-blue-500 mt-4 font-semibold">
                                 Filters have been reset!

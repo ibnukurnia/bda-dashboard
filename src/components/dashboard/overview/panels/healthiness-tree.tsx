@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Tree from 'react-d3-tree';
 import { HealthScoreResponse } from '@/modules/models/overviews';
 import { toFixed } from '@/helper';
+import Image from 'next/image';
 
 const treeData = [
   {
@@ -99,10 +100,11 @@ const renderCustomNode = ({ nodeDatum }: any) => {
           stroke='transparent'
         />
         <foreignObject x="15" y="15" width="160" height="160">
-          <img
+          <Image
             src={`/assets/dashboard/overview/${nodeDatum.attributes.iconSrc}`}
-            width={'50px'}
-            height={'50px'}
+            width={50}
+            height={50}
+            unoptimized
             alt='logo'
           />
         </foreignObject>
@@ -130,10 +132,11 @@ const renderCustomNode = ({ nodeDatum }: any) => {
         stroke='transparent'
       />
       <foreignObject x="15" y="15" width="160" height="160">
-          <img
+          <Image
             src={`/assets/dashboard/overview/${nodeDatum.attributes.iconSrc}`}
-            width={'50px'}
-            height={'50px'}
+            width={50}
+            height={50}
+            unoptimized
             alt='logo'
           />
         </foreignObject>

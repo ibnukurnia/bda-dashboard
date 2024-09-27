@@ -4,7 +4,7 @@ WORKDIR /build
 
 COPY package*.json ./
 
-RUN yarn install --forzen-lockfile
+RUN yarn install --frozen-lockfile
 
 COPY . .
 
@@ -21,9 +21,7 @@ WORKDIR /app
 # COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /build/.next/standalone ./
 COPY --from=builder /build/.next/static ./.next/static
-COPY --from=builder /build/public ./.next/public
-# COPY --from=builder /app/public ./public
-# COPY --from=builder /app/package*.json ./
+COPY --from=builder /build/public ./public 
 
 EXPOSE 3000
 

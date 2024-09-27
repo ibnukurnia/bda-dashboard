@@ -19,11 +19,11 @@ export const TAB_DATA_SOURCE = [
     children: [
       {
         namespace: "k8s_prometheus",
-        textLabel: "Prometheus OCP",
+        textLabel: "OCP",
       },
       {
         namespace: "k8s_db",
-        textLabel: "Prometheus DB",
+        textLabel: "Database",
       },
     ],
   },
@@ -35,19 +35,19 @@ export const TAB_DATA_SOURCE = [
     textLabel: "Security",
     children: [
       {
-        namespace: "panw",
         textLabel: "PANW",
+        namespace: "panw",
       },
       {
         textLabel: "Fortinet",
         namespace: "forti",
       },
       {
-        textLabel: "Web Application Security",
+        textLabel: "WAF",
         namespace: "waf",
       },
       {
-        textLabel: "Prtg",
+        textLabel: "PRTG",
         namespace: "prtg",
       },
       {
@@ -60,13 +60,13 @@ export const TAB_DATA_SOURCE = [
 export const NAMESPACE_LABELS: Record<string, string> = {
   'apm': "Log APM Brimo",
   'brimo': "Log Transaksi Brimo",
-  'k8s_prometheus': "Prometheus OCP",
-  'k8s_db': "Prometheus DB",
+  'k8s_prometheus': "OCP",
+  'k8s_db': "Database",
   'ivat': "IVAT",
   'panw': "PANW",
   'fortinet': "Fortinet",
-  'waf': "Web Application Security",
-  'prtg': "Prtg",
+  'waf': "WAF",
+  'prtg': "PRTG",
   'zabbix': "Zabbix",
 }
 

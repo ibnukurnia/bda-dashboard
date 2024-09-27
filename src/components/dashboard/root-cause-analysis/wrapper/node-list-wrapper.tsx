@@ -12,6 +12,7 @@ const NodeListWrapper: React.FC<NodeListWrapperProps> = ({
   isLoading,
   nodeCount,
 }) => {
+  console.log(nodeCount)
   if (isLoading) return (
     <div className="h-[80px] flex flex-col gap-2">
       {Array.from(Array(nodeCount), (_, i) => (

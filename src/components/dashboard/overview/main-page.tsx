@@ -33,7 +33,8 @@ import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import { SEVERITY_LABELS } from '@/constants'
 import HealthinessTree from './panels/healthiness-tree'
 import HealthinessTreeWrapper from './wrapper/healthiness-tree-wrapper'
-import { TopFiveLatestCritical } from '@/modules/models/overviews'
+import { HealthScoreResponse, TopFiveLatestCritical } from '@/modules/models/overviews'
+import TableTopCritical from './table/table-top-critical'
 
 // Define your data
 const sourceData = [
@@ -169,8 +170,8 @@ const MainPageOverview = () => {
   const [tableMaxHeight, setTableMaxHeight] = useState(192)
   const [pieChartData, setPieChartData] = useState([])
   const [topServicesData, setTopServicesData] = useState({ header: [], data: [] })
-  const [healthScoreData, setHealthScoreData] = useState([])
-  const [topFiveCritical, settopFiveCritical] = useState<TopFiveLatestCritical[]>([])
+  const [healthScoreData, setHealthScoreData] = useState<HealthScoreResponse[]>([])
+  const [topFiveCriticalData, setTopFiveCriticalData] = useState<TopFiveLatestCritical[]>([])
   const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
@@ -222,6 +223,7 @@ const MainPageOverview = () => {
     setIsLoadingPieChart(true);
     setIsLoadingTopServices(true);
     setIsLoadingGraphic(true)
+    setIsLoadingTopFiveCritical(true)
 
     const paramsTime = { start_time: startTime, end_time: endTime };
     const params = { type: selectedDataSource, ...paramsTime };
@@ -272,6 +274,18 @@ const MainPageOverview = () => {
         setChartData([]);
         setIsLoadingGraphic(false);
       });
+
+    GetTopFiveCritical(params)
+      .then((res) => {
+        setTopFiveCriticalData(res.data ?? [])
+        setIsErrorTopFiveCritical(false);
+      })
+      .catch(() => {
+        setIsErrorTopFiveCritical(true);
+      })
+      .finally(() => {
+        setIsLoadingTopFiveCritical(false);
+      })
   };
 
   const handleChangeFilterDS = (value: string) => {
@@ -313,7 +327,7 @@ const MainPageOverview = () => {
     } else if (title.toLowerCase().includes('prometheus')) {
       return 'ocp'
     } else if (title.toLowerCase().includes('k8s_db')) {
-      return 'db'
+      return 'database'
     } else if (title.toLowerCase().includes('ivat')) {
       return 'network'
     } else if (title.toLowerCase().includes('panw')) {
@@ -385,6 +399,7 @@ const MainPageOverview = () => {
     setIsLoadingHealthScore(true)
     setIsLoadingPieChart(true)
     setIsLoadingTopServices(true)
+    setIsLoadingTopFiveCritical(true)
 
     const paramsTime = { start_time: startTime, end_time: endTime }
     const params = {
@@ -425,7 +440,7 @@ const MainPageOverview = () => {
 
     GetTopFiveCritical(paramsTime)
       .then((res) => {
-        settopFiveCritical(res.data ?? [])
+        setTopFiveCriticalData(res.data ?? [])
         setIsErrorTopFiveCritical(false);
       })
       .catch(() => {
@@ -588,60 +603,64 @@ const MainPageOverview = () => {
             </div>
 
             {/* <div className="flex gap-8"> */}
-            {/* <div className="grid 2xl:grid-cols-2 grid-cols-1 gap-8"> */}
-            {/* <div className="grid grid-cols-1 gap-4"> */}
-            <div className="flex flex-col gap-8 card">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-white text-2xl">Anomaly Overview</span>
-                {!handle.active && <DropdownDS
-                  data={[
-                    { id: 'semua-data-source', value: '', label: 'All Data Source' },
-                    ...sourceData.map((item) => ({ id: item.name, value: item.value, label: item.name })),
-                  ]}
-                  onSelectData={(e) => handleChangeFilterDS(e)}
-                  selectedData={selectedDataSource}
-                />}
-              </div>
-              <div className="grid grid-cols-2 2xl:flex 2xl:flex-col gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <DonutChartWrapper
-                    isLoading={isLoadingPieChart}
-                  >
-                    <DonutChart
-                      series={pieChartData.map((item: any) => item.count)}
-                      labels={pieChartData.map((sditem: any) => sditem.severity)}
-                    />
-                  </DonutChartWrapper>
-                  <TableSeverityWrapper
-                    isLoading={isLoadingPieChart}
-                  >
-                    <TableSeverity
-                      tableHeader={thSeverity}
-                      data={pieChartData}
-                      onClickSeverity={(severity) => handleClickSeverity(severity)}
-                      clickable={selectedDataSource?.length > 0}
-                    />
-                  </TableSeverityWrapper>
+            <div className="grid 2xl:grid-cols-2 grid-cols-1 gap-8">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex flex-col gap-8 card">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-white text-2xl">Anomaly Overview</span>
+                    {!handle.active && <DropdownDS
+                      data={[
+                        { id: 'semua-data-source', value: '', label: 'All Data Source' },
+                        ...sourceData.map((item) => ({ id: item.name, value: item.value, label: item.name })),
+                      ]}
+                      onSelectData={(e) => handleChangeFilterDS(e)}
+                      selectedData={selectedDataSource}
+                    />}
+                  </div>
+                  <div className="grid grid-cols-2 2xl:flex 2xl:flex-col gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <DonutChartWrapper
+                        isLoading={isLoadingPieChart}
+                      >
+                        <DonutChart
+                          series={pieChartData.map((item: any) => item.count)}
+                          labels={pieChartData.map((sditem: any) => sditem.severity)}
+                        />
+                      </DonutChartWrapper>
+                      <TableSeverityWrapper
+                        isLoading={isLoadingPieChart}
+                      >
+                        <TableSeverity
+                          tableHeader={thSeverity}
+                          data={pieChartData}
+                          onClickSeverity={(severity) => handleClickSeverity(severity)}
+                          clickable={selectedDataSource?.length > 0}
+                        />
+                      </TableSeverityWrapper>
+                    </div>
+                    <TableServicesWrapper
+                      isLoading={isLoadingTopServices}
+                    >
+                      <TableServices
+                        data={topServicesData.data}
+                        tableHeader={[topServicesData.header[0], ...Object.values(SEVERITY_LABELS)]}
+                        dataKeys={configDataKey}
+                        maxHeight={tableMaxHeight}
+                      />
+                    </TableServicesWrapper>
+                  </div>
                 </div>
-                <TableServicesWrapper
-                  isLoading={isLoadingTopServices}
-                >
-                  <TableServices
-                    data={topServicesData.data}
-                    tableHeader={[topServicesData.header[0], ...Object.values(SEVERITY_LABELS)]}
-                    dataKeys={configDataKey}
-                    maxHeight={tableMaxHeight}
-                    queryParams={{
-                      start_time: startTime,
-                      end_time: endTime
-                    }}
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex flex-col gap-8 card">
+                  <span className="font-bold text-white text-2xl">Top 5 Critical</span>
+                  <TableTopCritical
+                    data={topFiveCriticalData}
+                    isLoading={isLoadingTopFiveCritical}
                   />
-                </TableServicesWrapper>
+                </div>
               </div>
             </div>
-
-            {/* </div> */}
-            {/* </div> */}
             <div className='card flex flex-col gap-6'>
               <div className='flex justify-between'>
                 <span className="font-bold text-white text-2xl content-center">Latest Anomaly</span>
@@ -655,21 +674,6 @@ const MainPageOverview = () => {
                 timeRange={selectedRange}
                 severity={selectedSeverity}
               />
-            </div>
-            <div className='card flex flex-col gap-6'>
-              <div className='flex justify-between'>
-                <span className="font-bold text-white text-2xl content-center">Top 5 Critical</span>
-              </div>
-              {topFiveCritical.map((service, index) => {
-                return (
-                  <>
-                    <p>{service.anomaly}</p>
-                    <p>{service.datasource}</p>
-                    <p>{service.identifier}</p>
-                    <p>{service.total}</p>
-                  </>
-                )
-              })}
             </div>
             <GraphWrapper isLoading={isLoadingGraphic}>
               <div className="chart-section">

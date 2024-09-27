@@ -81,7 +81,7 @@ export function SignInForm() {
                 <OutlinedInput
                   {...field}
                   label="Pern"
-                  placeholder="Type your pernr"
+                  placeholder="Type your personal number"
                   type="text"
                   sx={{ backgroundColor: 'white' }}
                 />
