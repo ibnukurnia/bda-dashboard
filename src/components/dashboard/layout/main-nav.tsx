@@ -67,9 +67,6 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
       case '/dashboard/anomaly-detection':
         title = 'Anomaly Detection';
         break;
-      // case '/dashboard/situation-room':
-      //   title = 'Situation Room';
-      //   break;
       case '/dashboard/forecasting':
         title = 'Forecasting';
         break;
@@ -158,14 +155,13 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
           position: 'sticky',
           top: 0,
           zIndex: '99',
-          paddingTop: 2,
-          paddingBottom: 2,
+          padding: 2
         }}
       >
         <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', minHeight: '64px' }}>
           {renderOverviewStack()}
 
-          <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
+          <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
             {/* Notification Button */}
             <Button onClick={toggleNotifDetails} className="relative text-blue-400 hover:text-blue-600">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="w-10 h-10 stroke-current text-blue-600">
@@ -176,7 +172,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
 
             {/* User Button */}
             <Button onClick={toggleUserDetails} className="text-white hover:text-gray-300">
-              <Avatar src="/assets/avatar.png" sx={{ cursor: 'pointer', marginLeft: '8px' }} />
+              <Avatar src="/assets/avatar.png" />
             </Button>
           </Stack>
         </Stack>
@@ -190,7 +186,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
             display: 'flex',
             flexDirection: 'column',
             gap: '14px',
-            top: '72px',
+            top: '96px',
             right: '16px',
             backgroundColor: 'white',
             padding: '16px',
@@ -218,7 +214,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
       )}
 
       {isNotifDetailsOpen && (
-        <div ref={notifRef} className="absolute right-16 w-64 bg-white border border-gray-200 rounded shadow-lg z-10">
+        <div ref={notifRef} className="absolute right-4 top-24 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
           <div className="p-3">
             <Typography variant="body2" className="px-4 py-2 text-gray-800">
               Notification 1
@@ -240,6 +236,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
           </div>
         </div>
       )}
+
 
       <MobileNav
         onClose={() => {

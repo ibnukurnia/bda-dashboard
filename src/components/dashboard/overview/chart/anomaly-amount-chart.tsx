@@ -3,16 +3,14 @@ import { ApexOptions } from 'apexcharts'
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
-interface DynamicUpdatingChartProps {
-  series: any[]
-  title?: string
-  spike: string
-  id?: string | number
+interface AnomalyAmountChartProps {
+  anomalies: any[],
+  series: any[],
   startTime: string // Add startTime prop
   endTime: string // Add endTime prop
 }
 
-const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: DynamicUpdatingChartProps) => {
+const AnomalyAmountChart = ({ anomalies, series, startTime, endTime }: AnomalyAmountChartProps) => {
   const options: ApexOptions = {
     chart: {
       group: 'overview',
@@ -25,26 +23,11 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
         enabled: false,
       },
     },
-    title: {
-      text: title,
-      style: {
-        color: 'white',
-      },
-    },
-    subtitle: {
-      text: title?.toLowerCase()?.includes('apm') ? 'error rate' : 'anomaly count',
-      style: {
-        color: 'white',
-      },
-    },
     tooltip: {
       enabled: true,
     },
     xaxis: {
       // Set min and max based on user-selected start and end time
-      axisTicks: {
-        show: false, // Hide ticks
-      },
       min: new Date(startTime).getTime(),
       max: new Date(endTime).getTime(),
       type: 'datetime',
@@ -67,28 +50,15 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
         rotate: 0,
         hideOverlappingLabels: true,
         trim: true,
-        show: false, // Hide labels
       },
-      crosshairs: { show: false },
+      crosshairs: { show: true },
       axisBorder: { show: false },
     },
     yaxis: {
       min: 0,
-      max(max) {
-        if (title?.toLowerCase()?.includes('apm')) {
-          return max
-        } else if (max >= 5) {
-          return max + 1
-        } else {
-          return 5
-        }
-      },
       labels: {
         style: {
           colors: 'white', // White color for y-axis text
-        },
-        formatter(val) {
-          return title?.toLowerCase()?.includes('apm') ? val.toFixed(4) : val.toFixed(0)
         },
       },
       tickAmount: 5,
@@ -96,6 +66,19 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
     stroke: {
       curve: 'smooth',
       width: 1.5,
+    },
+    markers: {
+        size: 0.0000001, // Workaround hover marker not showing because discrete options
+        hover: {
+            size: 6, // Size of the marker when hovered
+        },
+        discrete: anomalies.map(a => ({
+            seriesIndex: 0, // Index of the series
+            dataPointIndex: series.findIndex(d => d[0] === a[0]), // Index of the data point to display a marker
+            fillColor: '#FF0000', // Custom fill color for the specific marker
+            strokeColor: '#FF0000',
+            size: 4, // Custom size for the specific marker
+        }))
     },
     grid: {
       borderColor: '#bdbdbd',
@@ -116,24 +99,14 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
   }
 
   return (
-    <>
-      <div className='card'>
-        <Chart
-          options={options}
-          series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
-          type="line"
-          height={350}
-          width={'100%'}
-        />
-        <p className="text-white text-sm ml-3">
-          Last Spike: {spike ? spike : '-'}
-        </p>
-      </div>
-
-    </>
-
-
+    <Chart
+      options={options}
+      series={series}
+      type="line"
+      height={300}
+      width={'100%'}
+    />
   )
 }
 
-export default DynamicUpdatingChart
+export default AnomalyAmountChart
