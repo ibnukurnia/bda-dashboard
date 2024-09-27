@@ -18,7 +18,7 @@ import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import Button from '@/components/system/Button/Button'
 import { Maximize } from 'react-feather'
 import DropdownTime from './button/dropdown-time'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { PREDEFINED_TIME_RANGES } from '@/constants'
 import RCATreeWrapper from './wrapper/rca-tree-wrapper'
 
@@ -29,9 +29,11 @@ const MainPageRootCauseAnalysis = () => {
     startTime: string;
     endTime: string;
   }>({
-    startTime: format(new Date().setDate(new Date().getDate() - 1), 'yyyy-MM-dd HH:mm:ss'), // 1 Day Ago
-    endTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'), // Now
+    startTime: "", // 1 Day Ago
+    endTime: "", // Now
   })
+  const [initStartDate, setInitStartDate] = useState<string | null>(null)
+  const [initEndDate, setInitEndDate] = useState<string | null>(null)
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | undefined>(undefined);
   const [lastUpdateString, setLastUpdateString] = useState("")
   const [autoRefresh, setAutoRefresh] = useState<{
@@ -44,33 +46,57 @@ const MainPageRootCauseAnalysis = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [modalServices, setModalServices] = useState(false)
-  
+
   const router = useRouter()
   const handle = useFullScreenHandle();
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    fetchData()
-  }, [filter])
-  
+    const start = searchParams.get('start_time');
+    const end = searchParams.get('end_time');
+
+    if (start && end) {
+      setInitStartDate(start);
+      setInitEndDate(end);
+      setFilter({
+        startTime: start,
+        endTime: end,
+      });
+    } else {
+      setInitStartDate(format(new Date().setDate(new Date().getDate() - 1), 'yyyy-MM-dd HH:mm:ss'));
+      setInitEndDate(format(new Date(), 'yyyy-MM-dd HH:mm:ss'));
+      setFilter({
+        startTime: format(new Date().setDate(new Date().getDate() - 1), 'yyyy-MM-dd HH:mm:ss'),
+        endTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+      });
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (initStartDate && initEndDate) {
+      fetchData();
+    }
+  }, [filter, initStartDate, initEndDate]);
+
   useInterval(fetchData, autoRefresh.interval, autoRefresh.enabled)
 
   useInterval(() =>
     setLastUpdateString(getTimeDifference(lastRefreshTime)),
-  1000, lastRefreshTime != null)
+    1000, lastRefreshTime != null)
 
   async function fetchData() {
-    GetRootCauseAnalysisTree({ start_time: filter.startTime, end_time: filter.endTime})
-    .then(result => {
-      setDataTree(result.data)
-      setLastRefreshTime(new Date())
-      setIsError(false)
-    })
-    .catch(() => {
-      setIsError(true)
-    })
-    .finally(() => {
-      setIsLoading(false)
-    })
+    GetRootCauseAnalysisTree({ start_time: filter.startTime, end_time: filter.endTime })
+      .then(result => {
+        setDataTree(result.data)
+        setLastRefreshTime(new Date())
+        setIsError(false)
+      })
+      .catch(() => {
+        setIsError(true)
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
   }
 
   const handleRangeChange = async (rangeKey: string) => {
@@ -80,24 +106,24 @@ const MainPageRootCauseAnalysis = () => {
     let endDate: string;
 
     if (rangeKey.includes(' - ')) {
-        // Handle custom range
-        const [start, end] = rangeKey.split(' - ');
-        startDate = start;
-        endDate = end;
+      // Handle custom range
+      const [start, end] = rangeKey.split(' - ');
+      startDate = start;
+      endDate = end;
     } else {
-        // Handle predefined ranges
-        const selectedTimeRange = PREDEFINED_TIME_RANGES[rangeKey]; // Get the selected time range in minutes
+      // Handle predefined ranges
+      const selectedTimeRange = PREDEFINED_TIME_RANGES[rangeKey]; // Get the selected time range in minutes
 
-        // Calculate endDate as the current time, rounding down the seconds to 00
-        const endDateObj = new Date();
-        endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
+      // Calculate endDate as the current time, rounding down the seconds to 00
+      const endDateObj = new Date();
+      endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
 
-        // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
-        const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
+      // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
+      const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
 
-        // Convert startDate and endDate to strings
-        startDate = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
-        endDate = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
+      // Convert startDate and endDate to strings
+      startDate = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
+      endDate = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
     }
 
     // Update the state for startDate and endDate
@@ -134,7 +160,7 @@ const MainPageRootCauseAnalysis = () => {
           </div>
           <AutoRefreshButton onRefresh={fetchData} onAutoRefreshChange={handleAutoRefreshChange} />
           <Button onClick={handle.enter}>
-            <Maximize className='w-6 h-5'/>
+            <Maximize className='w-6 h-5' />
           </Button>
         </div>
         <FullScreen className="bg-[#05061E]" handle={handle}>

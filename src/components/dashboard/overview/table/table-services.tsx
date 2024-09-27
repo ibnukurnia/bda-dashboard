@@ -1,15 +1,20 @@
 import { Check, Minus, Plus } from 'react-feather'
 
 import './table-services.css'
+import Link from 'next/link'
 
 interface TableServicesProps {
   tableHeader: string[]
   dataKeys: string[]
   data: any[]
   maxHeight?: number | string
+  queryParams?: {
+    start_time?: string
+    end_time?: string
+  }
 }
 
-const TableServices = ({ tableHeader, dataKeys, data, maxHeight }: TableServicesProps) => {
+const TableServices = ({ tableHeader, dataKeys, data, maxHeight, queryParams }: TableServicesProps) => {
   return (
     <div className="relative overflow-auto min-h-48 scrollbar" style={{ maxHeight }}>
       <div>
@@ -47,7 +52,25 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight }: TableServices
                             {sdt?.health_score < 50 ? <Minus size={'16px'} /> : <Check size={'16px'} />}
                           </span>
                         )}
-                        <span>{sdt?.[cdk]}</span>
+                        {cdkid === 0 ?
+                          <Link
+                            href={{
+                              pathname: '/dashboard/root-cause-analysis',
+                              query: {
+                                ...queryParams,
+                              }
+                            }}
+                            target='_blank'
+                            passHref
+                            rel={sdt.count > 0 ? "noopener noreferrer" : undefined}
+                          // className={`${clickable && sdt.count > 0 ? '' : 'cursor-not-allowed pointer-events-none'}`}
+                          >
+                            {sdt?.[cdk]}
+                          </Link>
+                          : <span>
+                            {sdt?.[cdk]}
+                          </span>
+                        }
                       </div>
                     </td>
                   ))}
@@ -74,18 +97,6 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight }: TableServices
                 </td>
               </tr>
             )}
-            {/* {data.length > 0 && (
-              <tr>
-                <td className="py-1 px-1 td">
-                  <div className={`flex items-center gap-2 'text-left' font-semibold`}>
-                    <div className="flex items-center gap-2 cursor-pointer">
-                      <Plus size={'16px'} />
-                      <span>Load more</span>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            )} */}
           </tbody>
         </table>
       </div>

@@ -3,6 +3,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Image from 'next/image';
 
 // import { paths } from '@/paths';
 // import { DynamicLogo } from '@/components/core/logo';
@@ -41,8 +42,8 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
             </Typography>
           </Stack>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, marginTop: 6 }}>
-            <img src="/assets/bumn.png" alt="bumn" />
-            <img src="/assets/bri.png" alt="bri" />
+            <Image unoptimized src="/assets/bumn.png" alt="bumn" />
+            <Image unoptimized src="/assets/bri.png" alt="bri" />
           </Box>
         </Stack>
       </Box>
