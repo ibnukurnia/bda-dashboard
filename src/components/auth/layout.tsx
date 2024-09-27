@@ -42,8 +42,8 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
             </Typography>
           </Stack>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, marginTop: 6 }}>
-            <Image unoptimized src="/assets/bumn.png" alt="bumn" />
-            <Image unoptimized src="/assets/bri.png" alt="bri" />
+            <img src="/assets/bumn.png" alt="bumn" />
+            <img src="/assets/bri.png" alt="bri" />
           </Box>
         </Stack>
       </Box>
