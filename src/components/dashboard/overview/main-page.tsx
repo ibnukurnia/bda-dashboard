@@ -36,6 +36,15 @@ import { HealthScoreResponse } from '@/modules/models/overviews'
 import HealthinessTreeWrapper from './wrapper/healthiness-tree-wrapper'
 import { TopFiveLatestCritical } from '@/modules/models/overviews'
 import TableTopCritical from './table/table-top-critical'
+import AnomalyAmountChart from './chart/anomaly-amount-chart'
+import { GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { fetchServicesOption } from '@/lib/api'
+import DropdownAnomalyAmountService from './button/dropdown-anomaly-amount-service'
+import AnomalyAmountWrapper from './wrapper/anomaly-amount-wrapper'
+import { Skeleton } from '@mui/material'
+
+const ANOMALY_AMOUNT_TYPE = 'brimo'
+const ANOMALY_AMOUNT_METRIC_NAME = 'is_anomaly_amount'
 
 // Define your data
 const sourceData = [
@@ -166,6 +175,7 @@ const MainPageOverview = () => {
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
   const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string } | null | undefined>(dataDropdownSeverity[0])
   const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
+  const [selectedAnomalyAmountService, setSelectedAnomalyAmountService] = useState<string>('')
   const [modalServices, setModalServices] = useState(false)
   const [modalSeverity, setModalSeverity] = useState(false)
   const [tableMaxHeight, setTableMaxHeight] = useState(192)
@@ -173,6 +183,12 @@ const MainPageOverview = () => {
   const [topServicesData, setTopServicesData] = useState({ header: [], data: [] })
   const [healthScoreData, setHealthScoreData] = useState<HealthScoreResponse[]>([])
   const [topFiveCriticalData, setTopFiveCriticalData] = useState<TopFiveLatestCritical[]>([])
+  const [anomalyAmountServicesData, setAnomalyAmountServicesData] = useState<string[]>([])
+  const [anomalyAmountData, setAnomalyAmountData] = useState<any>({
+    data: [],
+    anomalies: [],
+    title: "Anomaly Amount"
+  })
   const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
@@ -182,8 +198,12 @@ const MainPageOverview = () => {
   const [isLoadingTopServices, setIsLoadingTopServices] = useState(true)
   const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
   const [isLoadingTopFiveCritical, setIsLoadingTopFiveCritical] = useState(true)
+  const [isLoadingAnomalyAmountServices, setIsLoadingAnomalyAmountServices] = useState(true)
+  const [isLoadingAnomalyAmount, setIsLoadingAnomalyAmount] = useState(true)
   const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
   const [isErrorTopFiveCritical, setIsErrorTopFiveCritical] = useState(false)
+  const [isErrorAnomalyAmountServices, setIsErrorAnomalyAmountServices] = useState(false)
+  const [isErrorAnomalyAmount, setIsErrorAnomalyAmount] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
   const healthinessRef = useRef<HTMLDivElement>(null)
@@ -287,6 +307,23 @@ const MainPageOverview = () => {
       .finally(() => {
         setIsLoadingTopFiveCritical(false);
       })
+
+    GetMetricLogAnomalies({
+      ...paramsTime,
+      metric_name: [ANOMALY_AMOUNT_METRIC_NAME],
+      service_name: selectedAnomalyAmountService,
+      type: ANOMALY_AMOUNT_TYPE,
+    })
+      .then((res) => {
+        setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
+        setIsErrorAnomalyAmount(false);
+      })
+      .catch(() => {
+        setIsErrorAnomalyAmount(true);
+      })
+      .finally(() => {
+        setIsLoadingAnomalyAmount(false);
+      })
   };
 
   const handleChangeFilterDS = (value: string) => {
@@ -320,6 +357,10 @@ const MainPageOverview = () => {
 
   const handleChangeFilterSeverity = (value?: { value: any; id: number; label: string } | null) => {
     setSelectedSeverity(value)
+  }
+
+  const handleChangeFilterAnomalyAmountService = (value: string) => {
+    setSelectedAnomalyAmountService(value)
   }
 
   const handleLogicTitle = (title: string) => {
@@ -450,7 +491,53 @@ const MainPageOverview = () => {
       .finally(() => {
         setIsLoadingTopFiveCritical(false);
       })
+
+    fetchServicesOption({
+      ...paramsTime,
+      type: ANOMALY_AMOUNT_TYPE,
+    })
+      .then((res) => {
+        setAnomalyAmountServicesData(res.data?.services ?? [])
+        setIsErrorAnomalyAmountServices(false);
+      })
+      .catch(() => {
+        setIsErrorAnomalyAmountServices(true);
+      })
+      .finally(() => {
+        setIsLoadingAnomalyAmountServices(false);
+      })
   }, [])
+
+  useEffect(() => {
+    setSelectedAnomalyAmountService(anomalyAmountServicesData[0])
+  }, [anomalyAmountServicesData])
+
+  useEffect(() => {
+    if (!anomalyAmountServicesData) return
+
+    setIsLoadingAnomalyAmount(true)
+
+    const { startTime, endTime } = handleStartEnd(selectedRange)
+    const paramsTime = { start_time: startTime, end_time: endTime }
+
+    GetMetricLogAnomalies({
+      ...paramsTime,
+      metric_name: [ANOMALY_AMOUNT_METRIC_NAME],
+      service_name: anomalyAmountServicesData[0],
+      type: ANOMALY_AMOUNT_TYPE,
+    })
+      .then((res) => {
+        setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
+        setIsErrorAnomalyAmount(false)
+      })
+      .catch(() => {
+        setIsErrorAnomalyAmount(true)
+      })
+      .finally(() => {
+        setIsLoadingAnomalyAmount(false)
+      })
+  }, [selectedAnomalyAmountService])
+  
 
   // useEffect(() => {
   //   const intervalOverview = setInterval(() => {
@@ -692,6 +779,36 @@ const MainPageOverview = () => {
                 ))}
               </div>
             </GraphWrapper>
+            <div className='card flex flex-col gap-6'>
+              <div className='flex justify-between'>
+                <span className="font-bold text-white text-2xl content-center">Anomaly Amount</span>
+                {!handle.active && (
+                  isLoadingAnomalyAmountServices ?
+                    <Skeleton
+                      animation="wave"
+                      sx={{ bgcolor: 'grey.800' }}
+                      variant="rounded"
+                      width={200}
+                      height={48}
+                    /> :
+                    <DropdownAnomalyAmountService
+                      data={anomalyAmountServicesData}
+                      onSelectData={(e) => handleChangeFilterAnomalyAmountService(e)}
+                      selectedData={selectedAnomalyAmountService}
+                    />
+                  )}
+              </div>
+              <AnomalyAmountWrapper
+                isLoading={isLoadingAnomalyAmount}
+              >
+                <AnomalyAmountChart
+                  series={anomalyAmountData.data}
+                  anomalies={anomalyAmountData?.anomalies as any[]}
+                  startTime={startTime} // Pass the calculated startTime
+                  endTime={endTime} // Pass the calculated endTime
+                />
+              </AnomalyAmountWrapper>
+            </div>
           </div>
 
         </div>
