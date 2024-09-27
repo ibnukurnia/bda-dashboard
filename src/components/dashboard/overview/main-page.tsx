@@ -631,9 +631,9 @@ const MainPageOverview = () => {
     }
   }, [healthinessRef.current?.offsetHeight])
 
-  useEffect(() => {
-    selectedDataSourceRef.current = selectedDataSource;
-  }, [selectedDataSource]);
+  // useEffect(() => {
+  //   selectedDataSourceRef.current = selectedDataSource;
+  // }, [selectedDataSource]);
 
   // Get start and end times from selected range for passing to DynamicUpdatingChart
   const { startTime, endTime } = handleStartEnd(selectedRange)
@@ -732,10 +732,9 @@ const MainPageOverview = () => {
                         <TableSeverity
                           tableHeader={thSeverity}
                           data={pieChartData}
-                          clickable={true}
+                          clickable={selectedDataSource?.length > 0}
                           queryParams={{ time_range: selectedRange, data_source: selectedDataSource }}  // Pass query params
                         />
-
                       </TableSeverityWrapper>
                     </div>
                     <TableServicesWrapper
@@ -776,21 +775,23 @@ const MainPageOverview = () => {
               />
             </div>
 
-            <GraphWrapper isLoading={isLoadingGraphic} >
-              <span className="font-bold text-white text-2xl">Graphic</span>
-              <div className="chart-section">
-                {chartData.map((item, id) => (
-                  <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
-                    <DynamicUpdatingChart
-                      title={handleLogicTitle(item.title)}
-                      series={item.data}
-                      spike={item.last_spike}
-                      id={id}
-                      startTime={startTime} // Pass the calculated startTime
-                      endTime={endTime} // Pass the calculated endTime
-                    />
-                  </div>
-                ))}
+            <GraphWrapper isLoading={isLoadingGraphic}>
+              <div className='flex flex-col gap-6'>
+                <span className="font-bold text-white text-2xl">Graphic</span>
+                <div className="chart-section">
+                  {chartData.map((item, id) => (
+                    <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
+                      <DynamicUpdatingChart
+                        title={handleLogicTitle(item.title)}
+                        series={item.data}
+                        spike={item.last_spike}
+                        id={id}
+                        startTime={startTime} // Pass the calculated startTime
+                        endTime={endTime} // Pass the calculated endTime
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             </GraphWrapper>
             <div className='card flex flex-col gap-6'>

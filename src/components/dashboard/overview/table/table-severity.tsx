@@ -12,6 +12,10 @@ interface TableSeverityProps {
 }
 
 const TableSeverity = ({ tableHeader, data, queryParams, clickable }: TableSeverityProps) => {
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   // Map severity to numbers
   const severityMapping: { [key: string]: number } = {
     very_high: 1,
@@ -51,6 +55,7 @@ const TableSeverity = ({ tableHeader, data, queryParams, clickable }: TableSever
                 />
                 <Link
                   className={`${clickable ? 'hover:text-blue-400 hover:underline cursor-pointer' : 'cursor-not-allowed pointer-events-none'}`}
+                  onClick={handleScrollToTop} // Scroll to top on click
                   href={{
                     pathname: '/dashboard/anomaly-detection',
                     query: {

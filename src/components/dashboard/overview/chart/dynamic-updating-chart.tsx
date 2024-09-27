@@ -117,7 +117,7 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
 
   return (
     <>
-      <div className='card'>
+      <div className=''>
         <Chart
           options={options}
           series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}

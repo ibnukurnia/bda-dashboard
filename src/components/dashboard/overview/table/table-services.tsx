@@ -10,6 +10,9 @@ interface TableServicesProps {
 }
 
 const TableServices = ({ tableHeader, dataKeys, data, maxHeight }: TableServicesProps) => {
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   return (
     <div className="relative overflow-auto min-h-48 scrollbar" style={{ maxHeight }}>
       <div>
