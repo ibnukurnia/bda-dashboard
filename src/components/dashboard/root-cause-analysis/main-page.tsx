@@ -63,10 +63,10 @@ const MainPageRootCauseAnalysis = () => {
         endTime: end,
       });
     } else {
-      setInitStartDate(format(new Date().setDate(new Date().getMinutes() - 5), 'yyyy-MM-dd HH:mm:ss'));
+      setInitStartDate(format(new Date().setDate(new Date().getMinutes() - 15), 'yyyy-MM-dd HH:mm:ss'));
       setInitEndDate(format(new Date(), 'yyyy-MM-dd HH:mm:ss'));
       setFilter({
-        startTime: format(new Date().setDate(new Date().getMinutes() - 5), 'yyyy-MM-dd HH:mm:ss'),
+        startTime: format(new Date().setDate(new Date().getMinutes() - 15), 'yyyy-MM-dd HH:mm:ss'),
         endTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
       });
     }
