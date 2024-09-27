@@ -60,6 +60,6 @@ export interface TopFiveLatestCritical {
 }
 
 export interface HealthScoreResponse {
-  data_source: string;
-  score: number;
+  data_source: string
+  score: number
 }

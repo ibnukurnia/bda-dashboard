@@ -32,9 +32,8 @@ import DropdownSeverity from './button/dropdown-severity'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import { SEVERITY_LABELS } from '@/constants'
 import HealthinessTree from './panels/healthiness-tree'
-import { HealthScoreResponse } from '@/modules/models/overviews'
 import HealthinessTreeWrapper from './wrapper/healthiness-tree-wrapper'
-import { TopFiveLatestCritical } from '@/modules/models/overviews'
+import { HealthScoreResponse, TopFiveLatestCritical } from '@/modules/models/overviews'
 import TableTopCritical from './table/table-top-critical'
 import AnomalyAmountChart from './chart/anomaly-amount-chart'
 import { GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
@@ -745,6 +744,10 @@ const MainPageOverview = () => {
                         tableHeader={[topServicesData.header[0], ...Object.values(SEVERITY_LABELS)]}
                         dataKeys={configDataKey}
                         maxHeight={tableMaxHeight}
+                        queryParams={{
+                          start_time: startTime,
+                          end_time: endTime
+                        }}
                       />
                     </TableServicesWrapper>
                   </div>
