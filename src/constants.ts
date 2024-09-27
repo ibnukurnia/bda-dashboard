@@ -40,7 +40,7 @@ export const TAB_DATA_SOURCE = [
       },
       {
         textLabel: "Fortinet",
-        namespace: "forti",
+        namespace: "fortinet",
       },
       {
         textLabel: "WAF",
