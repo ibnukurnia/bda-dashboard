@@ -566,7 +566,7 @@ const MainPageOverview = () => {
         <div className="flex flex-row">
           <div className="flex-1 grid gap-8">
             <div className="flex flex-col gap-8 card relative">
-              <span className="font-bold text-white text-2xl">Healthiness</span>
+              <span className="font-bold text-white text-2xl">BRImo End to End</span>
               <HealthinessTreeWrapper
                 isLoading={isLoadingHealthScore}
                 isError={isErrorHealthScore}

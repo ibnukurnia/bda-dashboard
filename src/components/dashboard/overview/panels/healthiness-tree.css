@@ -4,18 +4,34 @@
     stroke-width: 2 !important; /* Adjust the thickness if needed */
   }
 
-@keyframes blink {
+@keyframes blink-node {
   0% {
-    opacity: 1;
+    opacity: 1; 
   }
   50% {
-    opacity: .75;
+    opacity: .75; 
   }
   100% {
-    opacity: .5;
+    opacity: .5; 
   }
 }
 
 .blinking-node {
-  animation: blink 1s infinite;
+  animation: blink-node 1s infinite;
+}
+
+@keyframes blink-bg {
+  0% {
+    background-color: rgba(var(--dynamic-color), 1); 
+  }
+  50% {
+    background-color: rgba(var(--dynamic-color), .75); 
+  }
+  100% {
+    background-color: rgba(var(--dynamic-color), .5); 
+  }
+}
+
+.blinking-bg {
+  animation: blink-bg 1s infinite !important;
 }

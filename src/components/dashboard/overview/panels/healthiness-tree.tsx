@@ -7,132 +7,73 @@ import Image from 'next/image';
 
 const treeData = [
   {
-    name: 'Virtual Root',
-    attributes: { },
+    name: 'DB',
+    attributes: {
+      score: 0,
+      iconSrc: 'node-icon-database.svg',
+    },
     nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
     children: [
       {
-        name: 'Security',
+        name: 'OCP',
         attributes: {
           score: 0,
-          iconSrc: 'node-icon-security.svg',
-        },
-        nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
-      },
-      {
-        name: 'DB',
-        attributes: {
-          score: 0,
-          iconSrc: 'node-icon-database.svg',
+          iconSrc: 'node-icon-ocp.svg',
         },
         nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
         children: [
           {
-            name: 'OCP',
+            name: 'APM',
             attributes: {
               score: 0,
-              iconSrc: 'node-icon-ocp.svg',
+              iconSrc: 'node-icon-apm.svg',
             },
             nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
-            children: [
-              {
-                name: 'APM',
-                attributes: {
-                  score: 0,
-                  iconSrc: 'node-icon-apm.svg',
-                },
-                nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
-              },
-              {
-                name: 'BRIMO',
-                attributes: {
-                  score: 0,
-                  iconSrc: 'node-icon-brimo.svg',
-                },
-                nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
-              },
-            ],
+          },
+          {
+            name: 'BRIMO',
+            attributes: {
+              score: 0,
+              iconSrc: 'node-icon-brimo.svg',
+            },
+            nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
           },
         ],
       },
-      {
-        name: 'Network',
-        attributes: {
-          score: 0,
-          iconSrc: 'node-icon-network.svg',
-        },
-        nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
-      },
-    ]
-  }
+    ],
+  },
 ];
 
 const getColor = (score: number) => {
   if (score <= 99) {
-    return '#dc2626'
+    return '220,38,38'
   }
   if (score > 99 && score < 99.5) {
-    return '#facc15'
+    return '250,204,21'
   }
   if (score >= 99.5) {
-    return '#16a34a'
+    return '22,163,74'
   }
-  return 'grey'
+  return '213,213,213'
 }
 
 const renderCustomNode = ({ nodeDatum }: any) => {
-  if (nodeDatum.name === 'Virtual Root') {
-    return <></>;
-  }
-  
-  if (['Security', 'Network'].includes(nodeDatum.name)) {
-    return (
-      <g
-        transform={`translate(-200, ${nodeDatum.name === 'Network' ? '-125' : '50'})`}
-      >
-        <rect
-          className={nodeDatum.attributes.score <= 99 ? "blinking-node" : ""}
-          width={80}
-          height={80}
-          rx={20}
-          ry={20}
-          fill={getColor(nodeDatum.attributes.score)}
-          stroke='transparent'
-        />
-        <foreignObject x="15" y="15" width="160" height="160">
-          <Image
-            src={`/assets/dashboard/overview/${nodeDatum.attributes.iconSrc}`}
-            width={50}
-            height={50}
-            unoptimized
-            alt='logo'
-          />
-        </foreignObject>
-        <text fill='white' stroke='white' x={0} y={95}>
-          {nodeDatum.name}
-        </text>
-        <text fill='white' stroke='white' x={0} y={120}>
-          {nodeDatum.attributes.score ? toFixed(nodeDatum.attributes.score, 2) : nodeDatum.attributes.score}
-        </text>
-      </g>
-    )
-  }
-  
   return (
     <g
-      transform="translate(-40, -40)"
+      transform={`translate(${nodeDatum.name === 'OCP' ? '-40' : '-40'}, -40)`}
     >
       <rect
-        className={nodeDatum.attributes.score <= 99 ? "blinking-node" : ""}
+        className={`${nodeDatum.attributes.score <= 99 ? "blinking-node" : ""}`}
         width={80}
         height={80}
-        rx={20}
-        ry={20}
-        fill={getColor(nodeDatum.attributes.score)}
+        rx={15}
+        ry={15}
+        fill={`rgb(${getColor(nodeDatum.attributes.score)})`}
         stroke='transparent'
       />
-      <foreignObject x="15" y="15" width="160" height="160">
+      <foreignObject x="15" y="15" width="50" height="50">
           <Image
+            className='scale-x-[-1]'
             src={`/assets/dashboard/overview/${nodeDatum.attributes.iconSrc}`}
             width={50}
             height={50}
@@ -140,11 +81,23 @@ const renderCustomNode = ({ nodeDatum }: any) => {
             alt='logo'
           />
         </foreignObject>
-      <text fill='white' stroke='white' x={0} y={95}>
+      <text
+        className='scale-x-[-1]'
+        fill='white'
+        stroke='transparent'
+        x={nodeDatum.name === 'OCP' ? -100 : -80}
+        y={95}
+      >
         {nodeDatum.name}
       </text>
-      <text fill='white' stroke='white' x={0} y={120}>
-        {nodeDatum.attributes.score ? toFixed(nodeDatum.attributes.score, 2) : nodeDatum.attributes.score}
+      <text
+        className='scale-x-[-1]'
+        fill='white'
+        stroke='transparent'
+        x={nodeDatum.name === 'OCP' ? -100 : -80}
+        y={120}
+      >
+        {nodeDatum.attributes.score ? toFixed(nodeDatum.attributes.score, 2) : nodeDatum.attributes.score}%
       </text>
     </g>
   )
@@ -160,13 +113,30 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
   const containerRef = useRef<HTMLDivElement>(null); // Ref for the wrapper div
   const treeRef = useRef(null); // Ref for the wrapper div
 
-  const [translate, setTranslate] = useState({ x: -200, y: 175})
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [translate, setTranslate] = useState({ x: 150, y: 150})
   const [nodeSize, setNodeSize] = useState({x: 200, y: 180})
   const [mappedData, setMappedData] = useState(treeData)
+  const [securityData, setSecurityData] = useState({
+    score: 0,
+  })
+  const [networkData, setNetworkData] = useState({
+    score: 0,
+  })
 
   useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const { offsetWidth, offsetHeight } = containerRef.current;
+        setDimensions({ width: offsetWidth, height: offsetHeight });
+      }
+    };
+
+    updateDimensions(); // Set initial dimensions
+    window.addEventListener('resize', updateDimensions); // Update on resize
     window.addEventListener('resize', handleResizeNode);
     return () => {
+      window.removeEventListener('resize', updateDimensions);
       window.removeEventListener('resize', handleResizeNode);
     };
   }, [])
@@ -176,117 +146,146 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
   }, [containerRef])
   
   useEffect(() => {
-    if (!treeRef.current) return
-    
-    for (let i = 0; i < 3; i++) {
-      // hides first i links
-      const elements = document.getElementsByClassName('rd3t-link custom-link-path');
-       
-      if (i >= 0 && i < elements.length) {
-        const element = elements[i] as HTMLElement;  // Type assertion to HTMLElement
-      
-        // Now, you can safely access the style property
-        element.style.opacity = '0';
-      } else {
-        console.error('Index out of bounds');
-      }
-    }
-  }, [treeRef])
-
-  useEffect(() => {
+    setSecurityData(prev => ({
+      ...prev,
+      score: data.find(d => d.data_source === "security")?.score ?? 0
+    }))
+    setNetworkData(prev => ({
+      ...prev,
+      score: data.find(d => d.data_source === "network")?.score ?? 0
+    }))
     setMappedData([
       {
-        name: 'Virtual Root',
-        attributes: { },
+        name: 'Database',
+        attributes: {
+          score: data.find(d => d.data_source === "k8s_db")?.score ?? 0,
+          iconSrc: 'node-icon-database.svg',
+        },
         nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
         children: [
           {
-            name: 'Security',
+            name: 'OCP',
             attributes: {
-              score: data.find(d => d.data_source === "security")?.score ?? 0,
-              iconSrc: 'node-icon-security.svg',
-            },
-            nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
-          },
-          {
-            name: 'DB',
-            attributes: {
-              score: data.find(d => d.data_source === "k8s_db")?.score ?? 0,
-              iconSrc: 'node-icon-database.svg',
+              score: data.find(d => d.data_source === "k8s_prometheus")?.score ?? 0,
+              iconSrc: 'node-icon-ocp.svg',
             },
             nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
             children: [
               {
-                name: 'OCP',
+                name: 'APM',
                 attributes: {
-                  score: data.find(d => d.data_source === "k8s_prometheus")?.score ?? 0,
-                  iconSrc: 'node-icon-ocp.svg',
+                  score: data.find(d => d.data_source === "apm")?.score ?? 0,
+                  iconSrc: 'node-icon-apm.svg',
                 },
                 nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
-                children: [
-                  {
-                    name: 'APM',
-                    attributes: {
-                      score: data.find(d => d.data_source === "apm")?.score ?? 0,
-                      iconSrc: 'node-icon-apm.svg',
-                    },
-                    nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
-                  },
-                  {
-                    name: 'BRIMO',
-                    attributes: {
-                      score: data.find(d => d.data_source === "brimo")?.score ?? 0,
-                      iconSrc: 'node-icon-brimo.svg',
-                    },
-                    nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
-                  },
-                ],
+              },
+              {
+                name: 'BRImo',
+                attributes: {
+                  score: data.find(d => d.data_source === "brimo")?.score ?? 0,
+                  iconSrc: 'node-icon-brimo.svg',
+                },
+                nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
               },
             ],
           },
-          {
-            name: 'Network',
-            attributes: {
-              score: data.find(d => d.data_source === "network")?.score ?? 0,
-              iconSrc: 'node-icon-network.svg',
-            },
-            nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
-          },
-        ]
-      }
+        ],
+      },
     ])
   }, [data])
   
   const handleResizeNode = () => {
     if (!containerRef.current?.clientWidth) return
 
-    let newX = containerRef.current?.clientWidth*0.325
+    let newX = containerRef.current?.clientWidth/3
     
     setNodeSize(prev => ({ ...prev, x: newX }))
-    setTranslate(prev => ({ ...prev, x: -newX*0.275 }))
   }
 
   return (
     <div
-      ref={containerRef}
-      className='w-full h-[400px] flex justify-center items-center'
+      className='w-full flex justify-center items-center'
     >
-      <Tree
-        svgClassName='!cursor-default'
-        leafNodeClassName='!cursor-default'
-        rootNodeClassName='!cursor-default'
-        branchNodeClassName='!cursor-default'
-        ref={treeRef}
-        data={mappedData}
-        renderCustomNodeElement={renderCustomNode}
-        translate={translate}
-        nodeSize={nodeSize}
-        pathFunc={'elbow'}
-        zoomable={false}
-        draggable={false}
-        collapsible={false}
-        pathClassFunc={() => 'custom-link-path'}
-      />
+      <div
+        className='w-full border-[3px] border-blue-400 rounded-2xl overflow-hidden'
+      >
+        <div className='flex flex-col'>
+          <div
+              className={`w-20 h-20 flex justify-center items-center rounded-xl ${securityData.score <= 99 ? "blinking-bg" : ""} bg-[rgb(${getColor(securityData.score)})]`}
+              style={{
+                '--dynamic-color': getColor(securityData.score),
+                backgroundColor: 'rgb(var(--dynamic-color))'
+              } as React.CSSProperties}
+          >
+            <Image
+              src={`/assets/dashboard/overview/node-icon-security.svg`}
+              width={50}
+              height={50}
+              unoptimized
+              alt='logo'
+            />
+          </div>
+          <span className='ml-1 text-white'>
+            Security
+          </span>
+          <span className='ml-1 text-white'>
+            {securityData.score ? toFixed(securityData.score, 2) : securityData.score}%
+          </span>
+          <div className='px-20 -mt-12 mb-20'>
+            <div
+              className='w-full border-[3px] border-blue-400 rounded-2xl overflow-hidden'
+            >
+              <div className='flex flex-col'>
+                <div
+                    className={`w-20 h-20 flex justify-center items-center rounded-xl ${networkData.score <= 99 ? "blinking-bg" : ""} bg-[rgb(${getColor(networkData.score)})]`}
+                    style={{
+                      '--dynamic-color': getColor(networkData.score),
+                      backgroundColor: 'rgb(var(--dynamic-color))'
+                    } as React.CSSProperties}
+                >
+                  <Image
+                    src={`/assets/dashboard/overview/node-icon-network.svg`}
+                    width={50}
+                    height={50}
+                    unoptimized
+                    alt='logo'
+                  />
+                </div>
+                <span className='ml-1 text-white'>
+                  Network
+                </span>
+                <span className='ml-1 text-white'>
+                  {networkData.score ? toFixed(networkData.score, 2) : networkData.score}%
+                </span>
+              </div>
+              <div
+                ref={containerRef}
+                className='w-full h-[400px] scale-x-[-1]'
+              >
+                <Tree
+                  svgClassName='!cursor-default'
+                  leafNodeClassName='!cursor-default'
+                  rootNodeClassName='!cursor-default'
+                  branchNodeClassName='!cursor-default'
+                  ref={treeRef}
+                  data={mappedData}
+                  renderCustomNodeElement={renderCustomNode}
+                  translate={{
+                    x: dimensions.width / 6,
+                    y: dimensions.height / 2 - 30,
+                  }}
+                  nodeSize={nodeSize}
+                  pathFunc={'elbow'}
+                  zoomable={false}
+                  draggable={false}
+                  collapsible={false}
+                  pathClassFunc={() => 'custom-link-path'}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
