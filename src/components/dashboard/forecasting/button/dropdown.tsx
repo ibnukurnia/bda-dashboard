@@ -53,7 +53,7 @@ const DropdownFilter = ({ label, data, onChange, disabled, selected }: DropdownF
             type="button"
             onClick={toggleDropdown}
             disabled={disabled}
-            className="text-black border border-gray-300 bg-light-700 disabled:bg-gray-100 disabled:text-gray-400 hover:bg-light-800 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 w-full"
+            className="text-black border border-gray-300 bg-light-700 disabled:bg-gray-100 disabled:text-gray-400 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 w-full"
           >
             {selectedItem || `Select ${label}`}
             <svg

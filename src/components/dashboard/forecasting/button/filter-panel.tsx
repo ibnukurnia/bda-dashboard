@@ -168,10 +168,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
               style={
                 isUnavailableDate()
                   ? {
-                      border: '1px solid red',
-                      boxShadow:
-                        'var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color);',
-                    }
+                    border: '1px solid red',
+                    boxShadow:
+                      'var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color);',
+                  }
                   : {}
               }
             />

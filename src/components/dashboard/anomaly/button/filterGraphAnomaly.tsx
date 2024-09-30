@@ -75,8 +75,13 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     }, [isOpen]);
 
     useEffect(() => {
-        setFilteredServicesOptions(servicesOptions.filter(option => option.includes(searchValue)))
-    }, [searchValue])
+        setFilteredServicesOptions(
+            servicesOptions.filter((option) =>
+                option.toLowerCase().includes(searchValue.toLowerCase()) // Convert both to lowercase
+            )
+        );
+    }, [searchValue, servicesOptions]);
+
 
     useEffect(() => {
         setFilteredServicesOptions(servicesOptions)
@@ -153,7 +158,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                             {servicesOptions.length > 0 ? (
                                 <>
                                     <input
-                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:ring-2 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
                                         placeholder='Search service'
                                         value={searchValue}
                                         onChange={handleSearch}

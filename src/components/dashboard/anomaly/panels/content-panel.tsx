@@ -519,6 +519,7 @@ const TabContent: React.FC<TabContentProps> = ({
         params.delete("service")
         router.push(`/dashboard/anomaly-detection?${params.toString()}`);
     }
+
     const handleChangePage = (page: number) => {
         console.log(page);
 
@@ -582,6 +583,7 @@ const TabContent: React.FC<TabContentProps> = ({
             return { ...prev, pageIndex: page };
         });
     };
+
     const handleApplyFilters = async (filters: { selectedAnomalies: string[]; selectedServices: string[]; selectedSeverities: number[] }) => {
         const { selectedAnomalies, selectedServices, selectedSeverities } = filters;
 
@@ -922,12 +924,10 @@ const TabContent: React.FC<TabContentProps> = ({
                                     })}
                                 </Typography>
                             )}
-
-
                         </div>
 
                         <Box>
-                            <div className={`w-full max-h-[75dvh] ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
+                            <div className={`w-full overflow-x-auto ${!isTableLoading && data.length > 10 ? 'max-h-[75dvh] overflow-y-auto' : ''}`}>
                                 <div className="min-w-full">
                                     {isTableLoading ? (
                                         <div className="flex justify-center items-center">
@@ -940,7 +940,6 @@ const TabContent: React.FC<TabContentProps> = ({
                                             </Typography>
                                         </div>
                                     ) : (
-
                                         <table id="person" className="table-auto divide-y divide-gray-200 w-full">
                                             <thead>
                                                 {table.getHeaderGroups().map((headerGroup) => (
@@ -977,9 +976,9 @@ const TabContent: React.FC<TabContentProps> = ({
                                                             <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
                                                                 <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
                                                                     {cell.column.id === 'severity' &&
-                                                                        (cell.getValue() === 'very high' ||
-                                                                            cell.getValue() === 'high' ||
-                                                                            cell.getValue() === 'medium') && (
+                                                                        (cell.getValue() === 'Very High' ||
+                                                                            cell.getValue() === 'High' ||
+                                                                            cell.getValue() === 'Medium') && (
                                                                             <svg
                                                                                 width="14"
                                                                                 height="15"
@@ -990,11 +989,11 @@ const TabContent: React.FC<TabContentProps> = ({
                                                                                 <path
                                                                                     d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
                                                                                     fill={
-                                                                                        cell.getValue() === 'very high'
+                                                                                        cell.getValue() === 'Very High'
                                                                                             ? '#dc2626' // Red for Very High
-                                                                                            : cell.getValue() === 'high'
+                                                                                            : cell.getValue() === 'High'
                                                                                                 ? '#ea580c' // Orange for High
-                                                                                                : cell.getValue() === 'medium'
+                                                                                                : cell.getValue() === 'Medium'
                                                                                                     ? '#facc15' // Yellow for Medium
                                                                                                     : ''
                                                                                     }
@@ -1004,13 +1003,9 @@ const TabContent: React.FC<TabContentProps> = ({
 
                                                                     {/* Format number with commas */}
                                                                     {typeof cell.getValue() === 'number' ? (
-                                                                        <span>
-                                                                            {formatNumberWithCommas(cell.getValue() as number)} {/* Apply the formatting function here */}
-                                                                        </span>
+                                                                        <span>{formatNumberWithCommas(cell.getValue() as number)}</span>
                                                                     ) : (
-                                                                        <span>
-                                                                            {cell.getValue() as string} {/* For non-numeric values */}
-                                                                        </span>
+                                                                        <span>{cell.getValue() as string}</span>
                                                                     )}
                                                                 </div>
                                                             </td>
@@ -1019,14 +1014,13 @@ const TabContent: React.FC<TabContentProps> = ({
                                                 ))}
                                             </tbody>
                                         </table>
-
-
                                     )}
                                 </div>
                             </div>
+
                             {data.length > 0 && !isTableLoading && (
                                 <TablePagination
-                                    component={"div"}
+                                    component={'div'}
                                     count={totalRows}
                                     onPageChange={(_, page) => handleChangePage(page + 1)}
                                     page={pagination.pageIndex - 1}
@@ -1056,6 +1050,7 @@ const TabContent: React.FC<TabContentProps> = ({
                                 />
                             )}
                         </Box>
+
                     </div>
                     <GraphAnomalyCard
                         selectedLog={selectedDataSource}

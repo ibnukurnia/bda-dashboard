@@ -209,7 +209,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     </button>
                                 </div>
 
-                                <div className="overflow-y-auto max-h-40">
+                                <div className="overflow-y-auto max-h-56">
                                     {hasErrorFilterAnomaly ? (
                                         <p className="text-red-500">
                                             An error occurred while loading options. Please try again later.
@@ -253,7 +253,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     </button>
                                 </div>
 
-                                <div className="overflow-y-auto max-h-40">
+                                <div className="overflow-y-auto max-h-48">
                                     {hasErrorFilterAnomaly ? (
                                         <p className="text-red-500">
                                             An error occurred while loading options. Please try again later.
@@ -296,7 +296,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
                                 <div className='flex flex-col gap-2'>
                                     <input
-                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:ring-2 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
                                         placeholder="Search service"
                                         value={searchValue}
                                         onChange={handleSearch}

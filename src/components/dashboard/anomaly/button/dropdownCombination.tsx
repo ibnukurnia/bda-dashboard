@@ -37,7 +37,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({ options, plac
         <div className="relative w-full" ref={dropdownRef}>
             <button
                 type="button"
-                className="relative w-full py-3 ps-4 pe-9 flex gap-x-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-start text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="relative w-full py-3 ps-4 pe-9 flex gap-x-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-start text-sm focus:outline-none"
                 onClick={toggleDropdown}
             >
                 {selectedOptions.length > 0 ? selectedOptions.join(', ') : placeholder}
