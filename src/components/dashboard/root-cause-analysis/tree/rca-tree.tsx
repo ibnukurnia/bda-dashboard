@@ -6,6 +6,7 @@ import { RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analy
 import { Typography } from '@mui/material';
 import { FullScreenHandle } from 'react-full-screen';
 import { replaceWordingDataSource } from '../helper';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const nodeHeight = 80
 
@@ -26,7 +27,9 @@ const RCATree: React.FC<RCATreeProps> = ({
   timeRange,
   fullScreenHandle, // Use handle from react-full-screen
 }) => {
-  // State to manage expanded nodes
+  const router = useRouter();
+  const searchParams = useSearchParams()
+  
   const [expandedNodes, setExpandedNodes] = useState<ExpandedNodesType[]>([]);
   const [scrollTopPositions, setScrollTopPositions] = useState<number[]>([])
   const [mappedData, setMappedData] = useState<TreeNodeType[]>([])
@@ -56,17 +59,25 @@ const RCATree: React.FC<RCATreeProps> = ({
   }, [data])
 
   useEffect(() => {
+    const dataSource = searchParams.get('data_source');
+
     setTotalAnomaly(mappedData.reduce((total, data) => total + (data.anomalyCount ?? 0), 0))
     setExpandedNodes(prev => {
       const newArr: ExpandedNodesType[] = []
       let tempNode: TreeNodeType
 
-      prev.forEach(expNode => {
-        const prevExpName = expNode.node.name
+      if (dataSource && prev.length === 0) {
+        const newExpandedNodeIndex = mappedData.findIndex(node => node.namespace === dataSource)
+        newArr.push({ node: mappedData[newExpandedNodeIndex], nodeIndex: newExpandedNodeIndex})
+        return newArr
+      }
+      
+      prev.forEach((expNode, prevIdx) => {
+        const prevExpName = prevIdx === 0 && dataSource ? dataSource : expNode.node.namespace
         const list = tempNode?.children ?? mappedData
         if (list == null) return
 
-        const newExpandedNodeIndex = list.findIndex(node => node.name === prevExpName)
+        const newExpandedNodeIndex = list.findIndex(node => node.namespace === prevExpName)
         if (newExpandedNodeIndex === -1) return newArr
 
         newArr.push({ node: list[newExpandedNodeIndex], nodeIndex: newExpandedNodeIndex})
@@ -74,7 +85,7 @@ const RCATree: React.FC<RCATreeProps> = ({
       })
       return newArr
     })
-  }, [mappedData])
+  }, [mappedData, searchParams])
   
   useEffect(() => {
     setScrollTopPositions(prev => {
@@ -105,7 +116,9 @@ const RCATree: React.FC<RCATreeProps> = ({
       } else if (depth > newArray.length) {
         newArray.push(item)
       } else {
-        newArray.splice(depth-prev.length, prev.length-depth, item)
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("data_source", node.namespace ?? node.name)
+        router.replace(`/dashboard/root-cause-analysis?${params.toString()}`);
       }
       return newArray
     })

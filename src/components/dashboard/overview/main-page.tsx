@@ -764,6 +764,7 @@ const MainPageOverview = () => {
                         tableHeader={[topServicesData.header[0], ...Object.values(SEVERITY_LABELS)]}
                         dataKeys={configDataKey}
                         maxHeight={tableMaxHeight}
+                        selectedDataSource={selectedDataSource}
                         queryParams={{
                           start_time: startTime,
                           end_time: endTime
