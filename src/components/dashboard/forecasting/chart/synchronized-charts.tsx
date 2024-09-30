@@ -33,18 +33,14 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 }) => {
   const today = new Date(selectedDate)
   const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
-  const todayMaxTime = todayZero + 1000 * 60 * 60 * 24 - 1
-  const selectedDateTime = new Date(
-    new Date().setDate(new Date().getDate() + Math.abs(new Date().getDate() - new Date(selectedDate).getDate()))
-  )
+  const todayMaxTime = todayZero + 1000 * 60 * 60 * 24
 
   const [zoomX, setZoomX] = useState({
-    min: minZoom ?? selectedDateTime.getTime() - 1000 * 60 * 60 * 2,
-    max: maxZoom ?? selectedDateTime.getTime() + 1000 * 60 * 60 * 2,
+    min: minZoom ?? today.getTime() - 1000 * 60 * 60 * 2,
+    max: maxZoom ?? today.getTime() + 1000 * 60 * 60 * 2,
   })
   const chartOptions: ApexOptions = {
     chart: {
-      // id: `sync-${index}`,
       group: 'social',
       type: 'line',
       height: 160,
@@ -61,8 +57,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
       events: {
         beforeResetZoom() {
           const resResetZoom = {
-            min: selectedDateTime.getTime() - 1000 * 60 * 60 * 2,
-            max: selectedDateTime.getTime() + 1000 * 60 * 60 * 2,
+            min: today.getTime() - 1000 * 60 * 60 * 2,
+            max: today.getTime() + 1000 * 60 * 60 * 2,
           }
 
           return {
@@ -71,10 +67,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
         },
 
         beforeZoom(_chart, { xaxis }) {
-          // const today = new Date()
-          // const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
-          // const todayMaxTime = todayZero + 1000 * 60 * 60 * 24 - 1
-
           const res = {
             min: xaxis.min < todayZero ? todayZero : xaxis.min,
             max: xaxis.max > todayMaxTime ? todayMaxTime : xaxis.max,
@@ -121,27 +113,23 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
       axisBorder: { show: false },
     },
     yaxis: {
-      min(min) {
-        if (min > 0) {
-          return min - 1
-        }
-        return min
-      },
-      max(max) {
-        return max + 1
-      },
       labels: {
         style: {
           colors: 'white', // White color for y-axis text
         },
-        formatter(val) {
+        formatter: (val, opts) => {
+          const firstData = opts?.w?.globals?.series[0]
+          
+          if (!firstData || firstData % 1 != 0) {
+            return val.toString()
+          }
           return val?.toFixed(0)
         },
       },
     },
     stroke: {
       curve: 'smooth',
-      width: 1,
+      width: 2,
     },
     grid: {
       borderColor: '#bdbdbd',
@@ -187,8 +175,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   }, [minZoom, maxZoom])
 
   useEffect(() => {
-    const min = selectedDateTime.getTime() - 1000 * 60 * 60 * 2
-    const max = selectedDateTime.getTime() + 1000 * 60 * 60 * 2
+    const min = today.getTime() - 1000 * 60 * 60 * 2
+    const max = today.getTime() + 1000 * 60 * 60 * 2
     setZoomX({ min, max })
     setZoom && setZoom({ minZoom: min, maxZoom: max })
   }, [selectedDate])
@@ -224,7 +212,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                   type="line"
                   height={height}
                   width={width}
-                  // data-chart-id={`chart${index + 1}`}
                 />
               )
             }

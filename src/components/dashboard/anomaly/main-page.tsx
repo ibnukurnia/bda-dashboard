@@ -3,21 +3,6 @@
 
 import { SetStateAction, useContext, useEffect, useRef, useState } from 'react'
 // import { Box, Stack, Typography } from '@mui/material'
-import updatedAnomalyData from '@/lib/data/anomaly'
-import { Anomaly } from '@/types/anomaly'; // Import the Anomaly type
-import {
-  Column,
-  ColumnDef,
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  PaginationState,
-  Table,
-  useReactTable,
-} from '@tanstack/react-table'
 import './main-page.css'
 import TabLogContent from './panels/log-panel'
 import TabUtilizationContent from './panels/utilization.panel'
@@ -33,8 +18,6 @@ const MainPageAnomaly = () => {
 
 
   const logs = ['Log APM', 'Log Brimo']; // Example logs
-  const utilizations = ['Prometheus OCP', 'Prometheus DB']; // Example logs
-  const security = ['Palo Alto', 'Fortinet', 'Web Application Security', 'Prtg', 'Zabbix']
   const [selectedLog, setSelectedLog] = useState(logs[0]);
   const [selectedUtilization, setSelectedUtilization] = useState('');
   const [selectedSecurity, setSelectedSecurity] = useState('');
@@ -49,27 +32,6 @@ const MainPageAnomaly = () => {
   const searchParams = useSearchParams()
   const dataSource = searchParams.get("data_source") ?? DEFAULT_DATA_SOURCE_NAMESPACE
   const timeRange = searchParams.get("time_range") ?? DEFAULT_TIME_RANGE
-  const columnHelper = createColumnHelper<Anomaly>();
-
-  const columns: ColumnDef<Anomaly, any>[] = [
-    columnHelper.accessor('timestamp', {
-      id: 'incident-time',
-      cell: (info) => <i>{info.getValue()}</i>,
-      header: () => <span>Incident Time</span>,
-    }),
-    columnHelper.accessor('service_name', {
-      header: () => <span>Service</span>,
-    }),
-    columnHelper.accessor('status_code', {
-      header: () => <span>Status</span>,
-    }),
-    columnHelper.accessor('response_time', {
-      header: () => <span>Response Time</span>,
-    }),
-    columnHelper.accessor('pod_name', {
-      header: () => <span>Pod</span>,
-    }),
-  ];
 
   const handleTabClick = (tab: string) => {
     if (tab === 'log') {

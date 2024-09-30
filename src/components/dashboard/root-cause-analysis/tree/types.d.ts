@@ -1,7 +1,12 @@
 // types.ts
+type Tooltip = {
+  status_code: string;
+  total: number;
+}
 export interface TreeNodeType {
     name: string;
     namespace?: string;
     anomalyCount?: number;
     children?: TreeNodeType[];
+    tooltips?: Tooltip[]
   }

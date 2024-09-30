@@ -25,18 +25,23 @@ export const toFixed = (value: number, fixed: number) => {
 	return matches ? matches[0] : value;
 };
 
-
 export const formatNumberWithCommas = (value: number, decimals: number = 2): string => {
-	// Ensure the number is a float and fix to the specified decimal places
+	// Check if the number is an integer
+	if (Number.isInteger(value)) {
+		// If it's an integer, format it without decimals
+		return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+	}
+
+	// Otherwise, format with decimals
 	const fixedNumber = value.toFixed(decimals);
 
 	// Split the number into integer and decimal parts
 	const [integerPart, decimalPart] = fixedNumber.split('.');
 
-	// Format the integer part using regex to add periods for thousands
+	// Format the integer part with periods for thousands
 	const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-	// Return the combined formatted integer part and decimal part
+	// Return the combined formatted integer and decimal part
 	return `${formattedInteger},${decimalPart}`;
 };
 

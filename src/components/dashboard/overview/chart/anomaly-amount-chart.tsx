@@ -101,7 +101,10 @@ const AnomalyAmountChart = ({ anomalies, series, startTime, endTime }: AnomalyAm
   return (
     <Chart
       options={options}
-      series={series}
+      series={[{
+        name: "Amount",
+        data: series,
+      }]}
       type="line"
       height={300}
       width={'100%'}

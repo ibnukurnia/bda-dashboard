@@ -947,7 +947,8 @@ const TabContent: React.FC<TabContentProps> = ({
                                                         {headerGroup.headers.map((header) => (
                                                             <th key={header.id} colSpan={header.colSpan} className="p-2">
                                                                 <div
-                                                                    className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3`}
+                                                                    className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''
+                                                                        } px-3`}
                                                                     onClick={header.column.getToggleSortingHandler()}
                                                                 >
                                                                     {typeof header.column.columnDef.header === 'function'
@@ -1002,11 +1003,9 @@ const TabContent: React.FC<TabContentProps> = ({
 
                                                                     {/* Format number with commas */}
                                                                     {typeof cell.getValue() === 'number' ? (
-                                                                        <span>
-                                                                            {formatNumberWithCommas(cell.getValue() as number)} {/* Apply the formatting function here */}
-                                                                        </span>
+                                                                        <span>{formatNumberWithCommas(cell.getValue() as number)}</span>
                                                                     ) : (
-                                                                        <span>{cell.getValue() as string} {/* For non-numeric values */}</span>
+                                                                        <span>{cell.getValue() as string}</span>
                                                                     )}
                                                                 </div>
                                                             </td>
@@ -1018,9 +1017,10 @@ const TabContent: React.FC<TabContentProps> = ({
                                     )}
                                 </div>
                             </div>
+
                             {data.length > 0 && !isTableLoading && (
                                 <TablePagination
-                                    component={"div"}
+                                    component={'div'}
                                     count={totalRows}
                                     onPageChange={(_, page) => handleChangePage(page + 1)}
                                     page={pagination.pageIndex - 1}
@@ -1050,6 +1050,7 @@ const TabContent: React.FC<TabContentProps> = ({
                                 />
                             )}
                         </Box>
+
                     </div>
                     <GraphAnomalyCard
                         selectedLog={selectedDataSource}

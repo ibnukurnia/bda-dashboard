@@ -21,6 +21,7 @@ import DropdownTime from './button/dropdown-time'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { PREDEFINED_TIME_RANGES } from '@/constants'
 import RCATreeWrapper from './wrapper/rca-tree-wrapper'
+import TooltipCollection from './collection/tooltip-collection'
 
 const MainPageRootCauseAnalysis = () => {
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
@@ -176,6 +177,9 @@ const MainPageRootCauseAnalysis = () => {
                   fullScreenHandle={handle}
                   isLoading={isLoading}
                   timeRange={selectedRange}
+                />
+                <TooltipCollection
+                  data={dataTree}
                 />
               </RCATreeWrapper>
             </div>
