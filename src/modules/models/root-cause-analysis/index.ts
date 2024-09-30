@@ -4,11 +4,16 @@ type Route = {
   impacted_services: ImpactedService[];
   total:             number;
 }
+type Tooltip = {
+  status_code: string;
+  total: number;
+}
 type ImpactedService = {
   service:  string;
   service_alias:  string;
   total:    number;
   impacted: string[];
+  tooltips: Tooltip[]
 }
 export interface RootCauseAnalysisTreeResponse {
   source: string;

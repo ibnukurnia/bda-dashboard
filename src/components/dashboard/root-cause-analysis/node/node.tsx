@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ProgressBar from '../bar/progress-bar';
 import { Typography } from '@mui/material';
-import { ChevronRight } from 'react-feather';
+import { ChevronRight, Info } from 'react-feather';
 import { replaceWordingDataSource } from '../helper';
 import Link from 'next/link';
 
@@ -18,6 +18,10 @@ interface NodeProps {
     metric_anomaly?: string;
     service?: string;
   };
+  tooltips?: {
+    status_code: string;
+    total: number;
+  }[];
 }
 
 const Node: React.FC<NodeProps> = ({ 
@@ -28,6 +32,7 @@ const Node: React.FC<NodeProps> = ({
   handleOnClickNode,
   hasDetail,
   queryParams,
+  tooltips,
  }) => {
   const [containerWidth, setContainerWidth] = useState(0)
   const containerRef = useRef<HTMLButtonElement>(null)
@@ -56,17 +61,24 @@ const Node: React.FC<NodeProps> = ({
       onClick={handleOnClickNode}
     >
       {count != null && <ProgressBar progress={percentage} />}
-      <div className='flex gap-2'>
+      <div className='w-full flex gap-2'>
         {count == null && <div className='w-5 h-5 bg-orange-500 rounded-md'/>}
+        <div className='w-full flex items-center justify-between'>
           <Typography
             className='overflow-hidden text-ellipsis whitespace-nowrap inline-block'
             variant="subtitle1"
             color={'white'}
             fontWeight={expanded ? 700 : 400}
-            style={{ maxWidth: containerWidth - (count == null ? 28 : 0) }}
+            style={{ maxWidth: containerWidth - (count == null ? 28 : 0) - (tooltips ? 20 : 0) }}
           >
             {replaceWordingDataSource(title)}
           </Typography>
+          {tooltips != null &&
+            <a id={`${queryParams?.data_source}-${queryParams?.metric_anomaly}-${title.replace(/ /g,'')}`}>
+              <Info size={20} color='white'/>
+            </a>
+          }
+        </div>
       </div>
       <div className='w-full flex justify-between items-center'>
         {count != null &&
