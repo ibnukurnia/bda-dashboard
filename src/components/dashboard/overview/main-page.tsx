@@ -253,7 +253,7 @@ const MainPageOverview = () => {
     // Fetch Pie Chart Data
     GetPieChartsOverview(params)
       .then((res) => {
-        setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)));
+        setPieChartData(res.data.data);
         setIsLoadingPieChart(false);
       })
       .catch(() => {
@@ -339,7 +339,7 @@ const MainPageOverview = () => {
 
     GetPieChartsOverview(params)
       .then((res) => {
-        setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)))
+        setPieChartData(res.data.data)
         setIsLoadingPieChart(false)
       })
       .catch(() => {
@@ -477,7 +477,7 @@ const MainPageOverview = () => {
 
     GetPieChartsOverview(params)
       .then((res) => {
-        setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity)))
+        setPieChartData(res.data.data)
         setIsLoadingPieChart(false)
       })
       .catch(() => {
@@ -598,7 +598,7 @@ const MainPageOverview = () => {
 
   //       // Fetch Pie Charts Overview
   //       GetPieChartsOverview(params)
-  //         .then((res) => setPieChartData(res.data.data.sort((a: any, b: any) => a.severity.localeCompare(b.severity))))
+  //         .then((res) => setPieChartData(res.data.data))
   //         .catch(() => setPieChartData([]));
 
   //       // Fetch Top Services Overview
@@ -742,7 +742,7 @@ const MainPageOverview = () => {
                       >
                         <DonutChart
                           series={pieChartData.map((item: any) => item.count)}
-                          labels={pieChartData.map((sditem: any) => sditem.severity)}
+                          labels={pieChartData.map((sditem: any) => SEVERITY_LABELS[sditem.severity])}
                         />
                       </DonutChartWrapper>
                       <TableSeverityWrapper
