@@ -43,7 +43,7 @@ import AnomalyAmountWrapper from './wrapper/anomaly-amount-wrapper'
 import { Skeleton } from '@mui/material'
 
 const ANOMALY_AMOUNT_TYPE = 'brimo'
-const ANOMALY_AMOUNT_METRIC_NAME = 'is_anomaly_amount'
+const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
 
 // Define your data
 const sourceData = [
@@ -421,23 +421,24 @@ const MainPageOverview = () => {
         .catch(() => setChartData([]))
         .finally(() => setIsLoadingGraphic(false))
         
-        
-      GetMetricLogAnomalies({
-        ...paramsTime,
-        metric_name: [ANOMALY_AMOUNT_METRIC_NAME],
-        service_name: selectedAnomalyAmountService,
-        type: ANOMALY_AMOUNT_TYPE,
-      })
-        .then((res) => {
-          setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
-          setIsErrorAnomalyAmount(false)
+      if (selectedAnomalyAmountService) {
+        GetMetricLogAnomalies({
+          ...paramsTime,
+          metric_name: [ANOMALY_AMOUNT_METRIC_NAME],
+          service_name: selectedAnomalyAmountService,
+          type: ANOMALY_AMOUNT_TYPE,
         })
-        .catch(() => {
-          setIsErrorAnomalyAmount(true)
-        })
-        .finally(() => {
-          setIsLoadingAnomalyAmount(false)
-        })
+          .then((res) => {
+            setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
+            setIsErrorAnomalyAmount(false)
+          })
+          .catch(() => {
+            setIsErrorAnomalyAmount(true)
+          })
+          .finally(() => {
+            setIsLoadingAnomalyAmount(false)
+          })
+      }
     };
 
     // Fetch initial chart data when the component mounts
