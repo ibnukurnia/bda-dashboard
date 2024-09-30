@@ -23,8 +23,7 @@ interface TableServicesProps {
   maxHeight?: number | string
   selectedDataSource: string
   queryParams?: {
-    start_time?: string
-    end_time?: string
+    time_range?: string
   }
 }
 
