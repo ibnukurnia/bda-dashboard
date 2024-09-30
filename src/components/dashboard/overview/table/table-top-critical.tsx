@@ -48,14 +48,14 @@ const TableWrapper: React.FC<TableWrapperProps> = ({
 }) => {
   if (isLoading) return (
     <div className="h-full flex justify-center items-center">
-        <div className="spinner"></div>
+      <div className="spinner"></div>
     </div>
   )
   if (isEmpty) return (
     <div className="text-center py-4">
-        <Typography variant="subtitle1" color="white" align="center">
-            No data available.
-        </Typography>
+      <Typography variant="subtitle1" color="white" align="center">
+        No data available.
+      </Typography>
     </div>
   )
   return children
@@ -111,13 +111,11 @@ const TableTopCritical = ({ data, isLoading }: TableTopCriticalProps) => {
               </thead>
               <tbody className="divide-y divide-gray-200 text-gray-600">
                 {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id}>
+                  <tr key={row.id} >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
                         <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
-                          <CellValue
-                            cell={cell}
-                          />
+                          <CellValue cell={cell} />
                         </div>
                       </td>
                     ))}

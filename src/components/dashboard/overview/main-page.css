@@ -11,7 +11,7 @@
 
 .chart-section-col {
   flex: 1;
-  min-width: 300px;
+  min-width: 320px;
 }
 
 .background-red {
@@ -71,6 +71,7 @@
   -webkit-transform-style: flat;
   -webkit-transform: translateZ(0px);
 }
+
 .gauge.min-scaled {
   transform: scale(0.5);
 }
@@ -118,10 +119,12 @@
   border-left: 16px solid transparent;
   border-right: 16px solid transparent;
 }
+
 .slice-colors .st.slice-item:nth-child(1) {
   border-bottom-color: #dc2626;
   left: -2px;
 }
+
 .slice-colors .st.slice-item:nth-child(2) {
   border-bottom-color: #ea580c;
   transform: rotate(180deg);
@@ -131,6 +134,7 @@
   border-left: 0px solid transparent;
   border-right: 90px solid transparent;
 }
+
 .slice-colors .st.slice-item:nth-child(3) {
   border-bottom-color: #facc15;
   transform: rotate(180deg);
@@ -140,6 +144,7 @@
   border-right: 0px solid transparent;
   border-left: 90px solid transparent;
 }
+
 .slice-colors .st.slice-item:nth-child(4) {
   border-bottom-color: #16a34a;
   transform: rotate(240deg);
@@ -155,9 +160,10 @@ td:first-child {
   left: 0;
   background: #0A1635;
 }
+
 thead {
-    position: sticky;
-    top: 0;
-    background: #0A1635;
-    z-index: 3;
+  position: sticky;
+  top: 0;
+  background: #0A1635;
+  z-index: 3;
 }

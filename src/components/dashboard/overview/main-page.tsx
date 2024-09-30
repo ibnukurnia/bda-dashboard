@@ -32,9 +32,8 @@ import DropdownSeverity from './button/dropdown-severity'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import { SEVERITY_LABELS } from '@/constants'
 import HealthinessTree from './panels/healthiness-tree'
-import { HealthScoreResponse } from '@/modules/models/overviews'
 import HealthinessTreeWrapper from './wrapper/healthiness-tree-wrapper'
-import { TopFiveLatestCritical } from '@/modules/models/overviews'
+import { HealthScoreResponse, TopFiveLatestCritical } from '@/modules/models/overviews'
 import TableTopCritical from './table/table-top-critical'
 import AnomalyAmountChart from './chart/anomaly-amount-chart'
 import { GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
@@ -161,6 +160,7 @@ const dataDropdownSeverity = [
 const toMiliseconds = 1000 * 60
 
 const defaultTimeRanges: Record<string, number> = {
+  'Last 5 minutes': 5,
   'Last 10 minutes': 10,
   'Last 15 minutes': 15,
   'Last 30 minutes': 30,
@@ -205,10 +205,11 @@ const MainPageOverview = () => {
   const [isErrorAnomalyAmountServices, setIsErrorAnomalyAmountServices] = useState(false)
   const [isErrorAnomalyAmount, setIsErrorAnomalyAmount] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
+  const selectedDataSourceRef = useRef(selectedDataSource);
 
   const healthinessRef = useRef<HTMLDivElement>(null)
   const thSeverity = ['Severity', 'Count']
-  const configDataKey = ['service_name', 'critical', 'major', 'minor']
+  const configDataKey = ['service_name', 'very_high', 'high', 'medium']
   const router = useRouter()
   const handle = useFullScreenHandle();
 
@@ -330,6 +331,7 @@ const MainPageOverview = () => {
     const { startTime, endTime } = handleStartEnd(selectedRange)
     const params = { type: value, start_time: startTime, end_time: endTime }
 
+    console.log("Data source selected:", value);  // Debug here
     setSelectedDataSource(value)
 
     setIsLoadingPieChart(true)
@@ -379,25 +381,30 @@ const MainPageOverview = () => {
     }
   }
 
-  const handleClickSeverity = (severity: string) => {
-    const { startTime, endTime } = handleStartEnd(selectedRange)
-    const logicSelectedRange = selectedRange.split(' - ').length > 1 ? 'Custom' : selectedRange
+  // const handleClickSeverity = (severity: string) => {
+  //   console.log("Selected Data Source:", selectedDataSource); // Directly use the state variable
 
-    if (selectedDataSource?.length > 0) {
-      router.push(
-        '/dashboard/anomaly-detection?data_source=' +
-        selectedDataSource +
-        '&severity=' +
-        severity +
-        '&time_range=' +
-        logicSelectedRange +
-        '&start=' +
-        startTime +
-        '&end=' +
-        endTime
-      )
-    }
-  }
+  //   const { startTime, endTime } = handleStartEnd(selectedRange);
+  //   const logicSelectedRange = selectedRange.split(' - ').length > 1 ? 'Custom' : selectedRange;
+
+  //   if (selectedDataSource?.length > 0) {
+  //     router.push(
+  //       '/dashboard/anomaly-detection?data_source=' +
+  //       selectedDataSource +  // Use selectedDataSource directly here
+  //       '&severity=' +
+  //       severity +
+  //       '&time_range=' +
+  //       logicSelectedRange +
+  //       '&start=' +
+  //       startTime +
+  //       '&end=' +
+  //       endTime
+  //     );
+  //   } else {
+  //     console.log("failed to get data source");
+  //   }
+  // };
+
 
   useEffect(() => {
     const fetchMetrics = () => {
@@ -537,7 +544,7 @@ const MainPageOverview = () => {
         setIsLoadingAnomalyAmount(false)
       })
   }, [selectedAnomalyAmountService])
-  
+
 
   // useEffect(() => {
   //   const intervalOverview = setInterval(() => {
@@ -623,6 +630,10 @@ const MainPageOverview = () => {
       }
     }
   }, [healthinessRef.current?.offsetHeight])
+
+  // useEffect(() => {
+  //   selectedDataSourceRef.current = selectedDataSource;
+  // }, [selectedDataSource]);
 
   // Get start and end times from selected range for passing to DynamicUpdatingChart
   const { startTime, endTime } = handleStartEnd(selectedRange)
@@ -721,8 +732,8 @@ const MainPageOverview = () => {
                         <TableSeverity
                           tableHeader={thSeverity}
                           data={pieChartData}
-                          onClickSeverity={(severity) => handleClickSeverity(severity)}
                           clickable={selectedDataSource?.length > 0}
+                          queryParams={{ time_range: selectedRange, data_source: selectedDataSource }}  // Pass query params
                         />
                       </TableSeverityWrapper>
                     </div>
@@ -734,6 +745,10 @@ const MainPageOverview = () => {
                         tableHeader={[topServicesData.header[0], ...Object.values(SEVERITY_LABELS)]}
                         dataKeys={configDataKey}
                         maxHeight={tableMaxHeight}
+                        queryParams={{
+                          start_time: startTime,
+                          end_time: endTime
+                        }}
                       />
                     </TableServicesWrapper>
                   </div>
@@ -763,20 +778,24 @@ const MainPageOverview = () => {
                 severity={selectedSeverity}
               />
             </div>
+
             <GraphWrapper isLoading={isLoadingGraphic}>
-              <div className="chart-section">
-                {chartData.map((item, id) => (
-                  <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
-                    <DynamicUpdatingChart
-                      title={handleLogicTitle(item.title)}
-                      series={item.data}
-                      spike={item.last_spike}
-                      id={id}
-                      startTime={startTime} // Pass the calculated startTime
-                      endTime={endTime} // Pass the calculated endTime
-                    />
-                  </div>
-                ))}
+              <div className='flex flex-col gap-6'>
+                <span className="font-bold text-white text-2xl">Graphic</span>
+                <div className="chart-section">
+                  {chartData.map((item, id) => (
+                    <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
+                      <DynamicUpdatingChart
+                        title={handleLogicTitle(item.title)}
+                        series={item.data}
+                        spike={item.last_spike}
+                        id={id}
+                        startTime={startTime} // Pass the calculated startTime
+                        endTime={endTime} // Pass the calculated endTime
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             </GraphWrapper>
             <div className='card flex flex-col gap-6'>
@@ -796,7 +815,7 @@ const MainPageOverview = () => {
                       onSelectData={(e) => handleChangeFilterAnomalyAmountService(e)}
                       selectedData={selectedAnomalyAmountService}
                     />
-                  )}
+                )}
               </div>
               <AnomalyAmountWrapper
                 isLoading={isLoadingAnomalyAmount}

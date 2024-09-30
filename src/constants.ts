@@ -40,7 +40,7 @@ export const TAB_DATA_SOURCE = [
       },
       {
         textLabel: "Fortinet",
-        namespace: "forti",
+        namespace: "fortinet",
       },
       {
         textLabel: "WAF",
@@ -71,9 +71,9 @@ export const NAMESPACE_LABELS: Record<string, string> = {
 }
 
 export const SEVERITY_LABELS: Record<string, string> = {
-  'critical': "Very High",
-  'major': "High",
-  'minor': "Medium",
+  'very_high': "Very High",
+  'high': "High",
+  'medium': "Medium",
 }
 
 export const DEFAULT_TIME_RANGE = 'Last 15 minutes'

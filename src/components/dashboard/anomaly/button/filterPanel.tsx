@@ -143,6 +143,25 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         );
     }, [searchParams, checkboxOptions, servicesOptions, severityOptions]);
 
+    // Close the filter panel when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+                setIsOpen(false); // Close the panel when clicking outside
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
+
     return (
         <div className="flex self-start z-50">
             <button

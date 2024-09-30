@@ -2,17 +2,33 @@ import { SEVERITY_LABELS } from "@/constants";
 import Link from "next/link";
 
 interface TableSeverityProps {
-  tableHeader: string[]
-  data: { count: number; severity: string; color: string }[]
-  onClickSeverity?: (severity: string) => void
-  clickable: boolean
+  tableHeader: string[];
+  data: { count: number; severity: string; color: string }[];
+  clickable: boolean;
   queryParams?: {
-    time_range?: string
-    data_source?: string
-  }
+    time_range?: string;
+    data_source?: string;
+  };
 }
 
 const TableSeverity = ({ tableHeader, data, queryParams, clickable }: TableSeverityProps) => {
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  // Map severity to numbers
+  const severityMapping: { [key: string]: number } = {
+    very_high: 1,
+    high: 2,
+    medium: 3,
+  };
+
+  // Sort the data based on severityMapping
+  const sortedData = [...data].sort(
+    (a, b) => severityMapping[a.severity] - severityMapping[b.severity]
+  );
+
+
   return (
     <div>
       <table className="w-full text-white">
@@ -24,29 +40,34 @@ const TableSeverity = ({ tableHeader, data, queryParams, clickable }: TableSever
               </th>
             ))}
           </tr>
-
         </thead>
         <tbody>
-          {data.map((sdt, sdtid) => (
+          {sortedData.map((sdt, sdtid) => (
             <tr key={sdtid}>
               <td className="flex items-center gap-2 p-1">
                 <span
-                  className={`w-4 h-4 ${sdt.severity.toLowerCase() === 'critical' ? 'bg-red-600' : sdt.severity.toLowerCase() === 'major' ? 'bg-orange-600' : 'bg-yellow-400'}`}
+                  className={`w-4 h-4 ${sdt.severity.toLowerCase() === 'very_high'
+                    ? 'bg-red-600'
+                    : sdt.severity.toLowerCase() === 'high'
+                      ? 'bg-orange-600'
+                      : 'bg-yellow-400'
+                    }`}
                 />
                 <Link
+                  className={`${clickable ? 'hover:text-blue-400 hover:underline cursor-pointer' : 'cursor-not-allowed pointer-events-none'}`}
+                  onClick={handleScrollToTop} // Scroll to top on click
                   href={{
                     pathname: '/dashboard/anomaly-detection',
                     query: {
-                      ...queryParams,
-                      severity: sdt.severity
-                    }
+                      ...queryParams, // Spread query params (like time_range, data_source)
+                      severity: severityMapping[sdt.severity], // Map severity to number
+                    },
                   }}
                   passHref
-                  rel={clickable && sdt.count > 0 ? "noopener noreferrer" : undefined}
-                  className={`${clickable && sdt.count > 0 ? '' : 'cursor-not-allowed pointer-events-none'}`}
                 >
                   {SEVERITY_LABELS[sdt.severity]}
                 </Link>
+
               </td>
               <td className="text-center">{sdt.count}</td>
             </tr>
@@ -54,7 +75,7 @@ const TableSeverity = ({ tableHeader, data, queryParams, clickable }: TableSever
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};
 
-export default TableSeverity
+export default TableSeverity;
