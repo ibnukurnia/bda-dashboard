@@ -145,15 +145,17 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
               }}
               selected={selectedSource}
             />
-            <DropdownFilter
-              disabled={selectedSource === null}
-              label="Service Name"
-              data={services}
-              onChange={(item: string) => {
-                setSelectedService(item)
-              }}
-              selected={selectedService}
-            />
+            {selectedSource !== 'sales volume' && (
+              <DropdownFilter
+                disabled={selectedSource === null}
+                label="Service Name"
+                data={services}
+                onChange={(item: string) => {
+                  setSelectedService(item)
+                }}
+                selected={selectedService}
+              />
+            )}
             <label>Select Date</label>
             <input
               type="date"
@@ -167,10 +169,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
               style={
                 logicDate()
                   ? {
-                      border: '1px solid red',
-                      boxShadow:
-                        'var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color);',
-                    }
+                    border: '1px solid red',
+                    boxShadow:
+                      'var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color);',
+                  }
                   : {}
               }
             />

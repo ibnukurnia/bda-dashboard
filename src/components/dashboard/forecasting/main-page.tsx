@@ -1,45 +1,25 @@
 'use client'
 
+import './main-page.css'
 import { Fragment, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { Box, Stack, Typography } from '@mui/material'
-import {
-  ColumnDef,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  PaginationState,
-  useReactTable,
-} from '@tanstack/react-table'
 import { ArrowLeft, ArrowRight, Info, Maximize } from 'react-feather'
-
-import './main-page.css'
-
+import { useLocalStorage } from '@/hooks/use-storage'
+import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import {
   GetForecastingColumns,
   GetForecastingData,
   GetForecastingStatistics,
   GetForecastingTableData,
 } from '@/modules/usecases/forecasting'
-
-import { useLocalStorage } from '@/hooks/use-storage'
-
 import FilterPanel from './button/filter-panel'
 import SynchronizedCharts from './chart/synchronized-charts'
-import ForecastingTable from './table/forecasting-table'
-import { FullScreen, useFullScreenHandle } from 'react-full-screen'
+// import ForecastingTable from './table/forecasting-table'
 import Button from '@/components/system/Button/Button'
 
 const MainPageForecasting = () => {
-  const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
   const [graphData, setGraphData] = useState<any[]>([])
-  const [data, setData] = useState<any[]>([])
   const [statistics, setStatistics] = useState<{ label: string; value: string; unit: string }[]>([])
-  const [pagination, setPagination] = useState({
-    pageIndex: 1, // Start from page 1
-    pageSize: 10, // Default page size
-  })
-  const [totalPages, setTotalPages] = useState<number>(1)
   const [filter, setFilter] = useState({
     sourceData: null as string | null,
     serviceName: null as string | null,
@@ -53,47 +33,6 @@ const MainPageForecasting = () => {
   })
 
   const handle = useFullScreenHandle()
-
-  const table = useReactTable({
-    data: data,
-    columns: columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    manualPagination: true,
-  })
-
-  const nextPage = () => {
-    setPagination((prev) => {
-      const newPageIndex = Math.min(prev.pageIndex + 1, totalPages)
-      GetForecastingTableData({ limit: pagination.pageSize, page: newPageIndex }).then((tableData) => {
-        setData(tableData.data)
-        setTotalPages(tableData.pagination.totalPage)
-      })
-      return { ...prev, pageIndex: newPageIndex }
-    })
-  }
-
-  const previousPage = () => {
-    setPagination((prev) => {
-      const newPageIndex = Math.max(prev.pageIndex - 1, 1)
-      GetForecastingTableData({ limit: pagination.pageSize, page: newPageIndex }).then((tableData) => {
-        setData(tableData.data)
-        setTotalPages(tableData.pagination.totalPage)
-      })
-      return { ...prev, pageIndex: newPageIndex }
-    })
-  }
-
-  const handleChangePaginationSize = (size: number) => {
-    GetForecastingTableData({ limit: size, page: 1 }).then((tableData) => {
-      setData(tableData.data)
-      setTotalPages(tableData.pagination.totalPage)
-    })
-    setPagination((prev) => {
-      return { ...prev, pageSize: size, pageIndex: 1 }
-    })
-  }
 
   const handleApplyFilters = async (filters: {
     selectedSource: string | null
@@ -206,7 +145,7 @@ const MainPageForecasting = () => {
           <Button
             onClick={handle.enter}
           >
-            <Maximize className='w-6 h-6'/>
+            <Maximize className='w-6 h-6' />
           </Button>
         </div>
       </Stack>
