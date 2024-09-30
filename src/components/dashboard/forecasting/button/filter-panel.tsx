@@ -29,7 +29,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
   const [services, setServices] = useState<any[]>([])
   const [filterValue] = useLocalStorage('filter', undefined)
 
-  const dataSource = ['tpm', 'sales volume']
+  const dataSource = ['tpm', 'sales_volume', 'error_rate']
+  const dataSourceWithoutServices = ['sales_volume', 'error_rate']
 
   const today = new Date()
   const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate())
@@ -37,7 +38,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
     new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).setDate(todayZero.getDate() + 29)
   ).toDateString()
 
-  const logicDate = () => {
+  const isUnavailableDate = () => {
     const parsedSelectedDate = new Date(selectedDate)
     const selectedDateZero = new Date(
       parsedSelectedDate?.getFullYear(),
@@ -45,7 +46,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
       parsedSelectedDate?.getDate()
     )
     const resLogicDate =
-      selectedDateZero.getTime() < new Date(todayZero).getTime() ||
       selectedDateZero.getTime() > new Date(maxDate).getTime()
 
     return resLogicDate
@@ -145,27 +145,28 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
               }}
               selected={selectedSource}
             />
-            <DropdownFilter
-              disabled={selectedSource === null}
-              label="Service Name"
-              data={services}
-              onChange={(item: string) => {
-                setSelectedService(item)
-              }}
-              selected={selectedService}
-            />
+            {!dataSourceWithoutServices.includes(selectedSource ?? '') &&
+              <DropdownFilter
+                disabled={selectedSource === null}
+                label="Service Name"
+                data={services}
+                onChange={(item: string) => {
+                  setSelectedService(item)
+                }}
+                selected={selectedService}
+              />
+            }
             <label>Select Date</label>
             <input
               type="date"
               name=""
               id=""
-              min={formatDate(new Date())}
               max={formatDate(maxDate)}
               className={`text-black border border-gray-300 bg-light-700 disabled:bg-gray-100 disabled:text-gray-400 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm p-2 w-full`}
               onChange={(e) => setSelectedDate(e.target.value)}
               value={selectedDate}
               style={
-                logicDate()
+                isUnavailableDate()
                   ? {
                       border: '1px solid red',
                       boxShadow:
@@ -181,9 +182,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
               </Button>
               <Button
                 disabled={
-                  [selectedSource, selectedService].some((el) => el === null) ||
+                  selectedSource === null ||
+                  (!dataSourceWithoutServices.includes(selectedSource ?? '') && selectedService == null) ||
                   !selectedDate ||
-                  (selectedDate.length !== 0 && logicDate())
+                  (selectedDate.length !== 0 && isUnavailableDate())
                 }
                 onClick={handleApply}
               >
