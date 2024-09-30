@@ -117,9 +117,10 @@ const RCATree: React.FC<RCATreeProps> = ({
       } else if (depth > newArray.length) {
         newArray.push(item)
       } else {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("data_source", node.namespace ?? node.name)
-        router.replace(`/dashboard/root-cause-analysis?${params.toString()}`);
+        // const params = new URLSearchParams(searchParams.toString());
+        // params.set("data_source", node.namespace ?? node.name)
+        // router.replace(`/dashboard/root-cause-analysis?${params.toString()}`);
+        newArray.splice(depth-prev.length, prev.length-depth, item)
       }
       return newArray
     })
