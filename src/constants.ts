@@ -39,8 +39,8 @@ export const TAB_DATA_SOURCE = [
         namespace: "panw",
       },
       {
-        textLabel: "Fortinet",
-        namespace: "fortinet",
+        textLabel: "FORTI",
+        namespace: "forti",
       },
       {
         textLabel: "WAF",
@@ -64,7 +64,7 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'k8s_db': "Database",
   'ivat': "IVAT",
   'panw': "PANW",
-  'fortinet': "Fortinet",
+  'forti': "FORTI",
   'waf': "WAF",
   'prtg': "PRTG",
   'zabbix': "Zabbix",

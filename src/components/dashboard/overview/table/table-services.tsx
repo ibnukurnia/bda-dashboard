@@ -3,18 +3,32 @@ import { Check, Minus, Plus } from 'react-feather'
 import './table-services.css'
 import Link from 'next/link'
 
+const LABELS_TO_NAMESPACE: Record<string, string> = {
+  "Log APM Brimo": 'apm',
+  "Log Transaksi Brimo": 'brimo',
+  "OCP": 'k8s_prometheus',
+  "Database": 'k8s_db',
+  "IVAT": 'ivat',
+  "PANW": 'panw',
+  "FORTI": 'forti',
+  "WAF": 'waf',
+  "PRTG": 'prtg',
+  "Zabbix": 'zabbix',
+}
+
 interface TableServicesProps {
   tableHeader: string[]
   dataKeys: string[]
   data: any[]
   maxHeight?: number | string
+  selectedDataSource: string
   queryParams?: {
     start_time?: string
     end_time?: string
   }
 }
 
-const TableServices = ({ tableHeader, dataKeys, data, maxHeight, queryParams }: TableServicesProps) => {
+const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSource, queryParams }: TableServicesProps) => {
 
   return (
     <div className="relative overflow-auto min-h-48 scrollbar" style={{ maxHeight }}>
@@ -59,12 +73,11 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, queryParams }: 
                               pathname: '/dashboard/root-cause-analysis',
                               query: {
                                 ...queryParams,
+                                data_source: selectedDataSource?.length > 0 ? selectedDataSource : LABELS_TO_NAMESPACE[sdt?.[cdk]],
                               }
                             }}
-                            target='_blank'
                             passHref
                             rel={sdt.count > 0 ? "noopener noreferrer" : undefined}
-                          // className={`${clickable && sdt.count > 0 ? '' : 'cursor-not-allowed pointer-events-none'}`}
                           >
                             {sdt?.[cdk]}
                           </Link>
