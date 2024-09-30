@@ -420,7 +420,7 @@ const MainPageOverview = () => {
         })
         .catch(() => setChartData([]))
         .finally(() => setIsLoadingGraphic(false))
-        
+
       if (selectedAnomalyAmountService) {
         GetMetricLogAnomalies({
           ...paramsTime,
@@ -650,10 +650,6 @@ const MainPageOverview = () => {
     }
   }, [healthinessRef.current?.offsetHeight])
 
-  // useEffect(() => {
-  //   selectedDataSourceRef.current = selectedDataSource;
-  // }, [selectedDataSource]);
-
   // Get start and end times from selected range for passing to DynamicUpdatingChart
   const { startTime, endTime } = handleStartEnd(selectedRange)
 
@@ -817,7 +813,7 @@ const MainPageOverview = () => {
                 </div>
               </div>
             </GraphWrapper>
-            <div className='card flex flex-col gap-6'>
+            {/* <div className='card flex flex-col gap-6'>
               <div className='flex justify-between'>
                 <span className="font-bold text-white text-2xl content-center">Anomaly Amount</span>
                 {!handle.active && (
@@ -846,9 +842,8 @@ const MainPageOverview = () => {
                   endTime={endTime} // Pass the calculated endTime
                 />
               </AnomalyAmountWrapper>
-            </div>
+            </div> */}
           </div>
-
         </div>
       </FullScreen>
     </div>

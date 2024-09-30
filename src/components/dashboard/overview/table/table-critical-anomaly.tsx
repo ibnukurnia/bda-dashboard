@@ -5,6 +5,8 @@ import { GetLatestCritical } from '@/modules/usecases/overviews';
 import { format } from 'date-fns';
 import { PREDEFINED_TIME_RANGES, ROWS_PER_PAGE_OPTIONS, SEVERITY_LABELS } from '@/constants';
 import useUpdateEffect from '@/hooks/use-update-effect';
+import { formatNumberWithCommas } from '../../../../helper';
+
 
 const toMiliseconds = 1000 * 60
 
@@ -219,9 +221,39 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
                         <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
-                          <CellValue
-                            cell={cell}
-                          />
+                          {/* Severity Check */}
+                          {cell.column.id === 'severity' &&
+                            (cell.getValue() === 'Very High' ||
+                              cell.getValue() === 'High' ||
+                              cell.getValue() === 'Medium') && (
+                              <svg
+                                width="14"
+                                height="15"
+                                viewBox="0 0 14 15"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
+                                  fill={
+                                    cell.getValue() === 'Very High'
+                                      ? '#dc2626' // Red for Very High
+                                      : cell.getValue() === 'High'
+                                        ? '#ea580c' // Orange for High
+                                        : cell.getValue() === 'Medium'
+                                          ? '#facc15' // Yellow for Medium
+                                          : ''
+                                  }
+                                />
+                              </svg>
+                            )}
+
+                          {/* Format number with commas */}
+                          {typeof cell.getValue() === 'number' ? (
+                            <span>{formatNumberWithCommas(cell.getValue() as number)}</span> // Apply the number formatting function
+                          ) : (
+                            <span>{cell.getValue() as string} {/* For non-numeric values */}</span>
+                          )}
                         </div>
                       </td>
                     ))}
@@ -229,6 +261,7 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
                 ))}
               </tbody>
             </table>
+
           </TableWrapper>
         </div>
       </div>
