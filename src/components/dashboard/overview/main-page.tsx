@@ -420,6 +420,24 @@ const MainPageOverview = () => {
         })
         .catch(() => setChartData([]))
         .finally(() => setIsLoadingGraphic(false))
+        
+        
+      GetMetricLogAnomalies({
+        ...paramsTime,
+        metric_name: [ANOMALY_AMOUNT_METRIC_NAME],
+        service_name: selectedAnomalyAmountService,
+        type: ANOMALY_AMOUNT_TYPE,
+      })
+        .then((res) => {
+          setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
+          setIsErrorAnomalyAmount(false)
+        })
+        .catch(() => {
+          setIsErrorAnomalyAmount(true)
+        })
+        .finally(() => {
+          setIsLoadingAnomalyAmount(false)
+        })
     };
 
     // Fetch initial chart data when the component mounts
@@ -439,7 +457,7 @@ const MainPageOverview = () => {
         clearInterval(intervalChartId); // Clean up the interval on component unmount
       }
     };
-  }, [selectedRange, selectedDataSource, isCustomRangeSelected]);
+  }, [selectedRange, selectedDataSource, selectedAnomalyAmountService, isCustomRangeSelected]);
 
 
   useEffect(() => {
@@ -520,7 +538,7 @@ const MainPageOverview = () => {
   }, [anomalyAmountServicesData])
 
   useEffect(() => {
-    if (!anomalyAmountServicesData) return
+    if (!selectedAnomalyAmountService) return
 
     setIsLoadingAnomalyAmount(true)
 
@@ -530,7 +548,7 @@ const MainPageOverview = () => {
     GetMetricLogAnomalies({
       ...paramsTime,
       metric_name: [ANOMALY_AMOUNT_METRIC_NAME],
-      service_name: anomalyAmountServicesData[0],
+      service_name: selectedAnomalyAmountService,
       type: ANOMALY_AMOUNT_TYPE,
     })
       .then((res) => {
