@@ -16,6 +16,8 @@ import FilterPanel from './button/filter-panel'
 import SynchronizedCharts from './chart/synchronized-charts'
 // import ForecastingTable from './table/forecasting-table'
 import Button from '@/components/system/Button/Button'
+import useInterval from '@/hooks/use-interval'
+import { isToday } from 'date-fns'
 
 const MainPageForecasting = () => {
   const [graphData, setGraphData] = useState<any[]>([])
@@ -92,30 +94,27 @@ const MainPageForecasting = () => {
     }
   }, [])
 
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null
+  useInterval(
+    fetchData,
+    3000,
+    filter.sourceData != null &&
+    filter.serviceName != null &&
+    filter.selectedDate != null &&
+    isToday(filter.selectedDate)
+  )
 
-    if (filter.sourceData && filter.serviceName && filter.selectedDate) {
-      intervalId = setInterval(() => {
-        GetForecastingData({
-          data_source: filter.sourceData ?? '',
-          service_name: filter.serviceName ?? '',
-          date: filter.selectedDate,
-        })
-          .then((res) => {
-            setGraphData(res.data)
-            setChartLoading(false)
-          })
-          .catch(() => setGraphData([]))
-      }, 30000)
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId)
-      }
-    }
-  }, [filter])
+  async function fetchData() {
+    GetForecastingData({
+      data_source: filter.sourceData ?? '',
+      service_name: filter.serviceName ?? '',
+      date: filter.selectedDate,
+    })
+      .then((res) => {
+        setGraphData(res.data)
+        setChartLoading(false)
+      })
+      .catch(() => setGraphData([]))
+  }
 
   const chartIntervalUpdate = useMemo(() => {
     return (
