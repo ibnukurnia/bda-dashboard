@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp } from 'react-feather';
 import { FullScreenHandle } from 'react-full-screen';
 import useUpdateEffect from '@/hooks/use-update-effect';
 import NodeListWrapper from '../wrapper/node-list-wrapper';
+import { NLP } from '@/modules/models/root-cause-analysis';
 
 const nodeHeight = 80
 const headerHeight = 96
@@ -32,6 +33,7 @@ interface ScrollableNodeListProps {
   fullScreenHandle: FullScreenHandle; // From react-full-screen
   maxCount: number;
   isLoading: boolean;
+  handleSelectNLP: (value: NLP | null) => void;
 }
 
 const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
@@ -45,6 +47,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   fullScreenHandle, // Use handle from react-full-screen
   maxCount,
   isLoading,
+  handleSelectNLP,
 }) => {
   const [hideButtonUp, setHideButtonUp] = useState<boolean>(true);
   const [hideButtonDown, setHideButtonDown] = useState<boolean>(true);
@@ -191,6 +194,8 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
                 service: node.namespace ?? node.name,
               }}
               tooltips={node.tooltips}
+              nlp={node.nlp}
+              handleSelectNLP={handleSelectNLP}
             />
           ))}
         </NodeListWrapper>

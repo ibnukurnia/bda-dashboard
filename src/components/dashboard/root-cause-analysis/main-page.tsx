@@ -12,7 +12,7 @@ import AutoRefreshButton from './button/refreshButton'
 import { format } from 'date-fns'
 import { getTimeDifference } from './helper'
 import { GetRootCauseAnalysisTree } from '@/modules/usecases/root-cause-analysis'
-import { RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis'
+import { NLP, RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis'
 import useInterval from '@/hooks/use-interval'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import Button from '@/components/system/Button/Button'
@@ -22,6 +22,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { DEFAULT_TIME_RANGE, PREDEFINED_TIME_RANGES } from '@/constants'
 import RCATreeWrapper from './wrapper/rca-tree-wrapper'
 import TooltipCollection from './collection/tooltip-collection'
+import TableNLP from './table/table'
 
 const MainPageRootCauseAnalysis = () => {
   const [dataTree, setDataTree] = useState<RootCauseAnalysisTreeResponse[] | null>(null)
@@ -37,6 +38,7 @@ const MainPageRootCauseAnalysis = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [modalServices, setModalServices] = useState(false)
+  const [nlpData, setNlpData] = useState<NLP | null>(null)
 
   const router = useRouter()
   const handle = useFullScreenHandle();
@@ -114,7 +116,6 @@ const MainPageRootCauseAnalysis = () => {
   };
 
   return (
-    <Fragment>
       <div className='flex flex-col gap-8'>
         <div className='flex flex-row gap-2 self-end items-center'>
           <div className="flex flex-row gap-2 self-end items-center">
@@ -132,7 +133,7 @@ const MainPageRootCauseAnalysis = () => {
             <Maximize className='w-6 h-5' />
           </Button>
         </div>
-        <FullScreen className="bg-[#05061E]" handle={handle}>
+        <FullScreen className={`${handle.active ? "p-6 bg-[#05061E] overflow-auto" : ""} flex flex-col gap-8`} handle={handle}>
           <div className={`flex flex-col gap-10 px-2 py-8 overflow-hidden card-style ${handle.active ? "my-8 mx-6" : ""}`}>
             <div className="w-full flex flex-col gap-8">
               <RCATreeWrapper
@@ -143,6 +144,7 @@ const MainPageRootCauseAnalysis = () => {
                   fullScreenHandle={handle}
                   isLoading={isLoading}
                   timeRange={timeRange}
+                  handleSelectNLP={(value) => setNlpData(value)}
                 />
                 <TooltipCollection
                   data={dataTree}
@@ -150,15 +152,13 @@ const MainPageRootCauseAnalysis = () => {
               </RCATreeWrapper>
             </div>
           </div>
+          {nlpData && (
+            <TableNLP
+              data={nlpData}
+            />
+          )}
         </FullScreen>
       </div>
-      {modalServices && (
-        <TableModal
-          open={modalServices}
-          handleOpenModal={setModalServices}
-        />
-      )}
-    </Fragment>
   )
 }
 
