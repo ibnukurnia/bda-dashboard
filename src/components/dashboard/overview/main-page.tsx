@@ -1,22 +1,18 @@
 'use client'
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
-
 import './main-page.css'
-
-import { useRouter } from 'next/navigation'
 import {
   GetChartsOverview,
   GetHealthScoreOverview,
   GetPieChartsOverview,
   GetTopFiveCritical,
   GetTopServicesOverview,
+  GetAmountGraphic
 } from '@/modules/usecases/overviews'
 import { format } from 'date-fns'
 import { Maximize } from 'react-feather'
-
 import Button from '@/components/system/Button/Button'
-
 import DropdownDS from './button/dropdown-ds'
 import DropdownTime from './button/dropdown-time'
 import DonutChart from './chart/donut-chart'
@@ -205,20 +201,11 @@ const MainPageOverview = () => {
   const [isErrorAnomalyAmountServices, setIsErrorAnomalyAmountServices] = useState(false)
   const [isErrorAnomalyAmount, setIsErrorAnomalyAmount] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
-  const selectedDataSourceRef = useRef(selectedDataSource);
 
   const healthinessRef = useRef<HTMLDivElement>(null)
   const thSeverity = ['Severity', 'Count']
   const configDataKey = ['service_name', 'very_high', 'high', 'medium']
-  const router = useRouter()
   const handle = useFullScreenHandle();
-
-  const handleApplyFilter = (sDataSource: any[]) => {
-    // const handleApplyFilter = (sDataSource: any[], sService: { name: string; data: number[]; count?: number }[]) => {
-    // setSelectedDataSource(sDataSource)
-    // setSelectedServices(sService)
-    setModalServices(false)
-  }
 
   const handleStartEnd = (time: string) => {
     const timeSplit = time.split(' - ')
@@ -331,7 +318,7 @@ const MainPageOverview = () => {
     const { startTime, endTime } = handleStartEnd(selectedRange)
     const params = { type: value, start_time: startTime, end_time: endTime }
 
-    console.log("Data source selected:", value);  // Debug here
+    // console.log("Data source selected:", value);  // Debug here
     setSelectedDataSource(value)
 
     setIsLoadingPieChart(true)
@@ -362,8 +349,46 @@ const MainPageOverview = () => {
   }
 
   const handleChangeFilterAnomalyAmountService = (value: string) => {
-    setSelectedAnomalyAmountService(value)
-  }
+    // Set the loading state to true before the API call
+    setIsLoadingAnomalyAmount(true);
+
+    // Get the startTime and endTime values from your selected range
+    const { startTime, endTime } = handleStartEnd(selectedRange);
+
+    // Define the list of hardcoded services
+    const limitedServices = ['mylta-brimo', 'ferrypier-brimo', 'GEORGOPOOL', 'TORREAHUMADA', 'pudge'];
+
+    // Build the params object with the service_name array if "All" is selected
+    const params = {
+      start_time: startTime,
+      end_time: endTime,
+      service_name: value === 'All' ? limitedServices : [value]
+    };
+
+    // Update the selected service in state
+    setSelectedAnomalyAmountService(value);
+
+    // Make the API call with the correct params
+    GetAmountGraphic(params)
+      .then((res) => {
+        // Check if the response has data and update the state
+        if (res && res.data) {
+          setAnomalyAmountData(res.data);
+        } else {
+          setAnomalyAmountData([]); // Set to an empty array if no data is returned
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching anomaly amount data:', error);
+        setAnomalyAmountData([]); // Handle error by resetting the data
+      })
+      .finally(() => {
+        // Always set loading to false after the API call finishes
+        // console.log(anomalyAmountData)
+        setIsLoadingAnomalyAmount(false);
+      });
+  };
+
 
   const handleLogicTitle = (title: string) => {
     if (title.toLowerCase().includes('apm')) {
@@ -429,7 +454,7 @@ const MainPageOverview = () => {
           type: ANOMALY_AMOUNT_TYPE,
         })
           .then((res) => {
-            setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
+            // setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
             setIsErrorAnomalyAmount(false)
           })
           .catch(() => {
@@ -553,7 +578,7 @@ const MainPageOverview = () => {
       type: ANOMALY_AMOUNT_TYPE,
     })
       .then((res) => {
-        setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
+        // setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
         setIsErrorAnomalyAmount(false)
       })
       .catch(() => {
@@ -649,6 +674,11 @@ const MainPageOverview = () => {
       }
     }
   }, [healthinessRef.current?.offsetHeight])
+
+  // UseEffect to log the state after it's updated
+  useEffect(() => {
+    console.log('Updated anomalyAmountData:', anomalyAmountData);
+  }, [anomalyAmountData]); // This will run whenever anomalyAmountData is updated
 
   // Get start and end times from selected range for passing to DynamicUpdatingChart
   const { startTime, endTime } = handleStartEnd(selectedRange)
@@ -814,7 +844,7 @@ const MainPageOverview = () => {
                 </div>
               </div>
             </GraphWrapper>
-            {/* <div className='card flex flex-col gap-6'>
+            <div className='card flex flex-col gap-6'>
               <div className='flex justify-between'>
                 <span className="font-bold text-white text-2xl content-center">Anomaly Amount</span>
                 {!handle.active && (
@@ -827,7 +857,6 @@ const MainPageOverview = () => {
                       height={48}
                     /> :
                     <DropdownAnomalyAmountService
-                      data={anomalyAmountServicesData}
                       onSelectData={(e) => handleChangeFilterAnomalyAmountService(e)}
                       selectedData={selectedAnomalyAmountService}
                     />
@@ -837,13 +866,13 @@ const MainPageOverview = () => {
                 isLoading={isLoadingAnomalyAmount}
               >
                 <AnomalyAmountChart
-                  series={anomalyAmountData.data}
+                  series={anomalyAmountData}
                   anomalies={anomalyAmountData?.anomalies as any[]}
                   startTime={startTime} // Pass the calculated startTime
                   endTime={endTime} // Pass the calculated endTime
                 />
               </AnomalyAmountWrapper>
-            </div> */}
+            </div>
           </div>
         </div>
       </FullScreen>

@@ -478,7 +478,7 @@ const TabContent: React.FC<TabContentProps> = ({
             const severityOptions = [
                 { id: 1, label: 'Very High', type: 'severity' },
                 { id: 2, label: 'High', type: 'severity' },
-                { id: 3, label: 'Meidum', type: 'severity' }
+                { id: 3, label: 'Medium', type: 'severity' }
             ];
 
             setFilterSeverityOptions(severityOptions); // Set the severity options into state
