@@ -9,7 +9,8 @@ const treeData = [
   {
     name: 'DB',
     attributes: {
-      score: 0,
+      // score: 100,
+      // severity: 0,
       iconSrc: 'node-icon-database.svg',
     },
     nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
@@ -17,7 +18,8 @@ const treeData = [
       {
         name: 'OCP',
         attributes: {
-          score: 0,
+          // score: 100,
+          // severity: 0,
           iconSrc: 'node-icon-ocp.svg',
         },
         nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
@@ -25,7 +27,8 @@ const treeData = [
           {
             name: 'APM',
             attributes: {
-              score: 0,
+              // score: 100,
+              // severity: 0,
               iconSrc: 'node-icon-apm.svg',
             },
             nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
@@ -33,7 +36,8 @@ const treeData = [
           {
             name: 'BRIMO',
             attributes: {
-              score: 0,
+              // score: 100,
+              // severity: 0,
               iconSrc: 'node-icon-brimo.svg',
             },
             nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
@@ -44,15 +48,18 @@ const treeData = [
   },
 ];
 
-const getColor = (score: number) => {
-  if (score <= 99) {
+const getColor = (severity: number) => {
+  if (severity === 0) {
+    return '22,163,74'
+  }
+  if (severity === 1) {
     return '220,38,38'
   }
-  if (score > 99 && score < 99.5) {
-    return '250,204,21'
+  if (severity === 2) {
+    return '234,88,12'
   }
-  if (score >= 99.5) {
-    return '22,163,74'
+  if (severity === 3) {
+    return '250,204,21'
   }
   return '213,213,213'
 }
@@ -63,12 +70,12 @@ const renderCustomNode = ({ nodeDatum }: any) => {
       transform={`translate(${nodeDatum.name === 'OCP' ? '-40' : '-40'}, -40)`}
     >
       <rect
-        className={`${nodeDatum.attributes.score <= 99 ? "blinking-node" : ""}`}
+        className={`${nodeDatum.attributes.severity === 1 ? "blinking-node" : ""}`}
         width={80}
         height={80}
         rx={15}
         ry={15}
-        fill={`rgb(${getColor(nodeDatum.attributes.score)})`}
+        fill={`rgb(${getColor(nodeDatum.attributes.severity)})`}
         stroke='transparent'
       />
       <foreignObject x="15" y="15" width="50" height="50">
@@ -114,14 +121,15 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
   const treeRef = useRef(null); // Ref for the wrapper div
 
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [translate, setTranslate] = useState({ x: 150, y: 150})
   const [nodeSize, setNodeSize] = useState({x: 200, y: 180})
   const [mappedData, setMappedData] = useState(treeData)
   const [securityData, setSecurityData] = useState({
-    score: 0,
+    score: 100,
+    severity: 0,
   })
   const [networkData, setNetworkData] = useState({
-    score: 0,
+    score: 100,
+    severity: 0,
   })
 
   useEffect(() => {
@@ -146,19 +154,26 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
   }, [containerRef])
   
   useEffect(() => {
+    const security = data.find(d => d.data_source === "security")
+    const network = data.find(d => d.data_source === "network")
+    const database = data.find(d => d.data_source === "k8s_db")
+    const ocp = data.find(d => d.data_source === "k8s_prometheus")
+    const apm = data.find(d => d.data_source === "apm")
+    const brimo = data.find(d => d.data_source === "brimo")
+
     setSecurityData(prev => ({
       ...prev,
-      score: data.find(d => d.data_source === "security")?.score ?? 0
+      ...security,
     }))
     setNetworkData(prev => ({
       ...prev,
-      score: data.find(d => d.data_source === "network")?.score ?? 0
+      ...network,
     }))
     setMappedData([
       {
         name: 'Database',
         attributes: {
-          score: data.find(d => d.data_source === "k8s_db")?.score ?? 0,
+          ...database,
           iconSrc: 'node-icon-database.svg',
         },
         nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
@@ -166,7 +181,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
           {
             name: 'OCP',
             attributes: {
-              score: data.find(d => d.data_source === "k8s_prometheus")?.score ?? 0,
+              ...ocp,
               iconSrc: 'node-icon-ocp.svg',
             },
             nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
@@ -174,7 +189,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               {
                 name: 'APM',
                 attributes: {
-                  score: data.find(d => d.data_source === "apm")?.score ?? 0,
+                  ...apm,
                   iconSrc: 'node-icon-apm.svg',
                 },
                 nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
@@ -182,7 +197,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               {
                 name: 'BRImo',
                 attributes: {
-                  score: data.find(d => d.data_source === "brimo")?.score ?? 0,
+                  ...brimo,
                   iconSrc: 'node-icon-brimo.svg',
                 },
                 nodeSvgShape: { shape: 'circle', shapeProps: { r: 20 } },
@@ -211,9 +226,9 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
       >
         <div className='flex flex-col'>
           <div
-              className={`w-20 h-20 flex justify-center items-center rounded-xl ${securityData.score <= 99 ? "blinking-bg" : ""} bg-[rgb(${getColor(securityData.score)})]`}
+              className={`w-20 h-20 flex justify-center items-center rounded-xl ${securityData.severity === 1 ? "blinking-bg" : ""} bg-[rgb(${getColor(securityData.severity)})]`}
               style={{
-                '--dynamic-color': getColor(securityData.score),
+                '--dynamic-color': getColor(securityData.severity),
                 backgroundColor: 'rgb(var(--dynamic-color))'
               } as React.CSSProperties}
           >
@@ -237,9 +252,9 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             >
               <div className='flex flex-col'>
                 <div
-                    className={`w-20 h-20 flex justify-center items-center rounded-xl ${networkData.score <= 99 ? "blinking-bg" : ""} bg-[rgb(${getColor(networkData.score)})]`}
+                    className={`w-20 h-20 flex justify-center items-center rounded-xl ${networkData.severity === 1 ? "blinking-bg" : ""} bg-[rgb(${getColor(networkData.severity)})]`}
                     style={{
-                      '--dynamic-color': getColor(networkData.score),
+                      '--dynamic-color': getColor(networkData.severity),
                       backgroundColor: 'rgb(var(--dynamic-color))'
                     } as React.CSSProperties}
                 >
