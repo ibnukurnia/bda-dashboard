@@ -29,7 +29,7 @@ const TooltipCollection: React.FC<TooltipCollectionProps> = ({
           servicesWithTooltip.push({
             type: item.type,
             anomaly: route.anomaly,
-            service: service.service,
+            service: service.service_alias.replace(/ /g,''),
             tooltips: service.tooltips,
           });
         }
@@ -39,8 +39,8 @@ const TooltipCollection: React.FC<TooltipCollectionProps> = ({
   
   return servicesWithTooltip.map(service =>
     <Tooltip
-      key={`#${service?.type}-${service?.anomaly}-${service.service.replace(/ /g,'')}`}
-      anchorSelect={`#${service?.type}-${service?.anomaly}-${service.service.replace(/ /g,'')}`}
+      key={`#${service?.type}-${service?.anomaly}-${service.service}`}
+      anchorSelect={`#${service?.type}-${service?.anomaly}-${service.service}`}
       className="!bg-white !text-black"
     >
       {service.tooltips.map(tooltip => (
