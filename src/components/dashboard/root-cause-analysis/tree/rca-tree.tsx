@@ -59,22 +59,22 @@ const RCATree: React.FC<RCATreeProps> = ({
   }, [data])
 
   useEffect(() => {
-    // const dataSource = searchParams.get('data_source');
+    const dataSource = searchParams.get('data_source');
 
     setTotalAnomaly(mappedData.reduce((total, data) => total + (data.anomalyCount ?? 0), 0))
     setExpandedNodes(prev => {
       const newArr: ExpandedNodesType[] = []
       let tempNode: TreeNodeType
 
-      // if (dataSource && prev.length === 0) {
-      //   const newExpandedNodeIndex = mappedData.findIndex(node => node.namespace === dataSource)
-      //   newArr.push({ node: mappedData[newExpandedNodeIndex], nodeIndex: newExpandedNodeIndex})
-      //   return newArr
-      // }
+      if (dataSource && prev.length === 0) {
+        const newExpandedNodeIndex = mappedData.findIndex(node => node.namespace === dataSource)
+        if (newExpandedNodeIndex === -1) return newArr
+        newArr.push({ node: mappedData[newExpandedNodeIndex], nodeIndex: newExpandedNodeIndex})
+        return newArr
+      }
       
       prev.forEach((expNode, prevIdx) => {
-        // const prevExpName = prevIdx === 0 && dataSource ? dataSource : expNode.node.namespace
-        const prevExpName = expNode.node.namespace
+        const prevExpName = prevIdx === 0 && dataSource ? dataSource : expNode.node.namespace
         const list = tempNode?.children ?? mappedData
         if (list == null) return
 
@@ -108,6 +108,13 @@ const RCATree: React.FC<RCATreeProps> = ({
       node: node,
       nodeIndex: index
     }
+
+    if (depth === 0) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("data_source", node.namespace ?? node.name)
+      router.replace(`/dashboard/root-cause-analysis?${params.toString()}`);
+      return
+    }
     
     setExpandedNodes(prev => {
       const newArray = [...prev]
@@ -117,11 +124,9 @@ const RCATree: React.FC<RCATreeProps> = ({
       } else if (depth > newArray.length) {
         newArray.push(item)
       } else {
-        // const params = new URLSearchParams(searchParams.toString());
-        // params.set("data_source", node.namespace ?? node.name)
-        // router.replace(`/dashboard/root-cause-analysis?${params.toString()}`);
         newArray.splice(depth-prev.length, prev.length-depth, item)
       }
+      
       return newArray
     })
   }

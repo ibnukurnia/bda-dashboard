@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
 import './main-page.css'
 
@@ -71,32 +71,32 @@ const MainPageRootCauseAnalysis = () => {
   }
 
     // Helper function to calculate startTime and endTime
-    const getTimeRange = () => {
-      let startTime: string
-      let endTime: string
+  const getTimeRange = () => {
+    let startTime: string
+    let endTime: string
 
-      if (timeRange.includes(' - ')) {
-          // Handle custom range
-          const [start, end] = timeRange.split(' - ');
-          startTime = start;
-          endTime = end;
-      } else {
-          // Handle predefined ranges
-          const selectedTimeRange = PREDEFINED_TIME_RANGES[timeRange]; // Get the selected time range in minutes
+    if (timeRange.includes(' - ')) {
+        // Handle custom range
+        const [start, end] = timeRange.split(' - ');
+        startTime = start;
+        endTime = end;
+    } else {
+        // Handle predefined ranges
+        const selectedTimeRange = PREDEFINED_TIME_RANGES[timeRange]; // Get the selected time range in minutes
 
-          // Calculate endDate as the current time, rounding down the seconds to 00
-          const endDateObj = new Date();
-          endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
+        // Calculate endDate as the current time, rounding down the seconds to 00
+        const endDateObj = new Date();
+        endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
 
-          // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
-          const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
+        // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
+        const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
 
-          // Convert startDate and endDate to strings
-          startTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
-          endTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
-      }
+        // Convert startDate and endDate to strings
+        startTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
+        endTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
+    }
 
-      return { startTime, endTime };
+    return { startTime, endTime };
   };
 
   const handleRangeChange = async (rangeKey: string) => {
@@ -114,7 +114,7 @@ const MainPageRootCauseAnalysis = () => {
   };
 
   return (
-    <>
+    <Fragment>
       <div className='flex flex-col gap-8'>
         <div className='flex flex-row gap-2 self-end items-center'>
           <div className="flex flex-row gap-2 self-end items-center">
@@ -158,7 +158,7 @@ const MainPageRootCauseAnalysis = () => {
           handleOpenModal={setModalServices}
         />
       )}
-    </>
+    </Fragment>
   )
 }
 
