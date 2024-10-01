@@ -90,7 +90,7 @@ const Node: React.FC<NodeProps> = ({
             {replaceWordingDataSource(title)}
           </Typography>
           {tooltips != null &&
-            <a id={`${queryParams?.data_source}-${queryParams?.metric_anomaly}-${title.replace(/ /g,'')}`}>
+            <a id={`${queryParams?.data_source}-${queryParams?.metric_anomaly}-${escapeAndRemoveSpaces(title)}`}>
               <Info size={20} color='white'/>
             </a>
           }
@@ -129,3 +129,11 @@ const Node: React.FC<NodeProps> = ({
 };
 
 export default Node;
+
+function escapeAndRemoveSpaces(stringToEscape: string) {
+  return stringToEscape.replace(/[\(\)\s]/g, match => {
+      if (match === '(') return '';
+      if (match === ')') return '';
+      return ''; // remove spaces
+  });
+}

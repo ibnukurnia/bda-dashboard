@@ -132,9 +132,9 @@ const MainPageRootCauseAnalysis = () => {
           <Button onClick={handle.enter}>
             <Maximize className='w-6 h-5' />
           </Button>
-        </div>
+      </div>
         <FullScreen className={`${handle.active ? "p-6 bg-[#05061E] overflow-auto" : ""} flex flex-col gap-8`} handle={handle}>
-          <div className={`flex flex-col gap-10 px-2 py-8 overflow-hidden card-style ${handle.active ? "my-8 mx-6" : ""}`}>
+          <div className={`flex flex-col gap-10 px-2 py-8 overflow-hidden card-style`}>
             <div className="w-full flex flex-col gap-8">
               <RCATreeWrapper
                 isError={isError}
