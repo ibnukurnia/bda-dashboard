@@ -4,6 +4,7 @@ import { Typography } from '@mui/material';
 import { ChevronRight, Info } from 'react-feather';
 import { replaceWordingDataSource } from '../helper';
 import Link from 'next/link';
+import { NLP } from '@/modules/models/root-cause-analysis';
 
 interface NodeProps {
   percentage: number; // Accepts a number between 0 and 100
@@ -22,6 +23,8 @@ interface NodeProps {
     status_code: string;
     total: number;
   }[];
+  nlp?: NLP;
+  handleSelectNLP: (value: NLP | null) => void;
 }
 
 const Node: React.FC<NodeProps> = ({ 
@@ -33,6 +36,8 @@ const Node: React.FC<NodeProps> = ({
   hasDetail,
   queryParams,
   tooltips,
+  nlp,
+  handleSelectNLP,
  }) => {
   const [containerWidth, setContainerWidth] = useState(0)
   const containerRef = useRef<HTMLButtonElement>(null)
@@ -54,11 +59,22 @@ const Node: React.FC<NodeProps> = ({
     setContainerWidth(containerRef.current?.clientWidth)
   }
 
+  const handleClickNode = () => {
+    console.log(nlp);
+    
+    handleOnClickNode()
+    if (nlp) {
+      handleSelectNLP(nlp)
+    } else {
+      handleSelectNLP(null)
+    }
+  }
+
   return (
     <button
       ref={containerRef}
       className={`w-full min-h-20 relative flex flex-col outline-none snap-start ${count == null ? "cursor-default" : ""}`}
-      onClick={handleOnClickNode}
+      onClick={handleClickNode}
     >
       {count != null && <ProgressBar progress={percentage} />}
       <div className='w-full flex gap-2'>
@@ -74,7 +90,7 @@ const Node: React.FC<NodeProps> = ({
             {replaceWordingDataSource(title)}
           </Typography>
           {tooltips != null &&
-            <a id={`${queryParams?.data_source}-${queryParams?.metric_anomaly}-${title.replace(/ /g,'')}`}>
+            <a id={`${queryParams?.data_source}-${queryParams?.metric_anomaly}-${escapeAndRemoveSpaces(title)}`}>
               <Info size={20} color='white'/>
             </a>
           }
@@ -113,3 +129,11 @@ const Node: React.FC<NodeProps> = ({
 };
 
 export default Node;
+
+function escapeAndRemoveSpaces(stringToEscape: string) {
+  return stringToEscape.replace(/[\(\)\s]/g, match => {
+      if (match === '(') return '';
+      if (match === ')') return '';
+      return ''; // remove spaces
+  });
+}

@@ -1,11 +1,11 @@
-import { Check, Minus, Plus } from 'react-feather'
+import { Check, Minus } from 'react-feather'
 
 import './table-services.css'
 import Link from 'next/link'
 
 const LABELS_TO_NAMESPACE: Record<string, string> = {
-  "Log APM Brimo": 'apm',
-  "Log Transaksi Brimo": 'brimo',
+  "Log APM BRImo": 'apm',
+  "Log Transaksi BRImo": 'brimo',
   "OCP": 'k8s_prometheus',
   "Database": 'k8s_db',
   "IVAT": 'ivat',
@@ -23,8 +23,7 @@ interface TableServicesProps {
   maxHeight?: number | string
   selectedDataSource: string
   queryParams?: {
-    start_time?: string
-    end_time?: string
+    time_range?: string
   }
 }
 

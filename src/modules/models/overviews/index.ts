@@ -62,4 +62,5 @@ export interface TopFiveLatestCritical {
 export interface HealthScoreResponse {
   data_source: string
   score: number
+  severity: number
 }

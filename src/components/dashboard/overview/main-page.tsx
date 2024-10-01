@@ -792,8 +792,7 @@ const MainPageOverview = () => {
                         maxHeight={tableMaxHeight}
                         selectedDataSource={selectedDataSource}
                         queryParams={{
-                          start_time: startTime,
-                          end_time: endTime
+                          time_range: selectedRange,
                         }}
                       />
                     </TableServicesWrapper>

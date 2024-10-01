@@ -121,7 +121,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
           const firstData = opts?.w?.globals?.series[0]
           
           if (!firstData || firstData % 1 != 0) {
-            return val.toString()
+            return val?.toString()
           }
           return val?.toFixed(0)
         },
@@ -151,15 +151,24 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   const resDataChart = useMemo(() => {
     if (dataCharts.length > 0) {
       if (dataCharts?.[1]) {
-        const dataChartsAdded = dataCharts[0].data.map((item) => {
-          if (dataCharts[1].data.some((el) => el[0].slice(0, 16) == item[0].slice(0, 16))) {
-            return [item[0], dataCharts[1].data.find((el) => el[0].slice(0, 16) == item[0].slice(0, 16))[1]]
-          } else {
-            return [item[0], null]
-          }
-        })
+        // Step 1: Get all unique timestamps
+        const allTimestamps = Array.from(
+            new Set(dataCharts.flatMap(entry => entry.data.map(([timestamp]) => timestamp)))
+        ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
-        return [dataCharts[0], { title: dataCharts[1].title, data: dataChartsAdded }]
+        // Step 2: Fill missing timestamps for each dataset
+        return dataCharts.map(entry => {
+            const dataMap = new Map(entry.data.map(([timestamp, value]) => [timestamp, value]));
+            const filledData = allTimestamps.map(timestamp => [
+                timestamp,
+                dataMap.has(timestamp) ? dataMap.get(timestamp) : null
+            ]);
+
+            return {
+                title: entry.title,
+                data: filledData
+            };
+        });
       }
 
       return dataCharts
@@ -185,7 +194,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <Typography variant="h6" component="h6" color="white" fontWeight={600}>
-          {/* {metric.title} */}
           {chartTitle}
         </Typography>
         {(() => {

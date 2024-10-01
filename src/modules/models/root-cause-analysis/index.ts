@@ -8,12 +8,17 @@ type Tooltip = {
   status_code: string;
   total: number;
 }
+export type NLP = {
+  resolution: string;
+  action: string;
+}
 type ImpactedService = {
   service:  string;
   service_alias:  string;
   total:    number;
   impacted: string[];
-  tooltips: Tooltip[]
+  tooltips: Tooltip[];
+  nlp?: NLP;
 }
 export interface RootCauseAnalysisTreeResponse {
   source: string;
