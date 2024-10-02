@@ -64,14 +64,14 @@ const TooltipCollection: React.FC<TooltipCollectionProps> = ({
         {service.tooltips.map(tooltip => (
           <div
             key={tooltip.status_code}
-            className="grid grid-cols-[80px,_auto] gap-2"
+            className="grid grid-cols-[110px,_auto] gap-2"
           >
             <Typography
               fontWeight={600}
               fontSize={10}
               color={'white'}
             >
-              Status Code {tooltip.status_code}
+              Response Code {tooltip.status_code}
             </Typography>
             <Typography
               fontWeight={600}
