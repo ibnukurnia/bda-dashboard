@@ -25,6 +25,10 @@ export const TAB_DATA_SOURCE = [
         namespace: "k8s_db",
         textLabel: "Database",
       },
+      {
+        namespace: "redis",
+        textLabel: "Redis",
+      },
     ],
   },
   {
@@ -62,6 +66,7 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'brimo': "Log Transaksi Brimo",
   'k8s_prometheus': "OCP",
   'k8s_db': "Database",
+  'redis': "Redis",
   'ivat': "IVAT",
   'panw': "PANW",
   'forti': "FORTI",
