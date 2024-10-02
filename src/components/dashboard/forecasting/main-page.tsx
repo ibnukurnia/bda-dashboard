@@ -17,7 +17,7 @@ import SynchronizedCharts from './chart/synchronized-charts'
 // import ForecastingTable from './table/forecasting-table'
 import Button from '@/components/system/Button/Button'
 import useInterval from '@/hooks/use-interval'
-import { isToday } from 'date-fns'
+import { format, isToday } from 'date-fns'
 
 const MainPageForecasting = () => {
   const [graphData, setGraphData] = useState<any[]>([])
@@ -70,28 +70,26 @@ const MainPageForecasting = () => {
   }
 
   useLayoutEffect(() => {
-    if (filterValue?.dataSource && filterValue?.service && filterValue?.date) {
-      setChartLoading(true)
-      const { dataSource, service, date } = filterValue
-      setFilter({
-        ...filter,
-        sourceData: dataSource,
-        serviceName: service,
-        selectedDate: date,
-      })
+    setChartLoading(true)
+    const { dataSource = "tpm", service = "All", date = format(new Date(), "yyyy-MM-dd") } = filterValue || {}
+    setFilter({
+      ...filter,
+      sourceData: dataSource,
+      serviceName: service,
+      selectedDate: date,
+    })
 
-      GetForecastingStatistics().then((statistics) => setStatistics(statistics.data))
-      GetForecastingData({
-        data_source: dataSource,
-        service_name: service,
-        date,
+    GetForecastingStatistics().then((statistics) => setStatistics(statistics.data))
+    GetForecastingData({
+      data_source: dataSource,
+      service_name: service,
+      date,
+    })
+      .then((res) => {
+        setGraphData(res.data)
+        setChartLoading(false)
       })
-        .then((res) => {
-          setGraphData(res.data)
-          setChartLoading(false)
-        })
-        .catch(() => setChartLoading(false))
-    }
+      .catch(() => setChartLoading(false))
   }, [])
 
   useInterval(

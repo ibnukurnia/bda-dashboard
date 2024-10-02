@@ -1,7 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { GetFilterServiceList } from '@/modules/usecases/forecasting'
 
-import { useLocalStorage } from '@/hooks/use-storage'
 import Button from '@/components/system/Button/Button'
 
 import DropdownFilter from './dropdown'
@@ -27,7 +26,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
   const [selectedService, setSelectedService] = useState<string | null>(activeFilter.serviceName)
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [services, setServices] = useState<any[]>([])
-  const [filterValue] = useLocalStorage('filter', undefined)
 
   const dataSource = ['tpm', 'sales_volume', 'error_rate']
   const dataSourceWithoutServices = ['sales_volume', 'error_rate']
@@ -107,9 +105,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
   }, [isOpen])
 
   useLayoutEffect(() => {
-    if (filterValue?.dataSource) {
-      GetFilterServiceList({ data_source: filterValue.dataSource }).then((service) => setServices(service.data))
-    }
+    GetFilterServiceList().then((service) => setServices(service.data))
   }, [])
 
   return (
@@ -141,7 +137,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
               onChange={(item: string) => {
                 setSelectedSource(item)
                 setSelectedService(null)
-                GetFilterServiceList({ data_source: item }).then((service) => setServices(service.data))
               }}
               selected={selectedSource}
             />

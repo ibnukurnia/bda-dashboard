@@ -60,12 +60,11 @@ const GetForecastingData = async (
   return response
 }
 
-const GetFilterServiceList = async (params: { data_source: string }, signal?: AbortSignal) => {
+const GetFilterServiceList = async (signal?: AbortSignal) => {
   let endPoint = `forecasting/service-list`
 
   const response: ApiResponse<any> = await get(endPoint, {
     withAuth: true,
-    queries: params,
     signal,
   })
 
