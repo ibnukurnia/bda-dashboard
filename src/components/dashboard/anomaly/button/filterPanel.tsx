@@ -1,3 +1,4 @@
+import { DATA_SOURCE_NAMESPACE_REDIS } from '@/constants';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState, ChangeEvent } from 'react';
 
@@ -33,6 +34,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     hasErrorFilterService
 }) => {
     const searchParams = useSearchParams();
+    const selectedDataSource = searchParams.get("data_source");
+
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
@@ -193,7 +196,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                     >
                         <h2 className="text-xl font-semibold text-center mb-2">Multiple Filter</h2>
 
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className={`grid grid-cols-${selectedDataSource !== DATA_SOURCE_NAMESPACE_REDIS ? 3 : 2} gap-4`}>
                             {/* Anomaly Section */}
                             <div className='flex flex-col gap-3'>
                                 <div className='flex flex-col gap-2'>
@@ -280,56 +283,58 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                             </div>
 
                             {/* Services Section */}
-                            <div className='flex flex-col gap-3'>
-                                <div className='flex flex-col gap-2'>
-                                    <h3 className="font-semibold text-lg">Services</h3>
-                                    <p className="text-sm text-gray-600">
-                                        Selected Services: <span className='text-blue-600'>{selectedServiceOptions.length}</span>
-                                    </p>
-                                    <button
-                                        onClick={handleSelectAllServices}
-                                        className="text-blue-500 text-sm text-blue-500 text-sm text-left"
-                                    >
-                                        {selectedServiceOptions.length === servicesOptions.length ? 'Unselect All' : 'Select All'}
-                                    </button>
-                                </div>
+                            {selectedDataSource !== DATA_SOURCE_NAMESPACE_REDIS && (
+                                <div className='flex flex-col gap-3'>
+                                    <div className='flex flex-col gap-2'>
+                                        <h3 className="font-semibold text-lg">Services</h3>
+                                        <p className="text-sm text-gray-600">
+                                            Selected Services: <span className='text-blue-600'>{selectedServiceOptions.length}</span>
+                                        </p>
+                                        <button
+                                            onClick={handleSelectAllServices}
+                                            className="text-blue-500 text-sm text-blue-500 text-sm text-left"
+                                        >
+                                            {selectedServiceOptions.length === servicesOptions.length ? 'Unselect All' : 'Select All'}
+                                        </button>
+                                    </div>
 
-                                <div className='flex flex-col gap-2'>
-                                    <input
-                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                        placeholder="Search service"
-                                        value={searchValue}
-                                        onChange={handleSearch}
-                                    />
-                                    <div className="overflow-y-auto max-h-48">
-                                        {hasErrorFilterService ? (
-                                            <p className="text-red-500">
-                                                An error occurred while fetching services. Please try again later.
-                                            </p>
-                                        ) : filteredServicesOptions.length > 0 ? (
-                                            filteredServicesOptions.map((service, index) => (
-                                                <label
-                                                    key={index}
-                                                    className="flex items-center justify-between mb-1"
-                                                >
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={service}
-                                                            checked={selectedServiceOptions.includes(service)}
-                                                            onChange={() => handleServiceChange(service)}
-                                                            className="mr-2"
-                                                        />
-                                                        {service}
-                                                    </div>
-                                                </label>
-                                            ))
-                                        ) : (
-                                            <p>No services available</p>
-                                        )}
+                                    <div className='flex flex-col gap-2'>
+                                        <input
+                                            className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                            placeholder="Search service"
+                                            value={searchValue}
+                                            onChange={handleSearch}
+                                        />
+                                        <div className="overflow-y-auto max-h-48">
+                                            {hasErrorFilterService ? (
+                                                <p className="text-red-500">
+                                                    An error occurred while fetching services. Please try again later.
+                                                </p>
+                                            ) : filteredServicesOptions.length > 0 ? (
+                                                filteredServicesOptions.map((service, index) => (
+                                                    <label
+                                                        key={index}
+                                                        className="flex items-center justify-between mb-1"
+                                                    >
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                value={service}
+                                                                checked={selectedServiceOptions.includes(service)}
+                                                                onChange={() => handleServiceChange(service)}
+                                                                className="mr-2"
+                                                            />
+                                                            {service}
+                                                        </div>
+                                                    </label>
+                                                ))
+                                            ) : (
+                                                <p>No services available</p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
                         <div className="flex justify-between space-x-4">

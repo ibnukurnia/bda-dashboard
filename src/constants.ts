@@ -1,5 +1,7 @@
 export const DEFAULT_DATA_SOURCE_NAMESPACE = "apm"
 
+export const DATA_SOURCE_NAMESPACE_REDIS = "redis"
+
 export const TAB_DATA_SOURCE = [
   {
     textLabel: "Logs",
@@ -26,7 +28,7 @@ export const TAB_DATA_SOURCE = [
         textLabel: "Database",
       },
       {
-        namespace: "redis",
+        namespace: DATA_SOURCE_NAMESPACE_REDIS,
         textLabel: "Redis",
       },
     ],
@@ -66,7 +68,7 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'brimo': "Log Transaksi Brimo",
   'k8s_prometheus': "OCP",
   'k8s_db': "Database",
-  'redis': "Redis",
+  DATA_SOURCE_NAMESPACE_REDIS: "Redis",
   'ivat': "IVAT",
   'panw': "PANW",
   'forti': "FORTI",
