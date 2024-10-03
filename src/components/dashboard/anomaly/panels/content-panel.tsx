@@ -470,6 +470,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 // console.log('Mapped Checkbox Options:', options); // Log the mapped options
 
                 setFilterAnomalyOptions(options); // Update state with fetched options
+                setHasErrorAnomalyFilter(false); // Set error state on catch
             } else {
                 console.error('Response data or columns are missing');
                 setHasErrorAnomalyFilter(true); // Set error state if response is invalid
@@ -511,6 +512,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 // No need to map as it's already an array of strings
                 const services = response.data.services
                 setFilterServiceOptions(services) // Update state with fetched service options
+                setHasErrorServiceFilter(false)
             } else {
                 console.error('Response data or services are missing')
             }
