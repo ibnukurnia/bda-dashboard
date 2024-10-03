@@ -11,6 +11,7 @@ interface NodeProps {
   title: string;
   count?: number;
   expanded: boolean;
+  isBranchService: boolean;
   handleOnClickNode: () => void;
   hasDetail?: boolean;
   queryParams?: {
@@ -32,6 +33,7 @@ const Node: React.FC<NodeProps> = ({
   title,
   count,
   expanded,
+  isBranchService,
   handleOnClickNode,
   hasDetail,
   queryParams,
@@ -82,7 +84,7 @@ const Node: React.FC<NodeProps> = ({
         <div className='w-full flex items-center justify-between'>
           <Typography
             className='overflow-hidden text-ellipsis whitespace-nowrap inline-block'
-            variant="subtitle1"
+            variant={isBranchService ? "caption" : "subtitle1"}
             color={'white'}
             fontWeight={expanded ? 700 : 400}
             style={{ maxWidth: containerWidth - (count == null ? 28 : 0) - (tooltips ? 20 : 0) }}
@@ -101,7 +103,7 @@ const Node: React.FC<NodeProps> = ({
       <div className='w-full flex justify-between items-center'>
         {count != null &&
           <Typography
-            variant="subtitle1"
+            variant={isBranchService ? "caption" : "subtitle1"}
             color={'white'}
             fontWeight={expanded ? 700 : 400}
           >
@@ -116,7 +118,7 @@ const Node: React.FC<NodeProps> = ({
             className='pl-2 flex gap-0 items-center hover:bg-gray-600 active:bg-gray-500 rounded-lg'
           >
             <Typography
-              variant="caption"
+              variant={isBranchService ? "caption" : "subtitle1"}
               color={'white'}
             >
               Detail
