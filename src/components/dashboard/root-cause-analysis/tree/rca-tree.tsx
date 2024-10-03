@@ -216,7 +216,7 @@ const RCATree: React.FC<RCATreeProps> = ({
                   metric_anomaly: expandedNodes[1]?.node.namespace ?? expandedNodes[1]?.node.name,
                 }}
                 fullScreenHandle={fullScreenHandle}
-                maxCount={totalAnomaly}
+                maxCount={expNode.node.anomalyCount ?? 0}
                 isLoading={isLoading}
                 handleSelectNLP={handleSelectNLP}
               />

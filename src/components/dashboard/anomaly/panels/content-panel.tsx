@@ -19,6 +19,7 @@ import AutoRefreshButton from '../button/refreshButton'
 import { NAMESPACE_LABELS, PREDEFINED_TIME_RANGES, ROWS_PER_PAGE_OPTIONS } from '@/constants'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { formatNumberWithCommas } from '../../../../helper';
+import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 
 interface TabContentProps {
     selectedDataSource: string
@@ -52,6 +53,7 @@ const TabContent: React.FC<TabContentProps> = ({
     const [hasErrorFilterAnomaly, setHasErrorAnomalyFilter] = useState<boolean>(false)
     const [hasErrorFilterService, setHasErrorServiceFilter] = useState<boolean>(false)
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
+    const [highlights, setHighlights] = useState<string[][] | null | undefined>([])
     const [data, setData] = useState<any[]>([])
     const [totalPages, setTotalPages] = useState<number>(1)
     const [totalRows, setTotalRows] = useState<number>(1)
@@ -136,7 +138,7 @@ const TabContent: React.FC<TabContentProps> = ({
             logResultPromise
                 .then((logResult) => {
                     if (logResult.data) {
-                        const { rows, columns, total_pages, page, total_rows } = logResult.data;
+                        const { rows, columns, total_pages, page, total_rows, highlights } = logResult.data;
 
                         if (rows.length > 0) {
                             // Update the total number of pages based on the API response
@@ -156,6 +158,8 @@ const TabContent: React.FC<TabContentProps> = ({
 
                             setData(newData); // Update the table data
 
+                            setHighlights(highlights)
+                            
                             // Update the pagination state
                             setPagination((prev) => ({
                                 ...prev,
@@ -274,7 +278,7 @@ const TabContent: React.FC<TabContentProps> = ({
             logAnomaliesPromise
                 .then((result) => {
                     if (result.data) {
-                        const { columns, rows, total_pages, total_rows } = result.data;
+                        const { columns, rows, total_pages, total_rows, highlights } = result.data;
 
                         // Update the total number of pages based on the API response
                         setTotalPages(total_pages);
@@ -301,6 +305,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
                         // Update the table data
                         setData(newData);
+                        setHighlights(highlights)
                         setIsTableLoading(false);
                     } else {
                         console.warn('API response data is null or undefined');
@@ -342,7 +347,7 @@ const TabContent: React.FC<TabContentProps> = ({
         logAnomaliesPromise
             .then((result) => {
                 if (result.data) {
-                    const { columns, rows, total_pages, total_rows } = result.data;
+                    const { columns, rows, total_pages, total_rows, highlights } = result.data;
 
                     // Update the total number of pages based on the API response
                     setTotalPages(total_pages);
@@ -369,6 +374,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
                     // Update the table data
                     setData(newData);
+                    setHighlights(highlights)
                     setIsTableLoading(false);
                 } else {
                     console.warn('API response data is null or undefined');
@@ -411,6 +417,7 @@ const TabContent: React.FC<TabContentProps> = ({
                     return mappedRow;
                 });
                 setData(newData);
+                setHighlights(result.data.highlights)
             } else {
                 console.warn('API response data is null or undefined');
             }
@@ -419,7 +426,7 @@ const TabContent: React.FC<TabContentProps> = ({
         }
     };
 
-    const processApiResult = (result: any) => {
+    const processApiResult = (result: void | ApiResponse<PaginatedResponse>) => {
         if (result && result.data) {
             // Update columns and data
             const newColumns = result.data.columns.map((column: any) => ({
@@ -431,12 +438,13 @@ const TabContent: React.FC<TabContentProps> = ({
 
             const newData = result.data.rows.map((row: any) => {
                 const mappedRow: any = {}
-                result.data.columns.forEach((col: any) => {
+                result.data?.columns.forEach((col: any) => {
                     mappedRow[col.key] = row[col.key]
                 })
                 return mappedRow
             })
             setData(newData)
+            setHighlights(result.data.highlights)
         } else {
             console.warn('API response data is null or undefined')
         }
@@ -651,6 +659,8 @@ const TabContent: React.FC<TabContentProps> = ({
 
                     // Update the table data
                     setData(newData);
+
+                    setHighlights(result.data.highlights)
 
                     // Update the pagination state, resetting to the first page
                     setPagination((prev) => ({
@@ -1003,9 +1013,19 @@ const TabContent: React.FC<TabContentProps> = ({
 
                                                                     {/* Format number with commas */}
                                                                     {typeof cell.getValue() === 'number' ? (
-                                                                        <span>{formatNumberWithCommas(cell.getValue() as number)}</span>
+                                                                        <span
+                                                                            className={highlights?.[row.index].includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''}
+                                                                        >
+                                                                            {cell.column.id === "error_rate" ?
+                                                                                (cell.getValue() as number).toString().replace('.', ',') :
+                                                                                formatNumberWithCommas(cell.getValue() as number)}
+                                                                        </span>
                                                                     ) : (
-                                                                        <span>{cell.getValue() as string}</span>
+                                                                        <span
+                                                                            className={highlights?.[row.index].includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''}
+                                                                        >
+                                                                            {cell.getValue() as string}
+                                                                        </span>
                                                                     )}
                                                                 </div>
                                                             </td>

@@ -1,5 +1,5 @@
+import Skeleton from "@/components/system/Skeleton/Skeleton";
 import React from "react";
-import { Skeleton } from "@mui/material";
 
 interface HealthinessGaugesWrapperProps {
   children: React.ReactNode;
@@ -25,9 +25,7 @@ const HealthinessGaugesWrapper: React.FC<HealthinessGaugesWrapperProps> = ({
         <Skeleton
           key={i}
           className="flex flex-col flex-grow"
-          animation="wave"
-          sx={{ bgcolor: 'grey.800', minWidth: 250 }}
-          variant="rounded"
+          customStyle={{ minWidth: 250 }}
           height={200}
         />
       ))}

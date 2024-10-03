@@ -84,7 +84,7 @@ const GetHealthScoreOverview = async (params?: { start_time: string | Date; end_
 const GetLatestCritical = async (params?: {
   start_time: string | Date
   end_time: string | Date
-  severity: number | null | undefined
+  severity: number[]
   limit: number
   page: number
 }) => {

@@ -1,3 +1,4 @@
+import { Typography } from '@mui/material';
 import './table.css'
 
 interface TableNLPProps {
@@ -15,6 +16,13 @@ const TableNLP = ({
   return (
     <div className="rounded-lg p-6 w-full flex flex-col gap-3 card-style">
       <div className={`w-full`}>
+        <Typography
+          fontWeight={700}
+          fontSize={'18px'}
+          color={'white'}
+        >
+          Related Incident
+        </Typography>
         <div className="min-w-full">
           <table className="table-auto divide-y divide-gray-200 w-full">
             <tbody className="divide-y divide-gray-200 text-gray-600">

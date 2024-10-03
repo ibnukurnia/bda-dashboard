@@ -11,6 +11,7 @@ export interface PaginatedResponse {
   total_rows: number
   total_pages: number
   columns: { title: string, key: string }[]
+  highlights?: string[][]
 }
 
 export interface ErrorResponse extends Error {

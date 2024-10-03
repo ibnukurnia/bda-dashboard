@@ -1,5 +1,5 @@
+import Skeleton from "@/components/system/Skeleton/Skeleton";
 import React from "react";
-import { Skeleton } from "@mui/material";
 
 interface DonutChartWrapperProps {
   children: React.ReactNode;
@@ -12,8 +12,6 @@ const DonutChartWrapper: React.FC<DonutChartWrapperProps> = ({
 }) => {
   if (isLoading) return (
     <Skeleton
-      animation="wave"
-      sx={{ bgcolor: 'grey.800' }}
       variant="circular"
       width={250}
       height={250}

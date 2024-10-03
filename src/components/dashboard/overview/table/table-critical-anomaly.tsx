@@ -1,11 +1,12 @@
 import { TablePagination, Typography } from '@mui/material'
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Cell, ColumnDef, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { GetLatestCritical } from '@/modules/usecases/overviews';
 import { format } from 'date-fns';
 import { PREDEFINED_TIME_RANGES, ROWS_PER_PAGE_OPTIONS, SEVERITY_LABELS } from '@/constants';
 import useUpdateEffect from '@/hooks/use-update-effect';
 import { formatNumberWithCommas } from '../../../../helper';
+import useDebounce from '@/hooks/use-debounce';
 
 
 const toMiliseconds = 1000 * 60
@@ -18,7 +19,7 @@ const CellValue: React.FC<CellValueProps> = ({
 }) => {
   if (cell.column.id === 'severity') {
     return (
-      <>
+      <Fragment>
         <svg
           width="14"
           height="15"
@@ -32,17 +33,17 @@ const CellValue: React.FC<CellValueProps> = ({
           />
         </svg>
         {SEVERITY_LABELS[cell.getValue() as string] ?? cell.getValue()}
-      </>
+      </Fragment>
     )
   }
   if (typeof cell.column.columnDef.cell === 'function') {
-    return <>
+    return <Fragment>
       {cell.column.columnDef.cell(cell.getContext())}
-    </>
+    </Fragment>
   }
-  return <>
+  return <Fragment>
     {cell.column.columnDef.cell}
-  </>
+  </Fragment>
 }
 
 interface TableWrapperProps {
@@ -72,7 +73,7 @@ const TableWrapper: React.FC<TableWrapperProps> = ({
 
 interface TableCriticalAnomalyProps {
   timeRange: string
-  severity?: { value: any; id: number; label: string } | null
+  severity: { value: any; id: number; label: string }[]
 }
 
 const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps) => {
@@ -102,11 +103,11 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
     fetchData()
   }, [])
 
-  useUpdateEffect(() => {
+  useDebounce(() => {
     setPauseEffectPagination(true)
     setPagination(prev => ({ ...prev, pageIndex: 1 }))
     fetchData(1)
-  }, [timeRange, severity])
+  }, 500, [timeRange, severity])
 
   useUpdateEffect(() => {
     if (pauseEffectPagination) {
@@ -123,7 +124,7 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
     GetLatestCritical({
       start_time: startTime,
       end_time: endTime,
-      severity: severity?.id,
+      severity: severity.map(s => s.id),
       page: page ?? pagination.pageIndex,
       limit: pagination.pageSize
     })
@@ -201,13 +202,13 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
                             ? header.column.columnDef.header({} as any) // Pass a dummy context
                             : header.column.columnDef.header}
                           {header.column.getCanSort() && (
-                            <>
+                            <Fragment>
                               {{
                                 asc: '🔼',
                                 desc: '🔽',
                                 undefined: '🔽', // Default icon for unsorted state
                               }[header.column.getIsSorted() as string] || '🔽'}
-                            </>
+                            </Fragment>
                           )}
                         </button>
                       </th>

@@ -38,7 +38,7 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
               Welcome to
             </Typography>
             <Typography color="inherit" sx={{ fontSize: '24px', lineHeight: '32px', textAlign: 'center' }} variant="h1">
-              BDA-APP-DASHBOARD
+              OpsVision
             </Typography>
           </Stack>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, marginTop: 6 }}>

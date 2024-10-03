@@ -6,11 +6,12 @@ import './dropdown-ds.css'
 
 interface DropdownSeverityProps {
   data: { value: any; id: number; label: string }[]
-  onSelectData: (value?: { value: any; id: number; label: string } | null) => void
-  selectedData?: { value: any; id: number; label: string } | null | undefined
+  onSelectData: (value: { value: any; id: number; label: string }) => void
+  handleReset: () => void
+  selectedData: { value: any; id: number; label: string }[]
 }
 
-const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData, selectedData }) => {
+const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData, handleReset, selectedData }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [position, setPosition] = useState<number>(0)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
@@ -26,9 +27,8 @@ const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData,
     }
   }
 
-  const handleSelectData = (dataSelection?: { value: any; id: number; label: string } | null) => {
+  const handleSelectData = (dataSelection: { value: any; id: number; label: string }) => {
     onSelectData(dataSelection)
-    setIsOpen(false)
   }
 
   useEffect(() => {
@@ -60,7 +60,8 @@ const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData,
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {data.find((el) => el.id === selectedData?.id)?.label || 'All Severity'}
+        {selectedData.length === 0 || selectedData.length === data.length ?
+        'All Severity' : selectedData.map(d => d.label).join(", ")}
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"
@@ -81,19 +82,29 @@ const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData,
           <ul className="text-sm text-gray-800 w-48">
             <li>
               <div
-                onClick={() => handleSelectData(null)}
+                onClick={handleReset}
                 className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
               >
+                <input
+                    type="checkbox"
+                    checked={selectedData.length === 0 || selectedData.length === data.length}
+                    className="mr-2"
+                />
                 All Severity
               </div>
             </li>
-            {data.map((dataSelection, dsid) => (
+            {data.map((d, dsid) => (
               <li key={dsid}>
                 <div
-                  onClick={() => handleSelectData(dataSelection)}
+                  onClick={() => handleSelectData(d)}
                   className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
                 >
-                  {dataSelection.label}
+                  <input
+                      type="checkbox"
+                      checked={selectedData.some(selected => selected.id === d.id)}
+                      className="mr-2"
+                  />
+                  {d.label}
                 </div>
               </li>
             ))}

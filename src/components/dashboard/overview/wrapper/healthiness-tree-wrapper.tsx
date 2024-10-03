@@ -1,5 +1,5 @@
+import Skeleton from "@/components/system/Skeleton/Skeleton";
 import React from "react";
-import { Skeleton } from "@mui/material";
 
 interface HealthinessTreeWrapperProps {
   children: React.ReactNode;
@@ -20,9 +20,7 @@ const HealthinessTreeWrapper: React.FC<HealthinessTreeWrapperProps> = ({
   if (isLoading) return (
     <Skeleton
       className="flex flex-col flex-grow"
-      animation="wave"
-      sx={{ bgcolor: 'grey.800', minWidth: 250 }}
-      variant="rounded"
+      customStyle={{ minWidth: 250 }}
       height={450}
     />
   )

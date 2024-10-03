@@ -37,7 +37,7 @@ import { GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { fetchServicesOption } from '@/lib/api'
 import DropdownAnomalyAmountService from './button/dropdown-anomaly-amount-service'
 import AnomalyAmountWrapper from './wrapper/anomaly-amount-wrapper'
-import { Skeleton } from '@mui/material'
+import Skeleton from '@/components/system/Skeleton/Skeleton'
 
 const ANOMALY_AMOUNT_TYPE = 'brimo'
 const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
@@ -133,7 +133,7 @@ const MainPageOverview = () => {
   // const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
   const [amountServiceList, setAmountServiceList] = useState<string[]>([]);
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
-  const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string } | null | undefined>(dataDropdownSeverity[0])
+  const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string }[]>([])
   const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
   const [selectedAnomalyAmountService, setSelectedAnomalyAmountService] = useState<string>('')
   const [modalServices, setModalServices] = useState(false)
@@ -333,8 +333,12 @@ const MainPageOverview = () => {
       })
   }
 
-  const handleChangeFilterSeverity = (value?: { value: any; id: number; label: string } | null) => {
-    setSelectedSeverity(value)
+  const handleSelectSeverity = (value: { value: any; id: number; label: string }) => {
+    setSelectedSeverity((prevs) =>
+      prevs.some(prev => prev.id === value.id) ?
+      prevs.filter(prev => prev.id !== value.id) :
+      [...prevs, value]
+    );
   }
 
   // Function to handle the API call when a filter is changed or on the initial load
@@ -856,7 +860,8 @@ const MainPageOverview = () => {
                 <span className="font-bold text-white text-2xl content-center">Latest Anomaly</span>
                 {!handle.active && <DropdownSeverity
                   data={dataDropdownSeverity}
-                  onSelectData={(e) => handleChangeFilterSeverity(e)}
+                  onSelectData={(e) => handleSelectSeverity(e)}
+                  handleReset={() => setSelectedSeverity([])}
                   selectedData={selectedSeverity}
                 />}
               </div>
@@ -891,9 +896,6 @@ const MainPageOverview = () => {
                 {!handle.active && (
                   isLoadingAnomalyAmountServices ?
                     <Skeleton
-                      animation="wave"
-                      sx={{ bgcolor: 'grey.800' }}
-                      variant="rounded"
                       width={200}
                       height={48}
                     /> :

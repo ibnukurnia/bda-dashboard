@@ -1,5 +1,5 @@
+import Skeleton from "@/components/system/Skeleton/Skeleton";
 import React from "react";
-import { Skeleton } from "@mui/material";
 
 interface AnomalyAmountWrapperProps {
   children: React.ReactNode;
@@ -12,9 +12,6 @@ const AnomalyAmountWrapper: React.FC<AnomalyAmountWrapperProps> = ({
 }) => {
   if (isLoading) return (
     <Skeleton
-      animation="wave"
-      sx={{ bgcolor: 'grey.800' }}
-      variant="rounded"
       width={"100%"}
       height={300}
     />
