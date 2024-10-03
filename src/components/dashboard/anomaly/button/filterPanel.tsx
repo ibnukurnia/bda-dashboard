@@ -196,7 +196,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                     >
                         <h2 className="text-xl font-semibold text-center mb-2">Multiple Filter</h2>
 
-                        <div className={`grid grid-cols-${selectedDataSource !== DATA_SOURCE_NAMESPACE_REDIS ? 3 : 2} gap-4`}>
+                        <div
+                            className={`grid gap-4`}
+                            style={{
+                                gridTemplateColumns: `repeat(${selectedDataSource !== DATA_SOURCE_NAMESPACE_REDIS ? '3' : '2'}, 1fr)`
+                            }}
+                        >
                             {/* Anomaly Section */}
                             <div className='flex flex-col gap-3'>
                                 <div className='flex flex-col gap-2'>
