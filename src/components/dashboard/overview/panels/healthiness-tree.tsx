@@ -49,7 +49,7 @@ const treeData = [
 ];
 
 const getColor = (severity: number) => {
-  if (severity === 0) {
+  if (severity === 0 || severity === 3) {
     return '22,163,74'
   }
   if (severity === 1) {
@@ -57,9 +57,6 @@ const getColor = (severity: number) => {
   }
   if (severity === 2) {
     return '234,88,12'
-  }
-  if (severity === 3) {
-    return '250,204,21'
   }
   return '213,213,213'
 }
