@@ -23,6 +23,7 @@ interface ScrollableNodeListProps {
   handleOnClickNode: (index: number) => void;
   expandedIndex: number;
   expandedChildIndex: number;
+  isBranchService: boolean;
   handleOnScroll: (scrollTop: number) => void;
   hasDetail?: boolean;
   queryParams?: {
@@ -41,6 +42,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   handleOnClickNode,
   expandedIndex,
   expandedChildIndex,
+  isBranchService,
   handleOnScroll,
   hasDetail,
   queryParams,
@@ -187,6 +189,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
               percentage={getPercentageValue(node.anomalyCount)}
               count={node.anomalyCount}
               expanded={expandedIndex === index}
+              isBranchService={isBranchService}
               handleOnClickNode={() => handleOnClickNode(index)}
               hasDetail={hasDetail}
               queryParams={{
