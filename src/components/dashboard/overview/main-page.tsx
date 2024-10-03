@@ -8,7 +8,8 @@ import {
   GetPieChartsOverview,
   GetTopFiveCritical,
   GetTopServicesOverview,
-  GetAmountGraphic
+  GetAmountGraphic,
+  GetAmountServiceList
 } from '@/modules/usecases/overviews'
 import { format } from 'date-fns'
 import { Maximize } from 'react-feather'
@@ -47,91 +48,53 @@ const sourceData = [
     name: 'Log APM BRIMO',
     count: 1865,
     value: 'apm',
-    services: [
-      { name: 'Windows', count: 1625, data: [28, 70, 49, 80, 132, 129, 134, 80, 132, 129, 134] },
-      { name: 'Linux', count: 1240, data: [28, 50, 124, 80, 132, 78, 134, 80, 132, 78, 134] },
-    ],
   },
   {
     name: 'Log Transaksi BRIMO',
     count: 1862,
     value: 'brimo',
-    services: [
-      { name: 'Windows', count: 1102, data: [28, 133, 124, 127, 132, 129, 134] }, // Same service name as APM
-      { name: 'XY', count: 1580, data: [28, 133, 124, 127, 132, 129, 134] },
-    ],
   },
   {
     name: 'OCP',
     count: 1567,
     value: 'k8s_prometheus',
-    services: [
-      { name: 'Winqowdkoqk', count: 980, data: [28, 133, 124, 127, 132, 129, 134] },
-      { name: 'Z/OS System', count: 587, data: [28, 133, 124, 127, 132, 129, 134] },
-    ],
   },
   {
     name: 'DB',
     count: 1567,
     value: 'k8s_db',
-    services: [
-      { name: 'Winqowdkoqk', count: 980, data: [28, 133, 124, 127, 132, 129, 134] },
-      { name: 'Z/OS System', count: 587, data: [28, 133, 124, 127, 132, 129, 134] },
-    ],
   },
   {
     name: 'PANW',
     count: 684,
     value: 'panw',
-    services: [
-      { name: 'Server', count: 450, data: [28, 133, 124, 127, 132, 129, 134] },
-      { name: 'Processor', count: 234, data: [28, 133, 124, 127, 132, 129, 134] },
-    ],
   },
   {
     name: 'WAF',
     count: 684,
     value: 'waf',
-    services: [
-      { name: 'Server', count: 450, data: [28, 133, 124, 127, 132, 129, 134] },
-      { name: 'Processor', count: 234, data: [28, 133, 124, 127, 132, 129, 134] },
-    ],
   },
   {
     name: 'FORTI',
     count: 684,
     value: 'forti',
-    services: [
-      { name: 'Server', count: 450, data: [28, 133, 124, 127, 132, 129, 134] },
-      { name: 'Processor', count: 234, data: [28, 133, 124, 127, 132, 129, 134] },
-    ],
+
   },
   {
     name: 'IVAT',
     count: 684,
     value: 'ivat',
-    services: [
-      { name: 'Server', count: 450, data: [28, 133, 124, 127, 132, 129, 134] },
-      { name: 'Processor', count: 234, data: [28, 133, 124, 127, 132, 129, 134] },
-    ],
+
   },
   {
     name: 'PRTG',
     count: 684,
     value: 'prtg',
-    services: [
-      { name: 'Server', count: 450, data: [28, 133, 124, 127, 132, 129, 134] },
-      { name: 'Processor', count: 234, data: [28, 133, 124, 127, 132, 129, 134] },
-    ],
   },
   {
     name: 'ZABBIX',
     count: 684,
     value: 'zabbix',
-    services: [
-      { name: 'Server', count: 450, data: [28, 133, 124, 127, 132, 129, 134] },
-      { name: 'Processor', count: 234, data: [28, 133, 124, 127, 132, 129, 134] },
-    ],
   },
 ]
 
@@ -168,6 +131,7 @@ const defaultTimeRanges: Record<string, number> = {
 
 const MainPageOverview = () => {
   // const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
+  const [amountServiceList, setAmountServiceList] = useState<string[]>([]);
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
   const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string } | null | undefined>(dataDropdownSeverity[0])
   const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
@@ -236,6 +200,12 @@ const MainPageOverview = () => {
 
     const paramsTime = { start_time: startTime, end_time: endTime };
     const params = { type: selectedDataSource, ...paramsTime };
+    const paramsAmount = {
+      start_time: startTime,
+      end_time: endTime,
+      service_name: selectedAnomalyAmountService === 'All' ? amountServiceList.filter((name) => name !== 'All') : [selectedAnomalyAmountService]
+    };
+
 
     // Fetch Pie Chart Data
     GetPieChartsOverview(params)
@@ -312,6 +282,25 @@ const MainPageOverview = () => {
       .finally(() => {
         setIsLoadingAnomalyAmount(false);
       })
+
+    // Make the API call with the correct params
+    GetAmountGraphic(paramsAmount)
+      .then((res) => {
+        // Check if the response has data and update the state
+        if (res && res.data) {
+          setAnomalyAmountData(res.data);
+        } else {
+          setAnomalyAmountData([]); // Set to an empty array if no data is returned
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching anomaly amount data:', error);
+        setAnomalyAmountData([]); // Handle error by resetting the data
+      })
+      .finally(() => {
+        // Always set loading to false after the API call finishes
+        setIsLoadingAnomalyAmount(false);
+      });
   };
 
   const handleChangeFilterDS = (value: string) => {
@@ -348,21 +337,19 @@ const MainPageOverview = () => {
     setSelectedSeverity(value)
   }
 
+  // Function to handle the API call when a filter is changed or on the initial load
   const handleChangeFilterAnomalyAmountService = (value: string) => {
-    // Set the loading state to true before the API call
     setIsLoadingAnomalyAmount(true);
 
     // Get the startTime and endTime values from your selected range
     const { startTime, endTime } = handleStartEnd(selectedRange);
 
-    // Define the list of hardcoded services
-    const limitedServices = ['mylta-brimo', 'ferrypier-brimo', 'GEORGOPOOL', 'TORREAHUMADA', 'pudge'];
 
     // Build the params object with the service_name array if "All" is selected
     const params = {
       start_time: startTime,
       end_time: endTime,
-      service_name: value === 'All' ? limitedServices : [value]
+      service_name: value === 'All' ? amountServiceList.filter((name) => name !== 'All') : [value]
     };
 
     // Update the selected service in state
@@ -384,7 +371,6 @@ const MainPageOverview = () => {
       })
       .finally(() => {
         // Always set loading to false after the API call finishes
-        // console.log(anomalyAmountData)
         setIsLoadingAnomalyAmount(false);
       });
   };
@@ -446,25 +432,26 @@ const MainPageOverview = () => {
         .catch(() => setChartData([]))
         .finally(() => setIsLoadingGraphic(false))
 
-      if (selectedAnomalyAmountService) {
-        GetMetricLogAnomalies({
-          ...paramsTime,
-          metric_name: [ANOMALY_AMOUNT_METRIC_NAME],
-          service_name: selectedAnomalyAmountService,
-          type: ANOMALY_AMOUNT_TYPE,
-        })
-          .then((res) => {
-            // setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
-            setIsErrorAnomalyAmount(false)
-          })
-          .catch(() => {
-            setIsErrorAnomalyAmount(true)
-          })
-          .finally(() => {
-            setIsLoadingAnomalyAmount(false)
-          })
-      }
+      // if (selectedAnomalyAmountService) {
+      //   GetMetricLogAnomalies({
+      //     ...paramsTime,
+      //     metric_name: [ANOMALY_AMOUNT_METRIC_NAME],
+      //     service_name: selectedAnomalyAmountService,
+      //     type: ANOMALY_AMOUNT_TYPE,
+      //   })
+      //     .then((res) => {
+      //       // setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
+      //       setIsErrorAnomalyAmount(false)
+      //     })
+      //     .catch(() => {
+      //       setIsErrorAnomalyAmount(true)
+      //     })
+      //     .finally(() => {
+      //       setIsLoadingAnomalyAmount(false)
+      //     })
+      // }
     };
+
 
     // Fetch initial chart data when the component mounts
     fetchMetrics();
@@ -483,11 +470,12 @@ const MainPageOverview = () => {
         clearInterval(intervalChartId); // Clean up the interval on component unmount
       }
     };
-  }, [selectedRange, selectedDataSource, selectedAnomalyAmountService, isCustomRangeSelected]);
+  }, [selectedRange, selectedDataSource, isCustomRangeSelected]);
 
 
   useEffect(() => {
-    const { startTime, endTime } = handleStartEnd(selectedRange)
+    const { startTime, endTime } = handleStartEnd(selectedRange);
+
 
     setIsLoadingHealthScore(true)
     setIsLoadingPieChart(true)
@@ -499,6 +487,12 @@ const MainPageOverview = () => {
       type: selectedDataSource,
       ...paramsTime,
     }
+
+    const paramsAmount = {
+      start_time: startTime,
+      end_time: endTime,
+      service_name: selectedAnomalyAmountService === 'All' ? amountServiceList.filter((name) => name !== 'All') : [selectedAnomalyAmountService]
+    };
 
     GetPieChartsOverview(params)
       .then((res) => {
@@ -543,6 +537,21 @@ const MainPageOverview = () => {
         setIsLoadingTopFiveCritical(false);
       })
 
+    GetAmountServiceList()
+      .then((res) => {
+        if (res && res.data) {
+          // Assuming 'All' is not part of the API data, add it to the list
+          setAmountServiceList(['All', ...res.data]);
+        } else {
+          setSelectedAnomalyAmountService('All');
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching services list:', err);
+        setAmountServiceList(['']); // Default to "All" if fetching fails
+      });
+
+
     fetchServicesOption({
       ...paramsTime,
       type: ANOMALY_AMOUNT_TYPE,
@@ -557,11 +566,40 @@ const MainPageOverview = () => {
       .finally(() => {
         setIsLoadingAnomalyAmountServices(false);
       })
+
   }, [])
 
   useEffect(() => {
-    setSelectedAnomalyAmountService(anomalyAmountServicesData[0])
-  }, [anomalyAmountServicesData])
+    // Ensure that amountServiceList is available and contains data before making the API call
+    if (amountServiceList.length > 0 && selectedAnomalyAmountService === 'All') {
+      const { startTime, endTime } = handleStartEnd(selectedRange);
+
+      const paramsAmount = {
+        start_time: startTime,
+        end_time: endTime,
+        service_name: amountServiceList.filter((name) => name !== 'All') // Select all services except "All"
+      };
+
+      setIsLoadingAnomalyAmount(true);
+
+      GetAmountGraphic(paramsAmount)
+        .then((res) => {
+          if (res && res.data) {
+            setAnomalyAmountData(res.data);
+          } else {
+            setAnomalyAmountData([]); // Handle empty data case
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching anomaly amount data:', error);
+          setAnomalyAmountData([]); // Handle error
+        })
+        .finally(() => {
+          setIsLoadingAnomalyAmount(false);
+        });
+    }
+  }, [amountServiceList, selectedAnomalyAmountService]); // This effect runs when the service list or selected service changes
+
 
   useEffect(() => {
     if (!selectedAnomalyAmountService) return
@@ -661,6 +699,10 @@ const MainPageOverview = () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [modalServices])
+
+  useEffect(() => {
+    handleChangeFilterAnomalyAmountService('All');
+  }, []); // Empty dependency array to run once on mount
 
   useLayoutEffect(() => {
     if (healthinessRef.current) {
@@ -858,6 +900,7 @@ const MainPageOverview = () => {
                     <DropdownAnomalyAmountService
                       onSelectData={(e) => handleChangeFilterAnomalyAmountService(e)}
                       selectedData={selectedAnomalyAmountService}
+                      services={amountServiceList}
                     />
                 )}
               </div>

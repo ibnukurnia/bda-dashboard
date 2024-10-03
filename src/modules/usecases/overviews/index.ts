@@ -114,6 +114,14 @@ const GetAmountGraphic = async (params: { start_time: string; end_time: string; 
   return response
 }
 
+const GetAmountServiceList = async () => {
+  const response: ApiResponse<any> = await get('overview/grafik-amount-service-list', {
+    withAuth: true, // Assuming authentication is required
+  });
+
+  return response;
+};
+
 
 export {
   GetCurrentSituation,
@@ -126,5 +134,6 @@ export {
   GetTopServicesOverview,
   GetLatestCritical,
   GetTopFiveCritical,
-  GetAmountGraphic
+  GetAmountGraphic,
+  GetAmountServiceList
 }

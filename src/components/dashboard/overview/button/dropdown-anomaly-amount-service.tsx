@@ -1,21 +1,21 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import Button from '@/components/system/Button/Button';
-
-import './dropdown-ds.css';
 
 interface DropdownAnomalyAmountServiceProps {
   onSelectData: (value: string) => void;
-  selectedData?: string | null | undefined;
+  selectedData: string; // Ensure selectedData is required
+  services: string[]; // Accept dynamic services list
 }
 
-const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> = ({ onSelectData, selectedData }) => {
+const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> = ({
+  onSelectData,
+  selectedData,
+  services = [],
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<number>(0);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const dropdownContainerRef = useRef<HTMLDivElement | null>(null);
-
-  // Hardcode the dropdown data to 5 specific options plus "All"
-  const limitedData = ['All', 'mylta-brimo', 'ferrypier-brimo', 'GEORGOPOL', 'TORREAHUMADA', 'pudge'];
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -61,7 +61,7 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {limitedData.find((el) => el === selectedData) || 'Select'}
+        {selectedData || 'All'} {/* Display "All" if selectedData is empty */}
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"
@@ -80,7 +80,7 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
           className={`absolute right-0 bg-white rounded-lg shadow-lg z-50 flex w-[auto] max-h-96 overflow-auto scrollbar`}
         >
           <ul className="text-sm text-gray-800 w-48">
-            {limitedData.map((dataSelection, dsid) => (
+            {services.map((dataSelection, dsid) => (
               <li key={dsid}>
                 <div
                   onClick={() => handleSelectData(dataSelection)}
