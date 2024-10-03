@@ -169,7 +169,7 @@ const defaultTimeRanges: Record<string, number> = {
 const MainPageOverview = () => {
   // const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
-  const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string } | null | undefined>(dataDropdownSeverity[0])
+  const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string }[]>([])
   const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
   const [selectedAnomalyAmountService, setSelectedAnomalyAmountService] = useState<string>('')
   const [modalServices, setModalServices] = useState(false)
@@ -344,8 +344,12 @@ const MainPageOverview = () => {
       })
   }
 
-  const handleChangeFilterSeverity = (value?: { value: any; id: number; label: string } | null) => {
-    setSelectedSeverity(value)
+  const handleSelectSeverity = (value: { value: any; id: number; label: string }) => {
+    setSelectedSeverity((prevs) =>
+      prevs.some(prev => prev.id === value.id) ?
+      prevs.filter(prev => prev.id !== value.id) :
+      [...prevs, value]
+    );
   }
 
   const handleChangeFilterAnomalyAmountService = (value: string) => {
@@ -814,7 +818,8 @@ const MainPageOverview = () => {
                 <span className="font-bold text-white text-2xl content-center">Latest Anomaly</span>
                 {!handle.active && <DropdownSeverity
                   data={dataDropdownSeverity}
-                  onSelectData={(e) => handleChangeFilterSeverity(e)}
+                  onSelectData={(e) => handleSelectSeverity(e)}
+                  handleReset={() => setSelectedSeverity([])}
                   selectedData={selectedSeverity}
                 />}
               </div>
