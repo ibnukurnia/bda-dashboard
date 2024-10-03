@@ -325,12 +325,15 @@ const MainPageOverview = () => {
   const handleChangeFilterDS = (value: string) => {
     const { startTime, endTime } = handleStartEnd(selectedRange)
     const params = { type: value, start_time: startTime, end_time: endTime }
+    const paramsHealth = { start_time: startTime, end_time: endTime }
 
     // console.log("Data source selected:", value);  // Debug here
     setSelectedDataSource(value)
 
     setIsLoadingPieChart(true)
     setIsLoadingTopServices(true)
+    setIsLoadingHealthScore(true)
+    setIsLoadingTopFiveCritical(true)
 
     GetPieChartsOverview(params)
       .then((res) => {
@@ -350,6 +353,33 @@ const MainPageOverview = () => {
         setTopServicesData({ header: [], data: [] })
         setIsLoadingTopServices(false)
       })
+    // Fetch Health Score Data
+    GetHealthScoreOverview(paramsHealth)
+      .then((res) => {
+        if (res.data == null) throw Error("Empty response data")
+        setHealthScoreData(res.data);
+        setIsErrorHealthScore(false);
+      })
+      .catch(() => {
+        setIsErrorHealthScore(true);
+      })
+      .finally(() => {
+        setIsLoadingHealthScore(false);
+      })
+
+    GetTopFiveCritical(params)
+      .then((res) => {
+        setTopFiveCriticalData(res.data ?? [])
+        setIsErrorTopFiveCritical(false);
+      })
+      .catch(() => {
+        setIsErrorTopFiveCritical(true);
+      })
+      .finally(() => {
+        setIsLoadingTopFiveCritical(false);
+      })
+
+
   }
 
   const handleSelectSeverity = (value: { value: any; id: number; label: string }) => {
