@@ -68,7 +68,7 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'brimo': "Log Transaksi Brimo",
   'k8s_prometheus': "OCP",
   'k8s_db': "Database",
-  DATA_SOURCE_NAMESPACE_REDIS: "Redis",
+  'redis': "Redis",
   'ivat': "IVAT",
   'panw': "PANW",
   'forti': "FORTI",
