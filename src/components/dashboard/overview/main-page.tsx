@@ -171,6 +171,11 @@ const MainPageOverview = () => {
   const configDataKey = ['service_name', 'very_high', 'high', 'medium']
   const handle = useFullScreenHandle();
 
+  const formatTimeToSecondsZero = (dateObj: Date) => {
+    return dateObj.toISOString().slice(0, 19).replace('T', ' ');
+  };
+
+
   const handleStartEnd = (time: string) => {
     const timeSplit = time.split(' - ')
 
@@ -190,6 +195,20 @@ const MainPageOverview = () => {
 
   const handleChangeTimeRange = (time: string) => {
     const { startTime, endTime } = handleStartEnd(time);
+    // Create Date objects for start and end times (use local time instead of UTC)
+    const startDateObj = new Date(startTime);
+    const endDateObj = new Date(endTime);
+
+    startDateObj.setSeconds(0, 0);
+    endDateObj.setSeconds(0, 0);
+
+    // Format startTime and endTime using the helper function (no need for UTC conversions)
+    const formatTimeToString = (date: Date) => {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:00`;
+    };
+
+    const formattedStartTime = formatTimeToString(startDateObj);
+    const formattedEndTime = formatTimeToString(endDateObj);
 
     setSelectedRange(time);
     setIsLoadingHealthScore(true);
@@ -201,8 +220,8 @@ const MainPageOverview = () => {
     const paramsTime = { start_time: startTime, end_time: endTime };
     const params = { type: selectedDataSource, ...paramsTime };
     const paramsAmount = {
-      start_time: startTime,
-      end_time: endTime,
+      start_time: formattedStartTime,
+      end_time: formattedEndTime,
       service_name: selectedAnomalyAmountService === 'All' ? amountServiceList.filter((name) => name !== 'All') : [selectedAnomalyAmountService]
     };
 
@@ -336,23 +355,41 @@ const MainPageOverview = () => {
   const handleSelectSeverity = (value: { value: any; id: number; label: string }) => {
     setSelectedSeverity((prevs) =>
       prevs.some(prev => prev.id === value.id) ?
-      prevs.filter(prev => prev.id !== value.id) :
-      [...prevs, value]
+        prevs.filter(prev => prev.id !== value.id) :
+        [...prevs, value]
     );
   }
 
-  // Function to handle the API call when a filter is changed or on the initial load
   const handleChangeFilterAnomalyAmountService = (value: string) => {
     setIsLoadingAnomalyAmount(true);
 
     // Get the startTime and endTime values from your selected range
     const { startTime, endTime } = handleStartEnd(selectedRange);
 
+    // Create Date objects for start and end times (use local time instead of UTC)
+    const startDateObj = new Date(startTime);
+    const endDateObj = new Date(endTime);
+
+    console.log(startDateObj, endDateObj, "Original Date Objects");
+
+    // Set seconds and milliseconds to 00
+    startDateObj.setSeconds(0, 0);
+    endDateObj.setSeconds(0, 0);
+
+    // Format startTime and endTime using the helper function (no need for UTC conversions)
+    const formatTimeToString = (date: Date) => {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:00`;
+    };
+
+    const formattedStartTime = formatTimeToString(startDateObj);
+    const formattedEndTime = formatTimeToString(endDateObj);
+
+    console.log(formattedStartTime, formattedEndTime, "Formatted Time");
 
     // Build the params object with the service_name array if "All" is selected
     const params = {
-      start_time: startTime,
-      end_time: endTime,
+      start_time: formattedStartTime,
+      end_time: formattedEndTime,
       service_name: value === 'All' ? amountServiceList.filter((name) => name !== 'All') : [value]
     };
 
@@ -378,7 +415,6 @@ const MainPageOverview = () => {
         setIsLoadingAnomalyAmount(false);
       });
   };
-
 
   const handleLogicTitle = (title: string) => {
     if (title.toLowerCase().includes('apm')) {
@@ -491,12 +527,6 @@ const MainPageOverview = () => {
       type: selectedDataSource,
       ...paramsTime,
     }
-
-    const paramsAmount = {
-      start_time: startTime,
-      end_time: endTime,
-      service_name: selectedAnomalyAmountService === 'All' ? amountServiceList.filter((name) => name !== 'All') : [selectedAnomalyAmountService]
-    };
 
     GetPieChartsOverview(params)
       .then((res) => {

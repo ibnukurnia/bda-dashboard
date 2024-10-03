@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
+import { formatRupiah } from '@/helper';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -14,24 +15,24 @@ const AnomalyAmountChart = ({ anomalies = [], series = [], startTime, endTime }:
   // Ensure series is always treated as an array
   const validSeries = Array.isArray(series) ? series : [series];
 
-  // Function to format the numbers as Indonesian Rupiah
-  const formatRupiah = (value: number) => {
-    return `Rp. ${value.toLocaleString('id-ID')}`;
-  };
-
   // Safeguard: Handle services that have null or empty data
   console.log('Series structure:', validSeries);
 
   // Ensure services with null data are included but with empty data arrays
-  const chartSeries = validSeries.map(s => ({
-    name: s.service_name, // Name of the service for the legend
-    data: Array.isArray(s.data) && s.data.length > 0
-      ? s.data.map(d => [new Date(d[0]).getTime(), d[1]]) // Convert date strings to timestamps if data exists
-      : [] // If data is null or empty, set an empty array so no line is drawn
-  }));
+  const chartSeries = validSeries
+    .filter(s => Array.isArray(s.data) && s.data.length > 0) // Only include services with valid data
+    .map(s => ({
+      name: s.service_name, // Name of the service for the legend
+      data: s.data!.map(d => [new Date(d[0]).getTime(), d[1]]) // Convert date strings to timestamps if data exists
+    }));
 
   // Debugging: Check the chart series being passed to ApexCharts
   console.log('Chart series being passed to ApexCharts:', chartSeries);
+
+  // Calculate the min and max timestamps from the data
+  const allTimestamps = chartSeries.flatMap(s => s.data.map(d => d[0])); // Extract all timestamps
+  const minTimestamp = Math.min(...allTimestamps);
+  const maxTimestamp = Math.max(...allTimestamps);
 
   const options: ApexOptions = {
     chart: {
@@ -49,8 +50,8 @@ const AnomalyAmountChart = ({ anomalies = [], series = [], startTime, endTime }:
       enabled: true,
     },
     xaxis: {
-      min: new Date(startTime).getTime(),
-      max: new Date(endTime).getTime(),
+      min: minTimestamp, // Use min timestamp from the data
+      max: maxTimestamp, // Use max timestamp from the data
       type: 'datetime',
       labels: {
         formatter(value) {
@@ -61,7 +62,6 @@ const AnomalyAmountChart = ({ anomalies = [], series = [], startTime, endTime }:
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
-            second: '2-digit',
           }).split(', ');
         },
         style: {
@@ -77,7 +77,7 @@ const AnomalyAmountChart = ({ anomalies = [], series = [], startTime, endTime }:
     yaxis: {
       min: 0,
       labels: {
-        formatter: (value) => formatRupiah(value), // Format the y-axis as Rupiah
+        formatter: (value) => formatRupiah(value), // Reuse the formatRupiah function here
         style: {
           colors: 'white', // White color for y-axis text
         },
@@ -115,7 +115,7 @@ const AnomalyAmountChart = ({ anomalies = [], series = [], startTime, endTime }:
   return (
     <Chart
       options={options}
-      series={chartSeries} // Pass the converted series for all services, even if they have empty data
+      series={chartSeries} // Pass the converted series for all services
       type="line"
       height={300}
       width={'100%'}
