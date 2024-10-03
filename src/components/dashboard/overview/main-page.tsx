@@ -384,7 +384,7 @@ const MainPageOverview = () => {
     const formattedStartTime = formatTimeToString(startDateObj);
     const formattedEndTime = formatTimeToString(endDateObj);
 
-    console.log(formattedStartTime, formattedEndTime, "Formatted Time");
+    // console.log(formattedStartTime, formattedEndTime, "Formatted Time");
 
     // Build the params object with the service_name array if "All" is selected
     const params = {
@@ -460,9 +460,13 @@ const MainPageOverview = () => {
   useEffect(() => {
     const fetchMetrics = () => {
       const { startTime, endTime } = handleStartEnd(selectedRange); // Recalculate time range on every fetch
-
       const paramsTime = { start_time: startTime, end_time: endTime };
       const params = { type: selectedDataSource, ...paramsTime };
+      const paramsAmount = {
+        service_name: selectedAnomalyAmountService === 'All' ? amountServiceList.filter((name) => name !== 'All') : [selectedAnomalyAmountService],
+        ...paramsTime
+      };
+
 
       // Fetch chart data
       GetChartsOverview(params)
@@ -471,6 +475,24 @@ const MainPageOverview = () => {
         })
         .catch(() => setChartData([]))
         .finally(() => setIsLoadingGraphic(false))
+
+      GetAmountGraphic(paramsAmount)
+        .then((res) => {
+          // Check if the response has data and update the state
+          if (res && res.data) {
+            setAnomalyAmountData(res.data);
+          } else {
+            setAnomalyAmountData([]); // Set to an empty array if no data is returned
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching anomaly amount data:', error);
+          setAnomalyAmountData([]); // Handle error by resetting the data
+        })
+        .finally(() => {
+          // Always set loading to false after the API call finishes
+          setIsLoadingAnomalyAmount(false);
+        });
 
       // if (selectedAnomalyAmountService) {
       //   GetMetricLogAnomalies({
@@ -510,7 +532,7 @@ const MainPageOverview = () => {
         clearInterval(intervalChartId); // Clean up the interval on component unmount
       }
     };
-  }, [selectedRange, selectedDataSource, isCustomRangeSelected]);
+  }, [selectedRange, selectedDataSource, isCustomRangeSelected, selectedAnomalyAmountService, amountServiceList]);
 
 
   useEffect(() => {
