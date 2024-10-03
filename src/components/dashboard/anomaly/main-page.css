@@ -106,3 +106,21 @@ thead {
     background: #0A1635;
     z-index: 3;
 }
+
+
+@keyframes blinking {
+    0% {
+      opacity: 1; 
+    }
+    50% {
+      opacity: .75; 
+    }
+    100% {
+      opacity: .5; 
+    }
+}
+
+.blinking {
+    animation: blinking 1s infinite;
+}
+  
