@@ -1016,7 +1016,9 @@ const TabContent: React.FC<TabContentProps> = ({
                                                                         <span
                                                                             className={highlights?.[row.index].includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''}
                                                                         >
-                                                                            {formatNumberWithCommas(cell.getValue() as number)}
+                                                                            {cell.column.id === "error_rate" ?
+                                                                                (cell.getValue() as number).toString().replace('.', ',') :
+                                                                                formatNumberWithCommas(cell.getValue() as number)}
                                                                         </span>
                                                                     ) : (
                                                                         <span
