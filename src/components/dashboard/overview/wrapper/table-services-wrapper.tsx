@@ -1,5 +1,5 @@
+import Skeleton from "@/components/system/Skeleton/Skeleton";
 import React from "react";
-import { Skeleton } from "@mui/material";
 
 interface TableServicesWrapperProps {
   children: React.ReactNode;
@@ -15,9 +15,6 @@ const TableServicesWrapper: React.FC<TableServicesWrapperProps> = ({
       <div className='flex justify-between'>
         <div className="h-5 flex items-center">
           <Skeleton
-            animation="wave"
-            sx={{ bgcolor: 'grey.800' }}
-            variant="rounded"
             width={"100px"}
           />
         </div>
@@ -27,9 +24,6 @@ const TableServicesWrapper: React.FC<TableServicesWrapperProps> = ({
             {Array.from(Array(3), (_, i) => (
               <Skeleton
                 key={i}
-                animation="wave"
-                sx={{ bgcolor: 'grey.800' }}
-                variant="rounded"
                 width={"100px"}
               />
             ))}
@@ -40,9 +34,6 @@ const TableServicesWrapper: React.FC<TableServicesWrapperProps> = ({
           <div key={i} className='flex justify-between'>
             <div className="h-5 flex items-center">
               <Skeleton
-                animation="wave"
-                sx={{ bgcolor: 'grey.800' }}
-                variant="rounded"
                 width={"75px"}
               />
             </div>
@@ -55,9 +46,6 @@ const TableServicesWrapper: React.FC<TableServicesWrapperProps> = ({
                   className="w-[100px] flex justify-center"
                 >
                   <Skeleton
-                    animation="wave"
-                    sx={{ bgcolor: 'grey.800' }}
-                    variant="rounded"
                     width={"75px"}
                   />
                 </div>

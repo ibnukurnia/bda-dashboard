@@ -1,5 +1,6 @@
 import React from 'react';
-import { Skeleton, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
+import Skeleton from '@/components/system/Skeleton/Skeleton';
 
 interface TopBarProps {
   title: string;
@@ -19,8 +20,7 @@ const TopBar: React.FC<TopBarProps> = ({ title, subtitle, isLoading }) => {
       <hr />
       {isLoading ?
         <Skeleton
-          animation="wave"
-          sx={{ bgcolor: 'grey.800', fontSize: '1.5rem' }}
+          customStyle={{ fontSize: '1.5rem' }}
           variant="text"
           width={"100%"}
         /> :

@@ -1,5 +1,5 @@
+import Skeleton from "@/components/system/Skeleton/Skeleton";
 import React from "react";
-import { Skeleton } from "@mui/material";
 
 interface NodeListWrapperProps {
   children: React.ReactNode;
@@ -17,23 +17,16 @@ const NodeListWrapper: React.FC<NodeListWrapperProps> = ({
       {Array.from(Array(nodeCount), (_, i) => (
         <div className={"w-full flex flex-col gap-1"} key={i}>
           <Skeleton
-            animation="wave"
-            sx={{ bgcolor: 'grey.800' }}
-            variant="rounded"
             width={"100%"}
             height={20}
           />
           <Skeleton
-            animation="wave"
-            sx={{ bgcolor: 'grey.800', fontSize: '1.5rem' }}
-            variant="rounded"
+            customStyle={{ fontSize: '1.5rem' }}
             width={"75%"}
             height={20}
           />
           <Skeleton
-            animation="wave"
-            sx={{ bgcolor: 'grey.800', fontSize: '1.5rem' }}
-            variant="rounded"
+            customStyle={{ fontSize: '1.5rem' }}
             width={"75px"}
             height={20}
           />

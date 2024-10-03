@@ -36,7 +36,7 @@ import { GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { fetchServicesOption } from '@/lib/api'
 import DropdownAnomalyAmountService from './button/dropdown-anomaly-amount-service'
 import AnomalyAmountWrapper from './wrapper/anomaly-amount-wrapper'
-import { Skeleton } from '@mui/material'
+import Skeleton from '@/components/system/Skeleton/Skeleton'
 
 const ANOMALY_AMOUNT_TYPE = 'brimo'
 const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
@@ -849,9 +849,6 @@ const MainPageOverview = () => {
                 {!handle.active && (
                   isLoadingAnomalyAmountServices ?
                     <Skeleton
-                      animation="wave"
-                      sx={{ bgcolor: 'grey.800' }}
-                      variant="rounded"
                       width={200}
                       height={48}
                     /> :
