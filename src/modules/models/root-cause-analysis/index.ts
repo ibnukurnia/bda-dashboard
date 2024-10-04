@@ -12,6 +12,8 @@ export type NLP = {
   resolution: string
   action: string
   name: string
+  description: string | null
+  lesson_learned: string | null
 }
 type ImpactedService = {
   service: string

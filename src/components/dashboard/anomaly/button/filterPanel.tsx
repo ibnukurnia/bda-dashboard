@@ -54,12 +54,20 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     };
 
     const handleAnomalyChange = (value: string) => {
+        if (selectedSeverityOptions.length > 0) {
+            // If severity is selected, do not allow anomaly selection
+            return;
+        }
         setSelectedAnomalyOptions((prev) =>
             prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
         );
     };
 
     const handleSeverityChange = (id: number) => {
+        if (selectedAnomalyOptions.length > 0) {
+            // If anomaly is selected, do not allow severity selection
+            return;
+        }
         setSelectedSeverityOptions((prev) =>
             prev.includes(id) ? prev.filter((option) => option !== id) : [...prev, id]
         );
@@ -212,6 +220,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     <button
                                         onClick={handleSelectAllAnomalies}
                                         className="text-blue-500 text-sm text-left"
+                                        disabled={selectedSeverityOptions.length > 0} // Disable if severity is selected
                                     >
                                         {selectedAnomalyOptions.length === checkboxOptions.length ? 'Unselect All' : 'Select All'}
                                     </button>
@@ -235,6 +244,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                                         checked={selectedAnomalyOptions.includes(option.id)}
                                                         onChange={() => handleAnomalyChange(option.id)}
                                                         className="mr-2"
+                                                        disabled={selectedSeverityOptions.length > 0} // Disable anomaly selection if severity is selected
                                                     />
                                                     {option.label}
                                                 </div>
@@ -256,6 +266,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     <button
                                         onClick={handleSelectAllSeverities}
                                         className="text-blue-500 text-sm text-blue-500 text-sm text-left"
+                                        disabled={selectedAnomalyOptions.length > 0} // Disable if anomaly is selected
                                     >
                                         {selectedSeverityOptions.length === severityOptions.length ? 'Unselect All' : 'Select All'}
                                     </button>
@@ -276,6 +287,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                                         checked={selectedSeverityOptions.includes(option.id)}
                                                         onChange={() => handleSeverityChange(option.id)}
                                                         className="mr-2"
+                                                        disabled={selectedAnomalyOptions.length > 0} // Disable severity selection if anomaly is selected
                                                     />
                                                     {option.label}
                                                 </div>

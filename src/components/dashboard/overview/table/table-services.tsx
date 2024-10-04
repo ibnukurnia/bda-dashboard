@@ -1,7 +1,6 @@
-import { Check, Minus } from 'react-feather'
-
-import './table-services.css'
-import Link from 'next/link'
+import { Check, Minus } from 'react-feather';
+import './table-services.css';
+import Link from 'next/link';
 
 const LABELS_TO_NAMESPACE: Record<string, string> = {
   "Log APM BRImo": 'apm',
@@ -14,21 +13,20 @@ const LABELS_TO_NAMESPACE: Record<string, string> = {
   "WAF": 'waf',
   "PRTG": 'prtg',
   "Zabbix": 'zabbix',
-}
+};
 
 interface TableServicesProps {
-  tableHeader: string[]
-  dataKeys: string[]
-  data: any[]
-  maxHeight?: number | string
-  selectedDataSource: string
+  tableHeader: string[];
+  dataKeys: string[];
+  data: any[];
+  maxHeight?: number | string;
+  selectedDataSource: string;
   queryParams?: {
-    time_range?: string
-  }
+    time_range?: string;
+  };
 }
 
 const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSource, queryParams }: TableServicesProps) => {
-
   return (
     <div className="relative overflow-auto min-h-48 scrollbar" style={{ maxHeight }}>
       <div>
@@ -49,15 +47,7 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
                   {dataKeys.map((cdk, cdkid) => (
                     <td key={cdkid} className="py-1 px-1 td">
                       <div
-                        className={`flex items-center gap-2 hover:text-blue-400 hover:underline cursor-pointer ${cdkid === 0 ? 'text-left' : 'text-center justify-center'}  color-${(() => {
-                          if (cdk === 'health_score') {
-                            if (sdt?.[cdk] < 50) {
-                              return 'red'
-                            } else {
-                              return 'green'
-                            }
-                          }
-                        })()}`}
+                        className={`flex items-center gap-2 ${cdkid === 0 ? 'text-left' : 'text-center justify-center'}`}
                       >
                         {cdk === 'name' && (
                           <span
@@ -66,24 +56,27 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
                             {sdt?.health_score < 50 ? <Minus size={'16px'} /> : <Check size={'16px'} />}
                           </span>
                         )}
-                        {cdkid === 0 ?
+
+                        {/* Make only service_name (first column) a clickable link */}
+                        {cdk === 'service_name' ? (
                           <Link
+                            className='hover:text-blue-400 hover:underline'
                             href={{
                               pathname: '/dashboard/root-cause-analysis',
                               query: {
                                 ...queryParams,
                                 data_source: selectedDataSource?.length > 0 ? selectedDataSource : LABELS_TO_NAMESPACE[sdt?.[cdk]],
-                              }
+                              },
                             }}
                             passHref
-                            rel={sdt.count > 0 ? "noopener noreferrer" : undefined}
                           >
+
                             {sdt?.[cdk]}
+
                           </Link>
-                          : <span>
-                            {sdt?.[cdk]}
-                          </span>
-                        }
+                        ) : (
+                          <span>{sdt?.[cdk]}</span>
+                        )}
                       </div>
                     </td>
                   ))}
@@ -114,7 +107,7 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
         </table>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TableServices
+export default TableServices;
