@@ -11,7 +11,6 @@ interface NodeProps {
   title: string;
   count?: number;
   expanded: boolean;
-  isBranchService?: boolean;
   handleOnClickNode: () => void;
   hasDetail?: boolean;
   queryParams?: {
@@ -33,7 +32,6 @@ const Node: React.FC<NodeProps> = ({
   title,
   count,
   expanded,
-  isBranchService,
   handleOnClickNode,
   hasDetail,
   queryParams,
@@ -62,8 +60,6 @@ const Node: React.FC<NodeProps> = ({
   }
 
   const handleClickNode = () => {
-    console.log(nlp);
-    
     handleOnClickNode()
     if (nlp) {
       handleSelectNLP(nlp)
@@ -75,58 +71,62 @@ const Node: React.FC<NodeProps> = ({
   return (
     <button
       ref={containerRef}
-      className={`w-full min-h-20 relative flex flex-col outline-none snap-start ${count == null ? "cursor-default" : ""}`}
+      className={`w-full min-h-20 relative flex flex-col gap-[9px] outline-none snap-start ${count == null ? "cursor-default" : ""}`}
       onClick={handleClickNode}
     >
       {count != null && <ProgressBar progress={percentage} />}
       <div className='w-full flex gap-2'>
+        {tooltips != null &&
+          <a
+            id={`${queryParams?.data_source}-${queryParams?.metric_anomaly}-${escapeAndRemoveSpaces(title)}`}
+            className='mt-1'
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 0C2.7 0 0 2.7 0 6C0 9.3 2.7 12 6 12C9.3 12 12 9.3 12 6C12 2.7 9.3 0 6 0ZM6.6 9H5.4V5.4H6.6V9ZM6.6 4.2H5.4V3H6.6V4.2Z" fill="white" fill-opacity="0.8"/>
+            </svg>
+          </a>
+        }
         {count == null && <div className='w-5 h-5 bg-orange-500 rounded-md'/>}
-        <div className='w-full flex items-center justify-between'>
+        <div className='w-full flex'>
           <Typography
-            className='overflow-hidden text-ellipsis whitespace-nowrap inline-block'
-            variant={isBranchService ? "caption" : "subtitle1"}
             color={'white'}
             fontWeight={expanded ? 700 : 400}
-            style={{ maxWidth: containerWidth - (count == null ? 28 : 0) - (tooltips ? 20 : 0) }}
+            fontSize={14}
+            lineHeight={"17.07px"}
+            align='left'
           >
             {replaceWordingDataSource(title)}
           </Typography>
-          {tooltips != null &&
-            <a id={`${queryParams?.data_source}-${queryParams?.metric_anomaly}-${escapeAndRemoveSpaces(title)}`}>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 0C2.7 0 0 2.7 0 6C0 9.3 2.7 12 6 12C9.3 12 12 9.3 12 6C12 2.7 9.3 0 6 0ZM6.6 9H5.4V5.4H6.6V9ZM6.6 4.2H5.4V3H6.6V4.2Z" fill="white" fill-opacity="0.8"/>
-              </svg>
-            </a>
+        </div>
+        <div className='flex flex-col justify-between'>
+          {count != null &&
+            <Typography
+              color={'white'}
+              fontWeight={expanded ? 700 : 400}
+              fontSize={14}
+              lineHeight={"17.07px"}
+            >
+              {count}
+            </Typography>
+          }
+          {hasDetail &&
+            <Link
+              href={{ pathname: '/dashboard/anomaly-detection', query: queryParams }}
+              passHref
+              rel="noopener noreferrer"
+              className='pl-2 flex gap-0 items-center hover:bg-gray-600 active:bg-gray-500 rounded-lg'
+            >
+              <Typography
+                fontSize={12}
+                lineHeight={'14.63px'}
+                color={'#4787FF'}
+                noWrap
+              >
+                {"Detail >"}
+              </Typography>
+            </Link>
           }
         </div>
-      </div>
-      <div className='w-full flex justify-between items-center'>
-        {count != null &&
-          <Typography
-            variant={isBranchService ? "caption" : "subtitle1"}
-            color={'white'}
-            fontWeight={expanded ? 700 : 400}
-          >
-            {count}
-          </Typography>
-        }
-        {hasDetail &&
-          <Link
-            href={{ pathname: '/dashboard/anomaly-detection', query: queryParams }}
-            passHref
-            rel="noopener noreferrer"
-            className='pl-2 flex gap-0 items-center hover:bg-gray-600 active:bg-gray-500 rounded-lg'
-          >
-            <Typography
-              variant={isBranchService ? "caption" : "subtitle1"}
-              color={'white'}
-            >
-              Detail
-            </Typography>
-            <ChevronRight size={16} color='white'/>
-        </Link>
-
-        }
       </div>
     </button>
   );

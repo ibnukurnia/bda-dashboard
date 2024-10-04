@@ -208,7 +208,6 @@ const RCATree: React.FC<RCATreeProps> = ({
                 handleOnClickNode={(index) => handleOnClickNode(i + 1, index, expNode.node.children![index])}
                 expandedIndex={expandedNodes[i+1]?.nodeIndex}
                 expandedChildIndex={expandedNodes[i+2]?.nodeIndex - scrollTopPositions[i+2] / nodeHeight}
-                isBranchService={i === 1}
                 handleOnScroll={(scrollTop) => handleOnScroll(i + 1, scrollTop)}
                 hasDetail={i === 1}
                 queryParams={{

@@ -1,9 +1,9 @@
 .progress-bar-container {
     width: 100%;
     background-color: #e0e0e0;
-    border-radius: 4px;
+    border-radius: 5px;
     overflow: hidden;
-    height: 20px;
+    height: 22px;
   }
   
   .progress-bar-fill {
