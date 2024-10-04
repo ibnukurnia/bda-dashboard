@@ -20,20 +20,20 @@ interface PathProps {
   nodeWidth?: string | number;
 }
 
-const Path: React.FC<PathProps> = ({ 
+const Path: React.FC<PathProps> = ({
   sourceIndex,
   childCount,
   expandedIndex,
   nodeWidth = 192,
- }) => {
+}) => {
   if (childCount != null) {
     return (
       <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className={'absolute left-48 z-10'}
-      style={{ top: '10px', left: nodeWidth }}
-      width={width}
-      height={heigth}
+        xmlns="http://www.w3.org/2000/svg"
+        className={'absolute left-48 z-10'}
+        style={{ top: '10px', left: nodeWidth }}
+        width={width}
+        height={heigth}
       >
         {Array.from(Array(Math.min(7, childCount)), (_, i) => (
           <path
