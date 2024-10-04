@@ -73,10 +73,11 @@ const TableWrapper: React.FC<TableWrapperProps> = ({
 
 interface TableCriticalAnomalyProps {
   timeRange: string
+  dataSource?: string | null
   severity: { value: any; id: number; label: string }[]
 }
 
-const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps) => {
+const TableCriticalAnomaly = ({ timeRange, dataSource, severity }: TableCriticalAnomalyProps) => {
   const [isTableLoading, setIsTableLoading] = useState(true)
   const [data, setData] = useState<any>([])
   const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
@@ -107,7 +108,7 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
     setPauseEffectPagination(true)
     setPagination(prev => ({ ...prev, pageIndex: 1 }))
     fetchData(1)
-  }, 500, [timeRange, severity])
+  }, 500, [timeRange, dataSource, severity])
 
   useUpdateEffect(() => {
     if (pauseEffectPagination) {
@@ -124,6 +125,7 @@ const TableCriticalAnomaly = ({ timeRange, severity }: TableCriticalAnomalyProps
     GetLatestCritical({
       start_time: startTime,
       end_time: endTime,
+      data_source: dataSource,
       severity: severity.map(s => s.id),
       page: page ?? pagination.pageIndex,
       limit: pagination.pageSize

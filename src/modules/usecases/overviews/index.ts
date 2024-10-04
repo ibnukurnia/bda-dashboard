@@ -81,9 +81,19 @@ const GetHealthScoreOverview = async (params?: { start_time: string | Date; end_
   return response
 }
 
+const GetDataSourceLatestAnomaly   = async () => {
+  const response: ApiResponse<any> = await get('latest-critical/list-data-source', {
+    withAuth: true,
+  });
+
+  return response;
+};
+
+
 const GetLatestCritical = async (params?: {
   start_time: string | Date
   end_time: string | Date
+  data_source?: string | null
   severity: number[]
   limit: number
   page: number
@@ -132,6 +142,7 @@ export {
   GetHealthScoreOverview,
   GetPieChartsOverview,
   GetTopServicesOverview,
+  GetDataSourceLatestAnomaly,
   GetLatestCritical,
   GetTopFiveCritical,
   GetAmountGraphic,

@@ -23,7 +23,7 @@ interface ScrollableNodeListProps {
   handleOnClickNode: (index: number) => void;
   expandedIndex: number;
   expandedChildIndex: number;
-  isBranchService: boolean;
+  isBranchService?: boolean;
   handleOnScroll: (scrollTop: number) => void;
   hasDetail?: boolean;
   queryParams?: {

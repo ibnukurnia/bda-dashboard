@@ -9,7 +9,8 @@ import {
   GetTopFiveCritical,
   GetTopServicesOverview,
   GetAmountGraphic,
-  GetAmountServiceList
+  GetAmountServiceList,
+  GetDataSourceLatestAnomaly
 } from '@/modules/usecases/overviews'
 import { format } from 'date-fns'
 import { Maximize } from 'react-feather'
@@ -38,6 +39,7 @@ import { fetchServicesOption } from '@/lib/api'
 import DropdownAnomalyAmountService from './button/dropdown-anomaly-amount-service'
 import AnomalyAmountWrapper from './wrapper/anomaly-amount-wrapper'
 import Skeleton from '@/components/system/Skeleton/Skeleton'
+import DropdownDataSourceLatestAnomaly from './button/dropdown-datasource-latest-anomaly'
 
 const ANOMALY_AMOUNT_TYPE = 'brimo'
 const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
@@ -132,6 +134,7 @@ const defaultTimeRanges: Record<string, number> = {
 const MainPageOverview = () => {
   // const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
   const [amountServiceList, setAmountServiceList] = useState<string[]>([]);
+  const [selectedDataSourceLatestAnomaly, setSelectedDataSourceLatestAnomaly] = useState<string | null | undefined>(null);
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
   const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string }[]>([])
   const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
@@ -143,6 +146,7 @@ const MainPageOverview = () => {
   const [topServicesData, setTopServicesData] = useState({ header: [], data: [] })
   const [healthScoreData, setHealthScoreData] = useState<HealthScoreResponse[]>([])
   const [topFiveCriticalData, setTopFiveCriticalData] = useState<TopFiveLatestCritical[]>([])
+  const [dataSourceLatestAnomalyData, setDataSourceLatestAnomalyData] = useState<string[]>([])
   const [anomalyAmountServicesData, setAnomalyAmountServicesData] = useState<string[]>([])
   const [anomalyAmountData, setAnomalyAmountData] = useState<any>({
     data: [],
@@ -158,11 +162,13 @@ const MainPageOverview = () => {
   const [isLoadingTopServices, setIsLoadingTopServices] = useState(true)
   const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
   const [isLoadingTopFiveCritical, setIsLoadingTopFiveCritical] = useState(true)
+  const [isLoadingDataSourceLatestAnomaly, setIsLoadingDataSourceLatestAnomaly] = useState(false)
   const [isLoadingAnomalyAmountServices, setIsLoadingAnomalyAmountServices] = useState(true)
   const [isLoadingAnomalyAmount, setIsLoadingAnomalyAmount] = useState(true)
   const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
   const [isErrorTopFiveCritical, setIsErrorTopFiveCritical] = useState(false)
   const [isErrorAnomalyAmountServices, setIsErrorAnomalyAmountServices] = useState(false)
+  const [isErrorDataSourceLatestAnomaly, setIsErrorDataSourceLatestAnomaly] = useState(false)
   const [isErrorAnomalyAmount, setIsErrorAnomalyAmount] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
@@ -350,6 +356,10 @@ const MainPageOverview = () => {
         setTopServicesData({ header: [], data: [] })
         setIsLoadingTopServices(false)
       })
+  }
+
+  const handleSelectDataSourceLatestAnomaly = (value?: string) => {
+    setSelectedDataSourceLatestAnomaly(value);
   }
 
   const handleSelectSeverity = (value: { value: any; id: number; label: string }) => {
@@ -607,6 +617,17 @@ const MainPageOverview = () => {
         setAmountServiceList(['']); // Default to "All" if fetching fails
       });
 
+    GetDataSourceLatestAnomaly()
+      .then((res) => {
+        setDataSourceLatestAnomalyData(res.data ?? []);
+        setIsErrorDataSourceLatestAnomaly(false);
+      })
+      .catch(() => {
+        setIsErrorDataSourceLatestAnomaly(true);
+      })
+      .finally(() => {
+        setIsLoadingDataSourceLatestAnomaly(false);
+      })
 
     fetchServicesOption({
       ...paramsTime,
@@ -910,15 +931,24 @@ const MainPageOverview = () => {
             <div className='card flex flex-col gap-6'>
               <div className='flex justify-between'>
                 <span className="font-bold text-white text-2xl content-center">Latest Anomaly</span>
-                {!handle.active && <DropdownSeverity
-                  data={dataDropdownSeverity}
-                  onSelectData={(e) => handleSelectSeverity(e)}
-                  handleReset={() => setSelectedSeverity([])}
-                  selectedData={selectedSeverity}
-                />}
+                <div className='flex gap-4'>
+                  {!handle.active && <DropdownDataSourceLatestAnomaly
+                    data={dataSourceLatestAnomalyData}
+                    onSelectData={(e) => handleSelectDataSourceLatestAnomaly(e)}
+                    // handleReset={() => setSelectedDataSourceLatestAnomaly(undefined)}
+                    selectedData={selectedDataSourceLatestAnomaly}
+                  />}
+                  {!handle.active && <DropdownSeverity
+                    data={dataDropdownSeverity}
+                    onSelectData={(e) => handleSelectSeverity(e)}
+                    handleReset={() => setSelectedSeverity([])}
+                    selectedData={selectedSeverity}
+                  />}
+                </div>
               </div>
               <TableCriticalAnomaly
                 timeRange={selectedRange}
+                dataSource={selectedDataSourceLatestAnomaly}
                 severity={selectedSeverity}
               />
             </div>

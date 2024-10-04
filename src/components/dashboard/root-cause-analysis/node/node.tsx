@@ -11,7 +11,7 @@ interface NodeProps {
   title: string;
   count?: number;
   expanded: boolean;
-  isBranchService: boolean;
+  isBranchService?: boolean;
   handleOnClickNode: () => void;
   hasDetail?: boolean;
   queryParams?: {
