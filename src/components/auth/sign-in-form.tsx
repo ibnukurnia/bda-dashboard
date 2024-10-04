@@ -1,30 +1,24 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import RouterLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormHelperText from '@mui/material/FormHelperText';
-// import InputLabel from '@mui/material/InputLabel';
-import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Eye, EyeOff } from 'react-feather';
 import { Controller, useForm } from 'react-hook-form';
 
-import { paths } from '@/paths';
-import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
 import { LoginSchema, LoginValues } from '@/modules/schemas';
 import { LoginUsecase } from '@/modules/usecases/auth';
 import { handleError } from '@/lib/error-handler';
-import { IconButton, InputAdornment } from '@mui/material';
+import { IconButton } from '@mui/material';
+import PersonIcon from '../system/Icon/PersonIcon';
+import LockIcon from '../system/Icon/LockIcon';
 
 export function SignInForm() {
   const router = useRouter();
@@ -65,75 +59,99 @@ export function SignInForm() {
 
   return (
     <Stack spacing={4}>
-      <Stack spacing={1}>
-        <Typography variant="h2" color="white">
-          Sign in
-        </Typography>
-        {errors.root ? <Alert color="error" severity='error'>{errors.root.message}</Alert> : null}
-      </Stack>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack spacing={2}>
-          <Controller
-            control={control}
-            name="pernr"
-            render={({ field }) => (
-              <FormControl error={Boolean(errors.pernr)}>
-                <OutlinedInput
-                  {...field}
-                  label="Pern"
-                  placeholder="Type your personal number"
-                  type="text"
-                  sx={{ backgroundColor: 'white' }}
-                />
-                {errors.pernr ? <FormHelperText>{errors.pernr.message}</FormHelperText> : null}
-              </FormControl>
-            )}
-          />
-          <Controller
-            control={control}
-            name="password"
-            render={({ field }) => (
-              <FormControl error={Boolean(errors.password)}>
-                <OutlinedInput
-                  {...field}
-                  sx={{ backgroundColor: 'white' }}
-                  endAdornment={
-                    <InputAdornment position="end" sx={{ backgroundColor: '#E8F0FE' }}>
+      <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-[25px]'>
+        <Stack spacing={1}>
+          <div className={"flex flex-col gap-[10px]"}>
+            <Typography fontWeight={700} fontSize={20} lineHeight={'24.38px'} color="white">
+              Welcome to OpsVision! 👋🏻
+            </Typography>
+            <Typography fontWeight={400} fontSize={16} lineHeight={'18.8px'} color="white">
+              Please sign-in to your account
+            </Typography>
+          </div>
+          {errors.root ? <Alert color="error" severity='error'>{errors.root.message}</Alert> : null}
+        </Stack>
+        <Stack spacing={2} className='gap-[10px]'>
+          <div className='flex flex-col gap-[25px]'>
+            <Controller
+              control={control}
+              name="pernr"
+              render={({ field }) => (
+                <FormControl error={Boolean(errors.pernr)} className='gap-[10px]'>
+                  <Typography fontWeight={400} fontSize={16} lineHeight={'18.8px'} color="white">
+                    Personal Number
+                  </Typography>
+                  <OutlinedInput
+                    {...field}
+                    placeholder="Input your personal number..."
+                    type="text"
+                    sx={{
+                      color: 'white',
+                      "&.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#848AB0"
+                      },
+                    }}
+                    startAdornment={
+                      <PersonIcon className='mr-2'/>
+                    }
+                  />
+                  {/* {errors.pernr ? <FormHelperText>{errors.pernr.message}</FormHelperText> : null} */}
+                </FormControl>
+              )}
+            />
+            <Controller
+              control={control}
+              name="password"
+              render={({ field }) => (
+                <FormControl error={Boolean(errors.password)} className='gap-[10px]'>
+                  <Typography fontWeight={400} fontSize={16} lineHeight={'18.8px'} color="white">
+                    Password
+                  </Typography>
+                  <OutlinedInput
+                    {...field}
+                    sx={{
+                      color: 'white',
+                      "&.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#848AB0"
+                      },
+                    }}
+                    startAdornment={
+                      <LockIcon className='mr-2'/>
+                    }
+                    endAdornment={
                       <IconButton
                         onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        style={{ color: '' }}
+                        style={{
+                          padding: 0,
+                          paddingLeft: '0.5rem',
+                        }}
                       >
                         {showPassword ? (
-                          <Eye fontSize="var(--icon-fontSize-md)" />
+                          <Eye color='white' size={20}/>
                         ) : (
-                          <EyeOff fontSize="var(--icon-fontSize-md)" />
+                          <EyeOff color='white' size={20}/>
                         )}
                       </IconButton>
-                    </InputAdornment>
-                  }
-                  label="Password"
-                  placeholder="Type your password"
-                  type={showPassword ? 'text' : 'password'}
-                />
-                {errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
-              </FormControl>
-            )}
-          />
-          <Button
-            disabled={isPending}
-            type="submit"
-            sx={{
-              backgroundColor: '#F59823',
-              color: 'white', // Ensure the text color contrasts well with the background
-              '&:hover': {
-                backgroundColor: '#e0861e', // Optionally define a hover color
-              },
-            }}
-          >
-            Sign in
-          </Button>
+                    }
+                    placeholder="Input your password..."
+                    type={showPassword ? 'text' : 'password'}
+                  />
+                  {/* {errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null} */}
+                </FormControl>
+              )}
+            />
+          </div>
         </Stack>
+        <Button
+          disabled={isPending}
+          type="submit"
+          sx={{
+            background: 'radial-gradient(100% 100% at 51.89% 0%, #306BFF 0%, #083EC6 100%)',
+            color: 'white', // Ensure the text color contrasts well with the background
+          }}
+        >
+          Sign in
+        </Button>
       </form>
       <Stack
         sx={{
