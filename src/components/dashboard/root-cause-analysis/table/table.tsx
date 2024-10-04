@@ -5,7 +5,9 @@ interface TableNLPProps {
   data: {
     resolution: string;
     action: string;
-    name: string
+    name: string;
+    description: string | null;
+    lesson_learned: string | null;
   }
 }
 
@@ -41,6 +43,18 @@ const TableNLP = ({
               <tr>
                 <td className="w-32 px-1 py-4">
                   <div className="text-gray-100 px-3 py-1 gap-x-2">
+                    Deskripsi Insiden
+                  </div>
+                </td>
+                <td className="px-1 py-4">
+                  <div className="text-gray-100 px-3 py-1 gap-x-2">
+                    {data.description ?? "-"}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="w-32 px-1 py-4">
+                  <div className="text-gray-100 px-3 py-1 gap-x-2">
                     Resolution
                   </div>
                 </td>
@@ -59,6 +73,18 @@ const TableNLP = ({
                 <td className="px-1 py-4">
                   <div className="text-gray-100 px-3 py-1 gap-x-2">
                     {data.action.length > 0 ? data.action : "-"}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="w-32 px-1 py-4">
+                  <div className="text-gray-100 px-3 py-1 gap-x-2">
+                    Lesson Learned
+                  </div>
+                </td>
+                <td className="px-1 py-4">
+                  <div className="text-gray-100 px-3 py-1 gap-x-2">
+                    {data.lesson_learned ?? "-"}
                   </div>
                 </td>
               </tr>
