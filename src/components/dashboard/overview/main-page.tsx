@@ -40,6 +40,7 @@ import DropdownAnomalyAmountService from './button/dropdown-anomaly-amount-servi
 import AnomalyAmountWrapper from './wrapper/anomaly-amount-wrapper'
 import Skeleton from '@/components/system/Skeleton/Skeleton'
 import DropdownDataSourceLatestAnomaly from './button/dropdown-datasource-latest-anomaly'
+import AutoRefreshButton from '../anomaly/button/refreshButton'
 
 const ANOMALY_AMOUNT_TYPE = 'brimo'
 const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
@@ -175,6 +176,10 @@ const MainPageOverview = () => {
   const healthinessRef = useRef<HTMLDivElement>(null)
   const thSeverity = ['Severity', 'Count']
   const configDataKey = ['service_name', 'very_high', 'high', 'medium']
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+  const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
+  const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
   const handle = useFullScreenHandle();
 
   const formatTimeToSecondsZero = (dateObj: Date) => {
@@ -198,6 +203,9 @@ const MainPageOverview = () => {
 
     return { startTime, endTime }
   }
+
+  // Get start and end times from selected range for passing to DynamicUpdatingChart
+  const { startTime, endTime } = handleStartEnd(selectedRange)
 
   const handleChangeTimeRange = (time: string) => {
     const { startTime, endTime } = handleStartEnd(time);
@@ -472,108 +480,116 @@ const MainPageOverview = () => {
     }
   }
 
-  // const handleClickSeverity = (severity: string) => {
-  //   console.log("Selected Data Source:", selectedDataSource); // Directly use the state variable
+  const handleRefreshNow = async () => {
+    await refreshData();
+  };
 
-  //   const { startTime, endTime } = handleStartEnd(selectedRange);
-  //   const logicSelectedRange = selectedRange.split(' - ').length > 1 ? 'Custom' : selectedRange;
+  const refreshData = async () => {
+    const { startTime, endTime } = handleStartEnd(selectedRange);
 
-  //   if (selectedDataSource?.length > 0) {
-  //     router.push(
-  //       '/dashboard/anomaly-detection?data_source=' +
-  //       selectedDataSource +  // Use selectedDataSource directly here
-  //       '&severity=' +
-  //       severity +
-  //       '&time_range=' +
-  //       logicSelectedRange +
-  //       '&start=' +
-  //       startTime +
-  //       '&end=' +
-  //       endTime
-  //     );
-  //   } else {
-  //     console.log("failed to get data source");
-  //   }
-  // };
+    setIsLoadingHealthScore(true);
+    setIsLoadingPieChart(true);
+    setIsLoadingTopServices(true);
+    setIsLoadingTopFiveCritical(true);
+    setIsLoadingAnomalyAmountServices(true);
+    setIsLoadingDataSourceLatestAnomaly(true);
 
-
-  useEffect(() => {
-    const fetchMetrics = () => {
-      const { startTime, endTime } = handleStartEnd(selectedRange); // Recalculate time range on every fetch
-      const paramsTime = { start_time: startTime, end_time: endTime };
-      const params = { type: selectedDataSource, ...paramsTime };
-      const paramsAmount = {
-        service_name: selectedAnomalyAmountService === 'All' ? amountServiceList.filter((name) => name !== 'All') : [selectedAnomalyAmountService],
-        ...paramsTime
-      };
-
-
-      // Fetch chart data
-      GetChartsOverview(params)
-        .then((res) => {
-          setChartData(res.data);
-        })
-        .catch(() => setChartData([]))
-        .finally(() => setIsLoadingGraphic(false))
-
-      GetAmountGraphic(paramsAmount)
-        .then((res) => {
-          // Check if the response has data and update the state
-          if (res && res.data) {
-            setAnomalyAmountData(res.data);
-          } else {
-            setAnomalyAmountData([]); // Set to an empty array if no data is returned
-          }
-        })
-        .catch((error) => {
-          console.error('Error fetching anomaly amount data:', error);
-          setAnomalyAmountData([]); // Handle error by resetting the data
-        })
-        .finally(() => {
-          // Always set loading to false after the API call finishes
-          setIsLoadingAnomalyAmount(false);
-        });
-
-      // if (selectedAnomalyAmountService) {
-      //   GetMetricLogAnomalies({
-      //     ...paramsTime,
-      //     metric_name: [ANOMALY_AMOUNT_METRIC_NAME],
-      //     service_name: selectedAnomalyAmountService,
-      //     type: ANOMALY_AMOUNT_TYPE,
-      //   })
-      //     .then((res) => {
-      //       // setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
-      //       setIsErrorAnomalyAmount(false)
-      //     })
-      //     .catch(() => {
-      //       setIsErrorAnomalyAmount(true)
-      //     })
-      //     .finally(() => {
-      //       setIsLoadingAnomalyAmount(false)
-      //     })
-      // }
+    const paramsTime = { start_time: startTime, end_time: endTime };
+    const params = {
+      type: selectedDataSource,
+      ...paramsTime,
     };
 
+    try {
+      const [
+        pieChartRes,
+        topServicesRes,
+        healthScoreRes,
+        topFiveCriticalRes,
+        amountServiceListRes,
+        dataSourceLatestAnomalyRes,
+        anomalyAmountServicesRes
+      ] = await Promise.all([
+        GetPieChartsOverview(params),
+        GetTopServicesOverview(params),
+        GetHealthScoreOverview(paramsTime),
+        GetTopFiveCritical(paramsTime),
+        GetAmountServiceList(),
+        GetDataSourceLatestAnomaly(),
+        fetchServicesOption({
+          ...paramsTime,
+          type: ANOMALY_AMOUNT_TYPE,
+        }),
+      ]);
 
-    // Fetch initial chart data when the component mounts
-    fetchMetrics();
+      // Handle results after all calls complete
+      setPieChartData(pieChartRes.data.data);
+      setTopServicesData(topServicesRes.data);
+      if (healthScoreRes.data == null) throw Error("Empty response data");
+      setHealthScoreData(healthScoreRes.data);
+      setTopFiveCriticalData(topFiveCriticalRes.data ?? []);
+      setAmountServiceList(['All', ...amountServiceListRes.data]);
+      setDataSourceLatestAnomalyData(dataSourceLatestAnomalyRes.data ?? []);
+      setAnomalyAmountServicesData(anomalyAmountServicesRes.data?.services ?? []);
 
-    let intervalChartId: NodeJS.Timeout | null = null;
+      // Reset error states
+      setIsErrorHealthScore(false);
+      setIsErrorTopFiveCritical(false);
+      setIsErrorAnomalyAmountServices(false);
+      setIsErrorDataSourceLatestAnomaly(false);
+    } catch (error) {
+      console.error('Error occurred:', error);
 
-    // Only set the interval if a custom range is NOT selected
-    if (!isCustomRangeSelected) {
-      intervalChartId = setInterval(() => {
-        fetchMetrics(); // Recalculate startTime and endTime every time the interval fires
-      }, 5000);
+      // Handle errors for each call as needed
+      setPieChartData([]);
+      setTopServicesData({ header: [], data: [] });
+      setHealthScoreData([]);
+      setTopFiveCriticalData([]);
+      setAmountServiceList(['']);
+      setDataSourceLatestAnomalyData([]);
+      setAnomalyAmountServicesData([]);
+
+      // Set error states
+      setIsErrorHealthScore(true);
+      setIsErrorTopFiveCritical(true);
+      setIsErrorAnomalyAmountServices(true);
+      setIsErrorDataSourceLatestAnomaly(true);
+    } finally {
+      // Always reset loading states after completion
+      setIsLoadingHealthScore(false);
+      setIsLoadingPieChart(false);
+      setIsLoadingTopServices(false);
+      setIsLoadingTopFiveCritical(false);
+      setIsLoadingAnomalyAmountServices(false);
+      setIsLoadingDataSourceLatestAnomaly(false);
+    }
+  };
+
+  // Handle auto-refresh toggling and interval selection
+  const handleAutoRefreshChange = (autoRefresh: boolean, interval: number) => {
+    setAutoRefresh(autoRefresh);
+    setRefreshInterval(autoRefresh ? interval : null); // Set the interval if auto-refresh is on
+
+  };
+
+  // useEffect to handle auto-refresh based on user settings
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+
+    if (autoRefresh && refreshInterval) {
+      // Set up the interval for auto-refresh
+      intervalId = setInterval(() => {
+        refreshData(); // Use the same function for auto-refresh
+      }, refreshInterval);
     }
 
+    // Clean up the interval when auto-refresh is disabled or the component is unmounted
     return () => {
-      if (intervalChartId) {
-        clearInterval(intervalChartId); // Clean up the interval on component unmount
+      if (intervalId) {
+        clearInterval(intervalId);
       }
     };
-  }, [selectedRange, selectedDataSource, isCustomRangeSelected, selectedAnomalyAmountService, amountServiceList]);
-
+  }, [autoRefresh, refreshInterval, selectedRange, selectedDataSource, selectedAnomalyAmountService, amountServiceList]);
 
   useEffect(() => {
     const { startTime, endTime } = handleStartEnd(selectedRange);
@@ -734,7 +750,6 @@ const MainPageOverview = () => {
       })
   }, [selectedAnomalyAmountService])
 
-
   // useEffect(() => {
   //   const intervalOverview = setInterval(() => {
   //     if (
@@ -824,14 +839,6 @@ const MainPageOverview = () => {
     }
   }, [healthinessRef.current?.offsetHeight])
 
-  // UseEffect to log the state after it's updated
-  useEffect(() => {
-    console.log('Updated anomalyAmountData:', anomalyAmountData);
-  }, [anomalyAmountData]); // This will run whenever anomalyAmountData is updated
-
-  // Get start and end times from selected range for passing to DynamicUpdatingChart
-  const { startTime, endTime } = handleStartEnd(selectedRange)
-
   return (
 
     <div className='flex flex-col gap-6'>
@@ -844,6 +851,7 @@ const MainPageOverview = () => {
             selectedRange={selectedRange}
             onCustomRangeSelected={setIsCustomRangeSelected} // Pass down handler for custom range detection
           />
+          <AutoRefreshButton onRefresh={handleRefreshNow} onAutoRefreshChange={handleAutoRefreshChange} />
           {/* <Button>Auto Refresh</Button> */}
         </div>
         <div className="flex">

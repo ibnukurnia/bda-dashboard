@@ -19,11 +19,11 @@ interface MainNavProps {
 }
 
 interface UserInfo {
-  name: string
-  avatar: string
-  country: string
-  city: string
-  timezone: string
+  name: string;
+  avatar: string;
+  country: string;
+  city: string;
+  timezone: string;
 }
 
 export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
@@ -31,9 +31,9 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState<boolean>(false);
   const [isNotifDetailsOpen, setIsNotifDetailsOpen] = React.useState<boolean>(false);
   const [isUserDetailsOpen, setIsUserDetailsOpen] = React.useState<boolean>(false);
-  const [userInfo, setuserInfo] = React.useState<UserInfo>({
-    name: "",
-    avatar: '/assets/avatar.png',
+  const [userInfo, setUserInfo] = React.useState<UserInfo>({
+    name: '',
+    avatar: '/assets/avatar.png', // Default avatar
     country: 'Indonesia',
     city: 'Jakarta',
     timezone: 'GTM-7',
@@ -42,16 +42,16 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
   const notifRef = React.useRef<HTMLDivElement | null>(null);
   const userRef = React.useRef<HTMLDivElement | null>(null);
   const { checkSession } = useUser();
-
-
-  const user = {
-  } as const;
-
-  const pathname = usePathname();
+  const pathname = usePathname(); // Grabbing current path
 
   const getCurrentDateFormatted = (): string => {
     const now = new Date();
-    const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    };
     return now.toLocaleDateString('en-US', options);
   };
 
@@ -79,12 +79,12 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
 
     return (
       <Box display={'flex'} gap={2}>
-        <button onClick={handleToggleSideNav} className='text-blue-400 hover:text-blue-600'>
+        <button onClick={handleToggleSideNav} className="text-blue-400 hover:text-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-10 w-10">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5" />
           </svg>
         </button>
-        <Typography variant="h3" component="h3" color="white" className='content-center '>
+        <Typography variant="h3" component="h3" color="white" className="content-center">
           {title}
         </Typography>
       </Box>
@@ -132,15 +132,16 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
 
   React.useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
-    const username = localStorage.getItem('username')
+    const username = localStorage.getItem('username');
 
-    setuserInfo({
-      name: username as string,
+    setUserInfo({
+      name: username || 'Guest', // Fallback to Guest if username is unavailable
       avatar: '/assets/avatar.png',
       country: 'Indonesia',
       city: 'Jakarta',
       timezone: 'GTM-7',
-    })
+    });
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -155,7 +156,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
           position: 'sticky',
           top: 0,
           zIndex: '99',
-          padding: 2
+          padding: 2,
         }}
       >
         <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', minHeight: '64px' }}>
@@ -167,13 +168,29 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="w-10 h-10 stroke-current text-blue-600">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" />
               </svg>
-              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">3</span>
+              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+                3
+              </span>
             </Button>
 
-            {/* User Button */}
             <Button onClick={toggleUserDetails} className="text-white hover:text-gray-300">
-              <Avatar src="/assets/avatar.png" />
+              <div
+                style={{
+                  backgroundColor: '#32375c', // Gray background
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%', // Rounded circle
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <span style={{ color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
+                  {userInfo.name.charAt(0).toLowerCase()} {/* Display first letter */}
+                </span>
+              </div>
             </Button>
+
           </Stack>
         </Stack>
       </Box>
@@ -199,13 +216,9 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
             <Typography variant="h6" component="h2" color="black">
               {userInfo.name}
             </Typography>
-            {/* <Typography variant="body2" component="p" color="black">
-              {user.jobTitle}
-            </Typography> */}
             <Typography variant="body2" component="p" color="black">
               {formattedDate}
             </Typography>
-            {/* Logout Button */}
           </Stack>
           <Button onClick={handleSignOut} variant="contained" color="error">
             Log Out
@@ -225,7 +238,6 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
             <Typography variant="body2" className="px-4 py-2 text-gray-800">
               Notification 3
             </Typography>
-            {/* Add more notifications as needed */}
           </div>
           <div className="border-t border-gray-200">
             <Link href="/notifications" passHref>
@@ -236,7 +248,6 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
           </div>
         </div>
       )}
-
 
       <MobileNav
         onClose={() => {
