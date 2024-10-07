@@ -124,13 +124,11 @@ const Graph = ({
     }
 }
 interface GraphicAnomalyCardProps {
-    selectedLog?: string;
-    selectedSecurity?: string;
-    selectedUtilization?: string;
-    selectedNetwork?: string;
+    selectedDataSource: string;
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
-    servicesOptions: string[];
+    clusterOptions: string[] | null | undefined;
+    servicesOptions: string[] | null | undefined;
     isFullScreen: boolean;
     autoRefresh?: {
         enabled: boolean;
@@ -139,12 +137,10 @@ interface GraphicAnomalyCardProps {
 }
 
 const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
-    selectedLog,
-    selectedUtilization,
-    selectedSecurity,
-    selectedNetwork,
+    selectedDataSource,
     selectedTimeRangeKey,
     timeRanges,
+    clusterOptions,
     servicesOptions,
     isFullScreen,
     autoRefresh = {
@@ -168,11 +164,9 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         endTime: string;
     }>({ startTime: new Date().toString(), endTime: new Date().toString() })
     const [dateRangeMode, setDateRangeMode] = useState<"predefined" | "custom">("predefined")
-    const [selectedFilter, setSelectedFilter] = useState<{ scale: ColumnOption[], service: string }>({ scale: [], service: "" })
+    const [selectedFilter, setSelectedFilter] = useState<{ scale: ColumnOption[], cluster: string[], service: string }>({ scale: [], cluster: [], service: "" })
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0])
     const [initialLoading, setInitialLoading] = useState(true)
-    const activeType = selectedLog ?? selectedUtilization ?? selectedSecurity ?? selectedNetwork ?? '';
-
 
     const abortControllerRef = useRef<AbortController | null>(null); // Ref to store the AbortController
 
@@ -217,8 +211,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
     useEffect(() => {
         setDataColumn({ columns: [] })
-        setSelectedFilter({ scale: [], service: "" })
-        GetColumnOption(activeType)
+        setSelectedFilter({ scale: [], cluster: [], service: "" })
+        GetColumnOption(selectedDataSource)
             .then((result) => {
                 if (result.data) {
                     setDataColumn(result.data)
@@ -229,12 +223,12 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             .catch((error) => {
                 console.error('Error fetching column option:', error)
             })
-    }, [activeType]);
+    }, [selectedDataSource]);
 
     useUpdateEffect(() => {
         if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return;
 
-        // Use activeType to determine which type is currently active
+        // Use selectedDataSource to determine which type is currently active
         fetchMetricLog(predefinedStartTime, predefinedEndTime);
     }, [currentZoomDateRange])
 
@@ -295,9 +289,10 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         abortControllerRef.current = controller;
 
         const metricResultPromise = GetMetricLogAnomalies({
-            type: activeType,
+            type: selectedDataSource,
             start_time: startTime,
             end_time: endTime,
+            cluster: selectedFilter.cluster,
             service_name: selectedFilter.service,
             metric_name: selectedFilter.scale.map(scale => scale.name),
         }, controller.signal)
@@ -336,9 +331,10 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             format(new Date(maxX), 'yyyy-MM-dd HH:mm:ss'),
         )
     }
-    const handleOnApplyFilter = (selectedScales: ColumnOption[], selectedService: string) => {
+    const handleOnApplyFilter = (selectedScales: ColumnOption[], selectedCluster: string[], selectedService: string) => {
         setSelectedFilter({
             scale: selectedScales,
+            cluster: selectedCluster,
             service: selectedService,
         })
 
@@ -351,14 +347,16 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         <div className="flex flex-col gap-8">
             {!isFullScreen && <FilterGraphAnomaly
                 currentSelectedScales={selectedFilter.scale}
+                currentSelectedCluster={selectedFilter.cluster}
                 currentSelectedService={selectedFilter.service}
                 scaleOptions={dataColumn.columns}
+                clusterOptions={clusterOptions}
                 servicesOptions={servicesOptions}
                 onApplyFilters={handleOnApplyFilter}
             />}
             <div className='flex flex-col gap-2'>
                 <Typography variant="h5" component="h5" color="white">
-                    {`Graphic ${NAMESPACE_LABELS[activeType]} Anomaly Records`}
+                    {`Graphic ${NAMESPACE_LABELS[selectedDataSource]} Anomaly Records`}
                 </Typography>
             </div>
             <div className="flex gap-2 items-center">

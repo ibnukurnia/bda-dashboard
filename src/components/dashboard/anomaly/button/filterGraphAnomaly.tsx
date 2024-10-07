@@ -4,20 +4,25 @@ import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 interface FilterGraphAnomalyProps {
     scaleOptions: ColumnOption[];
     currentSelectedScales: ColumnOption[];
-    servicesOptions: string[];
+    clusterOptions: string[] | null | undefined;
+    currentSelectedCluster: string[];
+    servicesOptions: string[] | null | undefined;
     currentSelectedService: string;
-    onApplyFilters: (selectedScales: ColumnOption[], selectedService: string) => void; // Separate filters for anomalies and services
+    onApplyFilters: (selectedScales: ColumnOption[], selectedCluster: string[], selectedService: string) => void; // Separate filters for anomalies and services
 }
 
 const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     scaleOptions,
     currentSelectedScales,
+    clusterOptions,
+    currentSelectedCluster,
     servicesOptions,
     currentSelectedService,
     onApplyFilters,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedScaleOptions, setSelectedScaleOptions] = useState<ColumnOption[]>(currentSelectedScales);
+    const [selectedClusterOptions, setSelectedClusterOptions] = useState<string[]>(currentSelectedCluster);
     const [filteredServicesOptions, setFilteredServicesOptions] = useState(servicesOptions)
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string>(currentSelectedService);
     const [searchValue, setSearchValue] = useState('')
@@ -35,15 +40,24 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         ));
     };
 
+    const handleClusterChange = (value: string) => {
+        setSelectedClusterOptions((prev) => (
+            prev.includes(value)
+                ? prev.filter((option) => option !== value)
+                : [...prev, value]
+        ));
+    };
+
     const handleServiceChange = (value: string) => {
         setSelectedServiceOptions(value);
     };
 
     const handleApply = () => {
-        onApplyFilters
-            (selectedScaleOptions,
-                selectedServiceOptions,
-            );
+        onApplyFilters(
+            selectedScaleOptions,
+            selectedClusterOptions,
+            selectedServiceOptions,
+        );
         setIsOpen(false); // Close the panel after applying filters
     };
 
@@ -75,13 +89,11 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     }, [isOpen]);
 
     useEffect(() => {
-        setFilteredServicesOptions(
-            servicesOptions.filter((option) =>
+        setFilteredServicesOptions(servicesOptions?.filter(
+            (option) =>
                 option.toLowerCase().includes(searchValue.toLowerCase()) // Convert both to lowercase
-            )
-        );
-    }, [searchValue, servicesOptions]);
-
+        ) ?? []);
+    }, [searchValue]);
 
     useEffect(() => {
         setFilteredServicesOptions(servicesOptions)
@@ -95,10 +107,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         setSelectedServiceOptions(currentSelectedService)
     }, [currentSelectedService])
 
-    // useEffect(() => {
-    //     console.log('Scale Options:', scaleOptions);
-    // }, [scaleOptions]);
-
+    const gridCount = 1 + (clusterOptions ? 1 : 0) + (servicesOptions ? 1 : 0)
 
     return (
         <div className="flex">
@@ -123,68 +132,103 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                 Filter
             </button>
             {isOpen && (
-                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div ref={panelRef} className="bg-white rounded-lg p-6 w-96 flex flex-col gap-1">
+                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[9999]">
+                    <div
+                        ref={panelRef}
+                        className="bg-white rounded-lg p-6 w-full max-w-max mx-auto flex flex-col gap-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                    >
                         <h2 className="text-xl font-semibold mb-10 text-center">Select Filter</h2>
 
-                        <div className="">
-                            <h3 className="font-semibold mb-3 text-lg">Scale</h3>
-                            <div className="overflow-y-auto max-h-40">
-                                {scaleOptions.length > 0 ? (
-                                    scaleOptions.map((option) => (
-                                        <label key={option.name} className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    value={option.name}
-                                                    checked={selectedScaleOptions.some(selected => selected.name === option.name)}
-                                                    onChange={() => handleScaleChange(option)}
-                                                    className="mr-2"
-                                                />
-                                                {option.comment}
-                                            </div>
-                                        </label>
-                                    ))
-                                ) : (
-                                    <p>No options available</p>
-                                )}
-                            </div>
-                        </div>
-
-                        <hr className="w-auto h-1 mx-auto bg-gray-700 border-0 rounded" />
-
-                        <div className="w-full">
-                            <h3 className="font-semibold mb-3 text-lg">Services</h3>
-                            {servicesOptions.length > 0 ? (
-                                <>
-                                    <input
-                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                        placeholder='Search service'
-                                        value={searchValue}
-                                        onChange={handleSearch}
-                                    />
-                                    <div className="overflow-y-auto max-h-40">
-                                        {filteredServicesOptions.map((service, index) => (
-                                            <label key={index} className="flex items-center justify-between mb-2">
+                        <div
+                            className={`grid gap-4`}
+                            style={{
+                                gridTemplateColumns: `repeat(${gridCount}, 1fr)`
+                            }}
+                        >
+                            <div className="flex flex-col">
+                                <h3 className="font-semibold mb-3 text-lg">Scale</h3>
+                                <div className="overflow-y-auto max-h-40">
+                                    {scaleOptions.length > 0 ? (
+                                        scaleOptions.map((option) => (
+                                            <label key={option.name} className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center">
                                                     <input
-                                                        type="radio"
-                                                        value={service}
-                                                        checked={selectedServiceOptions === service}
-                                                        onChange={() => handleServiceChange(service)}
+                                                        type="checkbox"
+                                                        value={option.name}
+                                                        checked={selectedScaleOptions.some(selected => selected.name === option.name)}
+                                                        onChange={() => handleScaleChange(option)}
                                                         className="mr-2"
                                                     />
-                                                    {service}
+                                                    {option.comment}
                                                 </div>
                                             </label>
-                                        ))}
+                                        ))
+                                    ) : (
+                                        <p>No options available</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {clusterOptions && (
+                                <div className="flex flex-col">
+                                    <h3 className="font-semibold mb-3 text-lg">Cluster</h3>
+                                    <div className="overflow-y-auto max-h-40">
+                                        {clusterOptions.length > 0 ? (
+                                            clusterOptions.map((option) => (
+                                                <label key={option} className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            value={option}
+                                                            checked={selectedClusterOptions.some(selected => selected === option)}
+                                                            onChange={() => handleClusterChange(option)}
+                                                            className="mr-2"
+                                                        />
+                                                        {option}
+                                                    </div>
+                                                </label>
+                                            ))
+                                        ) : (
+                                            <p>No options available</p>
+                                        )}
                                     </div>
-                                </>
-                            ) : (
-                                <p>No services available</p>
+                                </div>
+                            )}
+
+                            {servicesOptions && (
+                                <div className="flex flex-col">
+                                    <h3 className="font-semibold mb-3 text-lg">Services</h3>
+                                    {servicesOptions && servicesOptions.length > 0 ? (
+                                        <>
+                                            <input
+                                                className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                                placeholder='Search service'
+                                                value={searchValue}
+                                                onChange={handleSearch}
+                                            />
+                                            <div className="overflow-y-auto max-h-40">
+                                                {filteredServicesOptions && filteredServicesOptions.map((service, index) => (
+                                                    <label key={index} className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type="radio"
+                                                                value={service}
+                                                                checked={selectedServiceOptions === service}
+                                                                onChange={() => handleServiceChange(service)}
+                                                                className="mr-2"
+                                                            />
+                                                            {service}
+                                                        </div>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <p>No services available</p>
+                                    )}
+                                </div>
                             )}
                         </div>
-
                         <div className="flex justify-between mt-10 space-x-4">
                             <button className="bg-white text-blue-600 border border-primary-blue px-4 py-2 rounded-lg flex-1 text-center" onClick={handleReset}>
                                 RESET

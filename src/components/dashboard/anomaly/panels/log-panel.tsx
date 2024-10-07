@@ -997,7 +997,7 @@ const TabLogContent: React.FC<TabLogContentProps> = ({
                         </Box>
                     </div>
                     <GraphAnomalyCard
-                        selectedLog={getLogType(selectedLog)}
+                        selectedDataSource={getLogType(selectedLog)}
                         servicesOptions={filterServicesOptions}
                         selectedTimeRangeKey={selectedRange}
                         timeRanges={timeRanges}

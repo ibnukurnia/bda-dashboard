@@ -1,4 +1,3 @@
-import { DATA_SOURCE_NAMESPACE_REDIS } from '@/constants';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState, ChangeEvent } from 'react';
 
@@ -16,38 +15,49 @@ interface SeverityOption {
 
 interface FilterPanelProps {
     checkboxOptions: CheckboxOption[];
-    servicesOptions: string[];
+    clusterOptions: string[] | null | undefined;
+    servicesOptions: string[] | null | undefined;
     severityOptions: SeverityOption[];
-    onApplyFilters: (filters: { selectedAnomalies: string[], selectedSeverities: number[], selectedServices: string[] }) => void;
+    onApplyFilters: (
+        filters: {
+            selectedAnomalies: string[],
+            selectedSeverities: number[],
+            selectedClusters: string[]
+            selectedServices: string[]
+        }
+    ) => void;
     onResetFilters: () => void;
     hasErrorFilterAnomaly: boolean;
+    hasErrorFilterCluster: boolean;
     hasErrorFilterService: boolean;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
     checkboxOptions,
+    clusterOptions,
     servicesOptions,
     severityOptions,
     onApplyFilters,
     onResetFilters,
     hasErrorFilterAnomaly,
-    hasErrorFilterService
+    hasErrorFilterCluster,
+    hasErrorFilterService,
 }) => {
     const searchParams = useSearchParams();
-    const selectedDataSource = searchParams.get("data_source");
 
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
+    const [selectedClusterOptions, setSelectedClusterOptions] = useState<string[]>([]);
     const [selectedSeverityOptions, setSelectedSeverityOptions] = useState<number[]>([]);
     const [searchValue, setSearchValue] = useState<string>(''); // For search input
     const [resetMessage, setResetMessage] = useState<boolean>(false); // State for temporary reset message
     const panelRef = useRef<HTMLDivElement>(null);
 
     // Filter services based on the search input
-    const filteredServicesOptions = servicesOptions.filter(service =>
+    const filteredServicesOptions = servicesOptions?.filter(service =>
         service.toLowerCase().includes(searchValue.toLowerCase())
-    );
+    ) ?? [];
 
     const togglePanel = () => {
         setIsOpen(!isOpen);
@@ -73,6 +83,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         );
     };
 
+    const handleClusterChange = (value: string) => {
+        setSelectedClusterOptions((prev) =>
+            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
+        );
+    };
+
     const handleServiceChange = (value: string) => {
         setSelectedServiceOptions((prev) =>
             prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
@@ -82,8 +98,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     const handleApply = () => {
         onApplyFilters({
             selectedAnomalies: selectedAnomalyOptions,
+            selectedSeverities: selectedSeverityOptions,
+            selectedClusters: selectedClusterOptions,
             selectedServices: selectedServiceOptions,
-            selectedSeverities: selectedSeverityOptions
         });
         setIsOpen(false); // Close the panel after applying filters
     };
@@ -121,6 +138,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     };
 
     const handleSelectAllServices = () => {
+        if (servicesOptions == null) return
         if (selectedServiceOptions.length === servicesOptions.length) {
             setSelectedServiceOptions([]); // Unselect all
         } else {
@@ -128,10 +146,20 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         }
     };
 
+    const handleSelectAllCluster = () => {
+        if (clusterOptions == null) return
+        if (selectedClusterOptions.length === clusterOptions.length) {
+            setSelectedClusterOptions([]); // Unselect all
+        } else {
+            setSelectedClusterOptions(clusterOptions); // Select all
+        }
+    };
+
     useEffect(() => {
         const anomalies = searchParams.getAll("anomaly");
         const severities = searchParams.getAll("severity");
         const services = searchParams.getAll("service");
+        const clusters = searchParams.getAll("cluster")
 
         setSelectedAnomalyOptions(
             anomalies.filter((anomaly) =>
@@ -147,9 +175,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 )
         );
 
+        setSelectedClusterOptions(
+            clusters.filter((cluster) =>
+                clusterOptions?.some((option) => option === cluster)
+            )
+        );
+
         setSelectedServiceOptions(
             services.filter((service) =>
-                servicesOptions.some((option) => option === service)
+                servicesOptions?.some((option) => option === service)
             )
         );
     }, [searchParams, checkboxOptions, servicesOptions, severityOptions]);
@@ -172,6 +206,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isOpen]);
+
+    const gridCount = 2 + (clusterOptions ? 1 : 0) + (servicesOptions ? 1 : 0)
 
     return (
         <div className="flex self-start z-50">
@@ -197,7 +233,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             </button>
 
             {isOpen && (
-                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[9999]">
                     <div
                         ref={panelRef}
                         className="bg-white rounded-lg p-6 w-full max-w-max mx-auto flex flex-col gap-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
@@ -207,7 +243,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                         <div
                             className={`grid gap-4`}
                             style={{
-                                gridTemplateColumns: `repeat(${selectedDataSource !== DATA_SOURCE_NAMESPACE_REDIS ? '3' : '2'}, 1fr)`
+                                gridTemplateColumns: `repeat(${gridCount}, 1fr)`
                             }}
                         >
                             {/* Anomaly Section */}
@@ -299,8 +335,56 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                 </div>
                             </div>
 
+                            {/* Cluster Section */}
+                            {clusterOptions != null && (
+                                <div className='flex flex-col gap-3'>
+                                    <div className='flex flex-col gap-2'>
+                                        <h3 className="font-semibold text-lg">Cluster</h3>
+                                        <p className="text-sm text-gray-600">
+                                            Selected Cluster: <span className='text-blue-600'>{selectedClusterOptions.length}</span>
+                                        </p>
+                                        <button
+                                            onClick={handleSelectAllCluster}
+                                            className="text-blue-500 text-sm text-blue-500 text-sm text-left"
+                                        >
+                                            {selectedClusterOptions.length === clusterOptions.length ? 'Unselect All' : 'Select All'}
+                                        </button>
+                                    </div>
+
+                                    <div className='flex flex-col gap-2'>
+                                        <div className="overflow-y-auto max-h-48">
+                                            {hasErrorFilterCluster ? (
+                                                <p className="text-red-500">
+                                                    An error occurred while fetching cluster. Please try again later.
+                                                </p>
+                                            ) : clusterOptions.length > 0 ? (
+                                                clusterOptions.map((cluster, index) => (
+                                                    <label
+                                                        key={index}
+                                                        className="flex items-center justify-between mb-1"
+                                                    >
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                value={cluster}
+                                                                checked={selectedClusterOptions.includes(cluster)}
+                                                                onChange={() => handleClusterChange(cluster)}
+                                                                className="mr-2"
+                                                            />
+                                                            {cluster}
+                                                        </div>
+                                                    </label>
+                                                ))
+                                            ) : (
+                                                <p>No cluster available</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Services Section */}
-                            {selectedDataSource !== DATA_SOURCE_NAMESPACE_REDIS && (
+                            {servicesOptions != null && (
                                 <div className='flex flex-col gap-3'>
                                     <div className='flex flex-col gap-2'>
                                         <h3 className="font-semibold text-lg">Services</h3>
