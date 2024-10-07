@@ -98,13 +98,14 @@ const Node: React.FC<NodeProps> = ({
             {replaceWordingDataSource(title)}
           </Typography>
         </div>
-        <div className='flex flex-col justify-between'>
+        <div className='flex flex-col gap-[5px] justify-between'>
           {count != null &&
             <Typography
               color={'white'}
               fontWeight={expanded ? 700 : 400}
               fontSize={14}
               lineHeight={"17.07px"}
+              align='right'
             >
               {count}
             </Typography>
@@ -114,9 +115,10 @@ const Node: React.FC<NodeProps> = ({
               href={{ pathname: '/dashboard/anomaly-detection', query: queryParams }}
               passHref
               rel="noopener noreferrer"
-              className='pl-2 flex gap-0 items-center hover:bg-gray-600 active:bg-gray-500 rounded-lg'
+              className='flex gap-0 items-center rounded-lg'
             >
               <Typography
+                className='hover:underline'
                 fontSize={12}
                 lineHeight={'14.63px'}
                 color={'#4787FF'}

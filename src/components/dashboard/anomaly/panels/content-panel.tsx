@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Column } from '@/modules/models/anomaly-predictions'
-import { GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { GetClusterOption, GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { Box, TablePagination, Typography } from '@mui/material'
 import {
     ColumnDef,
@@ -20,6 +20,8 @@ import { NAMESPACE_LABELS, PREDEFINED_TIME_RANGES, ROWS_PER_PAGE_OPTIONS } from 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { formatNumberWithCommas } from '../../../../helper';
 import { ApiResponse, PaginatedResponse } from '@/common/api/type'
+import { Maximize } from 'react-feather'
+import Button from '@/components/system/Button/Button'
 
 interface TabContentProps {
     selectedDataSource: string
@@ -34,6 +36,7 @@ const TabContent: React.FC<TabContentProps> = ({
     const searchParams = useSearchParams();
 
     const selectedAnomalyOptions = searchParams.getAll("anomaly")
+    const selectedClustersOptions = searchParams.getAll("cluster")
     const selectedServicesOptions = searchParams.getAll("service")
     const selectedSeverityOptions = searchParams.getAll("severity").map(Number);
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
@@ -48,10 +51,12 @@ const TabContent: React.FC<TabContentProps> = ({
         interval: null,
     })
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
-    const [filterServicesOptions, setFilterServiceOptions] = useState<string[]>([])
+    const [filterClusterOptions, setFilterClusterOptions] = useState<string[] | null | undefined>(null)
+    const [filterServiceOptions, setFilterServiceOptions] = useState<string[] | null | undefined>(null)
     const [filterSeverityOptions, setFilterSeverityOptions] = useState<{ id: number; label: string; type: string }[]>([]);
-    const [hasErrorFilterAnomaly, setHasErrorAnomalyFilter] = useState<boolean>(false)
-    const [hasErrorFilterService, setHasErrorServiceFilter] = useState<boolean>(false)
+    const [hasErrorFilterAnomaly, setHasErrorFilterAnomaly] = useState<boolean>(false)
+    const [hasErrorFilterCluster, setHasErrorFilterCluster] = useState<boolean>(false)
+    const [hasErrorFilterService, setHasErrorFilterService] = useState<boolean>(false)
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
     const [highlights, setHighlights] = useState<string[][] | null | undefined>([])
     const [data, setData] = useState<any[]>([])
@@ -118,9 +123,12 @@ const TabContent: React.FC<TabContentProps> = ({
         setLastRefreshTime(new Date());
 
         const filtersAnomaly = selectedAnomalyOptions.length > 0 ? selectedAnomalyOptions : [];
+        const filterClusters = selectedClustersOptions.length > 0 ? selectedClustersOptions : [];
         const filterServices = selectedServicesOptions.length > 0 ? selectedServicesOptions : [];
         const filterSeverities = selectedSeverityOptions.length > 0 ? selectedSeverityOptions : []; // These are now numbers
 
+        loadClusterFilterOptions();
+        loadServicesFilterOptions();
         try {
             // Initiate both API calls concurrently and independently
             const logResultPromise = GetHistoricalLogAnomalies(
@@ -128,6 +136,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 10,
                 1,
                 filtersAnomaly,
+                filterClusters,
                 filterServices,
                 filterSeverities,
                 startTime,
@@ -269,6 +278,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 newPageSize, // Set limit as the new page size
                 page, // Reset to the first page
                 selectedAnomalyOptions,
+                selectedClustersOptions,
                 selectedServicesOptions,
                 selectedSeverityOptions,
                 startTime, // Pass startTime as a string
@@ -325,6 +335,7 @@ const TabContent: React.FC<TabContentProps> = ({
         page: number,
         limit: number,
         anomalyOptions?: string[],
+        clusterOptions?: string[],
         serviceOptions?: string[],
         severityOptions?: number[],
     ) => {
@@ -337,6 +348,7 @@ const TabContent: React.FC<TabContentProps> = ({
             limit,
             page,
             anomalyOptions ?? selectedAnomalyOptions,      // Pass anomaly filter options
+            clusterOptions ?? selectedClustersOptions,      // Pass cluster filter options
             serviceOptions ?? selectedServicesOptions,      // Pass service filter options
             severityOptions ?? selectedSeverityOptions,
             startTime,      // Use finalStartTime (either passed or default)
@@ -398,7 +410,17 @@ const TabContent: React.FC<TabContentProps> = ({
 
         try {
             // Make the API call with startTime and endTime instead of date_range
-            const result = await GetHistoricalLogAnomalies(selectedDataSource, limit, page, filter, selectedServicesOptions, selectedSeverityOptions, startTime, endTime);
+            const result = await GetHistoricalLogAnomalies(
+                selectedDataSource,
+                limit,
+                page,
+                filter,
+                selectedClustersOptions,
+                selectedServicesOptions,
+                selectedSeverityOptions,
+                startTime,
+                endTime
+            );
 
             if (result.data) {
                 // Update columns and data
@@ -470,14 +492,14 @@ const TabContent: React.FC<TabContentProps> = ({
                 // console.log('Mapped Checkbox Options:', options); // Log the mapped options
 
                 setFilterAnomalyOptions(options); // Update state with fetched options
-                setHasErrorAnomalyFilter(false); // Set error state on catch
+                setHasErrorFilterAnomaly(false); // Set error state on catch
             } else {
                 console.error('Response data or columns are missing');
-                setHasErrorAnomalyFilter(true); // Set error state if response is invalid
+                setHasErrorFilterAnomaly(true); // Set error state if response is invalid
             }
         } catch (error) {
             handleApiError(error);
-            setHasErrorAnomalyFilter(true); // Set error state on catch
+            setHasErrorFilterAnomaly(true); // Set error state on catch
         }
     };
 
@@ -498,6 +520,25 @@ const TabContent: React.FC<TabContentProps> = ({
         }
     };
 
+    const loadClusterFilterOptions = async () => {
+        try {
+            const { startTime, endTime } = getTimeRange()
+
+            const response = await GetClusterOption({
+                type: selectedDataSource,
+                start_time: startTime,
+                end_time: endTime
+            })
+
+            const cluster = response.data
+            setFilterClusterOptions(cluster ?? [])
+            setHasErrorFilterCluster(false)
+        } catch (error) {
+            console.error('Failed to load service options', error)
+            setHasErrorFilterCluster(true)
+        }
+    }
+
     const loadServicesFilterOptions = async () => {
         try {
             const { startTime, endTime } = getTimeRange()
@@ -508,17 +549,11 @@ const TabContent: React.FC<TabContentProps> = ({
                 end_time: endTime
             })
 
-            if (response.data && response.data.services) {
-                // No need to map as it's already an array of strings
-                const services = response.data.services
-                setFilterServiceOptions(services) // Update state with fetched service options
-                setHasErrorServiceFilter(false)
-            } else {
-                console.error('Response data or services are missing')
-            }
+            setFilterServiceOptions(response.data?.services) // Update state with fetched service options
+            setHasErrorFilterService(false)
         } catch (error) {
             console.error('Failed to load service options', error)
-            setHasErrorServiceFilter(true)
+            setHasErrorFilterService(true)
         }
     }
 
@@ -536,51 +571,7 @@ const TabContent: React.FC<TabContentProps> = ({
         setIsTableLoading(true); // Set loading to true before making the API call
 
         setPagination((prev) => {
-            const { startTime, endTime } = getTimeRange();
-
-            // Determine the appropriate API call based on the selected filters
-            const logAnomaliesPromise = (() => {
-                if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length === 0) {
-                    // If only anomaly options are selected
-                    return GetHistoricalLogAnomalies(
-                        selectedDataSource,
-                        prev.pageSize,
-                        page,
-                        selectedAnomalyOptions,
-                        [],
-                        selectedSeverityOptions,
-                        startTime,
-                        endTime
-                    );
-                } else if (selectedServicesOptions.length !== 0 && selectedAnomalyOptions.length === 0) {
-                    // If only service options are selected
-                    return GetHistoricalLogAnomalies(
-                        selectedDataSource,
-                        prev.pageSize,
-                        page,
-                        [],
-                        selectedServicesOptions,
-                        selectedSeverityOptions,
-                        startTime,
-                        endTime
-                    );
-                } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0) {
-                    // If both anomaly and service options are selected
-                    return GetHistoricalLogAnomalies(
-                        selectedDataSource,
-                        prev.pageSize,
-                        page,
-                        selectedAnomalyOptions,
-                        selectedServicesOptions,
-                        selectedSeverityOptions,
-                        startTime,
-                        endTime
-                    );
-                } else {
-                    // If no filters are selected, proceed with normal pagination
-                    return fetchDataByPagination(page, prev.pageSize, []);
-                }
-            })();
+            const logAnomaliesPromise = fetchDataByPagination(page, prev.pageSize, []);
 
             // Handle the API call response
             logAnomaliesPromise
@@ -594,10 +585,14 @@ const TabContent: React.FC<TabContentProps> = ({
         });
     };
 
-    const handleApplyFilters = async (filters: { selectedAnomalies: string[]; selectedServices: string[]; selectedSeverities: number[] }) => {
-        const { selectedAnomalies, selectedServices, selectedSeverities } = filters;
-
-        console.log(filters)
+    const handleApplyFilters = async (
+        filters: {
+            selectedAnomalies: string[];
+            selectedSeverities: number[]
+            selectedClusters: string[];
+            selectedServices: string[];
+        }) => {
+        const { selectedAnomalies, selectedServices, selectedSeverities, selectedClusters } = filters;
 
         // Update the state with the selected options
         const params = new URLSearchParams(searchParams.toString());
@@ -605,11 +600,14 @@ const TabContent: React.FC<TabContentProps> = ({
         params.delete("anomaly")
         selectedAnomalies.forEach(anomaly => params.append("anomaly", anomaly))
 
-        params.delete("service")
-        selectedServices.forEach(service => params.append("service", service))
-
         params.delete("severity");
         selectedSeverities.forEach(severity => params.append("severity", severity.toString()));  // Add severities to URL
+
+        params.delete("cluster")
+        selectedClusters.forEach(cluster => params.append("cluster", cluster))
+        
+        params.delete("service")
+        selectedServices.forEach(service => params.append("service", service))
         // Clear old severity params
 
         router.push(`/dashboard/anomaly-detection?${params.toString()}`);
@@ -626,6 +624,7 @@ const TabContent: React.FC<TabContentProps> = ({
             pagination.pageSize, // Use the current page size
             1, // Start from the first page
             selectedAnomalies,
+            selectedClusters,
             selectedServices,
             selectedSeverities,
             startTime, // Pass startTime
@@ -680,138 +679,11 @@ const TabContent: React.FC<TabContentProps> = ({
             });
     };
 
-    // const nextPage = () => {
-    //     setIsTableLoading(true); // Set loading to true before making the API call
-    //     console.log(selectedSeverityOptions)
-
-    //     setPagination((prev) => {
-    //         const newPageIndex = Math.min(prev.pageIndex + 1, totalPages);
-    //         const { startTime, endTime } = getTimeRange();
-
-    //         // Define a function to call the API with the appropriate filters
-    //         const callApi = (anomalyOptions: string[], serviceOptions: string[], severityOptions: number[]) => {
-    //             GetHistoricalLogAnomalies(
-    //                 selectedDataSource,
-    //                 prev.pageSize,
-    //                 newPageIndex,
-    //                 anomalyOptions,
-    //                 serviceOptions,
-    //                 severityOptions,
-    //                 startTime,
-    //                 endTime
-    //             )
-    //                 .then((result) => processApiResult(result))
-    //                 .catch((error) => handleApiError(error))
-    //                 .finally(() => {
-    //                     setIsTableLoading(false); // Set loading to false after the API call completes
-    //                 });
-    //         };
-
-    //         // Log selected filters to verify they are correct
-    //         console.log('Selected Severity Options:', selectedSeverityOptions); // Check this log
-
-    //         // Handle different filter scenarios
-    //         if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length === 0 && selectedSeverityOptions.length === 0) {
-    //             // If only anomaly options are selected
-    //             callApi(selectedAnomalyOptions, [], []);
-    //         } else if (selectedServicesOptions.length !== 0 && selectedAnomalyOptions.length === 0 && selectedSeverityOptions.length === 0) {
-    //             // If only service options are selected
-    //             callApi([], selectedServicesOptions, []);
-    //         } else if (selectedSeverityOptions.length !== 0 && selectedAnomalyOptions.length === 0 && selectedServicesOptions.length === 0) {
-    //             // If only severity options are selected
-    //             callApi([], [], selectedSeverityOptions);
-    //         } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0 && selectedSeverityOptions.length === 0) {
-    //             // If both anomaly and service options are selected
-    //             callApi(selectedAnomalyOptions, selectedServicesOptions, []);
-    //         } else if (selectedAnomalyOptions.length !== 0 && selectedSeverityOptions.length !== 0 && selectedServicesOptions.length === 0) {
-    //             // If both anomaly and severity options are selected
-    //             callApi(selectedAnomalyOptions, [], selectedSeverityOptions);
-    //         } else if (selectedServicesOptions.length !== 0 && selectedSeverityOptions.length !== 0 && selectedAnomalyOptions.length === 0) {
-    //             // If both service and severity options are selected
-    //             callApi([], selectedServicesOptions, selectedSeverityOptions);
-    //         } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0 && selectedSeverityOptions.length !== 0) {
-    //             // If all three filters are selected
-    //             callApi(selectedAnomalyOptions, selectedServicesOptions, selectedSeverityOptions);
-    //         } else {
-    //             // If no filters are selected, proceed with normal pagination
-    //             fetchDataByPagination(newPageIndex, prev.pageSize, [])
-    //                 .then((result) => processApiResult(result))
-    //                 .catch((error) => handleApiError(error))
-    //                 .finally(() => {
-    //                     setIsTableLoading(false); // Set loading to false after the API call completes
-    //                 });
-    //         }
-
-    //         return { ...prev, pageIndex: newPageIndex };
-    //     });
-    // };
-
-
-    // const previousPage = () => {
-    //     setIsTableLoading(true); // Set loading to true before making the API call
-
-    //     setPagination((prev) => {
-    //         const { startTime, endTime } = getTimeRange();
-
-    //         // Define a function to call the API with the appropriate filters
-    //         const callApi = (anomalyOptions: string[], serviceOptions: string[], severityOptions: number[]) => {
-    //             return GetHistoricalLogAnomalies(
-    //                 selectedDataSource,
-    //                 prev.pageSize,
-    //                 newPageIndex,
-    //                 anomalyOptions,
-    //                 serviceOptions,
-    //                 severityOptions,
-    //                 startTime,
-    //                 endTime
-    //             );
-    //         };
-
-    //         // Handle different filter scenarios
-    //         const logAnomaliesPromise = (() => {
-    //             if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length === 0 && selectedSeverityOptions.length === 0) {
-    //                 // If only anomaly options are selected
-    //                 return callApi(selectedAnomalyOptions, [], []);
-    //             } else if (selectedServicesOptions.length !== 0 && selectedAnomalyOptions.length === 0 && selectedSeverityOptions.length === 0) {
-    //                 // If only service options are selected
-    //                 return callApi([], selectedServicesOptions, []);
-    //             } else if (selectedSeverityOptions.length !== 0 && selectedAnomalyOptions.length === 0 && selectedServicesOptions.length === 0) {
-    //                 // If only severity options are selected
-    //                 return callApi([], [], selectedSeverityOptions);
-    //             } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0 && selectedSeverityOptions.length === 0) {
-    //                 // If both anomaly and service options are selected
-    //                 return callApi(selectedAnomalyOptions, selectedServicesOptions, []);
-    //             } else if (selectedAnomalyOptions.length !== 0 && selectedSeverityOptions.length !== 0 && selectedServicesOptions.length === 0) {
-    //                 // If both anomaly and severity options are selected
-    //                 return callApi(selectedAnomalyOptions, [], selectedSeverityOptions);
-    //             } else if (selectedServicesOptions.length !== 0 && selectedSeverityOptions.length !== 0 && selectedAnomalyOptions.length === 0) {
-    //                 // If both service and severity options are selected
-    //                 return callApi([], selectedServicesOptions, selectedSeverityOptions);
-    //             } else if (selectedAnomalyOptions.length !== 0 && selectedServicesOptions.length !== 0 && selectedSeverityOptions.length !== 0) {
-    //                 // If all three filters are selected
-    //                 return callApi(selectedAnomalyOptions, selectedServicesOptions, selectedSeverityOptions);
-    //             } else {
-    //                 // If no filters are selected, proceed with normal pagination
-    //                 return fetchDataByPagination(page, prev.pageSize, []);
-    //             }
-    //         })();
-
-    //         // Handle the API call response
-    //         logAnomaliesPromise
-    //             .then((result) => processApiResult(result))
-    //             .catch((error) => handleApiError(error))
-    //             .finally(() => {
-    //                 setIsTableLoading(false); // Set loading to false after the API call completes
-    //             });
-
-    //         return { ...prev, pageIndex: page };
-    //     });
-    // };
-
     useEffect(() => {
         fetchDataByLog(selectedDataSource, pagination.pageIndex, pagination.pageSize);
         // Load filter options
         loadAnomalyFilterOptions();
+        loadClusterFilterOptions();
         loadServicesFilterOptions();
         loadSeverityFilterOptions();
     }, [selectedDataSource]);
@@ -844,6 +716,7 @@ const TabContent: React.FC<TabContentProps> = ({
                             pagination.pageIndex,     // Page number
                             pagination.pageSize,      // Page size (limit)
                             selectedAnomalyOptions,    // Anomaly filter options
+                            selectedClustersOptions,   // Cluster filter options
                             selectedServicesOptions,   // Service filter options
                             selectedSeverityOptions
                         );
@@ -883,16 +756,9 @@ const TabContent: React.FC<TabContentProps> = ({
 
                 </div>
                 <AutoRefreshButton onRefresh={handleRefreshNow} onAutoRefreshChange={handleAutoRefreshChange} />
-                <button onClick={handle.enter} className='text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm py-3 px-4 text-center rounded-l items-center'>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                    >
-                        <path d="M3 4a1 1 0 011-1h3a1 1 0 110 2H5v2a1 1 0 11-2 0V5a1 1 0 010-1zM3 14a1 1 0 011 1v2h2a1 1 0 110 2H4a1 1 0 01-1-1v-3a1 1 0 011-1zm13-1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 110-2h2v-2a1 1 0 011-1zm0-8a1 1 0 011 1v3a1 1 0 11-2 0V5h-2a1 1 0 110-2h3a1 1 0 011 1z" />
-                    </svg>
-                </button>
+                <Button onClick={handle.enter} >
+                    <Maximize className='w-6 h-5' />
+                </Button>
 
             </div>
             <FullScreen handle={handle}>
@@ -902,13 +768,15 @@ const TabContent: React.FC<TabContentProps> = ({
                         {/* Conditionally hide the FilterPanel when in fullscreen */}
                         {!handle.active && (
                             <FilterPanel
-                                servicesOptions={filterServicesOptions}
+                                clusterOptions={filterClusterOptions}
+                                servicesOptions={filterServiceOptions}
                                 checkboxOptions={filterAnomalyOptions}
                                 severityOptions={filterSeverityOptions}
                                 onApplyFilters={handleApplyFilters}
                                 onResetFilters={handleResetFilters}
                                 hasErrorFilterAnomaly={hasErrorFilterAnomaly}
                                 hasErrorFilterService={hasErrorFilterService}
+                                hasErrorFilterCluster={hasErrorFilterCluster}
                             />
                         )}
                         <div className='flex flex-col gap-2'>
@@ -1075,8 +943,9 @@ const TabContent: React.FC<TabContentProps> = ({
 
                     </div>
                     <GraphAnomalyCard
-                        selectedLog={selectedDataSource}
-                        servicesOptions={filterServicesOptions}
+                        selectedDataSource={selectedDataSource}
+                        clusterOptions={filterClusterOptions}
+                        servicesOptions={filterServiceOptions}
                         selectedTimeRangeKey={selectedTimeRange}
                         timeRanges={PREDEFINED_TIME_RANGES}
                         autoRefresh={graphAutoRefresh}

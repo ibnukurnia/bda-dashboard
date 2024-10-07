@@ -77,3 +77,8 @@ export interface MostRecentAnomalyResponse {
 //   severity: string
 //   percentage: number
 // }
+
+export interface ServiceOptionByClusterResponse {
+  service_name: string
+  cluster: string
+}
