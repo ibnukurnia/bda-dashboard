@@ -1,3 +1,4 @@
+import { ClusterOptionResponse } from '@/modules/models/anomaly-predictions';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState, ChangeEvent } from 'react';
 
@@ -15,14 +16,14 @@ interface SeverityOption {
 
 interface FilterPanelProps {
     checkboxOptions: CheckboxOption[];
-    clusterOptions: string[] | null | undefined;
+    clusterOptions: ClusterOptionResponse[] | null | undefined;
     servicesOptions: string[] | null | undefined;
     severityOptions: SeverityOption[];
     onApplyFilters: (
         filters: {
             selectedAnomalies: string[],
             selectedSeverities: number[],
-            selectedClusters: string[]
+            selectedClusters: ClusterOptionResponse[]
             selectedServices: string[]
         }
     ) => void;
@@ -50,7 +51,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
-    const [selectedClusterOptions, setSelectedClusterOptions] = useState<string[]>([]);
+    const [selectedClusterOptions, setSelectedClusterOptions] = useState<ClusterOptionResponse[]>([]);
     const [selectedSeverityOptions, setSelectedSeverityOptions] = useState<number[]>([]);
     const [searchValue, setSearchValue] = useState<string>(''); // For search input
     const [resetMessage, setResetMessage] = useState<boolean>(false); // State for temporary reset message
@@ -85,9 +86,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         );
     };
 
-    const handleClusterChange = (value: string) => {
+    const handleClusterChange = (value: ClusterOptionResponse) => {
         setSelectedClusterOptions((prev) =>
-            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
+            prev.includes(value) ? prev.filter((option) => option.name !== value.name) : [...prev, value]
         );
     };
 
@@ -178,9 +179,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         );
 
         setSelectedClusterOptions(
-            clusters.filter((cluster) =>
-                clusterOptions?.some((option) => option === cluster)
-            )
+            clusterOptions?.filter(option => clusters.includes(option.name)) ?? []
         );
 
         setSelectedServiceOptions(
@@ -336,27 +335,35 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                             {selectedClusterOptions.length === clusterOptions.length ? 'Unselect All' : 'Select All'}
                                         </button>
                                     </div>
-                                    <div className="overflow-y-auto max-h-48">
-                                        {hasErrorFilterCluster ? (
-                                            <p className="text-red-500 whitespace-break-spaces">An error occurred while fetching cluster. Please try again later.</p>
-                                        ) : clusterOptions.length > 0 ? (
-                                            clusterOptions.map((cluster, index) => (
-                                                <label key={index} className="flex items-center justify-between mb-1">
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={cluster}
-                                                            checked={selectedClusterOptions.includes(cluster)}
-                                                            onChange={() => handleClusterChange(cluster)}
-                                                            className="mr-2"
-                                                        />
-                                                        {cluster}
-                                                    </div>
-                                                </label>
-                                            ))
-                                        ) : (
-                                            <p>No cluster available</p>
-                                        )}
+
+                                    <div className='flex flex-col gap-2'>
+                                        <div className="overflow-y-auto max-h-48">
+                                            {hasErrorFilterCluster ? (
+                                                <p className="text-red-500">
+                                                    An error occurred while fetching cluster. Please try again later.
+                                                </p>
+                                            ) : clusterOptions.length > 0 ? (
+                                                clusterOptions.map((cluster, index) => (
+                                                    <label
+                                                        key={index}
+                                                        className="flex items-center justify-between mb-1"
+                                                    >
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                value={cluster.name}
+                                                                checked={selectedClusterOptions.includes(cluster)}
+                                                                onChange={() => handleClusterChange(cluster)}
+                                                                className="mr-2"
+                                                            />
+                                                            {cluster.label}
+                                                        </div>
+                                                    </label>
+                                                ))
+                                            ) : (
+                                                <p>No cluster available</p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             )}

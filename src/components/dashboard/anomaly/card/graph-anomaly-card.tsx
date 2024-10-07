@@ -1,4 +1,4 @@
-import { AnomalyOptionResponse, MetricLogAnomalyResponse } from "@/modules/models/anomaly-predictions";
+import { AnomalyOptionResponse, ClusterOptionResponse, MetricLogAnomalyResponse } from "@/modules/models/anomaly-predictions";
 import { GetColumnOption, GetMetricLogAnomalies } from "@/modules/usecases/anomaly-predictions";
 import { useEffect, useRef, useState } from "react";
 import { Typography } from "@mui/material";
@@ -127,7 +127,7 @@ interface GraphicAnomalyCardProps {
     selectedDataSource: string;
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
-    clusterOptions: string[] | null | undefined;
+    clusterOptions: ClusterOptionResponse[] | null | undefined;
     servicesOptions: string[] | null | undefined;
     isFullScreen: boolean;
     autoRefresh?: {
@@ -164,7 +164,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         endTime: string;
     }>({ startTime: new Date().toString(), endTime: new Date().toString() })
     const [dateRangeMode, setDateRangeMode] = useState<"predefined" | "custom">("predefined")
-    const [selectedFilter, setSelectedFilter] = useState<{ scale: ColumnOption[], cluster: string[], service: string }>({ scale: [], cluster: [], service: "" })
+    const [selectedFilter, setSelectedFilter] = useState<{ scale: ColumnOption[], cluster: ClusterOptionResponse[], service: string }>({ scale: [], cluster: [], service: "" })
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0])
     const [initialLoading, setInitialLoading] = useState(true)
 
@@ -292,7 +292,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             type: selectedDataSource,
             start_time: startTime,
             end_time: endTime,
-            cluster: selectedFilter.cluster,
+            cluster: selectedFilter.cluster.map(cluster => cluster.name),
             service_name: selectedFilter.service,
             metric_name: selectedFilter.scale.map(scale => scale.name),
         }, controller.signal)
@@ -331,7 +331,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             format(new Date(maxX), 'yyyy-MM-dd HH:mm:ss'),
         )
     }
-    const handleOnApplyFilter = (selectedScales: ColumnOption[], selectedCluster: string[], selectedService: string) => {
+    const handleOnApplyFilter = (selectedScales: ColumnOption[], selectedCluster: ClusterOptionResponse[], selectedService: string) => {
         setSelectedFilter({
             scale: selectedScales,
             cluster: selectedCluster,

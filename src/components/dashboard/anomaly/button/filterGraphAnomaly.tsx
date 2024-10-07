@@ -1,14 +1,15 @@
+import { ClusterOptionResponse } from '@/modules/models/anomaly-predictions';
 import { ColumnOption } from '@/types/anomaly';
 import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 
 interface FilterGraphAnomalyProps {
     scaleOptions: ColumnOption[];
     currentSelectedScales: ColumnOption[];
-    clusterOptions: string[] | null | undefined;
-    currentSelectedCluster: string[];
+    clusterOptions: ClusterOptionResponse[] | null | undefined;
+    currentSelectedCluster: ClusterOptionResponse[];
     servicesOptions: string[] | null | undefined;
     currentSelectedService: string;
-    onApplyFilters: (selectedScales: ColumnOption[], selectedCluster: string[], selectedService: string) => void; // Separate filters for anomalies and services
+    onApplyFilters: (selectedScales: ColumnOption[], selectedCluster: ClusterOptionResponse[], selectedService: string) => void; // Separate filters for anomalies and services
 }
 
 const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
@@ -22,7 +23,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedScaleOptions, setSelectedScaleOptions] = useState<ColumnOption[]>(currentSelectedScales);
-    const [selectedClusterOptions, setSelectedClusterOptions] = useState<string[]>(currentSelectedCluster);
+    const [selectedClusterOptions, setSelectedClusterOptions] = useState<ClusterOptionResponse[]>(currentSelectedCluster);
     const [filteredServicesOptions, setFilteredServicesOptions] = useState(servicesOptions)
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string>(currentSelectedService);
     const [searchValue, setSearchValue] = useState('')
@@ -40,7 +41,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         ));
     };
 
-    const handleClusterChange = (value: string) => {
+    const handleClusterChange = (value: ClusterOptionResponse) => {
         setSelectedClusterOptions((prev) => (
             prev.includes(value)
                 ? prev.filter((option) => option !== value)
@@ -175,16 +176,16 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                     <div className="overflow-y-auto max-h-40">
                                         {clusterOptions.length > 0 ? (
                                             clusterOptions.map((option) => (
-                                                <label key={option} className="flex items-center justify-between mb-2">
+                                                <label key={option.name} className="flex items-center justify-between mb-2">
                                                     <div className="flex items-center">
                                                         <input
                                                             type="checkbox"
-                                                            value={option}
-                                                            checked={selectedClusterOptions.some(selected => selected === option)}
+                                                            value={option.name}
+                                                            checked={selectedClusterOptions.some(selected => selected.name === option.name)}
                                                             onChange={() => handleClusterChange(option)}
                                                             className="mr-2"
                                                         />
-                                                        {option}
+                                                        {option.label}
                                                     </div>
                                                 </label>
                                             ))

@@ -2,6 +2,7 @@ import { get } from '@/common/api'
 import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 import {
   AnomalyOptionResponse,
+  ClusterOptionResponse,
   HistoricalAnomalyNetworkResponse,
   HistoricalAnomalySecurityResponse,
   HistoricalAnomalyUtilizationResponse,
@@ -104,7 +105,7 @@ const GetClusterOption = async (payload: {
 }, signal?: AbortSignal) => {
   let endPoint = `list-cluster`
 
-  const response: ApiResponse<string[]> = await get(endPoint, {
+  const response: ApiResponse<ClusterOptionResponse[]> = await get(endPoint, {
     withAuth: true,
     queries: payload,
     signal: signal

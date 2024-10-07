@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Column } from '@/modules/models/anomaly-predictions'
+import { ClusterOptionResponse, Column } from '@/modules/models/anomaly-predictions'
 import { GetClusterOption, GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { Box, TablePagination, Typography } from '@mui/material'
 import {
@@ -51,7 +51,7 @@ const TabContent: React.FC<TabContentProps> = ({
         interval: null,
     })
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
-    const [filterClusterOptions, setFilterClusterOptions] = useState<string[] | null | undefined>(null)
+    const [filterClusterOptions, setFilterClusterOptions] = useState<ClusterOptionResponse[] | null | undefined>(null)
     const [filterServiceOptions, setFilterServiceOptions] = useState<string[] | null | undefined>(null)
     const [filterSeverityOptions, setFilterSeverityOptions] = useState<{ id: number; label: string; type: string }[]>([]);
     const [hasErrorFilterAnomaly, setHasErrorFilterAnomaly] = useState<boolean>(false)
@@ -532,7 +532,7 @@ const TabContent: React.FC<TabContentProps> = ({
             })
 
             const cluster = response.data
-            setFilterClusterOptions(cluster ?? [])
+            setFilterClusterOptions(cluster)
             setHasErrorFilterCluster(false)
         } catch (error) {
             console.error('Failed to load service options', error)
@@ -590,7 +590,7 @@ const TabContent: React.FC<TabContentProps> = ({
         filters: {
             selectedAnomalies: string[];
             selectedSeverities: number[]
-            selectedClusters: string[];
+            selectedClusters: ClusterOptionResponse[];
             selectedServices: string[];
         }) => {
         const { selectedAnomalies, selectedServices, selectedSeverities, selectedClusters } = filters;
@@ -605,7 +605,7 @@ const TabContent: React.FC<TabContentProps> = ({
         selectedSeverities.forEach(severity => params.append("severity", severity.toString()));  // Add severities to URL
 
         params.delete("cluster")
-        selectedClusters.forEach(cluster => params.append("cluster", cluster))
+        selectedClusters.forEach(cluster => params.append("cluster", cluster.name))
 
         params.delete("service")
         selectedServices.forEach(service => params.append("service", service))
@@ -625,7 +625,7 @@ const TabContent: React.FC<TabContentProps> = ({
             pagination.pageSize, // Use the current page size
             1, // Start from the first page
             selectedAnomalies,
-            selectedClusters,
+            selectedClusters.map(cluster => cluster.name),
             selectedServices,
             selectedSeverities,
             startTime, // Pass startTime
