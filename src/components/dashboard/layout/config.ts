@@ -9,6 +9,8 @@ export const navItems: NavItemConfig[] = [
   // { key: 'situation', href: paths.dashboard.situation, icon: 'database' },
   { key: 'forecasting', href: paths.dashboard.forecasting, icon: 'activity' },
   { key: 'root-cause-anaylis', href: paths.dashboard.rootCauseAnalysis, icon: 'alert-octagon' },
+  { key: 'anomaly-notification', href: paths.dashboard.anomalyNotification, icon: 'bell' },
+  { key: 'users-management', href: paths.dashboard.userManagement, icon: 'users' },
   // { key: 'settings', title: 'Settings', href: paths.dashboard.settings, icon: 'gear-six' },
   // { key: 'account', title: 'Account', href: paths.dashboard.account, icon: 'user' },
   // { key: 'error', title: 'Error', href: paths.errors.notFound, icon: 'x-square' },
