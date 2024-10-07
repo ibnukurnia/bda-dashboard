@@ -39,9 +39,8 @@
 }
 
 .card {
-  background: #0a1635;
-  border: 1px solid #373737;
-  box-shadow: 0px 4px 4px 0px #00000040;
+  background: #0816358F;
+  backdrop-filter: blur(77.9000015258789px);
   border-radius: 16px;
   padding: 32px;
 }
@@ -156,14 +155,18 @@
 th:first-child,
 td:first-child {
   position: sticky;
-  z-index: 2;
+  z-index: 15;
   left: 0;
-  background: #0A1635;
+  background-color: #060f2c;
+  --tw-divide-opacity: 1;
+  border-color: rgb(229 231 235 / var(--tw-divide-opacity)) /* #e5e7eb */;
 }
 
 thead {
   position: sticky;
   top: 0;
-  background: #0A1635;
-  z-index: 3;
+  z-index: 16;
+  background-color: #060f2c;
+  --tw-divide-opacity: 1;
+  border-color: rgb(229 231 235 / var(--tw-divide-opacity)) /* #e5e7eb */;
 }

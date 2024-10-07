@@ -1,6 +1,7 @@
 import { Typography } from '@mui/material'
 import { Cell, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { TopFiveLatestCritical } from '@/modules/models/overviews';
+import { Fragment } from 'react';
 
 const columns = [{
   id: "datasource",
@@ -27,13 +28,13 @@ const CellValue: React.FC<CellValueProps> = ({
   cell,
 }) => {
   if (typeof cell.column.columnDef.cell === 'function') {
-    return <>
+    return <Fragment>
       {cell.column.columnDef.cell(cell.getContext())}
-    </>
+    </Fragment>
   }
-  return <>
+  return <Fragment>
     {cell.column.columnDef.cell}
-  </>
+  </Fragment>
 }
 
 interface TableWrapperProps {
@@ -95,13 +96,13 @@ const TableTopCritical = ({ data, isLoading }: TableTopCriticalProps) => {
                             ? header.column.columnDef.header({} as any) // Pass a dummy context
                             : header.column.columnDef.header}
                           {header.column.getCanSort() && (
-                            <>
+                            <Fragment>
                               {{
                                 asc: '🔼',
                                 desc: '🔽',
                                 undefined: '🔽', // Default icon for unsorted state
                               }[header.column.getIsSorted() as string] || '🔽'}
-                            </>
+                            </Fragment>
                           )}
                         </button>
                       </th>

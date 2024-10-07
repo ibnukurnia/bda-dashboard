@@ -190,7 +190,7 @@ const TableCriticalAnomaly = ({ timeRange, dataSource, severity }: TableCritical
       <div className={`w-full max-h-[75dvh] ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
         <div className="min-w-full">
           <TableWrapper isLoading={isTableLoading} isEmpty={data.length === 0}>
-            <table className="table-auto divide-y divide-gray-200 w-full">
+            <table className="table-auto divide-y !divide-gray-200 w-full">
               <thead>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id} className='text-left'>
@@ -218,7 +218,7 @@ const TableCriticalAnomaly = ({ timeRange, dataSource, severity }: TableCritical
                   </tr>
                 ))}
               </thead>
-              <tbody className="divide-y divide-gray-200 text-gray-600">
+              <tbody className="divide-y !divide-gray-200 text-gray-600">
                 {table.getRowModel().rows.map((row) => (
                   <tr key={row.id}>
                     {row.getVisibleCells().map((cell) => (
