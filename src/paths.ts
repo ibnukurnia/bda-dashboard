@@ -8,7 +8,8 @@ export const paths = {
     // situation: '/dashboard/situation-room',
     forecasting: '/dashboard/forecasting',
     rootCauseAnalysis: '/dashboard/root-cause-analysis',
-    settings: '/dashboard/settings',
+    anomalyNotification: '/dashboard/anomaly-notification',
+    userManagement: '/dashboard/users-management',
   },
   errors: { notFound: '/errors/not-found' },
 } as const

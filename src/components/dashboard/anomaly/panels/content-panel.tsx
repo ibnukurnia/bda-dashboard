@@ -57,6 +57,7 @@ const TabContent: React.FC<TabContentProps> = ({
     const [hasErrorFilterAnomaly, setHasErrorFilterAnomaly] = useState<boolean>(false)
     const [hasErrorFilterCluster, setHasErrorFilterCluster] = useState<boolean>(false)
     const [hasErrorFilterService, setHasErrorFilterService] = useState<boolean>(false)
+    const [hasErrorFilterSeverity, setHasErrorFilterSeverity] = useState<boolean>(false)
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
     const [highlights, setHighlights] = useState<string[][] | null | undefined>([])
     const [data, setData] = useState<any[]>([])
@@ -168,7 +169,7 @@ const TabContent: React.FC<TabContentProps> = ({
                             setData(newData); // Update the table data
 
                             setHighlights(highlights)
-                            
+
                             // Update the pagination state
                             setPagination((prev) => ({
                                 ...prev,
@@ -605,7 +606,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
         params.delete("cluster")
         selectedClusters.forEach(cluster => params.append("cluster", cluster))
-        
+
         params.delete("service")
         selectedServices.forEach(service => params.append("service", service))
         // Clear old severity params
@@ -777,6 +778,7 @@ const TabContent: React.FC<TabContentProps> = ({
                                 hasErrorFilterAnomaly={hasErrorFilterAnomaly}
                                 hasErrorFilterService={hasErrorFilterService}
                                 hasErrorFilterCluster={hasErrorFilterCluster}
+                                hasErrorFilterSeverity={hasErrorFilterSeverity}
                             />
                         )}
                         <div className='flex flex-col gap-2'>

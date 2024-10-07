@@ -30,6 +30,7 @@ interface FilterPanelProps {
     hasErrorFilterAnomaly: boolean;
     hasErrorFilterCluster: boolean;
     hasErrorFilterService: boolean;
+    hasErrorFilterSeverity: boolean;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
@@ -42,6 +43,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     hasErrorFilterAnomaly,
     hasErrorFilterCluster,
     hasErrorFilterService,
+    hasErrorFilterSeverity
 }) => {
     const searchParams = useSearchParams();
 
@@ -138,7 +140,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     };
 
     const handleSelectAllServices = () => {
-        if (servicesOptions == null) return
+        if (servicesOptions == null) return;
         if (selectedServiceOptions.length === servicesOptions.length) {
             setSelectedServiceOptions([]); // Unselect all
         } else {
@@ -147,7 +149,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     };
 
     const handleSelectAllCluster = () => {
-        if (clusterOptions == null) return
+        if (clusterOptions == null) return;
         if (selectedClusterOptions.length === clusterOptions.length) {
             setSelectedClusterOptions([]); // Unselect all
         } else {
@@ -159,7 +161,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         const anomalies = searchParams.getAll("anomaly");
         const severities = searchParams.getAll("severity");
         const services = searchParams.getAll("service");
-        const clusters = searchParams.getAll("cluster")
+        const clusters = searchParams.getAll("cluster");
 
         setSelectedAnomalyOptions(
             anomalies.filter((anomaly) =>
@@ -207,7 +209,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         };
     }, [isOpen]);
 
-    const gridCount = 2 + (clusterOptions ? 1 : 0) + (servicesOptions ? 1 : 0)
+    const gridCount = 2 + (clusterOptions ? 1 : 0) + (servicesOptions ? 1 : 0);
 
     return (
         <div className="flex self-start z-50">
@@ -236,43 +238,33 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[9999]">
                     <div
                         ref={panelRef}
-                        className="bg-white rounded-lg p-6 w-full max-w-max mx-auto flex flex-col gap-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                        className="bg-white rounded-lg p-6 w-full max-w-screen-lg flex flex-col gap-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 overflow-y-auto max-h-screen"
                     >
                         <h2 className="text-xl font-semibold text-center mb-2">Multiple Filter</h2>
 
-                        <div
-                            className={`grid gap-4`}
-                            style={{
-                                gridTemplateColumns: `repeat(${gridCount}, 1fr)`
-                            }}
-                        >
+                        {/* Responsive Grid Section */}
+                        <div className={`grid gap-4 w-full`} style={{ gridTemplateColumns: `repeat(${gridCount}, 1fr)` }}>
                             {/* Anomaly Section */}
-                            <div className='flex flex-col gap-3'>
-                                <div className='flex flex-col gap-2'>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-2">
                                     <h3 className="font-semibold text-lg">Anomaly</h3>
                                     <p className="text-sm text-gray-600">
-                                        Selected Anomalies: <span className='text-blue-600'>{selectedAnomalyOptions.length}</span>
+                                        Selected Anomalies: <span className="text-blue-600">{selectedAnomalyOptions.length}</span>
                                     </p>
                                     <button
                                         onClick={handleSelectAllAnomalies}
-                                        className="text-blue-500 text-sm text-left"
-                                        disabled={selectedSeverityOptions.length > 0} // Disable if severity is selected
+                                        className="text-blue-500 text-sm text-left "
+                                        disabled={selectedSeverityOptions.length > 0}
                                     >
                                         {selectedAnomalyOptions.length === checkboxOptions.length ? 'Unselect All' : 'Select All'}
                                     </button>
                                 </div>
-
-                                <div className="overflow-y-auto max-h-56">
+                                <div className="overflow-y-auto max-h-48">
                                     {hasErrorFilterAnomaly ? (
-                                        <p className="text-red-500">
-                                            An error occurred while loading options. Please try again later.
-                                        </p>
+                                        <p className="text-red-500 whitespace-break-spaces">An error occurred. Please try again later.</p>
                                     ) : checkboxOptions.length > 0 ? (
                                         checkboxOptions.map((option) => (
-                                            <label
-                                                key={option.id}
-                                                className="flex items-center justify-between mb-1"
-                                            >
+                                            <label key={option.id} className="flex items-center justify-between mb-1">
                                                 <div className="flex items-center">
                                                     <input
                                                         type="checkbox"
@@ -280,7 +272,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                                         checked={selectedAnomalyOptions.includes(option.id)}
                                                         onChange={() => handleAnomalyChange(option.id)}
                                                         className="mr-2"
-                                                        disabled={selectedSeverityOptions.length > 0} // Disable anomaly selection if severity is selected
+                                                        disabled={selectedSeverityOptions.length > 0}
                                                     />
                                                     {option.label}
                                                 </div>
@@ -301,18 +293,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     </p>
                                     <button
                                         onClick={handleSelectAllSeverities}
-                                        className="text-blue-500 text-sm text-blue-500 text-sm text-left"
-                                        disabled={selectedAnomalyOptions.length > 0} // Disable if anomaly is selected
+                                        className="text-blue-500 text-sm text-left"
+                                        disabled={selectedAnomalyOptions.length > 0}
                                     >
                                         {selectedSeverityOptions.length === severityOptions.length ? 'Unselect All' : 'Select All'}
                                     </button>
                                 </div>
-
                                 <div className="overflow-y-auto max-h-48">
                                     {hasErrorFilterAnomaly ? (
-                                        <p className="text-red-500">
-                                            An error occurred while loading options. Please try again later.
-                                        </p>
+                                        <p className="text-red-500 whitespace-break-spaces">An error occurred. Please try again later.</p>
                                     ) : severityOptions.length > 0 ? (
                                         severityOptions.map((option) => (
                                             <label key={option.id} className="flex items-center justify-between mb-1">
@@ -323,7 +312,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                                         checked={selectedSeverityOptions.includes(option.id)}
                                                         onChange={() => handleSeverityChange(option.id)}
                                                         className="mr-2"
-                                                        disabled={selectedAnomalyOptions.length > 0} // Disable severity selection if anomaly is selected
+                                                        disabled={selectedAnomalyOptions.length > 0}
                                                     />
                                                     {option.label}
                                                 </div>
@@ -337,127 +326,104 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
                             {/* Cluster Section */}
                             {clusterOptions != null && (
-                                <div className='flex flex-col gap-3'>
-                                    <div className='flex flex-col gap-2'>
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex flex-col gap-2">
                                         <h3 className="font-semibold text-lg">Cluster</h3>
                                         <p className="text-sm text-gray-600">
-                                            Selected Cluster: <span className='text-blue-600'>{selectedClusterOptions.length}</span>
+                                            Selected Cluster: <span className="text-blue-600">{selectedClusterOptions.length}</span>
                                         </p>
-                                        <button
-                                            onClick={handleSelectAllCluster}
-                                            className="text-blue-500 text-sm text-blue-500 text-sm text-left"
-                                        >
+                                        <button onClick={handleSelectAllCluster} className="text-blue-500 text-sm text-left">
                                             {selectedClusterOptions.length === clusterOptions.length ? 'Unselect All' : 'Select All'}
                                         </button>
                                     </div>
-
-                                    <div className='flex flex-col gap-2'>
-                                        <div className="overflow-y-auto max-h-48">
-                                            {hasErrorFilterCluster ? (
-                                                <p className="text-red-500">
-                                                    An error occurred while fetching cluster. Please try again later.
-                                                </p>
-                                            ) : clusterOptions.length > 0 ? (
-                                                clusterOptions.map((cluster, index) => (
-                                                    <label
-                                                        key={index}
-                                                        className="flex items-center justify-between mb-1"
-                                                    >
-                                                        <div className="flex items-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                value={cluster}
-                                                                checked={selectedClusterOptions.includes(cluster)}
-                                                                onChange={() => handleClusterChange(cluster)}
-                                                                className="mr-2"
-                                                            />
-                                                            {cluster}
-                                                        </div>
-                                                    </label>
-                                                ))
-                                            ) : (
-                                                <p>No cluster available</p>
-                                            )}
-                                        </div>
+                                    <div className="overflow-y-auto max-h-48">
+                                        {hasErrorFilterCluster ? (
+                                            <p className="text-red-500 whitespace-break-spaces">An error occurred while fetching cluster. Please try again later.</p>
+                                        ) : clusterOptions.length > 0 ? (
+                                            clusterOptions.map((cluster, index) => (
+                                                <label key={index} className="flex items-center justify-between mb-1">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            value={cluster}
+                                                            checked={selectedClusterOptions.includes(cluster)}
+                                                            onChange={() => handleClusterChange(cluster)}
+                                                            className="mr-2"
+                                                        />
+                                                        {cluster}
+                                                    </div>
+                                                </label>
+                                            ))
+                                        ) : (
+                                            <p>No cluster available</p>
+                                        )}
                                     </div>
                                 </div>
                             )}
 
                             {/* Services Section */}
                             {servicesOptions != null && (
-                                <div className='flex flex-col gap-3'>
-                                    <div className='flex flex-col gap-2'>
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex flex-col gap-2">
                                         <h3 className="font-semibold text-lg">Services</h3>
                                         <p className="text-sm text-gray-600">
-                                            Selected Services: <span className='text-blue-600'>{selectedServiceOptions.length}</span>
+                                            Selected Services: <span className="text-blue-600">{selectedServiceOptions.length}</span>
                                         </p>
-                                        <button
-                                            onClick={handleSelectAllServices}
-                                            className="text-blue-500 text-sm text-blue-500 text-sm text-left"
-                                        >
+
+
+                                        {/* Select All Services button */}
+                                        <button onClick={handleSelectAllServices} className="text-blue-500 text-sm text-left">
                                             {selectedServiceOptions.length === servicesOptions.length ? 'Unselect All' : 'Select All'}
                                         </button>
                                     </div>
 
-                                    <div className='flex flex-col gap-2'>
-                                        <input
-                                            className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                            placeholder="Search service"
-                                            value={searchValue}
-                                            onChange={handleSearch}
-                                        />
-                                        <div className="overflow-y-auto max-h-48">
-                                            {hasErrorFilterService ? (
-                                                <p className="text-red-500">
-                                                    An error occurred while fetching services. Please try again later.
-                                                </p>
-                                            ) : filteredServicesOptions.length > 0 ? (
-                                                filteredServicesOptions.map((service, index) => (
-                                                    <label
-                                                        key={index}
-                                                        className="flex items-center justify-between mb-1"
-                                                    >
-                                                        <div className="flex items-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                value={service}
-                                                                checked={selectedServiceOptions.includes(service)}
-                                                                onChange={() => handleServiceChange(service)}
-                                                                className="mr-2"
-                                                            />
-                                                            {service}
-                                                        </div>
-                                                    </label>
-                                                ))
-                                            ) : (
-                                                <p>No services available</p>
-                                            )}
-                                        </div>
+                                    {/* Search input for services */}
+                                    <input
+                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                        placeholder="Search service"
+                                        value={searchValue}
+                                        onChange={handleSearch}
+                                    />
+
+                                    {/* Services with filtered results */}
+                                    <div className="overflow-y-auto max-h-48">
+                                        {hasErrorFilterService ? (
+                                            <p className="text-red-500 whitespace-nowrap">An error occurred while fetching services. Please try again later.</p>
+                                        ) : filteredServicesOptions.length > 0 ? (
+                                            filteredServicesOptions.map((service, index) => (
+                                                <label key={index} className="flex items-center justify-between mb-1">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            value={service}
+                                                            checked={selectedServiceOptions.includes(service)}
+                                                            onChange={() => handleServiceChange(service)}
+                                                            className="mr-2"
+                                                        />
+                                                        {service}
+                                                    </div>
+                                                </label>
+                                            ))
+                                        ) : (
+                                            <p>No services available</p>
+                                        )}
                                     </div>
+
                                 </div>
                             )}
                         </div>
 
-                        <div className="flex justify-between space-x-4">
-                            <button
-                                className="bg-white text-blue-600 border border-primary-blue px-4 py-2 rounded-lg flex-1 text-center"
-                                onClick={handleReset}
-                            >
+                        {/* Reset and Apply Buttons */}
+                        <div className="flex justify-between space-x-4 mt-4">
+                            <button className="bg-white text-blue-600 border border-primary-blue px-4 py-2 rounded-lg flex-1 text-center" onClick={handleReset}>
                                 RESET
                             </button>
-                            <button
-                                className="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 rounded-lg flex-1 text-center"
-                                onClick={handleApply}
-                            >
+                            <button className="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 rounded-lg flex-1 text-center" onClick={handleApply}>
                                 APPLY
                             </button>
                         </div>
 
-                        {resetMessage && (
-                            <p className="text-center text-blue-500 mt-4 font-semibold">
-                                Filters have been reset!
-                            </p>
-                        )}
+                        {resetMessage && <p className="text-center text-blue-500 mt-4 font-semibold">Filters have been reset!</p>}
                     </div>
                 </div>
             )}

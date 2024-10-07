@@ -73,6 +73,12 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
       case '/dashboard/root-cause-analysis':
         title = 'Root Cause Analysis';
         break;
+      case '/dashboard/anomaly-notification':
+        title = 'Anomaly Notification';
+        break;
+      case '/dashboard/users-management':
+        title = 'Users Management';
+        break;
       default:
         break;
     }
@@ -168,10 +174,10 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="w-10 h-10 stroke-current text-blue-600">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" />
               </svg>
-              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-                3
-              </span>
+              {/* Small red dot for notification */}
+              <span className="absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full"></span>
             </Button>
+
 
             <Button onClick={toggleUserDetails} className="text-white hover:text-gray-300">
               <div
@@ -225,29 +231,103 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
           </Button>
         </Box>
       )}
-
       {isNotifDetailsOpen && (
-        <div ref={notifRef} className="absolute right-4 top-24 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
-          <div className="p-3">
-            <Typography variant="body2" className="px-4 py-2 text-gray-800">
-              Notification 1
-            </Typography>
-            <Typography variant="body2" className="px-4 py-2 text-gray-800">
-              Notification 2
-            </Typography>
-            <Typography variant="body2" className="px-4 py-2 text-gray-800">
-              Notification 3
-            </Typography>
+        <div
+          ref={notifRef}
+          className="absolute right-4 top-24  bg-[#081635] border border-gray-600 rounded-lg shadow-lg z-20"
+        >
+          <div className="flex flex-col gap-4 p-4">
+            {/* Anomaly Notification */}
+            <div className="bg-[#1f2a48] p-4 rounded-lg flex flex-col gap-5">
+              <div className="flex flex-row items-center justify-between gap-6 ">
+                <div className="">
+                  <p className="text-white font-semibold">Anomaly Detected!</p>
+                  <p className="text-gray-200 text-sm">2024-10-03 10:00:00</p>
+                </div>
+                <span className="bg-red-600 text-white text-xs py-1 px-2 rounded-full">Log APM</span>
+              </div>
+              <div className="">
+                <p className="text-gray-300 text-sm">
+                  <span className="text-yellow-500">
+                    <span className="inline-block mr-1">⚠</span> {/* Add same margin here */}
+                    Anomaly:
+                  </span>{' '}
+                  Error Rate APM
+                </p>
+                <p className="text-gray-300 text-sm">
+                  <span className="text-gray-200">
+                    <svg
+                      className="w-4 h-4 inline-block mr-1 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M21 21l-6-6m2-5a7 7 0 1 0-14 0 7 7 0 0 0 14 0z"
+                      />
+                    </svg>
+                    Identifier:
+                  </span>{' '}
+                  primorsk
+                </p>
+              </div>
+
+            </div>
+            <div className="bg-[#1f2a48] p-4 rounded-lg flex flex-col gap-5">
+              <div className="flex flex-row items-center justify-between gap-6 ">
+                <div className="">
+                  <p className="text-white font-semibold">Anomaly Detected!</p>
+                  <p className="text-gray-200 text-sm">2024-10-03 10:00:00</p>
+                </div>
+                <span className="bg-red-600 text-white text-xs py-1 px-2 rounded-full">Log APM</span>
+              </div>
+              <div className="">
+                <p className="text-gray-300 text-sm">
+                  <span className="text-yellow-500">
+                    <span className="inline-block mr-1">⚠</span> {/* Add same margin here */}
+                    Anomaly:
+                  </span>{' '}
+                  Error Rate APM
+                </p>
+                <p className="text-gray-300 text-sm">
+                  <span className="text-gray-200">
+                    <svg
+                      className="w-4 h-4 inline-block mr-1 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M21 21l-6-6m2-5a7 7 0 1 0-14 0 7 7 0 0 0 14 0z"
+                      />
+                    </svg>
+                    Identifier:
+                  </span>{' '}
+                  primorsk
+                </p>
+              </div>
+
+            </div>
           </div>
-          <div className="border-t border-gray-200">
-            <Link href="/notifications" passHref>
-              <Button component="a" className="w-full text-center py-2 text-gray-600 hover:bg-gray-100">
-                View All
+
+          <div className="border-t border-gray-600">
+            <Link href="/dashboard/anomaly-notification" passHref>
+              <Button component="a" className="w-full text-center py-3 text-blue-500 hover:bg-gray-800">
+                View All Anomaly
               </Button>
             </Link>
           </div>
         </div>
       )}
+
 
       <MobileNav
         onClose={() => {
