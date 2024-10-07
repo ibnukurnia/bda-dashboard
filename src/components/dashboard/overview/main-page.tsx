@@ -2,6 +2,8 @@
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './main-page.css'
+import { format } from 'date-fns'
+import { Maximize } from 'react-feather'
 import {
   GetChartsOverview,
   GetHealthScoreOverview,
@@ -12,8 +14,11 @@ import {
   GetAmountServiceList,
   GetDataSourceLatestAnomaly
 } from '@/modules/usecases/overviews'
-import { format } from 'date-fns'
-import { Maximize } from 'react-feather'
+import { GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { fetchServicesOption } from '@/lib/api'
+import { HealthScoreResponse, TopFiveLatestCritical } from '@/modules/models/overviews'
+import { FullScreen, useFullScreenHandle } from 'react-full-screen'
+import { SEVERITY_LABELS } from '@/constants'
 import Button from '@/components/system/Button/Button'
 import DropdownDS from './button/dropdown-ds'
 import DropdownTime from './button/dropdown-time'
@@ -27,20 +32,16 @@ import DonutChartWrapper from './wrapper/donut-wrapper'
 import TableSeverityWrapper from './wrapper/table-severity-wrapper'
 import TableCriticalAnomaly from './table/table-critical-anomaly'
 import DropdownSeverity from './button/dropdown-severity'
-import { FullScreen, useFullScreenHandle } from 'react-full-screen'
-import { SEVERITY_LABELS } from '@/constants'
 import HealthinessTree from './panels/healthiness-tree'
 import HealthinessTreeWrapper from './wrapper/healthiness-tree-wrapper'
-import { HealthScoreResponse, TopFiveLatestCritical } from '@/modules/models/overviews'
 import TableTopCritical from './table/table-top-critical'
 import AnomalyAmountChart from './chart/anomaly-amount-chart'
-import { GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
-import { fetchServicesOption } from '@/lib/api'
 import DropdownAnomalyAmountService from './button/dropdown-anomaly-amount-service'
 import AnomalyAmountWrapper from './wrapper/anomaly-amount-wrapper'
 import Skeleton from '@/components/system/Skeleton/Skeleton'
 import DropdownDataSourceLatestAnomaly from './button/dropdown-datasource-latest-anomaly'
 import AutoRefreshButton from '../anomaly/button/refreshButton'
+
 
 const ANOMALY_AMOUNT_TYPE = 'brimo'
 const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
@@ -128,17 +129,13 @@ const defaultTimeRanges: Record<string, number> = {
   'Last 30 minutes': 30,
   'Last 1 hours': 60,
   'Last 3 hours': 180,
-  // 'Last 6 hours': 360,
-  // 'Last 24 hours': 1440,
 }
 
 const MainPageOverview = () => {
-  // const [selectedDataSource, setSelectedDataSource] = useState<any[]>([])
   const [amountServiceList, setAmountServiceList] = useState<string[]>([]);
   const [selectedDataSourceLatestAnomaly, setSelectedDataSourceLatestAnomaly] = useState<string | null | undefined>(null);
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
   const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string }[]>([])
-  const [selectedServices, setSelectedServices] = useState<{ name: string; data: number[]; count?: number }[]>([])
   const [selectedAnomalyAmountService, setSelectedAnomalyAmountService] = useState<string>('')
   const [modalServices, setModalServices] = useState(false)
   const [modalSeverity, setModalSeverity] = useState(false)
@@ -297,23 +294,6 @@ const MainPageOverview = () => {
       })
       .finally(() => {
         setIsLoadingTopFiveCritical(false);
-      })
-
-    GetMetricLogAnomalies({
-      ...paramsTime,
-      metric_name: [ANOMALY_AMOUNT_METRIC_NAME],
-      service_name: selectedAnomalyAmountService,
-      type: ANOMALY_AMOUNT_TYPE,
-    })
-      .then((res) => {
-        setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
-        setIsErrorAnomalyAmount(false);
-      })
-      .catch(() => {
-        setIsErrorAnomalyAmount(true);
-      })
-      .finally(() => {
-        setIsLoadingAnomalyAmount(false);
       })
 
     // Make the API call with the correct params
@@ -486,13 +466,13 @@ const MainPageOverview = () => {
 
   const refreshData = async () => {
     const { startTime, endTime } = handleStartEnd(selectedRange);
-
     setIsLoadingHealthScore(true);
     setIsLoadingPieChart(true);
     setIsLoadingTopServices(true);
     setIsLoadingTopFiveCritical(true);
     setIsLoadingAnomalyAmountServices(true);
     setIsLoadingDataSourceLatestAnomaly(true);
+    setIsLoadingGraphic(true); // Add loading state for the chart
 
     const paramsTime = { start_time: startTime, end_time: endTime };
     const params = {
@@ -508,7 +488,8 @@ const MainPageOverview = () => {
         topFiveCriticalRes,
         amountServiceListRes,
         dataSourceLatestAnomalyRes,
-        anomalyAmountServicesRes
+        anomalyAmountServicesRes,
+        chartRes // Add chart response to the array
       ] = await Promise.all([
         GetPieChartsOverview(params),
         GetTopServicesOverview(params),
@@ -520,6 +501,7 @@ const MainPageOverview = () => {
           ...paramsTime,
           type: ANOMALY_AMOUNT_TYPE,
         }),
+        GetChartsOverview(paramsTime), // Fetch chart data
       ]);
 
       // Handle results after all calls complete
@@ -531,12 +513,14 @@ const MainPageOverview = () => {
       setAmountServiceList(['All', ...amountServiceListRes.data]);
       setDataSourceLatestAnomalyData(dataSourceLatestAnomalyRes.data ?? []);
       setAnomalyAmountServicesData(anomalyAmountServicesRes.data?.services ?? []);
+      setChartData(chartRes.data); // Set the chart data from the response
 
       // Reset error states
       setIsErrorHealthScore(false);
       setIsErrorTopFiveCritical(false);
       setIsErrorAnomalyAmountServices(false);
       setIsErrorDataSourceLatestAnomaly(false);
+
     } catch (error) {
       console.error('Error occurred:', error);
 
@@ -548,12 +532,14 @@ const MainPageOverview = () => {
       setAmountServiceList(['']);
       setDataSourceLatestAnomalyData([]);
       setAnomalyAmountServicesData([]);
+      setChartData([]); // Handle error for chart data
 
       // Set error states
       setIsErrorHealthScore(true);
       setIsErrorTopFiveCritical(true);
       setIsErrorAnomalyAmountServices(true);
       setIsErrorDataSourceLatestAnomaly(true);
+
     } finally {
       // Always reset loading states after completion
       setIsLoadingHealthScore(false);
@@ -562,6 +548,7 @@ const MainPageOverview = () => {
       setIsLoadingTopFiveCritical(false);
       setIsLoadingAnomalyAmountServices(false);
       setIsLoadingDataSourceLatestAnomaly(false);
+      setIsLoadingGraphic(false); // Reset loading state for the chart
     }
   };
 
@@ -649,6 +636,16 @@ const MainPageOverview = () => {
         setIsLoadingTopFiveCritical(false);
       })
 
+    GetChartsOverview(paramsTime)
+      .then((res) => {
+        setChartData(res.data);
+        setIsLoadingGraphic(false);
+      })
+      .catch(() => {
+        setChartData([]);
+        setIsLoadingGraphic(false);
+      });
+
     GetAmountServiceList()
       .then((res) => {
         if (res && res.data) {
@@ -722,86 +719,6 @@ const MainPageOverview = () => {
         });
     }
   }, [amountServiceList, selectedAnomalyAmountService]); // This effect runs when the service list or selected service changes
-
-
-  useEffect(() => {
-    if (!selectedAnomalyAmountService) return
-
-    setIsLoadingAnomalyAmount(true)
-
-    const { startTime, endTime } = handleStartEnd(selectedRange)
-    const paramsTime = { start_time: startTime, end_time: endTime }
-
-    GetMetricLogAnomalies({
-      ...paramsTime,
-      metric_name: [ANOMALY_AMOUNT_METRIC_NAME],
-      service_name: selectedAnomalyAmountService,
-      type: ANOMALY_AMOUNT_TYPE,
-    })
-      .then((res) => {
-        // setAnomalyAmountData((prev: any) => res.data?.[0] ?? prev)
-        setIsErrorAnomalyAmount(false)
-      })
-      .catch(() => {
-        setIsErrorAnomalyAmount(true)
-      })
-      .finally(() => {
-        setIsLoadingAnomalyAmount(false)
-      })
-  }, [selectedAnomalyAmountService])
-
-  // useEffect(() => {
-  //   const intervalOverview = setInterval(() => {
-  //     if (
-  //       !isLoadingHealthScore &&
-  //       !isLoadingPieChart &&
-  //       !isLoadingTopServices
-  //     ) {
-  //       const timeSplit = selectedRange.split(' - ');
-
-  //       let startTime: string | Date;
-  //       let endTime: string | Date;
-
-  //       if (timeSplit.length > 1) {
-  //         // If it's a custom range
-  //         startTime = timeSplit?.[0];
-  //         endTime = timeSplit?.[1];
-  //       } else {
-  //         // If it's a predefined range like "Last 15 minutes"
-  //         startTime = format(
-  //           new Date(new Date().getTime() - toMiliseconds * timeRanges[selectedRange]),
-  //           'yyyy-MM-dd HH:mm:ss'
-  //         );
-  //         endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
-  //       }
-
-  //       const paramsTime = { start_time: startTime, end_time: endTime };
-  //       const params = {
-  //         type: selectedDataSource,
-  //         ...paramsTime,
-  //       };
-
-  //       // Fetch Pie Charts Overview
-  //       GetPieChartsOverview(params)
-  //         .then((res) => setPieChartData(res.data.data))
-  //         .catch(() => setPieChartData([]));
-
-  //       // Fetch Top Services Overview
-  //       GetTopServicesOverview(params)
-  //         .then((res) => setTopServicesData(res.data))
-  //         .catch(() => setTopServicesData({ header: [], data: [] }));
-
-  //       // Fetch Health Score Overview
-  //       GetHealthScoreOverview(paramsTime)
-  //         .then((res) => setHealthScoreData(res.data))
-  //         .catch(() => setHealthScoreData([]));
-  //     }
-  //   }, 5000);
-
-  //   return () => {
-  //     clearInterval(intervalOverview);
-  //   };
-  // }, [selectedDataSource, timeRanges, isLoadingPieChart, isLoadingHealthScore, isLoadingTopServices, selectedRange]);
 
 
   useEffect(() => {
@@ -922,6 +839,7 @@ const MainPageOverview = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <DonutChartWrapper
                         isLoading={isLoadingPieChart}
+
                       >
                         <DonutChart
                           series={pieChartData.map((item: any) => item.count)}
@@ -961,6 +879,7 @@ const MainPageOverview = () => {
                   <span className="font-bold text-white text-2xl">Top 10 Critical</span>
                   <TableTopCritical
                     data={topFiveCriticalData}
+
                     isLoading={isLoadingTopFiveCritical}
                   />
                 </div>
