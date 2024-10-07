@@ -315,10 +315,10 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 setInitialLoading(false)
             })
     }
-    
+
     const timeParamPlusInterval = (time: string) => {
         return format(new Date(time).setMilliseconds(autoRefresh.interval ?? 0), 'yyyy-MM-dd HH:mm:ss')
-    } 
+    }
 
     const handleGraphZoomOut = async (minX: any, maxX: any) => {
         if ((lastTimeRangeParam.startTime != null && lastTimeRangeParam.endTime != null) &&
@@ -342,7 +342,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const handleSelectToggle = (value: ToggleOption) => {
         setSelectedGraphToggle(value)
     }
-
+    console.log(dataMetric)
     return (
         <div className="flex flex-col gap-8">
             {!isFullScreen && <FilterGraphAnomaly

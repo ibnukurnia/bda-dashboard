@@ -42,24 +42,18 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
     },
     xaxis: {
       // Set min and max based on user-selected start and end time
-      axisTicks: {
-        show: false, // Hide ticks
-      },
       min: new Date(startTime).getTime(),
       max: new Date(endTime).getTime(),
       type: 'datetime',
       labels: {
         formatter(value) {
-          const date = new Date(value)
-          const formattedDate = date.toLocaleDateString('id-ID', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
+          const date = new Date(value);
+          const formattedTime = date.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
-            second: '2-digit',
-          })
-          return formattedDate.split(', ')
+            hour12: false, // For 24-hour format, set to true for 12-hour AM/PM format
+          });
+          return formattedTime;
         },
         style: {
           colors: 'white', // White color for x-axis text
@@ -67,7 +61,6 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
         rotate: 0,
         hideOverlappingLabels: true,
         trim: true,
-        show: false, // Hide labels
       },
       crosshairs: { show: false },
       axisBorder: { show: false },
@@ -76,11 +69,11 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
       min: 0,
       max(max) {
         if (title?.toLowerCase()?.includes('apm')) {
-          return max
+          return max;
         } else if (max >= 5) {
-          return max + 1
+          return max + 1;
         } else {
-          return 5
+          return 5;
         }
       },
       labels: {
@@ -88,7 +81,7 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
           colors: 'white', // White color for y-axis text
         },
         formatter(val) {
-          return title?.toLowerCase()?.includes('apm') ? val.toFixed(4) : val.toFixed(0)
+          return title?.toLowerCase()?.includes('apm') ? val.toFixed(4) : val.toFixed(0);
         },
       },
       tickAmount: 5,
@@ -113,7 +106,9 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
         colors: 'white',
       },
     },
-  }
+  };
+
+
 
   return (
     <>

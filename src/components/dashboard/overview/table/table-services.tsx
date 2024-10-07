@@ -23,6 +23,8 @@ interface TableServicesProps {
   selectedDataSource: string;
   queryParams?: {
     time_range?: string;
+    start_time?: string;
+    end_time?: string;
   };
 }
 

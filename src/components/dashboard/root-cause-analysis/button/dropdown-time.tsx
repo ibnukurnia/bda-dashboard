@@ -4,16 +4,21 @@ import { format } from 'date-fns'
 import Button from '@/components/system/Button/Button'
 
 interface DropdownTimeProps {
-  timeRanges: Record<string, number>
-  onRangeChange: (rangeKey: string) => void
-  selectedRange: string // Receive selectedRange as a prop
+  timeRanges: Record<string, number>;
+  onRangeChange: (rangeKey: string) => void;
+  selectedRange: string; // Receive selectedRange as a prop
+  startTime?: string; // Optional prop to pass startTime
+  endTime?: string; // Optional prop to pass endTime
 }
 
-const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, selectedRange }) => {
+const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, selectedRange, startTime, endTime }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isCustomRange, setIsCustomRange] = useState(false)
-  const [customRangeStart, setCustomRangeStart] = useState<string>(format(new Date(), "yyyy-MM-dd'T'HH:mm"))
-  const [customRangeEnd, setCustomRangeEnd] = useState<string>(format(new Date(), "yyyy-MM-dd'T'HH:mm"))
+
+  // Initialize with startTime and endTime if available, otherwise use current time
+  const [customRangeStart, setCustomRangeStart] = useState<string>(startTime ? format(new Date(startTime), "yyyy-MM-dd'T'HH:mm") : format(new Date(), "yyyy-MM-dd'T'HH:mm"));
+  const [customRangeEnd, setCustomRangeEnd] = useState<string>(endTime ? format(new Date(endTime), "yyyy-MM-dd'T'HH:mm") : format(new Date(), "yyyy-MM-dd'T'HH:mm"));
+
   const [position, setPosition] = useState<number>(0)
   const [validationMessage, setValidationMessage] = useState('')
   const dropdownRef = useRef<HTMLDivElement | null>(null)
@@ -53,14 +58,13 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
   }
 
   const logicValidationDateTime = () => {
-    if (
-      new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60 * 2 ||
-      new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() < 0 ||
-      new Date(customRangeEnd).getTime() === new Date(customRangeStart).getTime()
-    ) {
-      return true
+    const start = new Date(customRangeStart).getTime();
+    const end = new Date(customRangeEnd).getTime();
+
+    if (end - start > 1000 * 60 * 60 * 2 || end - start < 0 || end === start) {
+      return true;
     } else {
-      return false
+      return false;
     }
   }
 
@@ -101,6 +105,15 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
       }
     }
   }, [isOpen])
+
+  useEffect(() => {
+    // If the selectedRange is a custom range, parse the start and end times from it
+    if (selectedRange.includes(' - ')) {
+      const [start, end] = selectedRange.split(' - ')
+      setCustomRangeStart(format(new Date(start), "yyyy-MM-dd'T'HH:mm"))
+      setCustomRangeEnd(format(new Date(end), "yyyy-MM-dd'T'HH:mm"))
+    }
+  }, [selectedRange])
 
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>

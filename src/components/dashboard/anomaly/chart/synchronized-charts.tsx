@@ -11,7 +11,7 @@ const colors = [
     '#4E88FF', '#00D8FF', '#FF4EC7', '#00E396', '#F9C80E', '#8C54FF',
     '#FF4560', '#FF7D00', '#7DFF6B', '#FF6EC7', '#1B998B', '#B28DFF',
     '#FF6666', '#3DDC97', '#F4A261', '#89CFF0'
-  ]
+]
 
 interface SynchronizedChartsProps {
     dataCharts: MetricLogAnomalyResponse[];
@@ -40,7 +40,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 
     const toggleZoomOutButton = (disabled: boolean) => {
         const zoomOutButtons = document.querySelectorAll('.apexcharts-zoomout-icon');
-    
+
         zoomOutButtons.forEach(button => {
             if (disabled) {
                 button.classList.add('zoom-disabled');
@@ -53,11 +53,13 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     useEffect(() => {
         toggleZoomOutButton(zoomOutDisabled)
     }, [zoomOutDisabled]);
-  
+
+    console.log(dataCharts)
+
     useEffect(() => {
         setZoomOutDisabled(false)
     }, [dataCharts])
-    
+
     if (!dataCharts || dataCharts.length === 0) {
         return (
             <div className="text-center text-2xl font-semibold text-white">
@@ -94,8 +96,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                     toggleZoomOutButton(false)
                                 }
                             },
-                            beforeZoom : (chartContext, {xaxis}) => {
-                                // Zoomed out
+                            beforeZoom: (chartContext, { xaxis }) => {
                                 if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {
                                     if (!zoomOutDisabled) {
                                         onZoomOut && onZoomOut(
@@ -103,10 +104,10 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                             maxX <= xaxis.max ? maxX : xaxis.max,
                                         )
                                     }
-            
+
                                     if (minX >= xaxis.min && maxX <= xaxis.max) {
                                         setZoomOutDisabled(true)
-                                        return {                                                                                                      
+                                        return {
                                             xaxis: {
                                                 min: minX,
                                                 max: maxX,
@@ -115,7 +116,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                     } else {
                                         setZoomOutDisabled(false)
                                     }
-                                    return {                                                                                                      
+                                    return {
                                         xaxis: {
                                             min: minX >= xaxis.min ? minX : xaxis.min,
                                             max: maxX <= xaxis.max ? maxX : xaxis.max,
@@ -126,10 +127,10 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         },
                     },
                     title: {
-                      text: metric.title,
-                      style: {
-                        color: 'white',
-                      },
+                        text: metric.title,
+                        style: {
+                            color: 'white',
+                        },
                     },
                     xaxis: {
                         type: 'datetime',
@@ -153,29 +154,32 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             style: {
                                 colors: 'white',
                             },
+                            formatter: (value) => {
+                                return parseFloat(value.toFixed(2)).toString(); // Convert to string after fixing to 2 decimal places
+                            },
                         },
+                        decimalsInFloat: 2, // Ensure decimals are shown in the axis
                         axisBorder: {
-                          show: true, // Show the Y-axis line
-                          color: 'white', // Customize the color of the Y-axis line if needed
-                          width: 2, // Adjust the width of the Y-axis line
+                            show: true,
+                            color: 'white',
+                            width: 2,
                         },
                     },
                     stroke: {
                         curve: 'smooth',
                         width: 4,
-                        // colors: [colors[index % (colors.length)]], // This gives the remainder after all full loops.
                     },
                     markers: {
-                        size: 0.0000001, // Workaround hover marker not showing because discrete options
+                        size: 0.0000001,
                         hover: {
-                            size: 6, // Size of the marker when hovered
+                            size: 6,
                         },
                         discrete: metric.anomalies.map(a => ({
-                            seriesIndex: 0, // Index of the series
-                            dataPointIndex: metric.data.findIndex(d => d[0] === a[0]), // Index of the data point to display a marker
-                            fillColor: '#FF0000', // Custom fill color for the specific marker
+                            seriesIndex: 0,
+                            dataPointIndex: metric.data.findIndex(d => d[0] === a[0]),
+                            fillColor: '#FF0000',
                             strokeColor: '#FF0000',
-                            size: 4, // Custom size for the specific marker
+                            size: 4,
                         }))
                     },
                     grid: {
@@ -192,16 +196,19 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             colors: 'white'
                         }
                     },
-                    colors: [colors[index % (colors.length)]], // This gives the remainder after all full loops.
+                    colors: [colors[index % (colors.length)]],
                 };
 
                 return (
                     <Chart
-                        key={Math.random()} // Workaround synchronized tooltip bug
+                        key={Math.random()}
                         options={chartOptions}
                         series={[{
                             name: metric.title,
-                            data: metric.data.map(([date, number]) => ({ x: date, y: number })),
+                            data: metric.data.map(([date, number]) => ({
+                                x: date,
+                                y: parseFloat(number.toString()) // Ensure it's treated as a float
+                            })),
                         }]}
                         type="line"
                         height={height}

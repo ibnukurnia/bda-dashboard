@@ -44,7 +44,15 @@ const MainPageRootCauseAnalysis = () => {
   const handle = useFullScreenHandle();
   const searchParams = useSearchParams()
 
-  const timeRange = searchParams.get("time_range") ?? DEFAULT_TIME_RANGE
+  // Step 1: Get start_time and end_time from URL or use DEFAULT_TIME_RANGE
+  const startTime = searchParams.get("start_time");
+  const endTime = searchParams.get("end_time");
+
+  // If both start_time and end_time are present, use them; otherwise, use DEFAULT_TIME_RANGE
+  const timeRange = (startTime && endTime)
+    ? `${startTime} - ${endTime}`
+    : DEFAULT_TIME_RANGE;
+  console.log(timeRange)
 
   useEffect(() => {
     fetchData()
@@ -57,7 +65,7 @@ const MainPageRootCauseAnalysis = () => {
     1000, lastRefreshTime != null)
 
   async function fetchData() {
-    const {startTime, endTime} = getTimeRange()
+    const { startTime, endTime } = getTimeRange()
     GetRootCauseAnalysisTree({ start_time: startTime, end_time: endTime })
       .then(result => {
         setDataTree(result.data)
@@ -72,30 +80,30 @@ const MainPageRootCauseAnalysis = () => {
       })
   }
 
-    // Helper function to calculate startTime and endTime
+  // Helper function to calculate startTime and endTime
   const getTimeRange = () => {
     let startTime: string
     let endTime: string
 
     if (timeRange.includes(' - ')) {
-        // Handle custom range
-        const [start, end] = timeRange.split(' - ');
-        startTime = start;
-        endTime = end;
+      // Handle custom range
+      const [start, end] = timeRange.split(' - ');
+      startTime = start;
+      endTime = end;
     } else {
-        // Handle predefined ranges
-        const selectedTimeRange = PREDEFINED_TIME_RANGES[timeRange]; // Get the selected time range in minutes
+      // Handle predefined ranges
+      const selectedTimeRange = PREDEFINED_TIME_RANGES[timeRange]; // Get the selected time range in minutes
 
-        // Calculate endDate as the current time, rounding down the seconds to 00
-        const endDateObj = new Date();
-        endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
+      // Calculate endDate as the current time, rounding down the seconds to 00
+      const endDateObj = new Date();
+      endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
 
-        // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
-        const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
+      // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
+      const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
 
-        // Convert startDate and endDate to strings
-        startTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
-        endTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
+      // Convert startDate and endDate to strings
+      startTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
+      endTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
     }
 
     return { startTime, endTime };
@@ -116,49 +124,49 @@ const MainPageRootCauseAnalysis = () => {
   };
 
   return (
-      <div className='flex flex-col gap-8'>
-        <div className='flex flex-row gap-2 self-end items-center'>
-          <div className="flex flex-row gap-2 self-end items-center">
-            <Typography variant="body2" component="p" color="white">
-              {lastUpdateString}
-            </Typography>
-            <DropdownTime
-              timeRanges={PREDEFINED_TIME_RANGES}
-              onRangeChange={handleRangeChange}
-              selectedRange={timeRange} // Pass timeRange as a prop
-            />
-          </div>
-          <AutoRefreshButton onRefresh={fetchData} onAutoRefreshChange={handleAutoRefreshChange} />
-          <Button onClick={handle.enter}>
-            <Maximize className='w-6 h-5' />
-          </Button>
+    <div className='flex flex-col gap-8'>
+      <div className='flex flex-row gap-2 self-end items-center'>
+        <div className="flex flex-row gap-2 self-end items-center">
+          <Typography variant="body2" component="p" color="white">
+            {lastUpdateString}
+          </Typography>
+          <DropdownTime
+            timeRanges={PREDEFINED_TIME_RANGES}
+            onRangeChange={handleRangeChange}
+            selectedRange={timeRange} // Pass timeRange as a prop
+          />
+        </div>
+        <AutoRefreshButton onRefresh={fetchData} onAutoRefreshChange={handleAutoRefreshChange} />
+        <Button onClick={handle.enter}>
+          <Maximize className='w-6 h-5' />
+        </Button>
       </div>
-        <FullScreen className={`${handle.active ? "p-6 bg-[#05061E] overflow-auto" : ""} flex flex-col gap-8`} handle={handle}>
-          <div className={`flex flex-col gap-10 px-2 py-8 overflow-hidden card-style`}>
-            <div className="w-full flex flex-col gap-8">
-              <RCATreeWrapper
-                isError={isError}
-              >
-                <RCATree
-                  data={dataTree}
-                  fullScreenHandle={handle}
-                  isLoading={isLoading}
-                  timeRange={timeRange}
-                  handleSelectNLP={(value) => setNlpData(value)}
-                />
-                <TooltipCollection
-                  data={dataTree}
-                />
-              </RCATreeWrapper>
-            </div>
+      <FullScreen className={`${handle.active ? "p-6 bg-[#05061E] overflow-auto" : ""} flex flex-col gap-8`} handle={handle}>
+        <div className={`flex flex-col gap-10 px-2 py-8 overflow-hidden card-style`}>
+          <div className="w-full flex flex-col gap-8">
+            <RCATreeWrapper
+              isError={isError}
+            >
+              <RCATree
+                data={dataTree}
+                fullScreenHandle={handle}
+                isLoading={isLoading}
+                timeRange={timeRange}
+                handleSelectNLP={(value) => setNlpData(value)}
+              />
+              <TooltipCollection
+                data={dataTree}
+              />
+            </RCATreeWrapper>
           </div>
-          {nlpData && (
-            <TableNLP
-              data={nlpData}
-            />
-          )}
-        </FullScreen>
-      </div>
+        </div>
+        {nlpData && (
+          <TableNLP
+            data={nlpData}
+          />
+        )}
+      </FullScreen>
+    </div>
   )
 }
 

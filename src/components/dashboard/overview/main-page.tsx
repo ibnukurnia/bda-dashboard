@@ -391,9 +391,6 @@ const MainPageOverview = () => {
   const handleChangeFilterAnomalyAmountService = (value: string) => {
     setIsLoadingAnomalyAmount(true);
 
-    // Get the startTime and endTime values from your selected range
-    const { startTime, endTime } = handleStartEnd(selectedRange);
-
     // Create Date objects for start and end times (use local time instead of UTC)
     const startDateObj = new Date(startTime);
     const endDateObj = new Date(endTime);
@@ -854,6 +851,7 @@ const MainPageOverview = () => {
                           data={pieChartData}
                           clickable={selectedDataSource?.length > 0}
                           queryParams={{ time_range: selectedRange, data_source: selectedDataSource }}  // Pass query params
+
                         />
                       </TableSeverityWrapper>
                     </div>
@@ -867,9 +865,13 @@ const MainPageOverview = () => {
                         maxHeight={tableMaxHeight}
                         selectedDataSource={selectedDataSource}
                         queryParams={{
-                          time_range: selectedRange,
+                          ...(autoRefresh
+                            ? { time_range: selectedRange }  // Use time_range if autoRefresh is true
+                            : { start_time: startTime, end_time: endTime }  // Use start_time and end_time if autoRefresh is false
+                          ),
                         }}
                       />
+
                     </TableServicesWrapper>
                   </div>
                 </div>

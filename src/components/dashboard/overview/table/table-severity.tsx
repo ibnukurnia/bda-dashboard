@@ -7,6 +7,8 @@ interface TableSeverityProps {
   clickable: boolean;
   queryParams?: {
     time_range?: string;
+    startTime?: string;  // Add optional startTime
+    endTime?: string;
     data_source?: string;
   };
 }
