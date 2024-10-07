@@ -112,14 +112,21 @@ const AnomalyAmountChart = ({ anomalies = [], series = [], startTime, endTime }:
     },
   };
 
+  // Conditionally render the chart or the "Data not available" message
   return (
-    <Chart
-      options={options}
-      series={chartSeries} // Pass the converted series for all services
-      type="line"
-      height={300}
-      width={'100%'}
-    />
+    <>
+      {chartSeries.length > 0 ? (
+        <Chart
+          options={options}
+          series={chartSeries} // Pass the converted series for all services
+          type="line"
+          height={300}
+          width={'100%'}
+        />
+      ) : (
+        <p className="text-center text-gray-500">Data is not available at the selected time</p>
+      )}
+    </>
   );
 };
 
