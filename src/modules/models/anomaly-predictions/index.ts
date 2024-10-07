@@ -78,6 +78,11 @@ export interface MostRecentAnomalyResponse {
 //   percentage: number
 // }
 
+export interface ClusterOptionResponse {
+  label: string;
+  name: string;
+}
+
 export interface ServiceOptionByClusterResponse {
   service_name: string
   cluster: string

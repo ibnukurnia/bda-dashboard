@@ -1,3 +1,4 @@
+import { ClusterOptionResponse } from '@/modules/models/anomaly-predictions';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState, ChangeEvent } from 'react';
 
@@ -15,14 +16,14 @@ interface SeverityOption {
 
 interface FilterPanelProps {
     checkboxOptions: CheckboxOption[];
-    clusterOptions: string[] | null | undefined;
+    clusterOptions: ClusterOptionResponse[] | null | undefined;
     servicesOptions: string[] | null | undefined;
     severityOptions: SeverityOption[];
     onApplyFilters: (
         filters: {
             selectedAnomalies: string[],
             selectedSeverities: number[],
-            selectedClusters: string[]
+            selectedClusters: ClusterOptionResponse[]
             selectedServices: string[]
         }
     ) => void;
@@ -48,7 +49,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
-    const [selectedClusterOptions, setSelectedClusterOptions] = useState<string[]>([]);
+    const [selectedClusterOptions, setSelectedClusterOptions] = useState<ClusterOptionResponse[]>([]);
     const [selectedSeverityOptions, setSelectedSeverityOptions] = useState<number[]>([]);
     const [searchValue, setSearchValue] = useState<string>(''); // For search input
     const [resetMessage, setResetMessage] = useState<boolean>(false); // State for temporary reset message
@@ -83,9 +84,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         );
     };
 
-    const handleClusterChange = (value: string) => {
+    const handleClusterChange = (value: ClusterOptionResponse) => {
         setSelectedClusterOptions((prev) =>
-            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
+            prev.includes(value) ? prev.filter((option) => option.name !== value.name) : [...prev, value]
         );
     };
 
@@ -176,9 +177,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         );
 
         setSelectedClusterOptions(
-            clusters.filter((cluster) =>
-                clusterOptions?.some((option) => option === cluster)
-            )
+            clusterOptions?.filter(option => clusters.includes(option.name)) ?? []
         );
 
         setSelectedServiceOptions(
@@ -366,12 +365,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                                         <div className="flex items-center">
                                                             <input
                                                                 type="checkbox"
-                                                                value={cluster}
+                                                                value={cluster.name}
                                                                 checked={selectedClusterOptions.includes(cluster)}
                                                                 onChange={() => handleClusterChange(cluster)}
                                                                 className="mr-2"
                                                             />
-                                                            {cluster}
+                                                            {cluster.label}
                                                         </div>
                                                     </label>
                                                 ))
