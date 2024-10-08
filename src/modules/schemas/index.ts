@@ -10,8 +10,8 @@ export const LoginSchema: zod.ZodObject<
   ZodTypeAny,
   LoginRequest
 > = zod.object({
-  pernr: zod.string().min(1, { message: 'Pern is required' }),
-  password: zod.string().min(1, { message: 'Password is required' }),
+  pernr: zod.string().min(1, { message: 'This field is required' }),
+  password: zod.string().min(1, { message: 'This field is required' }),
 })
 
 export type LoginValues = zod.infer<typeof LoginSchema>

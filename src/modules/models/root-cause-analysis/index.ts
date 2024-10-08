@@ -16,6 +16,7 @@ export type NLP = {
   lesson_learned: string | null
 }
 type ImpactedService = {
+  cluster: string
   service: string
   service_alias: string
   total: number

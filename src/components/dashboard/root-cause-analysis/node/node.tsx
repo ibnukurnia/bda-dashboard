@@ -17,6 +17,7 @@ interface NodeProps {
     time_range?: string;
     data_source?: string;
     metric_anomaly?: string;
+    cluster?: string;
     service?: string;
   };
   tooltips?: {
