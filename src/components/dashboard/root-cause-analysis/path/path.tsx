@@ -1,13 +1,14 @@
+import zIndex from '@mui/material/styles/zIndex';
 import React from 'react';
 
 const startX = 0
-const startY = 0
+const startY = 10
 const endX = 0
-const endY = 0
+const endY = 10
 const controlX1 = 0
-const controlY1 = 0
+const controlY1 = 10
 const controlX2 = 0
-const controlY2 = 0
+const controlY2 = 10
 const width = 64
 const heigth = 560 - 10 // Scrollable list heigth - top position
 const nodeHeight = 80
@@ -31,7 +32,7 @@ const Path: React.FC<PathProps> = ({
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className={'absolute left-48 z-10'}
-        style={{ top: '10px', left: nodeWidth }}
+        style={{ top: 0, left: nodeWidth }}
         width={width}
         height={heigth}
       >
@@ -42,9 +43,10 @@ const Path: React.FC<PathProps> = ({
                 C${sourceIndex !== i ? curveControl : controlX1},${sourceIndex * nodeHeight + controlY1} 
                 ${sourceIndex !== i ? curveControl : controlX2},${controlY2 + (i * nodeHeight)} 
                 ${endX + width},${endY + (i * nodeHeight)}`}
-            stroke="white"
-            strokeWidth="2"
-            opacity={expandedIndex === i ? 1 : .1}
+            stroke={expandedIndex === i ? "#f36f21" : "white"}
+            strokeWidth={expandedIndex === i ? 4 : 2}
+            strokeDasharray={expandedIndex === i ? 0 : 10}
+            opacity={expandedIndex === i ? 1 : 0.8}
             fill="transparent"
           />
         ))}
