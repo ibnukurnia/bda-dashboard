@@ -947,8 +947,10 @@ const MainPageOverview = () => {
                           tableHeader={thSeverity}
                           data={pieChartData}
                           clickable={selectedDataSource?.length > 0}
-                          queryParams={{ time_range: selectedRange, data_source: selectedDataSource }}  // Pass query params
-
+                          queryParams={{
+                            time_range: autoRefresh ? selectedRange : `${startTime} - ${endTime}`,
+                            data_source: selectedDataSource
+                          }}
                         />
                       </TableSeverityWrapper>
                     </div>
@@ -964,7 +966,7 @@ const MainPageOverview = () => {
                         queryParams={{
                           ...(autoRefresh
                             ? { time_range: selectedRange }  // Use time_range if autoRefresh is true
-                            : { start_time: startTime, end_time: endTime }  // Use start_time and end_time if autoRefresh is false
+                            : { time_range: `${startTime} - ${endTime}` }  // Use start_time and end_time if autoRefresh is false
                           ),
                         }}
                       />
@@ -978,8 +980,10 @@ const MainPageOverview = () => {
                   <span className="font-bold text-white text-2xl">Top 10 Critical</span>
                   <TableTopCritical
                     data={topFiveCriticalData}
-
                     isLoading={isLoadingTopFiveCritical}
+                    queryParams={{
+                      time_range: autoRefresh ? selectedRange : `${startTime} - ${endTime}`,
+                    }}
                   />
                 </div>
               </div>

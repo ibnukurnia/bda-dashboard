@@ -33,35 +33,14 @@ const MainPageRootCauseAnalysis = () => {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
-  const [modalServices, setModalServices] = useState(false)
   const [nlpData, setNlpData] = useState<NLP | null>(null)
 
   const router = useRouter()
   const handle = useFullScreenHandle();
   const searchParams = useSearchParams()
 
-  // Step 1: Get start_time and end_time from URL
-  const startTime = searchParams.get("start_time");
-  const endTime = searchParams.get("end_time");
-
-  // If both start_time and end_time are present, use them; otherwise, handle rangeKey logic
-  let timeRange: string;
-
-  if (startTime && endTime) {
-    // Use start_time and end_time if available
-    timeRange = `${startTime} - ${endTime}`;
-  } else {
-    // If rangeKey exists in the searchParams, use that
-    const rangeKey = searchParams.get("time_range");
-
-    if (rangeKey && PREDEFINED_TIME_RANGES[rangeKey]) {
-      // Use the predefined range from the rangeKey
-      timeRange = rangeKey;
-    } else {
-      // Default fallback if nothing is available
-      timeRange = DEFAULT_TIME_RANGE;
-    }
-  }
+  // Step 1: Get start_time and end_time from URL or use DEFAULT_TIME_RANGE
+  const timeRange = searchParams.get("time_range") ?? DEFAULT_TIME_RANGE;
 
   useEffect(() => {
     fetchData()

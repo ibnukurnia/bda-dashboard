@@ -1,0 +1,21 @@
+th:first-child.first_child,
+td:first-child.first_child {
+  position: sticky;
+  z-index: 15;
+  left: 0;
+  --tw-divide-opacity: 1;
+  border-color: rgb(229 231 235 / var(--tw-divide-opacity)) /* #e5e7eb */;
+}
+
+thead.table_header {
+  position: sticky;
+  top: 0;
+  z-index: 16;
+  background-color: #060f2c;
+}
+
+tr:hover.row_hover td:first-child {
+  --tw-bg-opacity: 1;
+  background-color: rgb(203 213 225 / var(--tw-bg-opacity)) /* #cbd5e1 */;
+  color: black;
+}
