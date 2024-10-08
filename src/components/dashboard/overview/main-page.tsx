@@ -964,7 +964,7 @@ const MainPageOverview = () => {
                         queryParams={{
                           ...(autoRefresh
                             ? { time_range: selectedRange }  // Use time_range if autoRefresh is true
-                            : { start_time: startTime, end_time: endTime }  // Use start_time and end_time if autoRefresh is false
+                            : { time_range: `${startTime} - ${endTime}` }  // Use start_time and end_time if autoRefresh is false
                           ),
                         }}
                       />
