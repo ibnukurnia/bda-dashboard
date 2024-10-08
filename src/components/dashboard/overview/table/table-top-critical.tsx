@@ -10,9 +10,9 @@ const columns = [{
   header: "Data Source",
   accessorKey: "datasource",
 }, {
-  id: "identifier",
-  header: "Identifier",
-  accessorKey: "identifier",
+  id: "identifier_alias",
+  header: "Identifier_alias",
+  accessorKey: "identifier_alias",
 }, {
   id: "anomaly",
   header: "Anomaly",

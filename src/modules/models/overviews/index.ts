@@ -56,6 +56,7 @@ export interface TopFiveLatestCritical {
   datasource: string
   source_alias: string
   identifier: string
+  identifier_alias: string
   anomaly: string
   anomaly_identifier: string
   total: number
