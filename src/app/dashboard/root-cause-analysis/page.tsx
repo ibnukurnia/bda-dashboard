@@ -8,8 +8,6 @@ export const metadata = { title: `Root Cause Analysis` } satisfies Metadata
 
 export default function Page(): React.JSX.Element {
   return (
-    <Stack spacing={0}>
-      <MainPageRootCauseAnalysis />
-    </Stack>
+    <MainPageRootCauseAnalysis />
   )
 }

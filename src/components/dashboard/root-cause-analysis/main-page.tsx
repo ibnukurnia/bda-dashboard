@@ -1,13 +1,9 @@
 'use client'
 
-import { Fragment, useEffect, useState } from 'react'
-
+import { useEffect, useState } from 'react'
 import './main-page.css'
-
 import RCATree from './tree/rca-tree'
-import TableModal from './modal/table-modal'
 import { Typography } from '@mui/material'
-// import DropdownRange from '../dropdownRange'
 import AutoRefreshButton from './button/refreshButton'
 import { format } from 'date-fns'
 import { getTimeDifference } from './helper'
@@ -44,18 +40,32 @@ const MainPageRootCauseAnalysis = () => {
   const handle = useFullScreenHandle();
   const searchParams = useSearchParams()
 
-  // Step 1: Get start_time and end_time from URL or use DEFAULT_TIME_RANGE
+  // Step 1: Get start_time and end_time from URL
   const startTime = searchParams.get("start_time");
   const endTime = searchParams.get("end_time");
 
-  // If both start_time and end_time are present, use them; otherwise, use DEFAULT_TIME_RANGE
-  const timeRange = (startTime && endTime)
-    ? `${startTime} - ${endTime}`
-    : DEFAULT_TIME_RANGE;
-  console.log(timeRange)
+  // If both start_time and end_time are present, use them; otherwise, handle rangeKey logic
+  let timeRange: string;
+
+  if (startTime && endTime) {
+    // Use start_time and end_time if available
+    timeRange = `${startTime} - ${endTime}`;
+  } else {
+    // If rangeKey exists in the searchParams, use that
+    const rangeKey = searchParams.get("time_range");
+
+    if (rangeKey && PREDEFINED_TIME_RANGES[rangeKey]) {
+      // Use the predefined range from the rangeKey
+      timeRange = rangeKey;
+    } else {
+      // Default fallback if nothing is available
+      timeRange = DEFAULT_TIME_RANGE;
+    }
+  }
 
   useEffect(() => {
     fetchData()
+    console.log('test')
   }, [searchParams]);
 
   useInterval(fetchData, autoRefresh.interval, autoRefresh.enabled)
@@ -74,6 +84,7 @@ const MainPageRootCauseAnalysis = () => {
       })
       .catch(() => {
         setIsError(true)
+        console.log(dataTree)
       })
       .finally(() => {
         setIsLoading(false)
@@ -87,19 +98,23 @@ const MainPageRootCauseAnalysis = () => {
 
     if (timeRange.includes(' - ')) {
       // Handle custom range
+      console.log('ini')
       const [start, end] = timeRange.split(' - ');
       startTime = start;
       endTime = end;
     } else {
       // Handle predefined ranges
+      console.log('itu')
       const selectedTimeRange = PREDEFINED_TIME_RANGES[timeRange]; // Get the selected time range in minutes
+      console.log(selectedTimeRange)
 
       // Calculate endDate as the current time, rounding down the seconds to 00
       const endDateObj = new Date();
       endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
-
+      console.log(endDateObj)
       // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
       const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
+      console.log(startDateObj)
 
       // Convert startDate and endDate to strings
       startTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
@@ -111,6 +126,7 @@ const MainPageRootCauseAnalysis = () => {
 
   const handleRangeChange = async (rangeKey: string) => {
     const params = new URLSearchParams(searchParams.toString());
+    console.log(rangeKey)
     params.set('time_range', rangeKey);
     router.push(`/dashboard/root-cause-analysis?${params.toString()}`);
   };
