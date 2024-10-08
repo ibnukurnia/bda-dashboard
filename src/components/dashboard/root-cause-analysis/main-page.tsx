@@ -75,6 +75,7 @@ const MainPageRootCauseAnalysis = () => {
     1000, lastRefreshTime != null)
 
   async function fetchData() {
+    setIsLoading(true)
     const { startTime, endTime } = getTimeRange()
     GetRootCauseAnalysisTree({ start_time: startTime, end_time: endTime })
       .then(result => {
