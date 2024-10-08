@@ -2,6 +2,8 @@ import { Typography } from '@mui/material'
 import { Cell, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { TopFiveLatestCritical } from '@/modules/models/overviews';
 import { Fragment } from 'react';
+import Link from 'next/link';
+import styles from './table-top-critical.module.css'
 
 const columns = [{
   id: "datasource",
@@ -65,9 +67,12 @@ const TableWrapper: React.FC<TableWrapperProps> = ({
 interface TableTopCriticalProps {
   data: TopFiveLatestCritical[]
   isLoading: boolean
+  queryParams?: {
+    time_range?: string;
+  };
 }
 
-const TableTopCritical = ({ data, isLoading }: TableTopCriticalProps) => {
+const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProps) => {
   const table = useReactTable({
     data,
     columns,
@@ -87,7 +92,7 @@ const TableTopCritical = ({ data, isLoading }: TableTopCriticalProps) => {
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
-                      <th key={header.id} colSpan={header.colSpan} className="p-2">
+                      <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
                         <button
                           className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3 text-gray-100`}
                           onClick={header.column.getToggleSortingHandler()}
@@ -112,12 +117,29 @@ const TableTopCritical = ({ data, isLoading }: TableTopCriticalProps) => {
               </thead>
               <tbody className="divide-y divide-gray-200 text-gray-600">
                 {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} >
+                  <tr
+                    key={row.id}
+                    className={`${styles.row_hover} hover:bg-slate-300 text-gray-100 hover:text-black`}
+                  >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
-                        <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
+                      <td key={cell.id} className={`${styles.first_child} whitespace-nowrap`}>
+                      <Link
+                        className='w-full h-full flex '
+                        href={{
+                          pathname: '/dashboard/anomaly-detection',
+                          query: {
+                            ...queryParams,
+                            data_source: data[row.index].source_alias,
+                            anomaly: data[row.index].anomaly_identifier,
+                            service: data[row.index].identifier,
+                          },
+                        }}
+                        passHref
+                      >
+                        <div className="px-4 py-4 inline-flex items-center rounded-full gap-x-2">
                           <CellValue cell={cell} />
                         </div>
+                      </Link>
                       </td>
                     ))}
                   </tr>
