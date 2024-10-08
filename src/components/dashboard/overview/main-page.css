@@ -4,6 +4,7 @@
 }
 
 .chart-section {
+  z-index: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 24px;
@@ -159,7 +160,9 @@ td:first-child {
   left: 0;
   background-color: #060f2c;
   --tw-divide-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-divide-opacity)) /* #e5e7eb */;
+  border-color: rgb(229 231 235 / var(--tw-divide-opacity))
+    /* #e5e7eb */
+  ;
 }
 
 thead {
@@ -168,5 +171,7 @@ thead {
   z-index: 16;
   background-color: #060f2c;
   --tw-divide-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-divide-opacity)) /* #e5e7eb */;
+  border-color: rgb(229 231 235 / var(--tw-divide-opacity))
+    /* #e5e7eb */
+  ;
 }

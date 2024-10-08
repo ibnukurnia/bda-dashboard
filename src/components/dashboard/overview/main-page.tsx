@@ -826,8 +826,8 @@ const MainPageOverview = () => {
                           {detectAbuseAnomaly ? "Abuse Anomaly Detected" : "No Abuse Anomaly"}
                         </Typography>
                       </div>
-                      <div className='px-[17px] py-[7.5px] flex border gap-[10px] rounded-[28px] items-center' style={{ borderColor: totalBrimoHealth < 90 ? "#D23636" : "#08B96D"}} >
-                        <div className='w-[10px] h-[10px] rounded-full' style={{ backgroundColor: totalBrimoHealth < 90 ? "#D23636" : "#08B96D"}} />
+                      <div className='px-[17px] py-[7.5px] flex border gap-[10px] rounded-[28px] items-center' style={{ borderColor: totalBrimoHealth < 90 ? "#D23636" : "#08B96D" }} >
+                        <div className='w-[10px] h-[10px] rounded-full' style={{ backgroundColor: totalBrimoHealth < 90 ? "#D23636" : "#08B96D" }} />
                         <Typography
                           fontWeight={700}
                           fontSize={'14px'}
@@ -870,7 +870,7 @@ const MainPageOverview = () => {
                           fontSize={14}
                           lineHeight={'17.07px'}
                           color={'white'}
-                          >
+                        >
                           {legend.label}
                         </Typography>
                       </div>
@@ -988,6 +988,7 @@ const MainPageOverview = () => {
                 </div>
               </div>
             </div>
+
             <div className='card flex flex-col gap-6'>
               <div className='flex justify-between'>
                 <span className="font-bold text-white text-2xl content-center">Latest Anomaly</span>
@@ -1014,7 +1015,7 @@ const MainPageOverview = () => {
             </div>
 
             <GraphWrapper isLoading={isLoadingGraphic}>
-              <div className='flex flex-col gap-6'>
+              <div className='flex flex-col gap-6 z-0'>
                 <span className="font-bold text-white text-2xl">Graphic</span>
                 <div className="chart-section">
                   {chartData.map((item, id) => (
@@ -1032,6 +1033,7 @@ const MainPageOverview = () => {
                 </div>
               </div>
             </GraphWrapper>
+
             <div className='card flex flex-col gap-6'>
               <div className='flex justify-between'>
                 <span className="font-bold text-white text-2xl content-center">Anomaly Amount</span>

@@ -119,7 +119,7 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                         } else {
                             setZoomOutDisabled(false)
                         }
-                        return {                                                                                                      
+                        return {
                             xaxis: {
                                 min: minX >= xaxis.min ? minX : xaxis.min,
                                 max: maxX <= xaxis.max ? maxX : xaxis.max,
@@ -156,42 +156,47 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
             opposite: index !== 0 && index >= Math.ceil((dataCharts.length - 1) / 2),
             labels: {
                 formatter: (value: number) => {
-                    // Check if metric.data is defined and has at least one element
-                    if (!metric.data || metric.data.length === 0) {
-                        // Return a default value or handle the empty case appropriately
-                        return value.toFixed(0);
+                    // Check if the metric title or scale indicates it's "amount"
+                    if (metric.title === "Amount (Rp) DC") {
+                        // Format as Rupiah with two decimal places
+                        const rupiahFormatter = new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 2, // Always show at least 2 decimal places
+                            maximumFractionDigits: 2, // Limit to 2 decimal places
+                        });
+                        return rupiahFormatter.format(value).replace("Rp", "Rp."); // Add dot after "Rp."
                     }
 
-                    // Convert the number to a string
-                    const valueString = metric.data[0][1].toString();
-
-                    // Find the position of the decimal point
-                    const decimalIndex = valueString.indexOf('.');
-
-                    // If there is no decimal point, return the number without decimal places
-                    if (decimalIndex === -1) {
-                        return value.toFixed(0);
+                    // Handle small decimal numbers (less than 1 but greater than 0)
+                    if (value < 1 && value > 0) {
+                        return value.toString(); // Show full precision for small decimal values
                     }
 
-                    // Return the number of digits after the decimal point
-                    return value.toFixed(valueString.length - decimalIndex - 1);
+                    // Format larger numbers with thousands separators and two decimal places
+                    const numberFormatter = new Intl.NumberFormat('en-US', {
+                        minimumFractionDigits: 2, // Show 2 decimal places
+                        maximumFractionDigits: 2, // Limit to 2 decimal places
+                    });
+
+                    return numberFormatter.format(value); // Format with thousands separators
                 },
-
                 style: {
-                    colors: 'white', // White color for y-axis text
+                    colors: 'white', // White color for axis text
                 },
             },
+
             seriesName: metric.title,
             tooltip: {
                 enabled: index === 0 || index === 1,
             },
             axisBorder: {
                 show: true, // Show the Y-axis line
-                color: colors[index % (colors.length)], // This gives the remainder after all full loops.
+                color: colors[index % (colors.length)], // Color for the Y-axis line
                 width: 2, // Adjust the width of the Y-axis line
             },
-
         })),
+
         stroke: {
             curve: 'smooth',
             width: 4,

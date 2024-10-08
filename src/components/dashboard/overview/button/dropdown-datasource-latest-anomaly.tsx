@@ -77,7 +77,7 @@ const DropdownDataSourceLatestAnomaly: React.FC<DropdownDataSourceLatestAnomalyP
         <div
           ref={dropdownContainerRef}
           style={{ top: position }}
-          className={`absolute right-0 bg-white rounded-lg shadow-lg z-50 flex w-[auto] max-h-96 overflow-auto scrollbar`}
+          className={`absolute right-0 bg-white rounded-lg shadow-lg flex w-[auto] max-h-96 overflow-auto scrollbar z-[100]`}
         >
           <ul className="text-sm text-gray-800 w-48">
             <li>

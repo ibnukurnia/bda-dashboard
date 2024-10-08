@@ -39,7 +39,24 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
     },
     tooltip: {
       enabled: true,
+      x: {
+        formatter: (value) => {
+          const date = new Date(value);
+          return date.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit', // Add seconds to the tooltip display
+            hour12: false, // For 24-hour format, set to true for 12-hour AM/PM format
+          });
+        },
+      },
+
     },
+
+
     xaxis: {
       // Set min and max based on user-selected start and end time
       min: new Date(startTime).getTime(),
@@ -112,18 +129,18 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
 
   return (
     <>
-      <div className=''>
-        <Chart
-          options={options}
-          series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
-          type="line"
-          height={350}
-          width={'100%'}
-        />
-        <p className="text-white text-sm ml-3">
-          Last Spike: {spike ? spike : '-'}
-        </p>
-      </div>
+
+      <Chart
+        options={options}
+        series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
+        type="line"
+        height={350}
+        width={'100%'}
+      />
+      <p className="text-white text-sm ml-3">
+        Last Spike: {spike ? spike : '-'}
+      </p>
+
 
     </>
 

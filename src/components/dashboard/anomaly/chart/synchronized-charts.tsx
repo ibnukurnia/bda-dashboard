@@ -126,6 +126,38 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             },
                         },
                     },
+                    tooltip: {
+                        enabled: true, // Enable tooltips
+                        shared: true, // Display the tooltip for all series at once
+                        intersect: false, // Tooltip will appear for the closest point on hover, not just when you directly hover over the point
+                        y: {
+                            formatter: (value) => {
+                                // Check if the Y-axis is for 'amount' and format as Rupiah
+                                if (metric.title === "Amount (Rp) DC") {
+                                    const rupiahFormatter = new Intl.NumberFormat('id-ID', {
+                                        style: 'currency',
+                                        currency: 'IDR',
+                                        minimumFractionDigits: 2, // Always show at least 2 decimal places
+                                    });
+                                    return rupiahFormatter.format(value).replace("Rp", "Rp."); // Format as Rupiah and add dot after "Rp."
+                                }
+
+                                // If the value is less than 1, display the full decimal value without trimming it
+                                if (value < 1 && value > 0) {
+                                    return value.toString(); // Show the full precision of small decimal values
+                                }
+
+                                // For values 1000 or greater, format with thousands separators and 2 decimal places
+                                const numberFormatter = new Intl.NumberFormat('en-US', {
+                                    minimumFractionDigits: 2, // Ensure two decimal places
+                                    maximumFractionDigits: 2, // Limit to two decimal places
+                                });
+
+                                return numberFormatter.format(value); // Format with commas and two decimal places
+                            },
+                        }
+
+                    },
                     title: {
                         text: metric.title,
                         style: {
@@ -155,7 +187,19 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                 colors: 'white',
                             },
                             formatter: (value) => {
-                                return parseFloat(value.toFixed(2)).toString(); // Convert to string after fixing to 2 decimal places
+                                // Check if the Y-axis is for 'amount' and format as Rupiah
+                                if (metric.title === "Amount (Rp) DC") {
+                                    // Format as Rupiah
+                                    const rupiahFormatter = new Intl.NumberFormat('id-ID', {
+                                        style: 'currency',
+                                        currency: 'IDR',
+                                        minimumFractionDigits: 0, // Removes decimal places
+                                    });
+                                    return rupiahFormatter.format(value).replace("Rp", "Rp."); // Adding dot after "Rp."
+                                }
+
+                                // Otherwise, format as a regular number with up to 7 decimal places
+                                return parseFloat(value.toFixed(7)).toString();
                             },
                         },
                         decimalsInFloat: 2, // Ensure decimals are shown in the axis
@@ -165,6 +209,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             width: 2,
                         },
                     },
+
                     stroke: {
                         curve: 'smooth',
                         width: 4,

@@ -34,7 +34,7 @@
 
 .card-style {
     background: #0816358F;
-    backdrop-filter: blur(77.9000015258789px);
+    /* backdrop-filter: blur(77.9000015258789px); */
     border-radius: 16px;
 }
 
@@ -94,11 +94,12 @@
 
 th:first-child,
 td:first-child {
-  position: sticky;
-  z-index: 2;
-  left: 0;
-  background-color: #060f2c;
+    position: sticky;
+    z-index: 2;
+    left: 0;
+    background-color: #060f2c;
 }
+
 thead {
     position: sticky;
     top: 0;
@@ -109,17 +110,18 @@ thead {
 
 @keyframes blinking {
     0% {
-      opacity: 1; 
+        opacity: 1;
     }
+
     50% {
-      opacity: .75; 
+        opacity: .75;
     }
+
     100% {
-      opacity: .5; 
+        opacity: .5;
     }
 }
 
 .blinking {
     animation: blinking 1s infinite;
 }
-  
