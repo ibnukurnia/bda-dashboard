@@ -191,6 +191,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
               hasDetail={hasDetail}
               queryParams={{
                 ...queryParams,
+                cluster: node.cluster,
                 service: node.namespace ?? node.name,
               }}
               tooltips={node.tooltips}

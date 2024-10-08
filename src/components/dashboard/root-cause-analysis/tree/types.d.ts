@@ -7,6 +7,7 @@ type Tooltip = {
 }
 export interface TreeNodeType {
     name: string;
+    cluster?: string;
     namespace?: string;
     anomalyCount?: number;
     children?: TreeNodeType[];
