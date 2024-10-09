@@ -613,7 +613,7 @@ const MainPageOverview = () => {
       })
       .catch((err) => {
         console.error('Error fetching services list:', err);
-        setAmountServiceList(['']); // Default to "All" if fetching fails
+        setAmountServiceList([]); // Default to "All" if fetching fails
       });
 
     GetDataSourceLatestAnomaly()
@@ -725,10 +725,6 @@ const MainPageOverview = () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [modalServices])
-
-  useEffect(() => {
-    handleChangeFilterAnomalyAmountService('All');
-  }, []); // Empty dependency array to run once on mount
 
   useLayoutEffect(() => {
     if (healthinessRef.current) {

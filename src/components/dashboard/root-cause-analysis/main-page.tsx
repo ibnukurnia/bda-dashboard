@@ -24,6 +24,13 @@ const MainPageRootCauseAnalysis = () => {
   const [dataTree, setDataTree] = useState<RootCauseAnalysisTreeResponse[] | null>(null)
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | undefined>(undefined);
   const [lastUpdateString, setLastUpdateString] = useState("")
+  const [lastFetchTimeRange, setLastFetchTimeRange] = useState<{
+    startTime: string | null
+    endTime: string | null
+  }>({
+    startTime: null,
+    endTime: null,
+  })
   const [autoRefresh, setAutoRefresh] = useState<{
     enabled: boolean;
     interval: number | null;
@@ -44,8 +51,7 @@ const MainPageRootCauseAnalysis = () => {
 
   useEffect(() => {
     fetchData()
-    console.log('test')
-  }, [searchParams]);
+  }, [timeRange]);
 
   useInterval(fetchData, autoRefresh.interval, autoRefresh.enabled)
 
@@ -56,6 +62,7 @@ const MainPageRootCauseAnalysis = () => {
   async function fetchData() {
     setIsLoading(true)
     const { startTime, endTime } = getTimeRange()
+    setLastFetchTimeRange({ startTime, endTime })
     GetRootCauseAnalysisTree({ start_time: startTime, end_time: endTime })
       .then(result => {
         setDataTree(result.data)
@@ -64,7 +71,6 @@ const MainPageRootCauseAnalysis = () => {
       })
       .catch(() => {
         setIsError(true)
-        console.log(dataTree)
       })
       .finally(() => {
         setIsLoading(false)
@@ -78,23 +84,18 @@ const MainPageRootCauseAnalysis = () => {
 
     if (timeRange.includes(' - ')) {
       // Handle custom range
-      console.log('ini')
       const [start, end] = timeRange.split(' - ');
       startTime = start;
       endTime = end;
     } else {
       // Handle predefined ranges
-      console.log('itu')
       const selectedTimeRange = PREDEFINED_TIME_RANGES[timeRange]; // Get the selected time range in minutes
-      console.log(selectedTimeRange)
 
       // Calculate endDate as the current time, rounding down the seconds to 00
       const endDateObj = new Date();
       endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
-      console.log(endDateObj)
       // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
       const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
-      console.log(startDateObj)
 
       // Convert startDate and endDate to strings
       startTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
@@ -106,7 +107,6 @@ const MainPageRootCauseAnalysis = () => {
 
   const handleRangeChange = async (rangeKey: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    console.log(rangeKey)
     params.set('time_range', rangeKey);
     router.push(`/dashboard/root-cause-analysis?${params.toString()}`);
   };
@@ -147,7 +147,7 @@ const MainPageRootCauseAnalysis = () => {
                 data={dataTree}
                 fullScreenHandle={handle}
                 isLoading={isLoading}
-                timeRange={timeRange}
+                timeRange={autoRefresh.enabled ? timeRange : `${lastFetchTimeRange.startTime} - ${lastFetchTimeRange.endTime}`}
                 handleSelectNLP={(value) => setNlpData(value)}
               />
               <TooltipCollection
