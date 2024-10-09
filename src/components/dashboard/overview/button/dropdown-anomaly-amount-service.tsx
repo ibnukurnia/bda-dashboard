@@ -3,12 +3,14 @@ import Button from '@/components/system/Button/Button';
 
 interface DropdownAnomalyAmountServiceProps {
   onSelectData: (value: string) => void;
-  selectedData: string; // Ensure selectedData is required
+  handleReset: () => void;
+  selectedData: string[]; // Ensure selectedData is required
   services: string[]; // Accept dynamic services list
 }
 
 const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> = ({
   onSelectData,
+  handleReset,
   selectedData,
   services = [],
 }) => {
@@ -29,7 +31,6 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
 
   const handleSelectData = (dataSelection: string) => {
     onSelectData(dataSelection);
-    setIsOpen(false);
   };
 
   useEffect(() => {
@@ -61,7 +62,8 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {selectedData || 'All'} {/* Display "All" if selectedData is empty */}
+        {selectedData.length === 0 || selectedData.length === services.length ?
+        'All' : selectedData.join(", ")}
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"
@@ -80,12 +82,30 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
           className={`absolute right-0 bg-white rounded-lg shadow-lg z-50 flex w-[auto] max-h-96 overflow-auto scrollbar`}
         >
           <ul className="text-sm text-gray-800 w-48">
+            <li>
+              <div
+                onClick={handleReset}
+                className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
+              >
+                <input
+                    type="checkbox"
+                    checked={selectedData.length === 0 || selectedData.length === services.length}
+                    className="mr-2"
+                />
+                All
+              </div>
+            </li>
             {services.map((dataSelection, dsid) => (
               <li key={dsid}>
                 <div
                   onClick={() => handleSelectData(dataSelection)}
                   className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
                 >
+                  <input
+                      type="checkbox"
+                      checked={selectedData.includes(dataSelection)}
+                      className="mr-2"
+                  />
                   {dataSelection}
                 </div>
               </li>

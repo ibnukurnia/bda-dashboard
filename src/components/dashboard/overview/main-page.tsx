@@ -43,6 +43,7 @@ import AutoRefreshButton from '../anomaly/button/refreshButton'
 
 import { Skeleton, Typography } from '@mui/material'
 import TooltipServiceCollection from './collection/tooltip-service-collection'
+import useDebounce from '@/hooks/use-debounce'
 
 const ANOMALY_AMOUNT_TYPE = 'brimo'
 const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
@@ -152,7 +153,7 @@ const MainPageOverview = () => {
   const [selectedDataSourceLatestAnomaly, setSelectedDataSourceLatestAnomaly] = useState<string | null | undefined>(null);
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
   const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string }[]>([])
-  const [selectedAnomalyAmountService, setSelectedAnomalyAmountService] = useState<string>('')
+  const [selectedAnomalyAmountService, setSelectedAnomalyAmountService] = useState<string[]>([])
   const [modalServices, setModalServices] = useState(false)
   const [modalSeverity, setModalSeverity] = useState(false)
   const [tableMaxHeight, setTableMaxHeight] = useState(192)
@@ -251,7 +252,7 @@ const MainPageOverview = () => {
     const paramsAmount = {
       start_time: formattedStartTime,
       end_time: formattedEndTime,
-      service_name: selectedAnomalyAmountService === 'All' ? amountServiceList.filter((name) => name !== 'All') : [selectedAnomalyAmountService]
+      service_name: selectedAnomalyAmountService.length === 0 ? amountServiceList : selectedAnomalyAmountService
     };
 
 
@@ -407,56 +408,12 @@ const MainPageOverview = () => {
   }
 
   const handleChangeFilterAnomalyAmountService = (value: string) => {
-    setIsLoadingAnomalyAmount(true);
-
-    // Create Date objects for start and end times (use local time instead of UTC)
-    const startDateObj = new Date(startTime);
-    const endDateObj = new Date(endTime);
-
-    console.log(startDateObj, endDateObj, "Original Date Objects");
-
-    // Set seconds and milliseconds to 00
-    startDateObj.setSeconds(0, 0);
-    endDateObj.setSeconds(0, 0);
-
-    // Format startTime and endTime using the helper function (no need for UTC conversions)
-    const formatTimeToString = (date: Date) => {
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:00`;
-    };
-
-    const formattedStartTime = formatTimeToString(startDateObj);
-    const formattedEndTime = formatTimeToString(endDateObj);
-
-    // console.log(formattedStartTime, formattedEndTime, "Formatted Time");
-
-    // Build the params object with the service_name array if "All" is selected
-    const params = {
-      start_time: formattedStartTime,
-      end_time: formattedEndTime,
-      service_name: value === 'All' ? amountServiceList.filter((name) => name !== 'All') : [value]
-    };
-
     // Update the selected service in state
-    setSelectedAnomalyAmountService(value);
-
-    // Make the API call with the correct params
-    GetAmountGraphic(params)
-      .then((res) => {
-        // Check if the response has data and update the state
-        if (res && res.data) {
-          setAnomalyAmountData(res.data);
-        } else {
-          setAnomalyAmountData([]); // Set to an empty array if no data is returned
-        }
-      })
-      .catch((error) => {
-        console.error('Error fetching anomaly amount data:', error);
-        setAnomalyAmountData([]); // Handle error by resetting the data
-      })
-      .finally(() => {
-        // Always set loading to false after the API call finishes
-        setIsLoadingAnomalyAmount(false);
-      });
+    setSelectedAnomalyAmountService((prevs) =>
+      prevs.some(prev => prev === value) ?
+        prevs.filter(prev => prev !== value) :
+        [...prevs, value]
+    );
   };
 
   const handleLogicTitle = (title: string) => {
@@ -525,7 +482,7 @@ const MainPageOverview = () => {
       if (healthScoreRes.data == null) throw Error("Empty response data");
       setHealthScoreData(healthScoreRes.data);
       setTopFiveCriticalData(topFiveCriticalRes.data ?? []);
-      setAmountServiceList(['All', ...amountServiceListRes.data]);
+      setAmountServiceList(amountServiceListRes.data);
       setDataSourceLatestAnomalyData(dataSourceLatestAnomalyRes.data ?? []);
       setAnomalyAmountServicesData(anomalyAmountServicesRes.data?.services ?? []);
       setChartData(chartRes.data); // Set the chart data from the response
@@ -665,9 +622,9 @@ const MainPageOverview = () => {
       .then((res) => {
         if (res && res.data) {
           // Assuming 'All' is not part of the API data, add it to the list
-          setAmountServiceList(['All', ...res.data]);
+          setAmountServiceList(res.data);
         } else {
-          setSelectedAnomalyAmountService('All');
+          setSelectedAnomalyAmountService([]);
         }
       })
       .catch((err) => {
@@ -706,13 +663,13 @@ const MainPageOverview = () => {
 
   useEffect(() => {
     // Ensure that amountServiceList is available and contains data before making the API call
-    if (amountServiceList.length > 0 && selectedAnomalyAmountService === 'All') {
+    if (amountServiceList.length > 0) {
       const { startTime, endTime } = handleStartEnd(selectedRange);
 
       const paramsAmount = {
         start_time: startTime,
         end_time: endTime,
-        service_name: amountServiceList.filter((name) => name !== 'All') // Select all services except "All"
+        service_name: selectedAnomalyAmountService.length === 0 ? amountServiceList : selectedAnomalyAmountService
       };
 
       setIsLoadingAnomalyAmount(true);
@@ -733,7 +690,38 @@ const MainPageOverview = () => {
           setIsLoadingAnomalyAmount(false);
         });
     }
-  }, [amountServiceList, selectedAnomalyAmountService]); // This effect runs when the service list or selected service changes
+  }, [amountServiceList]); // This effect runs when the service list or selected service changes
+  
+  useDebounce(() => {
+    // Ensure that amountServiceList is available and contains data before making the API call
+    if (amountServiceList.length > 0) {
+      const { startTime, endTime } = handleStartEnd(selectedRange);
+
+      const paramsAmount = {
+        start_time: startTime,
+        end_time: endTime,
+        service_name: selectedAnomalyAmountService.length === 0 ? amountServiceList : selectedAnomalyAmountService
+      };
+
+      setIsLoadingAnomalyAmount(true);
+
+      GetAmountGraphic(paramsAmount)
+        .then((res) => {
+          if (res && res.data) {
+            setAnomalyAmountData(res.data);
+          } else {
+            setAnomalyAmountData([]); // Handle empty data case
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching anomaly amount data:', error);
+          setAnomalyAmountData([]); // Handle error
+        })
+        .finally(() => {
+          setIsLoadingAnomalyAmount(false);
+        });
+    }
+  }, 500, [amountServiceList, selectedAnomalyAmountService]); // This effect runs when the service list or selected service changes
 
 
   useEffect(() => {
@@ -1048,6 +1036,7 @@ const MainPageOverview = () => {
                     /> :
                     <DropdownAnomalyAmountService
                       onSelectData={(e) => handleChangeFilterAnomalyAmountService(e)}
+                      handleReset={() => setSelectedAnomalyAmountService([])}
                       selectedData={selectedAnomalyAmountService}
                       services={amountServiceList}
                     />
