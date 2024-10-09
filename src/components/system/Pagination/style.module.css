@@ -1,0 +1,40 @@
+.container {
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 50px;
+}
+
+.summary_wrapper {
+  font-size: .875rem;
+  line-height: 1.25rem;
+  letter-spacing: .005em;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.select_field {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 11px;
+  gap: 4px;
+
+  /* White 20% */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+
+  /* Inside auto layout */
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+
+  background-color: transparent;
+
+  .option_wrapper {
+    color: #0e0e0e;
+  }
+}

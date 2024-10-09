@@ -19,9 +19,9 @@ import AutoRefreshButton from '../button/refreshButton'
 import { NAMESPACE_LABELS, PREDEFINED_TIME_RANGES, ROWS_PER_PAGE_OPTIONS } from '@/constants'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { formatNumberWithCommas } from '../../../../helper';
-import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 import { Maximize } from 'react-feather'
 import Button from '@/components/system/Button/Button'
+import Pagination from '@/components/system/Pagination/Pagination'
 
 interface TabContentProps {
     selectedDataSource: string
@@ -112,10 +112,6 @@ const TabContent: React.FC<TabContentProps> = ({
     };
 
     const handleRangeChange = async (rangeKey: string) => {
-        const { startTime, endTime } = getTimeRange(rangeKey);
-
-        console.log(selectedSeverityOptions)
-
         // Update the selected range state
         const params = new URLSearchParams(searchParams.toString());
         params.set('time_range', rangeKey);
@@ -130,79 +126,24 @@ const TabContent: React.FC<TabContentProps> = ({
 
         loadClusterFilterOptions();
         loadServicesFilterOptions();
-        try {
-            // Initiate both API calls concurrently and independently
-            const logResultPromise = GetHistoricalLogAnomalies(
-                selectedDataSource,
-                10,
-                1,
-                filtersAnomaly,
-                filterClusters,
-                filterServices,
-                filterSeverities,
-                startTime,
-                endTime
-            );
 
-            // Handle the result of the GetHistoricalLogAnomalies API call
-            logResultPromise
-                .then((logResult) => {
-                    if (logResult.data) {
-                        const { rows, columns, total_pages, page, total_rows, highlights } = logResult.data;
+        // Initiate both API calls concurrently and independently
+        const logResultPromise = fetchHistoricalAnomalyRecords(
+            selectedDataSource,
+            10,
+            1,
+            filtersAnomaly,
+            filterClusters,
+            filterServices,
+            filterSeverities,
+        );
 
-                        if (rows.length > 0) {
-                            // Update the total number of pages based on the API response
-                            setTotalPages(total_pages);
-
-                            // Update the total number of rows based on the API response
-                            setTotalRows(total_rows);
-
-                            // Map the rows to the format required by the table
-                            const newData = rows.map((row: any) => {
-                                const mappedRow: any = {};
-                                columns.forEach((col: any) => {
-                                    mappedRow[col.key] = row[col.key];
-                                });
-                                return mappedRow;
-                            });
-
-                            setData(newData); // Update the table data
-
-                            setHighlights(highlights)
-
-                            // Update the pagination state
-                            setPagination((prev) => ({
-                                ...prev,
-                                pageIndex: page || 1,
-                            }));
-                        } else {
-                            // Reset the table data and pagination if no data is found
-                            setData([]);
-                            setPagination((prev) => ({
-                                ...prev,
-                                pageIndex: 1,
-                            }));
-                        }
-                    } else {
-                        console.warn('API response data is null or undefined');
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error fetching historical log anomalies:', error);
-                    // Reset pagination in case of an error
-                    setPagination((prev) => ({
-                        ...prev,
-                        pageIndex: 1,
-                    }));
-                })
-                .finally(() => {
-                    // Set table loading to false after API call completes
-                    setIsTableLoading(false);
-                });
-        } catch (error) {
-            console.error('Unexpected error:', error);
-            setIsTableLoading(false); // Ensure loading is set to false in case of error
-        }
+        // Handle the result of the GetHistoricalLogAnomalies API call
+        logResultPromise
+            .finally(() => {
+                // Set table loading to false after API call completes
+                setIsTableLoading(false);
+            });
     };
 
     const updateTimeDifference = () => {
@@ -232,7 +173,7 @@ const TabContent: React.FC<TabContentProps> = ({
             try {
                 const { startTime, endTime } = getTimeRange()
                 // Call fetchDataByLog with time range values
-                await fetchDataByLog(
+                await fetchHistoricalAnomalyRecords(
                     selectedDataSource,
                     pagination.pageIndex,     // Page number
                     pagination.pageSize,      // Page size (limit)
@@ -269,69 +210,24 @@ const TabContent: React.FC<TabContentProps> = ({
             pageIndex: page,
         }));
 
-        // Get startTime and endTime using the helper function
-        const { startTime, endTime } = getTimeRange();
-
         // Call API with the new page size and the startTime and endTime values
-        try {
-            const logAnomaliesPromise = GetHistoricalLogAnomalies(
-                selectedDataSource,
-                newPageSize, // Set limit as the new page size
-                page, // Reset to the first page
-                selectedAnomalyOptions,
-                selectedClustersOptions,
-                selectedServicesOptions,
-                selectedSeverityOptions,
-                startTime, // Pass startTime as a string
-                endTime // Pass endTime as a string
-            );
+        const logAnomaliesPromise = fetchHistoricalAnomalyRecords(
+            selectedDataSource,
+            page, // Reset to the first page
+            newPageSize, // Set limit as the new page size
+            selectedAnomalyOptions,
+            selectedClustersOptions,
+            selectedServicesOptions,
+            selectedSeverityOptions,
+        );
 
-            logAnomaliesPromise
-                .then((result) => {
-                    if (result.data) {
-                        const { columns, rows, total_pages, total_rows, highlights } = result.data;
-
-                        // Update the total number of pages based on the API response
-                        setTotalPages(total_pages);
-
-                        // Update the total number of rows based on the API response
-                        setTotalRows(total_rows);
-
-                        // Map the columns from the API response to the format required by the table
-                        const newColumns = columns.map((column: any) => ({
-                            id: column.key,
-                            header: column.title,
-                            accessorKey: column.key,
-                        }));
-                        setColumns(newColumns);
-
-                        // Map the rows from the API response to the format required by the table
-                        const newData = rows.map((row: any) => {
-                            const mappedRow: any = {};
-                            columns.forEach((col: any) => {
-                                mappedRow[col.key] = row[col.key];
-                            });
-                            return mappedRow;
-                        });
-
-                        // Update the table data
-                        setData(newData);
-                        setHighlights(highlights)
-                        setIsTableLoading(false);
-                    } else {
-                        console.warn('API response data is null or undefined');
-                    }
-                })
-                .catch((error) => {
-                    handleApiError(error);
-                });
-
-        } catch (error) {
-            handleApiError(error);
-        }
+        logAnomaliesPromise
+        .finally(() => {
+            setIsTableLoading(false);
+        });
     };
 
-    const fetchDataByLog = async (
+    const fetchHistoricalAnomalyRecords = async (
         logType: string,
         page: number,
         limit: number,
@@ -397,81 +293,6 @@ const TabContent: React.FC<TabContentProps> = ({
                 handleApiError(error);
             });
     };
-
-    // Function to fetch data based on pagination
-    const fetchDataByPagination = async (
-        page: number,
-        limit: number,
-        filter: string[] = [],
-    ) => {
-        // console.log('Fetching data for page:', page);
-
-        // Determine the log type based on the selected log
-        const { startTime, endTime } = getTimeRange();
-
-        try {
-            // Make the API call with startTime and endTime instead of date_range
-            const result = await GetHistoricalLogAnomalies(
-                selectedDataSource,
-                limit,
-                page,
-                filter,
-                selectedClustersOptions,
-                selectedServicesOptions,
-                selectedSeverityOptions,
-                startTime,
-                endTime
-            );
-
-            if (result.data) {
-                // Update columns and data
-                const newColumns = result.data.columns.map((column: any) => ({
-                    id: column.key,
-                    header: column.title,
-                    accessorKey: column.key,
-                }));
-                setColumns(newColumns);
-
-                const newData = result.data.rows.map((row: any) => {
-                    const mappedRow: any = {};
-                    result.data?.columns.forEach((col: any) => {
-                        mappedRow[col.key] = row[col.key];
-                    });
-                    return mappedRow;
-                });
-                setData(newData);
-                setHighlights(result.data.highlights)
-            } else {
-                console.warn('API response data is null or undefined');
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
-
-    const processApiResult = (result: void | ApiResponse<PaginatedResponse>) => {
-        if (result && result.data) {
-            // Update columns and data
-            const newColumns = result.data.columns.map((column: any) => ({
-                id: column.key,
-                header: column.title,
-                accessorKey: column.key,
-            }))
-            setColumns(newColumns)
-
-            const newData = result.data.rows.map((row: any) => {
-                const mappedRow: any = {}
-                result.data?.columns.forEach((col: any) => {
-                    mappedRow[col.key] = row[col.key]
-                })
-                return mappedRow
-            })
-            setData(newData)
-            setHighlights(result.data.highlights)
-        } else {
-            console.warn('API response data is null or undefined')
-        }
-    }
 
     // Function to handle API errors
     const handleApiError = (error: any) => {
@@ -567,21 +388,14 @@ const TabContent: React.FC<TabContentProps> = ({
     }
 
     const handleChangePage = (page: number) => {
-        console.log(page);
-
         setIsTableLoading(true); // Set loading to true before making the API call
 
         setPagination((prev) => {
-            const logAnomaliesPromise = fetchDataByPagination(page, prev.pageSize, []);
-
-            // Handle the API call response
-            logAnomaliesPromise
-                .then((result) => processApiResult(result))
-                .catch((error) => handleApiError(error))
-                .finally(() => {
-                    setIsTableLoading(false); // Set loading to false after the API call completes
-                });
-
+            fetchHistoricalAnomalyRecords(
+                selectedDataSource,
+                page,
+                prev.pageSize,
+            );
             return { ...prev, pageIndex: page };
         });
     };
@@ -613,67 +427,18 @@ const TabContent: React.FC<TabContentProps> = ({
 
         router.push(`/dashboard/anomaly-detection?${params.toString()}`);
 
-        // Determine the log type
-        const { startTime, endTime } = getTimeRange();
-
         // Set table loading to true before starting the API call
         setIsTableLoading(true);
 
         // Initiate both API calls concurrently and independently
-        const logAnomaliesPromise = GetHistoricalLogAnomalies(
+        const logAnomaliesPromise = fetchHistoricalAnomalyRecords(
             selectedDataSource,
             pagination.pageSize, // Use the current page size
             1, // Start from the first page
-            selectedAnomalies,
-            selectedClusters.map(cluster => cluster.name),
-            selectedServices,
-            selectedSeverities,
-            startTime, // Pass startTime
-            endTime // Pass endTime
-        );
+        )
 
         // Handle the result of the log anomalies API call
         logAnomaliesPromise
-            .then((result) => {
-                if (result.data) {
-                    // Update the total number of pages based on the API response
-                    setTotalPages(result.data.total_pages);
-
-                    // Update the total number of rows based on the API response
-                    setTotalRows(result.data.total_rows);
-
-                    // Map the columns from the API response to the format required by the table
-                    const newColumns = result.data.columns.map((column: any) => ({
-                        id: column.key,
-                        header: column.title,
-                        accessorKey: column.key,
-                    }));
-                    setColumns(newColumns);
-
-                    // Map the rows from the API response to the format required by the table
-                    const newData = result.data.rows.map((row: any) => {
-                        const mappedRow: any = {};
-                        result.data?.columns.forEach((col: any) => {
-                            mappedRow[col.key] = row[col.key];
-                        });
-                        return mappedRow;
-                    });
-
-                    // Update the table data
-                    setData(newData);
-
-                    setHighlights(result.data.highlights)
-
-                    // Update the pagination state, resetting to the first page
-                    setPagination((prev) => ({
-                        ...prev,
-                        pageIndex: 1, // Reset to the first page after applying filters
-                    }));
-                } else {
-                    console.warn('API response data is null or undefined');
-                }
-            })
-            .catch(handleApiError)
             .finally(() => {
                 // Set table loading to false after API call completes
                 setIsTableLoading(false);
@@ -681,7 +446,7 @@ const TabContent: React.FC<TabContentProps> = ({
     };
 
     useEffect(() => {
-        fetchDataByLog(selectedDataSource, pagination.pageIndex, pagination.pageSize);
+        fetchHistoricalAnomalyRecords(selectedDataSource, pagination.pageIndex, pagination.pageSize);
         // Load filter options
         loadAnomalyFilterOptions();
         loadClusterFilterOptions();
@@ -712,7 +477,7 @@ const TabContent: React.FC<TabContentProps> = ({
                         await new Promise((resolve) => setTimeout(resolve, 1000));
 
                         // Call fetchDataByLog with the required parameters
-                        await fetchDataByLog(
+                        await fetchHistoricalAnomalyRecords(
                             selectedDataSource,
                             pagination.pageIndex,     // Page number
                             pagination.pageSize,      // Page size (limit)
@@ -909,38 +674,16 @@ const TabContent: React.FC<TabContentProps> = ({
                                     )}
                                 </div>
                             </div>
-
-                            {data.length > 0 && !isTableLoading && (
-                                <TablePagination
-                                    component={'div'}
-                                    count={totalRows}
-                                    onPageChange={(_, page) => handleChangePage(page + 1)}
-                                    page={pagination.pageIndex - 1}
+                            {data.length > 0 &&
+                                <Pagination
+                                    currentPage={pagination.pageIndex}
+                                    onPageChange={page => handleChangePage(page)}
+                                    onRowsPerPageChange={rows => handlePageSizeChange(rows)}
                                     rowsPerPage={table.getState().pagination.pageSize}
-                                    onRowsPerPageChange={(e) => handlePageSizeChange(Number(e.target.value))}
                                     rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
-                                    showFirstButton
-                                    showLastButton
-                                    sx={{
-                                        color: 'white', // Text color
-                                        '.MuiTablePagination-actions': {
-                                            color: 'white',
-                                        },
-                                        '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-                                            color: 'white', // Labels and displayed rows text color
-                                        },
-                                        '.MuiSelect-select': {
-                                            color: 'white', // Dropdown text color
-                                        },
-                                        '.MuiSvgIcon-root': {
-                                            fill: 'white', // Default color for icons
-                                        },
-                                        '.MuiButtonBase-root.Mui-disabled svg': {
-                                            fill: 'grey', // Set your desired disabled color (e.g., light grey)
-                                        },
-                                    }}
+                                    totalRows={totalRows}
                                 />
-                            )}
+                            }
                         </Box>
 
                     </div>

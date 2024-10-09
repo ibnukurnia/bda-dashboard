@@ -7,6 +7,7 @@ import { PREDEFINED_TIME_RANGES, ROWS_PER_PAGE_OPTIONS, SEVERITY_LABELS } from '
 import useUpdateEffect from '@/hooks/use-update-effect';
 import { formatNumberWithCommas } from '../../../../helper';
 import useDebounce from '@/hooks/use-debounce';
+import Pagination from '@/components/system/Pagination/Pagination';
 
 
 const toMiliseconds = 1000 * 60
@@ -268,37 +269,16 @@ const TableCriticalAnomaly = ({ timeRange, dataSource, severity }: TableCritical
           </TableWrapper>
         </div>
       </div>
-      {data.length > 0 && !isTableLoading && (
-        <TablePagination
-          component={"div"}
-          count={totalRows}
-          onPageChange={(_, page) => setPagination(prev => ({ ...prev, pageIndex: page + 1 }))}
-          page={pagination.pageIndex - 1}
+      {data.length > 0 &&
+        <Pagination
+          currentPage={pagination.pageIndex}
+          onPageChange={page => setPagination(prev => ({ ...prev, pageIndex: page }))}
+          onRowsPerPageChange={rows => setPagination({ pageSize: rows, pageIndex: 1 })}
           rowsPerPage={table.getState().pagination.pageSize}
-          onRowsPerPageChange={(e) => setPagination({ pageSize: Number(e.target.value), pageIndex: 1 })}
           rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
-          showFirstButton
-          showLastButton
-          sx={{
-            color: 'white', // Text color
-            '.MuiTablePagination-actions': {
-              color: 'white',
-            },
-            '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-              color: 'white', // Labels and displayed rows text color
-            },
-            '.MuiSelect-select': {
-              color: 'white', // Dropdown text color
-            },
-            '.MuiSvgIcon-root': {
-              fill: 'white', // Default color for icons
-            },
-            '.MuiButtonBase-root.Mui-disabled svg': {
-              fill: 'grey', // Set your desired disabled color (e.g., light grey)
-            },
-          }}
+          totalRows={totalRows}
         />
-      )}
+      }
     </div>
   )
 }
