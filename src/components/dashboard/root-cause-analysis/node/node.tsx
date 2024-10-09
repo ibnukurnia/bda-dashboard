@@ -69,6 +69,11 @@ const Node: React.FC<NodeProps> = ({
     }
   }
 
+  // Ensure queryParams is always an object, and then filter out null/undefined values
+  const filteredQueryParams = Object.fromEntries(
+    Object.entries(queryParams ?? {}).filter(([_, value]) => value != null)
+  );
+
   return (
     <button
       ref={containerRef}
@@ -113,7 +118,7 @@ const Node: React.FC<NodeProps> = ({
           }
           {hasDetail &&
             <Link
-              href={{ pathname: '/dashboard/anomaly-detection', query: queryParams }}
+              href={{ pathname: '/dashboard/anomaly-detection', query: filteredQueryParams }}
               passHref
               rel="noopener noreferrer"
               className='flex gap-0 items-center rounded-lg'

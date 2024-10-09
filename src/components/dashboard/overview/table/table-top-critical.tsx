@@ -11,7 +11,7 @@ const columns = [{
   accessorKey: "datasource",
 }, {
   id: "identifier_alias",
-  header: "Identifier_alias",
+  header: "Identifier",
   accessorKey: "identifier_alias",
 }, {
   id: "anomaly",

@@ -7,6 +7,7 @@ import {
   ServiceOverviewResponse,
   TeamOverviewResponse,
   TopFiveLatestCritical,
+  TopServicesResponse,
 } from '@/modules/models/overviews'
 
 const GetCurrentSituation = async (): Promise<ApiResponse<InsightOverviewResponse>> => {
@@ -64,7 +65,7 @@ const GetTopServicesOverview = async (params?: {
   start_time: string | Date
   end_time: string | Date
 }) => {
-  const response: ApiResponse<any> = await get('overview/top-services', {
+  const response: ApiResponse<TopServicesResponse> = await get('overview/top-services', {
     withAuth: true,
     queries: params,
   })

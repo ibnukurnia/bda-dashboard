@@ -1,6 +1,7 @@
 import { Check, Minus } from 'react-feather';
 import './table-services.css';
 import Link from 'next/link';
+import { TopServiceData } from '@/modules/models/overviews';
 
 const LABELS_TO_NAMESPACE: Record<string, string> = {
   "Log APM BRImo": 'apm',
@@ -18,7 +19,7 @@ const LABELS_TO_NAMESPACE: Record<string, string> = {
 interface TableServicesProps {
   tableHeader: string[];
   dataKeys: string[];
-  data: any[];
+  data: TopServiceData[] | null | undefined;
   maxHeight?: number | string;
   selectedDataSource: string;
   queryParams?: {
@@ -43,22 +44,25 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
             </tr>
           </thead>
           <tbody>
-            {data.length > 0 ? (
-              data.map((sdt: any, sdtid) => (
+            {data && data?.length > 0 ? (
+              data.map((sdt, sdtid) => (
                 <tr key={sdtid}>
                   {dataKeys.map((cdk, cdkid) => (
                     <td key={cdkid} className="py-1 px-1 td">
                       <div
                         className={`flex items-center gap-2 ${cdkid === 0 ? 'text-left' : 'text-center justify-center'}`}
                       >
-                        {cdk === 'name' && (
-                          <span
-                            className={`rounded-full ${sdt?.['health_score'] < 50 ? 'bg-red-600' : 'bg-green-600'} w-5 h-5 flex justify-center items-center`}
+                        {(cdk === 'service_name' && (sdt.fungsi != null || sdt.detail_cluster != null)) &&
+                          <a
+                            id={`top-service-${escapeAndRemoveSpaces(sdt.service_name)}`}
+                            className='mt-1'
+                            data-tooltip-place={'right-end'}
                           >
-                            {sdt?.health_score < 50 ? <Minus size={'16px'} /> : <Check size={'16px'} />}
-                          </span>
-                        )}
-
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M6 0C2.7 0 0 2.7 0 6C0 9.3 2.7 12 6 12C9.3 12 12 9.3 12 6C12 2.7 9.3 0 6 0ZM6.6 9H5.4V5.4H6.6V9ZM6.6 4.2H5.4V3H6.6V4.2Z" fill="white" fill-opacity="0.8"/>
+                            </svg>
+                          </a>
+                        }
                         {/* Make only service_name (first column) a clickable link */}
                         {cdk === 'service_name' ? (
                           <Link
@@ -72,19 +76,17 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
                             }}
                             passHref
                           >
-
                             {sdt?.[cdk]}
-
                           </Link>
                         ) : (
-                          <span>{sdt?.[cdk]}</span>
+                          <span>{sdt?.[cdk as keyof Omit<TopServiceData, "detail_cluster">]}</span>
                         )}
                       </div>
                     </td>
                   ))}
                 </tr>
               ))
-            ) : data.length === 0 ? (
+            ) : data && data.length === 0 ? (
               <tr>
                 <td className="py-1 px-1 td">
                   <div className={`flex items-center gap-2 'text-left' font-regular`}>
@@ -113,3 +115,11 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
 };
 
 export default TableServices;
+
+function escapeAndRemoveSpaces(stringToEscape: string) {
+  return stringToEscape.replace(/[\(\)\s]/g, match => {
+      if (match === '(') return '';
+      if (match === ')') return '';
+      return ''; // remove spaces
+  });
+}

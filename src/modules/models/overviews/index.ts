@@ -67,3 +67,22 @@ export interface HealthScoreResponse {
   score: number
   severity: number
 }
+
+interface DetailCluster {
+  cluster: string
+  very_high: number
+  high: number
+  medium: number
+}
+export interface TopServiceData {
+  service_name: string
+  very_high: number
+  high: number
+  medium: number
+  fungsi?: string
+  detail_cluster?: DetailCluster[]
+}
+export interface TopServicesResponse {
+  header: string[]
+  data?: TopServiceData[]
+}

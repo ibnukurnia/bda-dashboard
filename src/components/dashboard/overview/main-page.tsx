@@ -16,7 +16,7 @@ import {
 } from '@/modules/usecases/overviews'
 import { GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { fetchServicesOption } from '@/lib/api'
-import { HealthScoreResponse, TopFiveLatestCritical } from '@/modules/models/overviews'
+import { HealthScoreResponse, TopFiveLatestCritical, TopServicesResponse } from '@/modules/models/overviews'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import { SEVERITY_LABELS } from '@/constants'
 import Button from '@/components/system/Button/Button'
@@ -42,6 +42,7 @@ import DropdownDataSourceLatestAnomaly from './button/dropdown-datasource-latest
 import AutoRefreshButton from '../anomaly/button/refreshButton'
 
 import { Skeleton, Typography } from '@mui/material'
+import TooltipServiceCollection from './collection/tooltip-service-collection'
 
 const ANOMALY_AMOUNT_TYPE = 'brimo'
 const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
@@ -156,7 +157,7 @@ const MainPageOverview = () => {
   const [modalSeverity, setModalSeverity] = useState(false)
   const [tableMaxHeight, setTableMaxHeight] = useState(192)
   const [pieChartData, setPieChartData] = useState([])
-  const [topServicesData, setTopServicesData] = useState({ header: [], data: [] })
+  const [topServicesData, setTopServicesData] = useState<TopServicesResponse | null>(null)
   const [healthScoreData, setHealthScoreData] = useState<HealthScoreResponse[]>([])
   const [topFiveCriticalData, setTopFiveCriticalData] = useState<TopFiveLatestCritical[]>([])
   const [dataSourceLatestAnomalyData, setDataSourceLatestAnomalyData] = useState<string[]>([])
@@ -272,7 +273,7 @@ const MainPageOverview = () => {
         setIsLoadingTopServices(false);
       })
       .catch(() => {
-        setTopServicesData({ header: [], data: [] });
+        setTopServicesData(null);
         setIsLoadingTopServices(false);
       });
 
@@ -361,7 +362,7 @@ const MainPageOverview = () => {
         setIsLoadingTopServices(false)
       })
       .catch(() => {
-        setTopServicesData({ header: [], data: [] })
+        setTopServicesData(null)
         setIsLoadingTopServices(false)
       })
     // Fetch Health Score Data
@@ -540,7 +541,7 @@ const MainPageOverview = () => {
 
       // Handle errors for each call as needed
       setPieChartData([]);
-      setTopServicesData({ header: [], data: [] });
+      setTopServicesData(null);
       setHealthScoreData([]);
       setTopFiveCriticalData([]);
       setAmountServiceList(['']);
@@ -622,7 +623,7 @@ const MainPageOverview = () => {
         setIsLoadingTopServices(false)
       })
       .catch(() => {
-        setTopServicesData({ header: [], data: [] })
+        setTopServicesData(null)
         setIsLoadingTopServices(false)
       })
     GetHealthScoreOverview(paramsTime)
@@ -958,8 +959,8 @@ const MainPageOverview = () => {
                       isLoading={isLoadingTopServices}
                     >
                       <TableServices
-                        data={topServicesData.data}
-                        tableHeader={[topServicesData.header[0], ...Object.values(SEVERITY_LABELS)]}
+                        data={topServicesData?.data}
+                        tableHeader={topServicesData?.header ?? []}
                         dataKeys={configDataKey}
                         maxHeight={tableMaxHeight}
                         selectedDataSource={selectedDataSource}
@@ -970,7 +971,9 @@ const MainPageOverview = () => {
                           ),
                         }}
                       />
-
+                      <TooltipServiceCollection
+                        data={topServicesData?.data}
+                      />
                     </TableServicesWrapper>
                   </div>
                 </div>

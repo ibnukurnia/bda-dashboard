@@ -41,7 +41,7 @@
 
 .card {
   background: #0816358F;
-  backdrop-filter: blur(77.9000015258789px);
+  /* backdrop-filter: blur(77.9000015258789px); */
   border-radius: 16px;
   padding: 32px;
 }
