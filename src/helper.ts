@@ -33,10 +33,10 @@ export const formatNumberWithCommas = (value: number, decimals: number = 2): str
 	}
 
 	// Otherwise, format with decimals
-	const fixedNumber = value.toFixed(decimals);
+	const fixedNumber = toFixed(value, decimals);
 
 	// Split the number into integer and decimal parts
-	const [integerPart, decimalPart] = fixedNumber.split('.');
+	const [integerPart, decimalPart] = fixedNumber.toString().split('.');
 
 	// Format the integer part with periods for thousands
 	const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');

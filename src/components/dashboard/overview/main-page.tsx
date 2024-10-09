@@ -44,6 +44,7 @@ import AutoRefreshButton from '../anomaly/button/refreshButton'
 import { Skeleton, Typography } from '@mui/material'
 import TooltipServiceCollection from './collection/tooltip-service-collection'
 import useDebounce from '@/hooks/use-debounce'
+import BRImoEndToEndPanel from './panels/brimo-end-to-end-panel'
 
 const ANOMALY_AMOUNT_TYPE = 'brimo'
 const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
@@ -122,21 +123,6 @@ const dataDropdownSeverity = [
   },
 ]
 
-const healthinessLegend = [
-  {
-    color: '#D23636',
-    label: 'Very High',
-  },
-  {
-    color: '#FF802D',
-    label: 'High',
-  },
-  {
-    color: '#08B96D',
-    label: 'Low',
-  },
-]
-
 const toMiliseconds = 1000 * 60
 
 const defaultTimeRanges: Record<string, number> = {
@@ -187,8 +173,6 @@ const MainPageOverview = () => {
   const [isErrorAnomalyAmount, setIsErrorAnomalyAmount] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
-  const [detectAbuseAnomaly, setDetectAbuseAnomaly] = useState(false)
-  const [totalBrimoHealth, setTotalBrimoHealth] = useState(100)
   const healthinessRef = useRef<HTMLDivElement>(null)
   const thSeverity = ['Severity', 'Count']
   const configDataKey = ['service_name', 'very_high', 'high', 'medium']
@@ -785,124 +769,11 @@ const MainPageOverview = () => {
       <FullScreen className={`${handle.active ? "p-6 bg-[#05061E] overflow-auto" : ""} `} handle={handle}>
         <div className="flex flex-row">
           <div className="flex-1 grid gap-8">
-            <div className="flex flex-col gap-8 card relative">
-              <div className='flex items-center justify-between'>
-                <div className='flex gap-[25px]'>
-                  <img
-                    src={`/assets/dashboard/overview/logo-brimo.svg`}
-                    width={66}
-                    height={66}
-                    alt='logo'
-                  />
-                  <div className='flex flex-col gap-[10px]'>
-                    <Typography
-                      fontWeight={700}
-                      fontSize={'20px'}
-                      lineHeight={'24.38px'}
-                      color={'white'}
-                    >
-                      BRImo End to End
-                    </Typography>
-                    <div className='flex gap-[10px]'>
-                      <div className='px-[17px] py-[7.5px] flex border gap-[10px] rounded-[28px] items-center' style={{ borderColor: detectAbuseAnomaly ? "#D23636" : "#08B96D" }} >
-                        <div className='w-[10px] h-[10px] rounded-full' style={{ backgroundColor: detectAbuseAnomaly ? "#D23636" : "#08B96D" }} />
-                        <Typography
-                          fontWeight={700}
-                          fontSize={'14px'}
-                          lineHeight={'17.07px'}
-                          color={detectAbuseAnomaly ? "#D23636" : "#08B96D"}
-                        >
-                          {detectAbuseAnomaly ? "Abuse Anomaly Detected" : "No Abuse Anomaly"}
-                        </Typography>
-                      </div>
-                      <div className='px-[17px] py-[7.5px] flex border gap-[10px] rounded-[28px] items-center' style={{ borderColor: totalBrimoHealth < 90 ? "#D23636" : "#08B96D" }} >
-                        <div className='w-[10px] h-[10px] rounded-full' style={{ backgroundColor: totalBrimoHealth < 90 ? "#D23636" : "#08B96D" }} />
-                        <Typography
-                          fontWeight={700}
-                          fontSize={'14px'}
-                          lineHeight={'17.07px'}
-                          color={totalBrimoHealth < 90 ? "#D23636" : "#08B96D"}
-                        >
-                          Total BRIMO Health
-                        </Typography>
-                        <Typography
-                          fontWeight={700}
-                          fontSize={'14px'}
-                          lineHeight={'17.07px'}
-                          color={totalBrimoHealth < 90 ? "#D23636" : "#08B96D"}
-                        >
-                          {totalBrimoHealth}%
-                        </Typography>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className='px-4 py-[14px] flex gap-6 items-center rounded-[11px] bg-white bg-opacity-5'>
-                  <Typography
-                    fontWeight={700}
-                    fontSize={12}
-                    lineHeight={'14.63px'}
-                    color={'white'}
-                  >
-                    TOPOLOGY LEGEND
-                  </Typography>
-                  <div className='flex gap-4'>
-                    {healthinessLegend.map(legend => (
-                      <div key={legend.label} className='flex gap-2 items-center'>
-                        <div className={`w-[12px] h-[12px] rounded-[4px]`}
-                          style={{
-                            backgroundColor: legend.color,
-                          }}
-                        />
-                        <Typography
-                          fontWeight={600}
-                          fontSize={14}
-                          lineHeight={'17.07px'}
-                          color={'white'}
-                        >
-                          {legend.label}
-                        </Typography>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <HealthinessTreeWrapper
-                isLoading={isLoadingHealthScore}
-                isError={isErrorHealthScore}
-              >
-                <HealthinessTree
-                  data={healthScoreData}
-                />
-              </HealthinessTreeWrapper>
-              {/* <HealthinessGaugesWrapper
-                isLoading={isLoadingHealthScore}
-                isError={isErrorHealthScore}
-                healthinessRef={healthinessRef}
-              >
-                <div className="flex flex-wrap gap-8" ref={healthinessRef}>
-                  {healthScoreData.length > 0 &&
-                    healthScoreData.map((hd: any, hdid: number) => {
-                      const label = (dataSource: string) => {
-                        if (dataSource?.toLowerCase() === 'apm') {
-                          return 'log apm brimo'
-                        } else if (dataSource?.toLowerCase() === 'brimo') {
-                          return 'log transaksi brimo'
-                        } else if (dataSource?.toLowerCase() === 'k8s_db') {
-                          return 'db'
-                        } else if (dataSource?.toLowerCase() === 'k8s_prometheus') {
-                          return 'ocp'
-                        } else {
-                          return dataSource
-                        }
-                      }
-                      return <Gauge value={hd.score} label={label(hd.data_source)} key={hdid} />
-                    })
-                  }
-                </div>
-              </HealthinessGaugesWrapper> */}
-            </div>
-
+            <BRImoEndToEndPanel
+              data={healthScoreData}
+              isLoading={isLoadingHealthScore}
+              isError={isErrorHealthScore}
+            />
             {/* <div className="flex gap-8"> */}
             <div className="grid 2xl:grid-cols-2 grid-cols-1 gap-8">
               <div className="grid grid-cols-1 gap-4">
