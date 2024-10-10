@@ -1,5 +1,5 @@
 import { Typography } from '@mui/material'
-import './gauge.css'
+import styles from './brimo-end-to-end-panel.module.css'
 import HealthinessTreeWrapper from '../wrapper/healthiness-tree-wrapper'
 import HealthinessTree from './healthiness-tree'
 import { useEffect, useState } from 'react'
@@ -68,7 +68,7 @@ const BRImoEndToEndPanel = ({
                   height={34}
                 /> :
                 <div className='px-[17px] py-[7.5px] flex border gap-[10px] rounded-[28px] items-center' style={{ borderColor: detectAbuseAnomaly ? "#D23636" : "#08B96D" }} >
-                  <div className='w-[10px] h-[10px] rounded-full' style={{ backgroundColor: detectAbuseAnomaly ? "#D23636" : "#08B96D" }} />
+                  <div className={`${detectAbuseAnomaly ? styles.blinking : ''} w-[10px] h-[10px] rounded-full`} style={{ backgroundColor: detectAbuseAnomaly ? "#D23636" : "#08B96D" }} />
                   <Typography
                     fontWeight={700}
                     fontSize={'14px'}
