@@ -209,7 +209,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         };
     }, [])
 
-    useUpdateEffect(() => {
+    useEffect(() => {
         setDataColumn({ columns: [] })
         setSelectedFilter({ scale: [], cluster: [], service: null })
         GetColumnOption(selectedDataSource)

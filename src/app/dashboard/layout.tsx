@@ -51,7 +51,7 @@ export default function Layout({ children }: LayoutProps): React.JSX.Element {
               display: 'flex',
               flex: '1 1 auto',
               flexDirection: 'column',
-              pl: isSideNavOpen ? { lg: 'var(--SideNav-width)' } : 0,
+              pl: isSideNavOpen ? '94px' : 0,
               transition: 'padding-left 0.3s',
             }}
           >
