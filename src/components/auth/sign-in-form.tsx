@@ -99,7 +99,7 @@ export function SignInForm() {
                       fontWeight: 500,
                       lineHeight: '16.45px',
                     }}
-                    startAdornment={<PersonIcon className="mr-2" color={errors.pernr ? "#D23636" : "white"}/>}
+                    startAdornment={<PersonIcon className="mr-2" color={errors.pernr ? "#D23636" : "white"} />}
                   />
                   {errors.pernr && (
                     <FormHelperText error sx={{ margin: 0 }} color='#D23636'>{errors.pernr.message || 'Personal number is required'}</FormHelperText>

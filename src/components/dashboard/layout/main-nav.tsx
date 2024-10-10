@@ -118,12 +118,26 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
     setIsSidebarOpen((prevState) => !prevState);
   };
 
+  // Toggle User Details Dropdown
   const toggleUserDetails = () => {
-    setIsUserDetailsOpen((prev) => !prev);
+    setIsUserDetailsOpen((prev) => {
+      // Close the notification dropdown if it's open
+      if (isNotifDetailsOpen) {
+        setIsNotifDetailsOpen(false);
+      }
+      return !prev;
+    });
   };
 
+  // Toggle Notification Dropdown
   const toggleNotifDetails = () => {
-    setIsNotifDetailsOpen((prev) => !prev);
+    setIsNotifDetailsOpen((prev) => {
+      // Close the user dropdown if it's open
+      if (isUserDetailsOpen) {
+        setIsUserDetailsOpen(false);
+      }
+      return !prev;
+    });
   };
 
   // Close dropdowns if clicked outside
@@ -205,7 +219,9 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
         <Box
           ref={userRef}
           sx={{
-            position: 'absolute',
+            width: 'fit-content',
+            alignSelf: 'flex-end',
+            position: 'fixed',
             display: 'flex',
             flexDirection: 'column',
             gap: '14px',
@@ -216,6 +232,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
             borderRadius: '8px',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
             zIndex: 9999,
+            marginTop: '4px'
           }}
         >
           <Stack direction="column" gap={1} p={1}>
@@ -234,7 +251,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
       {isNotifDetailsOpen && (
         <div
           ref={notifRef}
-          className="absolute right-4 top-24  bg-[#081635] border border-gray-600 rounded-lg shadow-lg z-20"
+          className="flex flex-col fixed w-fit right-4 self-end top-24 mt-2 bg-[#081635] border border-gray-600 rounded-lg shadow-lg z-20"
         >
           <div className="flex flex-col gap-4 p-4">
             {/* Anomaly Notification */}
