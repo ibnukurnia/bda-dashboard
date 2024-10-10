@@ -117,8 +117,6 @@ const TabContent: React.FC<TabContentProps> = ({
         params.set('time_range', rangeKey);
         router.push(`/dashboard/anomaly-detection?${params.toString()}`);
 
-        setLastRefreshTime(new Date());
-
         const filtersAnomaly = selectedAnomalyOptions.length > 0 ? selectedAnomalyOptions : [];
         const filterClusters = selectedClustersOptions.length > 0 ? selectedClustersOptions : [];
         const filterServices = selectedServicesOptions.length > 0 ? selectedServicesOptions : [];
@@ -127,11 +125,17 @@ const TabContent: React.FC<TabContentProps> = ({
         loadClusterFilterOptions();
         loadServicesFilterOptions();
 
+        const page = 1 // Reset to the first page when page size changes
+        setPagination((prev) => ({
+            ...prev,
+            pageIndex: page,
+        }));
+
         // Initiate both API calls concurrently and independently
         const logResultPromise = fetchHistoricalAnomalyRecords(
             selectedDataSource,
-            10,
-            1,
+            page,
+            pagination.pageSize,
             filtersAnomaly,
             filterClusters,
             filterServices,
@@ -284,6 +288,8 @@ const TabContent: React.FC<TabContentProps> = ({
                     // Update the table data
                     setData(newData);
                     setHighlights(highlights)
+
+                    setLastRefreshTime(new Date());
                     setIsTableLoading(false);
                 } else {
                     console.warn('API response data is null or undefined');
@@ -430,11 +436,17 @@ const TabContent: React.FC<TabContentProps> = ({
         // Set table loading to true before starting the API call
         setIsTableLoading(true);
 
+        const page = 1 // Reset to the first page when page size changes
+        setPagination((prev) => ({
+            ...prev,
+            pageIndex: page,
+        }));
+
         // Initiate both API calls concurrently and independently
         const logAnomaliesPromise = fetchHistoricalAnomalyRecords(
             selectedDataSource,
+            page,
             pagination.pageSize, // Use the current page size
-            1, // Start from the first page
         )
 
         // Handle the result of the log anomalies API call

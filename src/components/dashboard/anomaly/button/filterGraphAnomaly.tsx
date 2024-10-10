@@ -105,6 +105,10 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     }, [currentSelectedScales])
 
     useEffect(() => {
+        setSelectedClusterOptions(currentSelectedCluster)
+    }, [currentSelectedCluster])
+
+    useEffect(() => {
         setSelectedServiceOptions(currentSelectedService)
     }, [currentSelectedService])
 
