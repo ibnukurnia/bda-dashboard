@@ -5,6 +5,7 @@ import HealthinessTree from './healthiness-tree'
 import { useEffect, useState } from 'react'
 import { HealthScoreResponse } from '@/modules/models/overviews'
 import { formatNumberWithCommas } from '@/helper'
+import Skeleton from '@/components/system/Skeleton/Skeleton'
 
 const healthinessLegend = [
   {
@@ -61,36 +62,47 @@ const BRImoEndToEndPanel = ({
               BRImo End to End
             </Typography>
             <div className='flex gap-[10px]'>
-              <div className='px-[17px] py-[7.5px] flex border gap-[10px] rounded-[28px] items-center' style={{ borderColor: detectAbuseAnomaly ? "#D23636" : "#08B96D" }} >
-                <div className='w-[10px] h-[10px] rounded-full' style={{ backgroundColor: detectAbuseAnomaly ? "#D23636" : "#08B96D" }} />
-                <Typography
-                  fontWeight={700}
-                  fontSize={'14px'}
-                  lineHeight={'17.07px'}
-                  color={detectAbuseAnomaly ? "#D23636" : "#08B96D"}
-                >
-                  {detectAbuseAnomaly ? "Abuse Anomaly Detected" : "No Abuse Anomaly"}
-                </Typography>
-              </div>
-              <div className='px-[17px] py-[7.5px] flex border gap-[10px] rounded-[28px] items-center' style={{ borderColor: totalBrimoHealth < 90 ? "#D23636" : "#08B96D" }} >
-                <div className='w-[10px] h-[10px] rounded-full' style={{ backgroundColor: totalBrimoHealth < 90 ? "#D23636" : "#08B96D" }} />
-                <Typography
-                  fontWeight={700}
-                  fontSize={'14px'}
-                  lineHeight={'17.07px'}
-                  color={totalBrimoHealth < 90 ? "#D23636" : "#08B96D"}
-                >
-                  Total BRIMO Health
-                </Typography>
-                <Typography
-                  fontWeight={700}
-                  fontSize={'14px'}
-                  lineHeight={'17.07px'}
-                  color={totalBrimoHealth < 90 ? "#D23636" : "#08B96D"}
-                >
-                  {formatNumberWithCommas(totalBrimoHealth)}%
-                </Typography>
-              </div>
+              {isLoading ? 
+                <Skeleton
+                  width={230}
+                  height={34}
+                /> :
+                <div className='px-[17px] py-[7.5px] flex border gap-[10px] rounded-[28px] items-center' style={{ borderColor: detectAbuseAnomaly ? "#D23636" : "#08B96D" }} >
+                  <div className='w-[10px] h-[10px] rounded-full' style={{ backgroundColor: detectAbuseAnomaly ? "#D23636" : "#08B96D" }} />
+                  <Typography
+                    fontWeight={700}
+                    fontSize={'14px'}
+                    lineHeight={'17.07px'}
+                    color={detectAbuseAnomaly ? "#D23636" : "#08B96D"}
+                  >
+                    {detectAbuseAnomaly ? "Abuse Anomaly Detected" : "No Abuse Anomaly"}
+                  </Typography>
+                </div>
+              }
+              {isLoading ? 
+                <Skeleton
+                  width={230}
+                  height={34}
+                /> :
+                <div className='px-[17px] py-[7.5px] flex gap-[10px] rounded-[28px] items-center border border-white border-opacity-20' >
+                  <Typography
+                    fontWeight={700}
+                    fontSize={'14px'}
+                    lineHeight={'17.07px'}
+                    color={'white'}
+                  >
+                    Total BRIMO Health
+                  </Typography>
+                  <Typography
+                    fontWeight={700}
+                    fontSize={'14px'}
+                    lineHeight={'17.07px'}
+                    color={'white'}
+                  >
+                    {formatNumberWithCommas(totalBrimoHealth)}%
+                  </Typography>
+                </div>
+                }
             </div>
           </div>
         </div>
