@@ -28,7 +28,7 @@ interface NodeProps {
   handleSelectNLP: (value: NLP | null) => void;
 }
 
-const Node: React.FC<NodeProps> = ({ 
+const Node: React.FC<NodeProps> = ({
   percentage,
   title,
   count,
@@ -39,14 +39,14 @@ const Node: React.FC<NodeProps> = ({
   tooltips,
   nlp,
   handleSelectNLP,
- }) => {
+}) => {
   const [containerWidth, setContainerWidth] = useState(0)
   const containerRef = useRef<HTMLButtonElement>(null)
-  
+
   useEffect(() => {
     window.addEventListener('resize', handleContainerWidth);
     return () => {
-        window.removeEventListener('resize', handleContainerWidth);
+      window.removeEventListener('resize', handleContainerWidth);
     };
   }, [])
 
@@ -56,7 +56,7 @@ const Node: React.FC<NodeProps> = ({
   }, [containerRef])
 
   const handleContainerWidth = () => {
-    if (!containerRef.current) return 
+    if (!containerRef.current) return
     setContainerWidth(containerRef.current?.clientWidth)
   }
 
@@ -88,11 +88,11 @@ const Node: React.FC<NodeProps> = ({
             className='mt-1'
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 0C2.7 0 0 2.7 0 6C0 9.3 2.7 12 6 12C9.3 12 12 9.3 12 6C12 2.7 9.3 0 6 0ZM6.6 9H5.4V5.4H6.6V9ZM6.6 4.2H5.4V3H6.6V4.2Z" fill="white" fill-opacity="0.8"/>
+              <path d="M6 0C2.7 0 0 2.7 0 6C0 9.3 2.7 12 6 12C9.3 12 12 9.3 12 6C12 2.7 9.3 0 6 0ZM6.6 9H5.4V5.4H6.6V9ZM6.6 4.2H5.4V3H6.6V4.2Z" fill="white" fillOpacity="0.8" />
             </svg>
           </a>
         }
-        {count == null && <div className='w-5 h-5 bg-orange-500 rounded-md'/>}
+        {count == null && <div className='w-5 h-5 bg-orange-500 rounded-md' />}
         <div className='w-full flex'>
           <Typography
             color={'white'}
@@ -144,8 +144,8 @@ export default Node;
 
 function escapeAndRemoveSpaces(stringToEscape: string) {
   return stringToEscape.replace(/[\(\)\s]/g, match => {
-      if (match === '(') return '';
-      if (match === ')') return '';
-      return ''; // remove spaces
+    if (match === '(') return '';
+    if (match === ')') return '';
+    return ''; // remove spaces
   });
 }

@@ -59,7 +59,7 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
                             data-tooltip-place={'right-end'}
                           >
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M6 0C2.7 0 0 2.7 0 6C0 9.3 2.7 12 6 12C9.3 12 12 9.3 12 6C12 2.7 9.3 0 6 0ZM6.6 9H5.4V5.4H6.6V9ZM6.6 4.2H5.4V3H6.6V4.2Z" fill="white" fill-opacity="0.8"/>
+                              <path d="M6 0C2.7 0 0 2.7 0 6C0 9.3 2.7 12 6 12C9.3 12 12 9.3 12 6C12 2.7 9.3 0 6 0ZM6.6 9H5.4V5.4H6.6V9ZM6.6 4.2H5.4V3H6.6V4.2Z" fill="white" fillOpacity="0.8" />
                             </svg>
                           </a>
                         }
@@ -118,8 +118,8 @@ export default TableServices;
 
 function escapeAndRemoveSpaces(stringToEscape: string) {
   return stringToEscape.replace(/[\(\)\s]/g, match => {
-      if (match === '(') return '';
-      if (match === ')') return '';
-      return ''; // remove spaces
+    if (match === '(') return '';
+    if (match === ')') return '';
+    return ''; // remove spaces
   });
 }

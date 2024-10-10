@@ -14,10 +14,6 @@ export interface CheckboxOption {
   type: string // Corresponds to the "type" field in the API response
 }
 
-// export interface ServicesOption {
-//     services: string[];  // This represents the array of columns in the response
-// }
-
 export const fetchTimeRanges = async (): Promise<TimeRangeOption[]> => {
   try {
     const response = await fetch('/api/time-ranges')
