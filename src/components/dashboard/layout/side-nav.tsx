@@ -58,17 +58,20 @@ export function SideNav({ isOpen }: SideNavProps): React.ReactElement {
         '--NavItem-icon-color': 'var(--mui-palette-neutral-400)',
         '--NavItem-icon-active-color': 'var(--mui-palette-primary-contrastText)',
         '--NavItem-icon-disabled-color': 'var(--mui-palette-neutral-600)',
-        bgcolor: '#020A20',
+        padding: '47px 20px',
+        bgcolor: '#08163580',
         color: 'var(--SideNav-color)',
-        display: { xs: 'none', lg: 'flex' },
+        display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
+        gap:'28px',
         height: '100%',
         left: 0,
         maxWidth: '100%',
         position: 'fixed',
         scrollbarWidth: 'none',
         top: 0,
-        width: isOpen ? 'var(--SideNav-width)' : '0px',
+        width: isOpen ? 'fit-content' : '0px',
         overflow: isOpen ? 'visible' : 'hidden',
         zIndex: 'var(--SideNav-zIndex)',
         boxShadow: ' 0px 4px 34.2px 16px #00000040',
@@ -76,14 +79,18 @@ export function SideNav({ isOpen }: SideNavProps): React.ReactElement {
         '&::-webkit-scrollbar': { display: 'none' },
       }}
     >
-      <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      <Box component="nav" sx={{ flex: '1 1 auto', px: '10px', py: '20px' }}>
-        {renderNavItems({ pathname, items: navItems })}
+      <Box height={'67px'} borderBottom={'1px solid #FFFFFF33'}>
+        <img
+          src='/assets/logo-only-ops-vision.svg'
+          width={'45px'}
+          height={'44px'}
+        />
       </Box>
+
+      {renderNavItems({ pathname, items: navItems })}
       {/* <Box component="nav" sx={{ alignContent: 'flex-end', flex: '1 1 auto', px: '8px', py: '20px', mt: 'auto' }}>
         {renderNavItems({ pathname, items: [logoutItem] })}
       </Box> */}
-      <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
     </Box>
   );
 }
@@ -98,7 +105,7 @@ function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pat
   }, []);
 
   return (
-    <Stack component="ul" spacing={2} sx={{ listStyle: 'none', m: 0, p: 0 }}>
+    <Stack component="ul" gap={'28px'} sx={{ listStyle: 'none', m: 0, p: 0 }}>
       {children}
     </Stack>
   );
@@ -142,13 +149,20 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, onClick }:
             cursor: 'not-allowed',
           }),
           ...(active && {
-            bgcolor: '#0A1635',
-            color: '#4082BD',
+            bgcolor: '#3078FF',
           }),
+          '&:hover': {
+            bgcolor: '#3078FF',
+          },
         }}
       >
         <Box sx={{ alignItems: 'center', display: 'flex', justifyContent: 'center', flex: '0 0 auto' }}>
-          {Icon ? <Icon fill={active ? 'var(--NavItem-icon-active-color)' : 'var(--NavItem-icon-color)'} width={32} height={32} /> : null}
+          {Icon ? <Icon
+            fill={active ? 'var(--NavItem-icon-active-color)' : 'var(--NavItem-icon-color)'}
+            width={32}
+            height={32}
+            opacity={active ? 1 : 0.2}
+          /> : null}
         </Box>
       </Box>
     </li>

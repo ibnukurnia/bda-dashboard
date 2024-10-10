@@ -85,11 +85,11 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
 
     return (
       <Box display={'flex'} gap={2}>
-        <button onClick={handleToggleSideNav} className="text-blue-400 hover:text-blue-600">
+        {/* <button onClick={handleToggleSideNav} className="text-blue-400 hover:text-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-10 w-10">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5" />
           </svg>
-        </button>
+        </button> */}
         <Typography variant="h3" component="h3" color="white" className="content-center">
           {title}
         </Typography>

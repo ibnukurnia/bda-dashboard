@@ -1,3 +1,8 @@
+import MenuAnomalyDetectionIcon from '@/components/system/Icon/MenuAnomalyDetectionIcon';
+import MenuForecastingIcon from '@/components/system/Icon/MenuForecastingIcon';
+import MenuOverviewIcon from '@/components/system/Icon/MenuOverviewIcon';
+import MenuRootCauseAnalysisIcon from '@/components/system/Icon/MenuRootCauseAnalysisIcon';
+import MenuUserManagementIcon from '@/components/system/Icon/MenuUserManagementIcon';
 import type { Icon } from 'react-feather';
 import {
   BarChart as ChartPieIcon,
@@ -27,4 +32,9 @@ export const navIcons: Record<string, Icon> = {
   user: UserIcon,
   users: UsersIcon,
   activity: Activity,
+  'menu-overview': MenuOverviewIcon,
+  'menu-anomaly-detection': MenuAnomalyDetectionIcon,
+  'menu-forecasting': MenuForecastingIcon,
+  'menu-root-cause-analysis': MenuRootCauseAnalysisIcon,
+  'menu-user-management': MenuUserManagementIcon,
 };
