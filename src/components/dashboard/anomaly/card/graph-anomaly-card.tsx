@@ -226,14 +226,11 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     }, [selectedDataSource]);
 
     useUpdateEffect(() => {
-        if (selectedFilter.scale.length <= 0 || selectedFilter.service != null) return;
-
         // Use selectedDataSource to determine which type is currently active
         fetchMetricLog(predefinedStartTime, predefinedEndTime);
     }, [currentZoomDateRange])
 
     useUpdateEffect(() => {
-        if (selectedFilter.scale.length <= 0 || selectedFilter.service != null) return
         fetchMetricLog(customTime.startTime, customTime.endTime)
     }, [customTime])
 
@@ -281,6 +278,12 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         if (abortControllerRef.current) {
             abortControllerRef.current.abort("Create new fetch request");
         }
+
+        if (
+            selectedFilter.scale.length === 0 ||
+            (clusterOptions != null && selectedFilter.cluster.length === 0) ||
+            (servicesOptions != null && selectedFilter.service == null)
+        ) return
 
         // Create a new AbortController instance for the new fetch request
         const controller = new AbortController();
