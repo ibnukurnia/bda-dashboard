@@ -164,7 +164,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         endTime: string;
     }>({ startTime: new Date().toString(), endTime: new Date().toString() })
     const [dateRangeMode, setDateRangeMode] = useState<"predefined" | "custom">("predefined")
-    const [selectedFilter, setSelectedFilter] = useState<{ scale: ColumnOption[], cluster: ClusterOptionResponse[], service: string }>({ scale: [], cluster: [], service: "" })
+    const [selectedFilter, setSelectedFilter] = useState<{ scale: ColumnOption[], cluster: ClusterOptionResponse[], service: string | null }>({ scale: [], cluster: [], service: null })
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0])
     const [initialLoading, setInitialLoading] = useState(true)
 
@@ -209,9 +209,9 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         };
     }, [])
 
-    useEffect(() => {
+    useUpdateEffect(() => {
         setDataColumn({ columns: [] })
-        setSelectedFilter({ scale: [], cluster: [], service: "" })
+        setSelectedFilter({ scale: [], cluster: [], service: null })
         GetColumnOption(selectedDataSource)
             .then((result) => {
                 if (result.data) {
@@ -226,20 +226,18 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     }, [selectedDataSource]);
 
     useUpdateEffect(() => {
-        if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return;
+        if (selectedFilter.scale.length <= 0 || selectedFilter.service != null) return;
 
         // Use selectedDataSource to determine which type is currently active
         fetchMetricLog(predefinedStartTime, predefinedEndTime);
     }, [currentZoomDateRange])
 
     useUpdateEffect(() => {
-        if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
+        if (selectedFilter.scale.length <= 0 || selectedFilter.service != null) return
         fetchMetricLog(customTime.startTime, customTime.endTime)
     }, [customTime])
 
     useUpdateEffect(() => {
-        if (selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0) return
-
         if (dateRangeMode === "predefined") {
             fetchMetricLog(predefinedStartTime, predefinedEndTime)
             return
@@ -307,11 +305,13 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                     setDataMetric(metricResult.data)
                 } else {
                     console.warn('API response data is null or undefined for metrics')
+                    setDataMetric([])
                 }
-                setInitialLoading(false)
             })
             .catch((error) => {
                 console.error('Error fetching metric anomalies:', error)
+            })
+            .finally(() => {
                 setInitialLoading(false)
             })
     }
@@ -331,7 +331,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             format(new Date(maxX), 'yyyy-MM-dd HH:mm:ss'),
         )
     }
-    const handleOnApplyFilter = (selectedScales: ColumnOption[], selectedCluster: ClusterOptionResponse[], selectedService: string) => {
+    const handleOnApplyFilter = (selectedScales: ColumnOption[], selectedCluster: ClusterOptionResponse[], selectedService: string | null) => {
         setSelectedFilter({
             scale: selectedScales,
             cluster: selectedCluster,
@@ -342,7 +342,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const handleSelectToggle = (value: ToggleOption) => {
         setSelectedGraphToggle(value)
     }
-    console.log(dataMetric)
+
     return (
         <div className="flex flex-col gap-8">
             {!isFullScreen && <FilterGraphAnomaly
@@ -377,7 +377,11 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 }
             </div>
             <GraphWrapper
-                isFieldRequired={selectedFilter.scale.length <= 0 || selectedFilter.service.length <= 0}
+                isFieldRequired={
+                    selectedFilter.scale.length === 0 ||
+                    (clusterOptions != null && selectedFilter.cluster.length === 0) ||
+                    (servicesOptions != null && selectedFilter.service == null)
+                }
                 isLoading={initialLoading}
                 isEmpty={dataMetric.length === 0}
             >

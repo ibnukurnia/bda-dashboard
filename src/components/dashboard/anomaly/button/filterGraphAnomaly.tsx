@@ -8,8 +8,8 @@ interface FilterGraphAnomalyProps {
     clusterOptions: ClusterOptionResponse[] | null | undefined;
     currentSelectedCluster: ClusterOptionResponse[];
     servicesOptions: string[] | null | undefined;
-    currentSelectedService: string;
-    onApplyFilters: (selectedScales: ColumnOption[], selectedCluster: ClusterOptionResponse[], selectedService: string) => void; // Separate filters for anomalies and services
+    currentSelectedService: string | null;
+    onApplyFilters: (selectedScales: ColumnOption[], selectedCluster: ClusterOptionResponse[], selectedService: string | null) => void; // Separate filters for anomalies and services
 }
 
 const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
@@ -25,7 +25,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     const [selectedScaleOptions, setSelectedScaleOptions] = useState<ColumnOption[]>(currentSelectedScales);
     const [selectedClusterOptions, setSelectedClusterOptions] = useState<ClusterOptionResponse[]>(currentSelectedCluster);
     const [filteredServicesOptions, setFilteredServicesOptions] = useState(servicesOptions)
-    const [selectedServiceOptions, setSelectedServiceOptions] = useState<string>(currentSelectedService);
+    const [selectedServiceOptions, setSelectedServiceOptions] = useState<string | null>(currentSelectedService);
     const [searchValue, setSearchValue] = useState('')
     const panelRef = useRef<HTMLDivElement>(null);
 
@@ -64,7 +64,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
 
     const handleReset = () => {
         setSelectedScaleOptions([]);
-        setSelectedServiceOptions('');
+        setSelectedServiceOptions(null);
     };
 
     const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
@@ -236,7 +236,11 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                             </button>
                             <button
                                 className="bg-blue-600 hover:bg-blue-800 disabled:bg-gray-200 disabled:text-gray-400 text-white px-4 py-2 rounded-lg flex-1 text-center"
-                                disabled={selectedScaleOptions.length === 0 || selectedServiceOptions.length === 0}
+                                disabled={
+                                    selectedScaleOptions.length === 0 ||
+                                    (clusterOptions != null && selectedClusterOptions.length === 0) ||
+                                    (servicesOptions != null && selectedServiceOptions == null)
+                                }
                                 onClick={handleApply}
                             >
                                 TERAPKAN

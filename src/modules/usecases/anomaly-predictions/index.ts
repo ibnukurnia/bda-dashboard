@@ -46,7 +46,7 @@ const GetHistoricalLogAnomalies = async (
   return response
 }
 
-const GetMetricLogAnomalies = async (payload: { type: string, start_time: string, end_time: string, cluster: string[], service_name: string, metric_name: string[] }, signal?: AbortSignal) => {
+const GetMetricLogAnomalies = async (payload: { type: string, start_time: string, end_time: string, cluster: string[], service_name: string | null, metric_name: string[] }, signal?: AbortSignal) => {
   let endPoint = `anomaly-predictions/metrics-per-service`
 
   const response: ApiResponse<MetricLogAnomalyResponse[]> = await get(endPoint, {
