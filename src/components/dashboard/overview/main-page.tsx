@@ -45,6 +45,7 @@ import { Skeleton, Typography } from '@mui/material'
 import TooltipServiceCollection from './collection/tooltip-service-collection'
 import useDebounce from '@/hooks/use-debounce'
 import BRImoEndToEndPanel from './panels/brimo-end-to-end-panel'
+import LatestAnomalyPanel from './panels/latest-anomaly-panel'
 
 const ANOMALY_AMOUNT_TYPE = 'brimo'
 const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
@@ -105,24 +106,6 @@ const sourceData = [
   },
 ]
 
-const dataDropdownSeverity = [
-  {
-    id: 1,
-    label: "Very High",
-    value: 1,
-  },
-  {
-    id: 2,
-    label: "High",
-    value: 2,
-  },
-  {
-    id: 3,
-    label: "Medium",
-    value: 3,
-  },
-]
-
 const toMiliseconds = 1000 * 60
 
 const defaultTimeRanges: Record<string, number> = {
@@ -136,12 +119,9 @@ const defaultTimeRanges: Record<string, number> = {
 
 const MainPageOverview = () => {
   const [amountServiceList, setAmountServiceList] = useState<string[]>([]);
-  const [selectedDataSourceLatestAnomaly, setSelectedDataSourceLatestAnomaly] = useState<string | null | undefined>(null);
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
-  const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string }[]>([])
   const [selectedAnomalyAmountService, setSelectedAnomalyAmountService] = useState<string[]>([])
   const [modalServices, setModalServices] = useState(false)
-  const [modalSeverity, setModalSeverity] = useState(false)
   const [tableMaxHeight, setTableMaxHeight] = useState(192)
   const [pieChartData, setPieChartData] = useState([])
   const [topServicesData, setTopServicesData] = useState<TopServicesResponse | null>(null)
@@ -379,18 +359,6 @@ const MainPageOverview = () => {
 
   }
 
-  const handleSelectDataSourceLatestAnomaly = (value?: string) => {
-    setSelectedDataSourceLatestAnomaly(value);
-  }
-
-  const handleSelectSeverity = (value: { value: any; id: number; label: string }) => {
-    setSelectedSeverity((prevs) =>
-      prevs.some(prev => prev.id === value.id) ?
-        prevs.filter(prev => prev.id !== value.id) :
-        [...prevs, value]
-    );
-  }
-
   const handleChangeFilterAnomalyAmountService = (value: string) => {
     // Update the selected service in state
     setSelectedAnomalyAmountService((prevs) =>
@@ -616,18 +584,6 @@ const MainPageOverview = () => {
         setAmountServiceList([]); // Default to "All" if fetching fails
       });
 
-    GetDataSourceLatestAnomaly()
-      .then((res) => {
-        setDataSourceLatestAnomalyData(res.data ?? []);
-        setIsErrorDataSourceLatestAnomaly(false);
-      })
-      .catch(() => {
-        setIsErrorDataSourceLatestAnomaly(true);
-      })
-      .finally(() => {
-        setIsLoadingDataSourceLatestAnomaly(false);
-      })
-
     fetchServicesOption({
       ...paramsTime,
       type: ANOMALY_AMOUNT_TYPE,
@@ -847,30 +803,10 @@ const MainPageOverview = () => {
               </div>
             </div>
 
-            <div className='card flex flex-col gap-6'>
-              <div className='flex justify-between'>
-                <span className="font-bold text-white text-2xl content-center">Latest Anomaly</span>
-                <div className='flex gap-4'>
-                  {!handle.active && <DropdownDataSourceLatestAnomaly
-                    data={dataSourceLatestAnomalyData}
-                    onSelectData={(e) => handleSelectDataSourceLatestAnomaly(e)}
-                    // handleReset={() => setSelectedDataSourceLatestAnomaly(undefined)}
-                    selectedData={selectedDataSourceLatestAnomaly}
-                  />}
-                  {!handle.active && <DropdownSeverity
-                    data={dataDropdownSeverity}
-                    onSelectData={(e) => handleSelectSeverity(e)}
-                    handleReset={() => setSelectedSeverity([])}
-                    selectedData={selectedSeverity}
-                  />}
-                </div>
-              </div>
-              <TableCriticalAnomaly
-                timeRange={selectedRange}
-                dataSource={selectedDataSourceLatestAnomaly}
-                severity={selectedSeverity}
-              />
-            </div>
+            <LatestAnomalyPanel
+              timeRange={selectedRange}
+              isFullscreen={handle.active}
+            />
 
             <GraphWrapper isLoading={isLoadingGraphic}>
               <div className='flex flex-col gap-6 z-0'>

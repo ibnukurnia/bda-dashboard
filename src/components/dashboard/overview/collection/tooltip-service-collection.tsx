@@ -59,8 +59,9 @@ const TooltipServiceCollection: React.FC<TooltipServiceCollectionProps> = ({
               >
                 Severity
               </Typography>
-              {item.detail_cluster.map(detail => 
+              {item.detail_cluster.map((detail, i) => 
                 <Typography
+                  key={i}
                   fontWeight={600}
                   fontSize={10}
                   color={'white'}
@@ -90,8 +91,9 @@ const TooltipServiceCollection: React.FC<TooltipServiceCollectionProps> = ({
                     Very High
                   </Typography>
                 </div>
-                {item.detail_cluster.map(detail => 
+                {item.detail_cluster.map((detail, i) => 
                   <Typography
+                    key={i}
                     fontWeight={600}
                     fontSize={10}
                     color={'#FFFFFFCC'}
@@ -120,8 +122,9 @@ const TooltipServiceCollection: React.FC<TooltipServiceCollectionProps> = ({
                     High
                   </Typography>
                 </div>
-                {item.detail_cluster.map(detail => 
+                {item.detail_cluster.map((detail, i) => 
                   <Typography
+                    key={i}
                     fontWeight={600}
                     fontSize={10}
                     color={'#FFFFFFCC'}
@@ -152,6 +155,7 @@ const TooltipServiceCollection: React.FC<TooltipServiceCollectionProps> = ({
                 </div>
                 {item.detail_cluster.map(detail => 
                   <Typography
+                    key={detail.medium}
                     fontWeight={600}
                     fontSize={10}
                     color={'#FFFFFFCC'}

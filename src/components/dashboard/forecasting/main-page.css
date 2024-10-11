@@ -3,3 +3,18 @@
   /* backdrop-filter: blur(77.9000015258789px); */
   border-radius: 16px;
 }
+
+th {
+  font-size: 15px;
+  font-weight: 400;
+  color: white;
+  text-align: left;
+}
+
+td {
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: 400;
+  color: white;
+  text-align: left;
+}

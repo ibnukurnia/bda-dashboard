@@ -4,14 +4,31 @@ import Button from '@/components/system/Button/Button'
 
 import './dropdown-ds.css'
 
+const dataDropdownSeverity = [
+  {
+    id: 1,
+    label: "Very High",
+    value: 1,
+  },
+  {
+    id: 2,
+    label: "High",
+    value: 2,
+  },
+  {
+    id: 3,
+    label: "Medium",
+    value: 3,
+  },
+]
+
 interface DropdownSeverityProps {
-  data: { value: any; id: number; label: string }[]
   onSelectData: (value: { value: any; id: number; label: string }) => void
   handleReset: () => void
   selectedData: { value: any; id: number; label: string }[]
 }
 
-const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData, handleReset, selectedData }) => {
+const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ onSelectData, handleReset, selectedData }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [position, setPosition] = useState<number>(0)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
@@ -60,8 +77,8 @@ const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData,
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {selectedData.length === 0 || selectedData.length === data.length ?
-        'All Severity' : selectedData.map(d => d.label).join(", ")}
+        {selectedData.length === 0 || selectedData.length === dataDropdownSeverity.length ?
+          'All Severity' : selectedData.map(d => d.label).join(", ")}
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"
@@ -86,23 +103,25 @@ const DropdownSeverity: React.FC<DropdownSeverityProps> = ({ data, onSelectData,
                 className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
               >
                 <input
-                    type="checkbox"
-                    checked={selectedData.length === 0 || selectedData.length === data.length}
-                    className="mr-2"
+                  type="checkbox"
+                  checked={selectedData.length === 0 || selectedData.length === dataDropdownSeverity.length}
+                  className="mr-2"
+                  readOnly
                 />
                 All Severity
               </div>
             </li>
-            {data.map((d, dsid) => (
+            {dataDropdownSeverity.map((d, dsid) => (
               <li key={dsid}>
                 <div
                   onClick={() => handleSelectData(d)}
                   className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
                 >
                   <input
-                      type="checkbox"
-                      checked={selectedData.some(selected => selected.id === d.id)}
-                      className="mr-2"
+                    type="checkbox"
+                    checked={selectedData.some(selected => selected.id === d.id)}
+                    className="mr-2"
+                    readOnly
                   />
                   {d.label}
                 </div>
