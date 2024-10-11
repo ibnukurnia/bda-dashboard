@@ -16,10 +16,10 @@ const healthinessLegend = [
     color: '#FF802D',
     label: 'High',
   },
-  {
-    color: '#08B96D',
-    label: 'Low',
-  },
+  // {
+  //   color: '#08B96D',
+  //   label: 'Low',
+  // },
 ]
 
 interface BRImoEndToEndPanelProps {
@@ -41,7 +41,7 @@ const BRImoEndToEndPanel = ({
     let totalScore = data.reduce((total, d) => total + d.score, 0)
     setTotalBrimoHealth(totalScore / data.length)
   }, [data])
-  
+
   return (
     <div className="flex flex-col gap-8 card relative">
       <div className='flex items-center justify-between'>
@@ -62,7 +62,7 @@ const BRImoEndToEndPanel = ({
               BRImo End to End
             </Typography>
             <div className='flex gap-[10px]'>
-              {isLoading ? 
+              {isLoading ?
                 <Skeleton
                   width={230}
                   height={34}
@@ -79,7 +79,7 @@ const BRImoEndToEndPanel = ({
                   </Typography>
                 </div>
               }
-              {isLoading ? 
+              {isLoading ?
                 <Skeleton
                   width={230}
                   height={34}
@@ -102,7 +102,7 @@ const BRImoEndToEndPanel = ({
                     {formatNumberWithCommas(totalBrimoHealth)}%
                   </Typography>
                 </div>
-                }
+              }
             </div>
           </div>
         </div>

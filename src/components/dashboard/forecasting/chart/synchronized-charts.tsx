@@ -34,11 +34,26 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   const today = new Date(selectedDate)
   const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
   const todayMaxTime = todayZero + 1000 * 60 * 60 * 24
+  console.log(dataCharts)
 
   const [zoomX, setZoomX] = useState({
     min: minZoom ?? today.getTime() - 1000 * 60 * 60 * 2,
     max: maxZoom ?? today.getTime() + 1000 * 60 * 60 * 2,
   })
+
+  // Format numbers to include commas, e.g., 1000 -> 1,000
+  const formatNumber = (val: number) => {
+    return val.toLocaleString('en-US')
+  }
+
+  // Function to check service name and apply currency formatting
+  const formatWithCurrency = (val: number, title: string) => {
+    if (title === 'sales_volume') { // Replace 'x' with the actual service name you want to check for
+      return `Rp. ${formatNumber(val)}`
+    }
+    return formatNumber(val)
+  }
+
   const chartOptions: ApexOptions = {
     chart: {
       group: 'social',
@@ -118,12 +133,14 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
           colors: 'white', // White color for y-axis text
         },
         formatter: (val, opts) => {
-          const firstData = opts?.w?.globals?.series[0]
-          
-          if (!firstData || firstData % 1 != 0) {
-            return val?.toString()
+          const firstData = opts?.w?.globals?.series[0];
+          const serviceName = firstData?.name || ''; // Replace with how you identify the service name
+
+          // If it's a number, apply formatting
+          if (!isNaN(val)) {
+            return formatWithCurrency(val, serviceName);
           }
-          return val?.toFixed(0)
+          return val?.toString(); // Return string as is if not a number
         },
       },
     },
@@ -153,21 +170,21 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
       if (dataCharts?.[1]) {
         // Step 1: Get all unique timestamps
         const allTimestamps = Array.from(
-            new Set(dataCharts.flatMap(entry => entry.data.map(([timestamp]) => timestamp)))
+          new Set(dataCharts.flatMap(entry => entry.data.map(([timestamp]) => timestamp)))
         ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
         // Step 2: Fill missing timestamps for each dataset
         return dataCharts.map(entry => {
-            const dataMap = new Map(entry.data.map(([timestamp, value]) => [timestamp, value]));
-            const filledData = allTimestamps.map(timestamp => [
-                timestamp,
-                dataMap.has(timestamp) ? dataMap.get(timestamp) : null
-            ]);
+          const dataMap = new Map(entry.data.map(([timestamp, value]) => [timestamp, value]));
+          const filledData = allTimestamps.map(timestamp => [
+            timestamp,
+            dataMap.has(timestamp) ? dataMap.get(timestamp) : null
+          ]);
 
-            return {
-                title: entry.title,
-                data: filledData
-            };
+          return {
+            title: entry.title,
+            data: filledData
+          };
         });
       }
 

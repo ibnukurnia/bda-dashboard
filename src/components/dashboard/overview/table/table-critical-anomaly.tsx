@@ -1,4 +1,4 @@
-import { TablePagination, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { Fragment, useEffect, useState } from 'react';
 import { Cell, ColumnDef, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { GetLatestCritical } from '@/modules/usecases/overviews';

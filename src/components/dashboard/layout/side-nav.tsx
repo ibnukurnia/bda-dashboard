@@ -13,6 +13,7 @@ import { navIcons } from './nav-icons';
 // import { logger } from '@/lib/default-logger';
 import { useUser } from '@/hooks/use-user';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 // import router from 'next/dist/client/router';
 
 interface SideNavProps {
@@ -64,7 +65,7 @@ export function SideNav({ isOpen }: SideNavProps): React.ReactElement {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap:'28px',
+        gap: '28px',
         height: '100%',
         left: 0,
         maxWidth: '100%',
@@ -80,11 +81,13 @@ export function SideNav({ isOpen }: SideNavProps): React.ReactElement {
       }}
     >
       <Box height={'67px'} borderBottom={'1px solid #FFFFFF33'}>
-        <img
-          src='/assets/logo-only-ops-vision.svg'
-          width={'45px'}
-          height={'44px'}
-        />
+        <Link href='/'>
+          <img
+            src='/assets/logo-only-ops-vision.svg'
+            width={'45px'}
+            height={'44px'}
+          />
+        </Link>
       </Box>
 
       {renderNavItems({ pathname, items: navItems })}
