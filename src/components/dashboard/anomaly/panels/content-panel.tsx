@@ -215,6 +215,8 @@ const TabContent: React.FC<TabContentProps> = ({
         serviceOptions?: string[],
         severityOptions?: number[],
     ) => {
+        setIsTableLoading(true)
+        
         // Use passed startTime and endTime, or default to helper function values
         const { startTime, endTime } = getTimeRange();
 
@@ -262,7 +264,6 @@ const TabContent: React.FC<TabContentProps> = ({
                     setHighlights(highlights)
 
                     setLastRefreshTime(new Date());
-                    setIsTableLoading(false);
                 } else {
                     console.warn('API response data is null or undefined');
                 }
