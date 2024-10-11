@@ -8,6 +8,7 @@ import useUpdateEffect from '@/hooks/use-update-effect';
 import { formatNumberWithCommas } from '../../../../helper';
 import useDebounce from '@/hooks/use-debounce';
 import Pagination from '@/components/system/Pagination/Pagination';
+import Skeleton from '@/components/system/Skeleton/Skeleton';
 
 
 const toMiliseconds = 1000 * 60
@@ -47,27 +48,66 @@ const CellValue: React.FC<CellValueProps> = ({
   </Fragment>
 }
 
-interface TableWrapperProps {
-  isLoading: boolean;
-  isEmpty: boolean;
-  children: JSX.Element;
+interface TableHeaderWrapperProps {
+  isLoading: boolean
+  children: JSX.Element
 }
-const TableWrapper: React.FC<TableWrapperProps> = ({
+const TableHeaderWrapper: React.FC<TableHeaderWrapperProps> = ({
   isLoading,
-  isEmpty,
   children,
 }) => {
   if (isLoading) return (
-    <div className="flex justify-center items-center">
-      <div className="spinner"></div>
-    </div>
+    <tr>
+      {Array.from(Array(10), (_, j) => (
+        <th key={j} className={`p-4 py-6`}>
+          <Skeleton
+            className='m-auto px-3'
+            width={120}
+            height={20}
+          />
+        </th>
+      ))}
+    </tr>
+  )
+  return children
+}
+interface TableBodyWrapperProps {
+  isLoading: boolean
+  isEmpty: boolean,
+  pageSize: number
+  columnSize: number
+  children: JSX.Element
+}
+const TableBodyWrapper: React.FC<TableBodyWrapperProps> = ({
+  isLoading,
+  isEmpty,
+  pageSize,
+  columnSize,
+  children,
+}) => {
+  if (isLoading) return (
+    Array.from(Array(pageSize), (_, j) => (
+      <tr>
+        {Array.from(Array(columnSize), (_, j) => (
+          <td key={j} className={`p-4`}>
+            <Skeleton
+              className='m-auto px-3'
+              width={120}
+              height={20}
+            />
+          </td>
+        ))}
+      </tr>
+    ))
   )
   if (isEmpty) return (
-    <div className="text-center py-4">
-      <Typography variant="subtitle1" color="white" align="center">
-        No data available.
-      </Typography>
-    </div>
+    <tr>
+      <td className={`p-4`} colSpan={columnSize}>
+        <Typography variant="subtitle1" color="white" align="center">
+          No data available.
+        </Typography>
+      </td>
+    </tr>
   )
   return children
 }
@@ -78,7 +118,12 @@ interface TableCriticalAnomalyProps {
   severity: { value: any; id: number; label: string }[]
 }
 
-const TableCriticalAnomaly = ({ timeRange, dataSource, severity }: TableCriticalAnomalyProps) => {
+const TableCriticalAnomaly = ({
+  timeRange,
+  dataSource,
+  severity,
+}: TableCriticalAnomalyProps) => {
+  const [isLoadingHeader, setIsLoadingHeader] = useState(true)
   const [isTableLoading, setIsTableLoading] = useState(true)
   const [data, setData] = useState<any>([])
   const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
@@ -106,6 +151,7 @@ const TableCriticalAnomaly = ({ timeRange, dataSource, severity }: TableCritical
   }, [])
 
   useDebounce(() => {
+    setIsTableLoading(true)
     setPauseEffectPagination(true)
     setPagination(prev => ({ ...prev, pageIndex: 1 }))
     fetchData(1)
@@ -115,6 +161,7 @@ const TableCriticalAnomaly = ({ timeRange, dataSource, severity }: TableCritical
     if (pauseEffectPagination) {
       setPauseEffectPagination(false)
     }
+    setIsTableLoading(true)
     fetchData()
   }, [pagination])
 
@@ -165,6 +212,7 @@ const TableCriticalAnomaly = ({ timeRange, dataSource, severity }: TableCritical
         console.error('Error fetching data latest critical:', error)
       })
       .finally(() => {
+        setIsLoadingHeader(false);
         setIsTableLoading(false);
       });
   }
@@ -188,85 +236,97 @@ const TableCriticalAnomaly = ({ timeRange, dataSource, severity }: TableCritical
 
   return (
     <div className="rounded-lg w-full flex flex-col gap-3">
-      <div className={`w-full max-h-[75dvh] ${!isTableLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
+      <div className={`w-full overflow-auto ${pagination.pageSize > 10 ? 'max-h-[75dvh]' : ''}`}>
         <div className="min-w-full">
-          <TableWrapper isLoading={isTableLoading} isEmpty={data.length === 0}>
-            <table className="table-auto divide-y !divide-gray-200 w-full">
-              <thead>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id} className='text-left'>
-                    {headerGroup.headers.map((header) => (
-                      <th key={header.id} colSpan={header.colSpan} className="p-2">
-                        <button
-                          className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3 text-gray-100`}
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          {typeof header.column.columnDef.header === 'function'
-                            ? header.column.columnDef.header({} as any) // Pass a dummy context
-                            : header.column.columnDef.header}
-                          {header.column.getCanSort() && (
-                            <Fragment>
-                              {{
-                                asc: '🔼',
-                                desc: '🔽',
-                                undefined: '🔽', // Default icon for unsorted state
-                              }[header.column.getIsSorted() as string] || '🔽'}
-                            </Fragment>
-                          )}
-                        </button>
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className="divide-y !divide-gray-200 text-gray-600">
-                {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
-                        <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
-                          {/* Severity Check */}
-                          {cell.column.id === 'severity' &&
-                            (cell.getValue() === 'Very High' ||
-                              cell.getValue() === 'High' ||
-                              cell.getValue() === 'Medium') && (
-                              <svg
-                                width="14"
-                                height="15"
-                                viewBox="0 0 14 15"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
-                                  fill={
-                                    cell.getValue() === 'Very High'
-                                      ? '#dc2626' // Red for Very High
-                                      : cell.getValue() === 'High'
-                                        ? '#ea580c' // Orange for High
-                                        : cell.getValue() === 'Medium'
-                                          ? '#facc15' // Yellow for Medium
-                                          : ''
-                                  }
-                                />
-                              </svg>
+          <table className="table-auto divide-y !divide-gray-200 w-full">
+            <thead>
+              <TableHeaderWrapper
+                isLoading={isLoadingHeader}
+              >
+                <Fragment>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id} className='text-left'>
+                      {headerGroup.headers.map((header) => (
+                        <th key={header.id} colSpan={header.colSpan} className="p-2">
+                          <button
+                            className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3 text-gray-100`}
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            {typeof header.column.columnDef.header === 'function'
+                              ? header.column.columnDef.header({} as any) // Pass a dummy context
+                              : header.column.columnDef.header}
+                            {header.column.getCanSort() && (
+                              <Fragment>
+                                {{
+                                  asc: '🔼',
+                                  desc: '🔽',
+                                  undefined: '🔽', // Default icon for unsorted state
+                                }[header.column.getIsSorted() as string] || '🔽'}
+                              </Fragment>
                             )}
+                          </button>
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </Fragment>
+              </TableHeaderWrapper>
+            </thead>
+            <tbody className="divide-y !divide-gray-200 text-gray-600">
+              <TableBodyWrapper
+                pageSize={pagination.pageSize}
+                columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 10 : table.getHeaderGroups()?.[0].headers.length}
+                isLoading={isTableLoading}
+                isEmpty={data.length === 0}
+              >
+                <Fragment>
+                  {table.getRowModel().rows.map((row) => (
+                    <tr key={row.id}>
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                          <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
+                            {/* Severity Check */}
+                            {cell.column.id === 'severity' &&
+                              (cell.getValue() === 'Very High' ||
+                                cell.getValue() === 'High' ||
+                                cell.getValue() === 'Medium') && (
+                                <svg
+                                  width="14"
+                                  height="15"
+                                  viewBox="0 0 14 15"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
+                                    fill={
+                                      cell.getValue() === 'Very High'
+                                        ? '#dc2626' // Red for Very High
+                                        : cell.getValue() === 'High'
+                                          ? '#ea580c' // Orange for High
+                                          : cell.getValue() === 'Medium'
+                                            ? '#facc15' // Yellow for Medium
+                                            : ''
+                                    }
+                                  />
+                                </svg>
+                              )}
 
-                          {/* Format number with commas */}
-                          {typeof cell.getValue() === 'number' ? (
-                            <span>{formatNumberWithCommas(cell.getValue() as number)}</span> // Apply the number formatting function
-                          ) : (
-                            <span>{cell.getValue() as string} {/* For non-numeric values */}</span>
-                          )}
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-          </TableWrapper>
+                            {/* Format number with commas */}
+                            {typeof cell.getValue() === 'number' ? (
+                              <span>{formatNumberWithCommas(cell.getValue() as number)}</span> // Apply the number formatting function
+                            ) : (
+                              <span>{cell.getValue() as string} {/* For non-numeric values */}</span>
+                            )}
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </Fragment>
+              </TableBodyWrapper>
+            </tbody>
+          </table>
         </div>
       </div>
       {data.length > 0 &&

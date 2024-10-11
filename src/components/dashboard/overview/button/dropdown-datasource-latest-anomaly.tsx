@@ -3,15 +3,18 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Button from '@/components/system/Button/Button'
 
 import './dropdown-ds.css'
+import { GetDataSourceLatestAnomaly } from '@/modules/usecases/overviews'
+import Skeleton from '@/components/system/Skeleton/Skeleton'
 
 interface DropdownDataSourceLatestAnomalyProps {
-  data: string[]
   onSelectData: (value?: string) => void
   handleReset?: () => void
   selectedData?: string | null
 }
 
-const DropdownDataSourceLatestAnomaly: React.FC<DropdownDataSourceLatestAnomalyProps> = ({ data, onSelectData, handleReset, selectedData }) => {
+const DropdownDataSourceLatestAnomaly: React.FC<DropdownDataSourceLatestAnomalyProps> = ({ onSelectData, handleReset, selectedData }) => {
+  const [data, setData] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
   const [position, setPosition] = useState<number>(0)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
@@ -32,6 +35,16 @@ const DropdownDataSourceLatestAnomaly: React.FC<DropdownDataSourceLatestAnomalyP
     setIsOpen(false)
   }
 
+  useEffect(() => {
+    GetDataSourceLatestAnomaly()
+      .then((res) => {
+        setData(res.data ?? []);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      })
+  }, [])
+  
   useEffect(() => {
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside)
@@ -57,6 +70,10 @@ const DropdownDataSourceLatestAnomaly: React.FC<DropdownDataSourceLatestAnomalyP
       }
     }
   }, [isOpen])
+
+  if (isLoading) return (
+    <Skeleton width={175} height={48} />
+  )
 
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
