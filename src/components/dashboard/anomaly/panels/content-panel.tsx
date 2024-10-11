@@ -22,6 +22,7 @@ import { formatNumberWithCommas } from '../../../../helper';
 import { Maximize } from 'react-feather'
 import Button from '@/components/system/Button/Button'
 import Pagination from '@/components/system/Pagination/Pagination'
+import TableHistoricalAnomaly from '../table/table-historical-anomaly'
 
 interface TabContentProps {
     selectedDataSource: string
@@ -61,26 +62,14 @@ const TabContent: React.FC<TabContentProps> = ({
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
     const [highlights, setHighlights] = useState<string[][] | null | undefined>([])
     const [data, setData] = useState<any[]>([])
-    const [totalPages, setTotalPages] = useState<number>(1)
     const [totalRows, setTotalRows] = useState<number>(1)
+    const [isTableHeaderLoading, setIsTableHeaderLoading] = useState(true) // Table loading state
     const [isTableLoading, setIsTableLoading] = useState(true) // Table loading state
     const [pagination, setPagination] = useState({
         pageIndex: 1, // Start from page 1
         pageSize: 10, // Default page size
     })
     const handle = useFullScreenHandle();
-
-    const table = useReactTable({
-        data,
-        columns,
-        getCoreRowModel: getCoreRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        manualPagination: true, // Disable table's internal pagination
-        state: {
-            pagination,
-        },
-    })
 
     // Helper function to calculate startTime and endTime
     const getTimeRange = (timeRange: string = selectedTimeRange) => {
@@ -132,7 +121,7 @@ const TabContent: React.FC<TabContentProps> = ({
         }));
 
         // Initiate both API calls concurrently and independently
-        const logResultPromise = fetchHistoricalAnomalyRecords(
+        fetchHistoricalAnomalyRecords(
             selectedDataSource,
             page,
             pagination.pageSize,
@@ -141,13 +130,6 @@ const TabContent: React.FC<TabContentProps> = ({
             filterServices,
             filterSeverities,
         );
-
-        // Handle the result of the GetHistoricalLogAnomalies API call
-        logResultPromise
-            .finally(() => {
-                // Set table loading to false after API call completes
-                setIsTableLoading(false);
-            });
     };
 
     const updateTimeDifference = () => {
@@ -187,8 +169,6 @@ const TabContent: React.FC<TabContentProps> = ({
                 console.log('Manual refresh triggered');
             } catch (error) {
                 console.error('Error fetching data:', error);
-            } finally {
-                setIsTableLoading(false); // Hide loading state once data arrives
             }
         }, 0);
     };
@@ -207,7 +187,6 @@ const TabContent: React.FC<TabContentProps> = ({
         newPageSize: number,
     ) => {
         const page = 1 // Reset to the first page when page size changes
-        table.setPageSize(newPageSize);
         setPagination((prev) => ({
             ...prev,
             pageSize: newPageSize,
@@ -215,7 +194,7 @@ const TabContent: React.FC<TabContentProps> = ({
         }));
 
         // Call API with the new page size and the startTime and endTime values
-        const logAnomaliesPromise = fetchHistoricalAnomalyRecords(
+        fetchHistoricalAnomalyRecords(
             selectedDataSource,
             page, // Reset to the first page
             newPageSize, // Set limit as the new page size
@@ -225,10 +204,6 @@ const TabContent: React.FC<TabContentProps> = ({
             selectedSeverityOptions,
         );
 
-        logAnomaliesPromise
-        .finally(() => {
-            setIsTableLoading(false);
-        });
     };
 
     const fetchHistoricalAnomalyRecords = async (
@@ -262,9 +237,6 @@ const TabContent: React.FC<TabContentProps> = ({
                 if (result.data) {
                     const { columns, rows, total_pages, total_rows, highlights } = result.data;
 
-                    // Update the total number of pages based on the API response
-                    setTotalPages(total_pages);
-
                     // Update the total number of rows based on the API response
                     setTotalRows(total_rows);
 
@@ -297,6 +269,10 @@ const TabContent: React.FC<TabContentProps> = ({
             })
             .catch((error) => {
                 handleApiError(error);
+            })
+            .finally(() => {
+                setIsTableHeaderLoading(false)
+                setIsTableLoading(false)
             });
     };
 
@@ -431,10 +407,7 @@ const TabContent: React.FC<TabContentProps> = ({
         selectedServices.forEach(service => params.append("service", service))
         // Clear old severity params
 
-        router.push(`/dashboard/anomaly-detection?${params.toString()}`);
-
-        // Set table loading to true before starting the API call
-        setIsTableLoading(true);
+        router.replace(`/dashboard/anomaly-detection?${params.toString()}`);
 
         const page = 1 // Reset to the first page when page size changes
         setPagination((prev) => ({
@@ -443,21 +416,17 @@ const TabContent: React.FC<TabContentProps> = ({
         }));
 
         // Initiate both API calls concurrently and independently
-        const logAnomaliesPromise = fetchHistoricalAnomalyRecords(
+        fetchHistoricalAnomalyRecords(
             selectedDataSource,
             page,
             pagination.pageSize, // Use the current page size
         )
-
-        // Handle the result of the log anomalies API call
-        logAnomaliesPromise
-            .finally(() => {
-                // Set table loading to false after API call completes
-                setIsTableLoading(false);
-            });
     };
 
     useEffect(() => {
+        setIsTableHeaderLoading(true);
+        setIsTableLoading(true);
+
         fetchHistoricalAnomalyRecords(selectedDataSource, pagination.pageIndex, pagination.pageSize);
         // Load filter options
         loadAnomalyFilterOptions();
@@ -482,8 +451,6 @@ const TabContent: React.FC<TabContentProps> = ({
             intervalId = setInterval(() => {
                 // Perform the refresh operation inside the interval
                 const performRefresh = async () => {
-                    setIsTableLoading(true); // Show loading state before fetching
-
                     try {
                         // Introduce a small artificial delay to show the loading state
                         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -501,8 +468,6 @@ const TabContent: React.FC<TabContentProps> = ({
                         console.log('Auto-refresh triggered');
                     } catch (error) {
                         console.error('Error fetching data during auto-refresh:', error);
-                    } finally {
-                        setIsTableLoading(false); // Hide loading state once data is fetched
                     }
                 };
 
@@ -585,118 +550,17 @@ const TabContent: React.FC<TabContentProps> = ({
                             )}
                         </div>
 
-                        <Box>
-                            <div className={`w-full overflow-x-auto ${!isTableLoading && data.length > 10 ? 'max-h-[75dvh] overflow-y-auto' : ''}`}>
-                                <div className="min-w-full">
-                                    {isTableLoading ? (
-                                        <div className="flex justify-center items-center">
-                                            <div className="spinner"></div>
-                                        </div>
-                                    ) : data.length === 0 && !isTableLoading ? (
-                                        <div className="text-center py-4">
-                                            <Typography variant="subtitle1" color="white" align="center">
-                                                No data available.
-                                            </Typography>
-                                        </div>
-                                    ) : (
-                                        <table id="person" className="table-auto divide-y divide-gray-200 w-full">
-                                            <thead>
-                                                {table.getHeaderGroups().map((headerGroup) => (
-                                                    <tr key={headerGroup.id}>
-                                                        {headerGroup.headers.map((header) => (
-                                                            <th key={header.id} colSpan={header.colSpan} className="p-2">
-                                                                <div
-                                                                    className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''
-                                                                        } px-3`}
-                                                                    onClick={header.column.getToggleSortingHandler()}
-                                                                >
-                                                                    {typeof header.column.columnDef.header === 'function'
-                                                                        ? header.column.columnDef.header({} as any)
-                                                                        : header.column.columnDef.header}
-                                                                    {header.column.getCanSort() && (
-                                                                        <>
-                                                                            {{
-                                                                                asc: '🔼',
-                                                                                desc: '🔽',
-                                                                                undefined: '🔽',
-                                                                            }[header.column.getIsSorted() as string] || '🔽'}
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                            </th>
-                                                        ))}
-                                                    </tr>
-                                                ))}
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-200 text-gray-600">
-                                                {table.getRowModel().rows.map((row) => (
-                                                    <tr key={row.id}>
-                                                        {row.getVisibleCells().map((cell) => (
-                                                            <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
-                                                                <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
-                                                                    {cell.column.id === 'severity' &&
-                                                                        (cell.getValue() === 'Very High' ||
-                                                                            cell.getValue() === 'High' ||
-                                                                            cell.getValue() === 'Medium') && (
-                                                                            <svg
-                                                                                width="14"
-                                                                                height="15"
-                                                                                viewBox="0 0 14 15"
-                                                                                fill="none"
-                                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                            >
-                                                                                <path
-                                                                                    d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
-                                                                                    fill={
-                                                                                        cell.getValue() === 'Very High'
-                                                                                            ? '#dc2626' // Red for Very High
-                                                                                            : cell.getValue() === 'High'
-                                                                                                ? '#ea580c' // Orange for High
-                                                                                                : cell.getValue() === 'Medium'
-                                                                                                    ? '#facc15' // Yellow for Medium
-                                                                                                    : ''
-                                                                                    }
-                                                                                />
-                                                                            </svg>
-                                                                        )}
-
-                                                                    {/* Format number with commas */}
-                                                                    {typeof cell.getValue() === 'number' ? (
-                                                                        <span
-                                                                            className={highlights?.[row.index].includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''}
-                                                                        >
-                                                                            {cell.column.id === "error_rate" ?
-                                                                                (cell.getValue() as number).toString().replace('.', ',') :
-                                                                                formatNumberWithCommas(cell.getValue() as number)}
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span
-                                                                            className={highlights?.[row.index].includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''}
-                                                                        >
-                                                                            {cell.getValue() as string}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            </td>
-                                                        ))}
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    )}
-                                </div>
-                            </div>
-                            {data.length > 0 &&
-                                <Pagination
-                                    currentPage={pagination.pageIndex}
-                                    onPageChange={page => handleChangePage(page)}
-                                    onRowsPerPageChange={rows => handlePageSizeChange(rows)}
-                                    rowsPerPage={table.getState().pagination.pageSize}
-                                    rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
-                                    totalRows={totalRows}
-                                />
-                            }
-                        </Box>
+                        <TableHistoricalAnomaly
+                            columns={columns}
+                            data={data}
+                            handleChangePage={handleChangePage}
+                            handlePageSizeChange={handlePageSizeChange}
+                            highlights={highlights}
+                            isLoadingHeader={isTableHeaderLoading}
+                            isLoading={isTableLoading}
+                            pagination={pagination}
+                            totalRows={totalRows}
+                        />
 
                     </div>
                     <GraphAnomalyCard

@@ -1,0 +1,248 @@
+import { Box, Typography } from '@mui/material'
+import { Cell, ColumnDef, getCoreRowModel, getFilteredRowModel, getSortedRowModel, PaginationState, useReactTable } from '@tanstack/react-table';
+import { Fragment } from 'react';
+import styles from './table-historical-anomaly.module.css'
+import { formatNumberWithCommas } from '@/helper';
+import Pagination from '@/components/system/Pagination/Pagination';
+import { ROWS_PER_PAGE_OPTIONS } from '@/constants';
+import Skeleton from '@/components/system/Skeleton/Skeleton';
+
+const columns = [{
+  id: "datasource",
+  header: "Data Source",
+  accessorKey: "datasource",
+}, {
+  id: "identifier_alias",
+  header: "Identifier",
+  accessorKey: "identifier_alias",
+}, {
+  id: "anomaly",
+  header: "Anomaly",
+  accessorKey: "anomaly",
+}, {
+  id: "total",
+  header: "Total",
+  accessorKey: "total",
+}]
+
+interface CellValueProps {
+  cell: Cell<any, unknown>
+  rowIndex: number
+  highlights?: string[][] | null
+  isLoading: boolean
+}
+const CellValue: React.FC<CellValueProps> = ({
+  cell,
+  rowIndex,
+  highlights,
+  isLoading
+}) => {
+  if (isLoading) return (
+    <Skeleton className='py-2' width={120} height={20} />
+  )
+
+  if (typeof cell.getValue() === 'number') {
+    return (
+      <span
+        className={highlights?.[rowIndex].includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''}
+      >
+        {cell.column.id === "error_rate" ?
+          (cell.getValue() as number).toString().replace('.', ',') :
+          formatNumberWithCommas(cell.getValue() as number)}
+      </span>
+    )
+  }
+
+  return (
+    <span
+      className={highlights?.[rowIndex].includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''}
+    >
+      {cell.getValue() as string}
+    </span>
+  )
+}
+
+interface TableWrapperProps {
+  isLoading: boolean;
+  isEmpty: boolean;
+  children: JSX.Element;
+}
+const TableWrapper: React.FC<TableWrapperProps> = ({
+  isLoading,
+  isEmpty,
+  children,
+}) => {
+  if (isLoading) return (
+    children
+  )
+  if (isEmpty) return (
+    <div className="text-center py-4">
+      <Typography variant="subtitle1" color="white" align="center">
+        No data available.
+      </Typography>
+    </div>
+  )
+  return children
+}
+
+interface TableHeaderWrapperProps {
+  isLoading: boolean
+  children: JSX.Element
+}
+const TableHeaderWrapper: React.FC<TableHeaderWrapperProps> = ({
+  isLoading,
+  children,
+}) => {
+  if (isLoading) return (
+    <tr>
+      {Array.from(Array(10), (_, j) => (
+        <th key={j} className={`${styles.first_child} p-4 py-6`}>
+          <Skeleton
+            className='m-auto px-3'
+            width={120}
+            height={20}
+          />
+        </th>
+      ))}
+    </tr>
+  )
+  return children
+}
+
+interface TableHistoricalAnomalyProps {
+  data: any[]
+  totalRows: number
+  columns: ColumnDef<any, any>[]
+  highlights?: string[][] | null
+  pagination: PaginationState
+  handleChangePage: (page: number) => void
+  handlePageSizeChange: (size: number) => void
+  isLoadingHeader: boolean
+  isLoading: boolean
+}
+
+const TableHistoricalAnomaly = ({
+  data,
+  totalRows,
+  columns,
+  highlights,
+  pagination,
+  handleChangePage,
+  handlePageSizeChange,
+  isLoadingHeader,
+  isLoading,
+}: TableHistoricalAnomalyProps) => {
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    manualPagination: true, // Disable table's internal pagination
+    state: {
+      pagination,
+    },
+  })
+
+  return (
+    <div className='flex flex-col gap-2'>
+      <div className={`w-full max-h-[80dvh] overflow-auto`}>
+        <div className="min-w-full">
+          <TableWrapper isLoading={isLoading} isEmpty={data.length === 0}>
+            <table className={`${styles.table} table-auto divide-y divide-gray-200 w-full`}>
+              <thead>
+                <TableHeaderWrapper
+                  isLoading={isLoadingHeader}
+                >
+                  <Fragment>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <tr key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => (
+                          <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
+                            <button
+                              className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3 text-gray-100`}
+                              onClick={header.column.getToggleSortingHandler()}
+                            >
+                              {typeof header.column.columnDef.header === 'function'
+                                ? header.column.columnDef.header({} as any) // Pass a dummy context
+                                : header.column.columnDef.header}
+                              {header.column.getCanSort() && (
+                                <Fragment>
+                                  {{
+                                    asc: '🔼',
+                                    desc: '🔽',
+                                    undefined: '🔽', // Default icon for unsorted state
+                                  }[header.column.getIsSorted() as string] || '🔽'}
+                                </Fragment>
+                              )}
+                            </button>
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </Fragment>
+                </TableHeaderWrapper>
+              </thead>
+              <tbody className="divide-y divide-gray-200 text-gray-600">
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                        <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
+                          {!isLoading && cell.column.id === 'severity' &&
+                            (cell.getValue() === 'Very High' ||
+                              cell.getValue() === 'High' ||
+                              cell.getValue() === 'Medium') && (
+                              <svg
+                                width="14"
+                                height="15"
+                                viewBox="0 0 14 15"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
+                                  fill={
+                                    cell.getValue() === 'Very High'
+                                      ? '#dc2626' // Red for Very High
+                                      : cell.getValue() === 'High'
+                                        ? '#ea580c' // Orange for High
+                                        : cell.getValue() === 'Medium'
+                                          ? '#facc15' // Yellow for Medium
+                                          : ''
+                                  }
+                                />
+                              </svg>
+                            )}
+
+                          <CellValue
+                            cell={cell}
+                            rowIndex={row.index}
+                            highlights={highlights}
+                            isLoading={isLoading}
+                          />
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TableWrapper>
+        </div>
+      </div>
+      {data.length > 0 &&
+        <Pagination
+          currentPage={pagination.pageIndex}
+          onPageChange={page => handleChangePage(page)}
+          onRowsPerPageChange={rows => handlePageSizeChange(rows)}
+          rowsPerPage={table.getState().pagination.pageSize}
+          rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
+          totalRows={totalRows}
+        />
+      }
+    </div>
+  )
+}
+
+export default TableHistoricalAnomaly
