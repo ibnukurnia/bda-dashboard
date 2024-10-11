@@ -23,6 +23,7 @@ import { Maximize } from 'react-feather'
 import Button from '@/components/system/Button/Button'
 import Pagination from '@/components/system/Pagination/Pagination'
 import TableHistoricalAnomaly from '../table/table-historical-anomaly'
+import cluster from 'cluster'
 
 interface TabContentProps {
     selectedDataSource: string
@@ -157,14 +158,12 @@ const TabContent: React.FC<TabContentProps> = ({
         // Small delay to ensure loading state is shown before fetching data
         setTimeout(async () => {
             try {
-                const { startTime, endTime } = getTimeRange()
+                // const { startTime, endTime } = getTimeRange()
                 // Call fetchDataByLog with time range values
                 await fetchHistoricalAnomalyRecords(
                     selectedDataSource,
                     pagination.pageIndex,     // Page number
                     pagination.pageSize,      // Page size (limit)
-                    selectedAnomalyOptions,    // Anomaly filter options
-                    selectedServicesOptions,   // Service filter options
                 );
                 console.log('Manual refresh triggered');
             } catch (error) {
@@ -216,7 +215,7 @@ const TabContent: React.FC<TabContentProps> = ({
         severityOptions?: number[],
     ) => {
         setIsTableLoading(true)
-        
+
         // Use passed startTime and endTime, or default to helper function values
         const { startTime, endTime } = getTimeRange();
 
@@ -367,6 +366,7 @@ const TabContent: React.FC<TabContentProps> = ({
         const params = new URLSearchParams(searchParams.toString());
         params.delete("anomaly")
         params.delete("service")
+        params.delete("cluster")
         router.push(`/dashboard/anomaly-detection?${params.toString()}`);
     }
 
@@ -421,6 +421,10 @@ const TabContent: React.FC<TabContentProps> = ({
             selectedDataSource,
             page,
             pagination.pageSize, // Use the current page size
+            selectedAnomalies,
+            selectedClusters.map(cluster => cluster.name),
+            selectedServices,
+            selectedSeverities,
         )
     };
 

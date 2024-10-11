@@ -835,7 +835,7 @@ const MainPageOverview = () => {
               </div>
               <div className="grid grid-cols-1 gap-4">
                 <div className="flex flex-col gap-8 card">
-                  <span className="font-bold text-white text-2xl">Highlighted Anomaly</span>
+                  <span className="font-bold text-white text-2xl">Highlighted Anomalies</span>
                   <TableTopCritical
                     data={topFiveCriticalData}
                     isLoading={isLoadingTopFiveCritical}
