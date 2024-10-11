@@ -18,6 +18,7 @@ import SynchronizedCharts from './chart/synchronized-charts'
 import Button from '@/components/system/Button/Button'
 import useInterval from '@/hooks/use-interval'
 import { format, isToday } from 'date-fns'
+import Skeleton from '@/components/system/Skeleton/Skeleton'
 
 const MainPageForecasting = () => {
   const [graphData, setGraphData] = useState<any[]>([])
@@ -87,9 +88,8 @@ const MainPageForecasting = () => {
     })
       .then((res) => {
         setGraphData(res.data)
-        setChartLoading(false)
       })
-      .catch(() => setChartLoading(false))
+      .finally(() => setChartLoading(false))
   }, [])
 
   useInterval(
@@ -117,7 +117,6 @@ const MainPageForecasting = () => {
   const chartIntervalUpdate = useMemo(() => {
     return (
       <SynchronizedCharts
-        chartTitle={filter.serviceName?.length ? `${filter.serviceName} - ${filter.sourceData}` : ''}
         // dataCharts={graphData}
         dataCharts={graphData.map((el) => ({
           ...el,
@@ -125,7 +124,6 @@ const MainPageForecasting = () => {
         }))}
         height={400}
         width="100%"
-        loading={chartLoading}
         setZoom={(e) => handleZoom(e)}
         maxZoom={zoomLevel.maxZoom}
         minZoom={zoomLevel.minZoom}
@@ -188,14 +186,24 @@ const MainPageForecasting = () => {
                     <Typography variant="h5" component="h5" color="white">
                       Graphic Anomaly Forecasting
                     </Typography>
-                    {chartIntervalUpdate}
-                    {/* <SynchronizedCharts
+                    <div className="flex flex-col gap-2">
+                      <Typography variant="h6" component="h6" color="white" fontWeight={600}>
+                        {`${filter.serviceName?.length ? filter.serviceName + ' - ' : ''} ${filter.sourceData}`}
+                      </Typography>
+                      {chartLoading ?
+                        <Skeleton
+                          width={'100%'}
+                          height={400}
+                        /> : chartIntervalUpdate
+                      }
+                      {/* <SynchronizedCharts
                       chartTitle={filter.serviceName?.length ? `${filter.serviceName} - ${filter.sourceData}` : ''}
                       dataCharts={graphData}
                       height={400}
                       width="100%"
                       loading={chartLoading}
                     /> */}
+                    </div>
                   </div>
                   {/* <div className="flex flex-col gap-8">
                     <Typography variant="h5" component="h5" color="white">

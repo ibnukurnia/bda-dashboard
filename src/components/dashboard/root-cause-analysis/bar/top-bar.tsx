@@ -20,9 +20,9 @@ const TopBar: React.FC<TopBarProps> = ({ title, subtitle, isLoading }) => {
       <hr />
       {isLoading ?
         <Skeleton
-          customStyle={{ fontSize: '1.5rem' }}
-          variant="text"
-          width={"100%"}
+          className='my-1'
+          width={'60%'}
+          height={20}
         /> :
         <Typography
           variant="subtitle1"

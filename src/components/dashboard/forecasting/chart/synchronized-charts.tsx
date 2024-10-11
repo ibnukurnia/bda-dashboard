@@ -13,7 +13,6 @@ interface SynchronizedChartsProps {
   }[]
   height: number
   width: string
-  loading?: boolean
   minZoom?: number
   maxZoom?: number
   setZoom?: (params?: { minZoom?: number; maxZoom?: number }) => void
@@ -25,7 +24,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   height,
   width,
   chartTitle,
-  loading,
   minZoom,
   maxZoom,
   setZoom,
@@ -56,6 +54,9 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 
   const chartOptions: ApexOptions = {
     chart: {
+      animations: {
+        enabled: false,
+      },
       group: 'social',
       type: 'line',
       height: 160,
@@ -209,40 +210,20 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Typography variant="h6" component="h6" color="white" fontWeight={600}>
-          {chartTitle}
-        </Typography>
-        {(() => {
-          if (loading) {
-            return (
-              <div className={`flex justify-center items-center h-[${height}px]`}>
-                <div className="spinner"></div>
-              </div>
-            )
-          } else {
-            if (resDataChart.every((series) => series.data.length === 0)) {
-              return (
-                <div className={`flex items-center justify-center h-[${height}px]`}>
-                  <Typography color={'white'}>
-                    DATA UNAVAILABLE FOR THIS SELECTION. PLEASE SELECT OTHER DATA OR TRY AGAIN LATER.
-                  </Typography>
-                </div>
-              )
-            } else {
-              return (
-                <Chart
-                  options={chartOptions}
-                  series={resDataChart.map((item) => ({ name: item.title, data: item.data })) as ApexAxisChartSeries}
-                  type="line"
-                  height={height}
-                  width={width}
-                />
-              )
-            }
-          }
-        })()}
-      </div>
+      {resDataChart.every((series) => series.data.length === 0) ?
+        <div className={`flex items-center justify-center h-[${height}px]`}>
+          <Typography color={'white'}>
+            DATA UNAVAILABLE FOR THIS SELECTION. PLEASE SELECT OTHER DATA OR TRY AGAIN LATER.
+          </Typography>
+        </div>
+        : <Chart
+          options={chartOptions}
+          series={resDataChart.map((item) => ({ name: item.title, data: item.data })) as ApexAxisChartSeries}
+          type="line"
+          height={height}
+          width={width}
+        />
+      }
     </div>
   )
 }

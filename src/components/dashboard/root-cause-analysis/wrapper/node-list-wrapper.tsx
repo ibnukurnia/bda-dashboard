@@ -13,23 +13,23 @@ const NodeListWrapper: React.FC<NodeListWrapperProps> = ({
   nodeCount,
 }) => {
   if (isLoading) return (
-    <div className="h-[80px] flex flex-col gap-2">
+    <div className="flex flex-col">
       {Array.from(Array(nodeCount), (_, i) => (
-        <div className={"w-full flex flex-col gap-1"} key={i}>
+        <div className={"w-full h-[80px] flex flex-col gap-1"} key={i}>
           <Skeleton
             width={"100%"}
             height={20}
           />
-          <Skeleton
-            customStyle={{ fontSize: '1.5rem' }}
-            width={"75%"}
-            height={20}
-          />
-          <Skeleton
-            customStyle={{ fontSize: '1.5rem' }}
-            width={"75px"}
-            height={20}
-          />
+          <div className="flex justify-between">
+            <Skeleton
+              width={"60%"}
+              height={40}
+            />
+            <Skeleton
+              width={"75px"}
+              height={20}
+            />
+          </div>
         </div>
       ))}
     </div>
