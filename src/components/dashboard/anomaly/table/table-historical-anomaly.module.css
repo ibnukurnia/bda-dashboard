@@ -1,0 +1,30 @@
+.table th {
+  font-size: 15px;
+  font-weight: 400;
+  color: white;
+  text-align: left;
+}
+
+.table td {
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: 400;
+  color: white;
+  text-align: left;
+}
+
+th:first-child.first_child,
+td:first-child.first_child {
+  position: sticky;
+  z-index: 15;
+  left: 0;
+  --tw-divide-opacity: 1;
+  border-color: rgb(229 231 235 / var(--tw-divide-opacity)) /* #e5e7eb */;
+}
+
+thead.table_header {
+  position: sticky;
+  top: 0;
+  z-index: 16;
+  background-color: #060f2c;
+}

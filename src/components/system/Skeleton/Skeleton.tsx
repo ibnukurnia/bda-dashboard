@@ -18,7 +18,7 @@ interface SkeletonProps {
   customStyle?: SxProps<Theme>
 }
 
-const Skeleton = ({ className, variant = 'rounded', height, width, customStyle }: SkeletonProps) => {
+const Skeleton = ({ className, variant = 'rounded', height = '100%', width = '100%', customStyle }: SkeletonProps) => {
   return (
     <MUISkeleton
       className={className}

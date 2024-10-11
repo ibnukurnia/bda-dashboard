@@ -6,12 +6,12 @@ export interface ApiResponse<T> {
 }
 
 export interface PaginatedResponse {
-  rows: any
-  page: number
-  total_rows: number
-  total_pages: number
-  columns: { title: string, key: string }[]
-  highlights?: string[][]
+  rows: { [key: string]: any }[];
+  page: number;
+  total_rows: number;
+  total_pages: number;
+  columns: { title: string; key: string }[];
+  highlights?: string[][];
 }
 
 export interface ErrorResponse extends Error {
