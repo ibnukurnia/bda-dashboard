@@ -111,8 +111,8 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
   })
 
   return (
-    <div className="flex-1 rounded-lg w-full flex flex-col gap-3">
-      <div className={`flex-1 w-full max-h-[75dvh] ${!isLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
+    <div className="rounded-lg w-full flex flex-col gap-3">
+      <div className={`w-full max-h-[75dvh] ${!isLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
         <div className="min-w-full h-full">
           <table className="table-auto divide-y divide-gray-200 w-full">
             <thead className={styles.table_header}>

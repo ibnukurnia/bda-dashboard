@@ -122,7 +122,6 @@ const MainPageOverview = () => {
   const topCriticalRef = useRef<TopCriticalPanelHandle>(null)
   const latestAnomalyRef = useRef<LatestAnomalyPanelHandle>(null)
   const anomalyAmountRef = useRef<AnomalyAmountPanelHandle>(null)
-  const healthinessRef = useRef<HTMLDivElement>(null)
 
   const thSeverity = ['Severity', 'Count']
   const configDataKey = ['service_name', 'very_high', 'high', 'medium']
@@ -430,6 +429,11 @@ const MainPageOverview = () => {
         setChartData([]);
         setIsLoadingGraphic(false);
       });
+      
+    window.addEventListener('resize', handleTableServiceHeight);
+    return () => {
+      window.removeEventListener('resize', handleTableServiceHeight);
+    }
   }, [])
 
   useEffect(() => {
@@ -451,20 +455,24 @@ const MainPageOverview = () => {
   }, [modalServices])
 
   useLayoutEffect(() => {
-    if (healthinessRef.current) {
-      const calculatedTableHeight = healthinessRef.current.offsetHeight - 310
+    handleTableServiceHeight()
+  }, [topCriticalRef])
+
+  function handleTableServiceHeight() {
+    const containerElement = topCriticalRef?.current?.getContainerElement?.();
+    if (containerElement) {
+      const calculatedTableHeight = containerElement.offsetHeight - 310
       if (calculatedTableHeight > 192 && window.innerWidth >= 1440) {
-        setTableMaxHeight(healthinessRef.current.offsetHeight - 310)
+        setTableMaxHeight(containerElement.offsetHeight - 310)
       } else if (window.innerWidth < 1440) {
         setTableMaxHeight(260 - 16)
       } else {
         setTableMaxHeight(192)
       }
     }
-  }, [healthinessRef.current?.offsetHeight])
+  }
 
   return (
-
     <div className='flex flex-col gap-6'>
       <div className="flex gap-3 items-center justify-between">
         <div className="flex gap-4 items-center">
@@ -513,7 +521,6 @@ const MainPageOverview = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <DonutChartWrapper
                         isLoading={isLoadingPieChart}
-
                       >
                         <DonutChart
                           series={pieChartData.map((item: any) => item.count)}

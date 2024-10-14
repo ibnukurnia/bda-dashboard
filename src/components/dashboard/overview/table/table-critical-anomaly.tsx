@@ -51,15 +51,17 @@ const CellValue: React.FC<CellValueProps> = ({
 
 interface TableHeaderWrapperProps {
   isLoading: boolean
+  columnSize: number
   children: JSX.Element
 }
 const TableHeaderWrapper: React.FC<TableHeaderWrapperProps> = ({
   isLoading,
+  columnSize,
   children,
 }) => {
   if (isLoading) return (
     <tr>
-      {Array.from(Array(10), (_, j) => (
+      {Array.from(Array(columnSize), (_, j) => (
         <th key={j} className={`p-4 py-6`}>
           <Skeleton
             className='m-auto px-3'
@@ -256,6 +258,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
             <thead>
               <TableHeaderWrapper
                 isLoading={isLoadingHeader}
+                columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 5 : table.getHeaderGroups()?.[0].headers.length}
               >
                 <Fragment>
                   {table.getHeaderGroups().map((headerGroup) => (
@@ -289,7 +292,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
             <tbody className="divide-y !divide-gray-200 text-gray-600">
               <TableBodyWrapper
                 pageSize={pagination.pageSize}
-                columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 10 : table.getHeaderGroups()?.[0].headers.length}
+                columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 5 : table.getHeaderGroups()?.[0].headers.length}
                 isLoading={isTableLoading}
                 isEmpty={data.length === 0}
               >
