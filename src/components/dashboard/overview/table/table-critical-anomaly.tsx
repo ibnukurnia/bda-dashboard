@@ -249,7 +249,7 @@ const TableCriticalAnomaly = ({
                       {headerGroup.headers.map((header) => (
                         <th key={header.id} colSpan={header.colSpan} className="p-2">
                           <button
-                            className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3 text-gray-100`}
+                            className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100`}
                             onClick={header.column.getToggleSortingHandler()}
                           >
                             {typeof header.column.columnDef.header === 'function'
