@@ -4,6 +4,7 @@ import { TopFiveLatestCritical } from '@/modules/models/overviews';
 import { Fragment } from 'react';
 import Link from 'next/link';
 import styles from './table-top-critical.module.css'
+import { formatNumberWithCommas } from '@/helper';
 
 const columns = [{
   id: "datasource",
@@ -29,6 +30,16 @@ interface CellValueProps {
 const CellValue: React.FC<CellValueProps> = ({
   cell,
 }) => {
+  if (typeof cell.getValue() === 'number') {
+    return (
+      <span
+        className={`ml-auto`}
+      >
+        {formatNumberWithCommas(cell.getValue() as number)}
+      </span>
+    )
+  }
+
   if (typeof cell.column.columnDef.cell === 'function') {
     return <Fragment>
       {cell.column.columnDef.cell(cell.getContext())}
@@ -94,7 +105,7 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                     {headerGroup.headers.map((header) => (
                       <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
                         <button
-                          className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3 text-gray-100`}
+                          className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100 `}
                           onClick={header.column.getToggleSortingHandler()}
                         >
                           {typeof header.column.columnDef.header === 'function'
@@ -123,23 +134,21 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className={`${styles.first_child} whitespace-nowrap`}>
-                      <Link
-                        className='w-full h-full flex '
-                        href={{
-                          pathname: '/dashboard/anomaly-detection',
-                          query: {
-                            ...queryParams,
-                            data_source: data[row.index].source_alias,
-                            anomaly: data[row.index].anomaly_identifier,
-                            service: data[row.index].identifier,
-                          },
-                        }}
-                        passHref
-                      >
-                        <div className="px-4 py-4 inline-flex items-center rounded-full gap-x-2">
+                        <Link
+                          className='w-full h-full flex px-4 py-4 items-center rounded-full gap-x-2'
+                          href={{
+                            pathname: '/dashboard/anomaly-detection',
+                            query: {
+                              ...queryParams,
+                              data_source: data[row.index].source_alias,
+                              anomaly: data[row.index].anomaly_identifier,
+                              service: data[row.index].identifier,
+                            },
+                          }}
+                          passHref
+                        >
                           <CellValue cell={cell} />
-                        </div>
-                      </Link>
+                        </Link>
                       </td>
                     ))}
                   </tr>

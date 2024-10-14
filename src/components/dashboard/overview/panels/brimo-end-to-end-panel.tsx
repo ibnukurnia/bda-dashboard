@@ -91,7 +91,7 @@ const BRImoEndToEndPanel = ({
                     lineHeight={'17.07px'}
                     color={'white'}
                   >
-                    Total BRIMO Health
+                    Total BRImo Health
                   </Typography>
                   <Typography
                     fontWeight={700}

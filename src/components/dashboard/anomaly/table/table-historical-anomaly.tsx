@@ -38,7 +38,7 @@ const CellValue: React.FC<CellValueProps> = ({
   if (typeof cell.getValue() === 'number') {
     return (
       <span
-        className={highlights?.[rowIndex].includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''}
+        className={`${highlights?.[rowIndex].includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''} ml-auto`}
       >
         {cell.column.id === "error_rate" ?
           (cell.getValue() as number).toString().replace('.', ',') :
@@ -184,7 +184,7 @@ const TableHistoricalAnomaly = ({
                         {headerGroup.headers.map((header) => (
                           <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
                             <button
-                              className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3 text-gray-100`}
+                              className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100 `}
                               onClick={header.column.getToggleSortingHandler()}
                             >
                               {typeof header.column.columnDef.header === 'function'
@@ -218,7 +218,7 @@ const TableHistoricalAnomaly = ({
                       <tr key={row.id}>
                         {row.getVisibleCells().map((cell) => (
                           <td key={cell.id} className={`${styles.first_child} whitespace-nowrap`}>
-                            <div className="text-gray-100 inline-flex items-center px-4 py-4 rounded-full gap-x-2">
+                            <div className="w-full text-gray-100 inline-flex items-center px-4 py-4 rounded-full gap-x-2">
                               {!isLoading && cell.column.id === 'severity' &&
                                 (cell.getValue() === 'Very High' ||
                                   cell.getValue() === 'High' ||
