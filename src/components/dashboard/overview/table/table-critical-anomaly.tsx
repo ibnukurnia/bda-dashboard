@@ -9,6 +9,7 @@ import { formatNumberWithCommas } from '../../../../helper';
 import useDebounce from '@/hooks/use-debounce';
 import Pagination from '@/components/system/Pagination/Pagination';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
+import styles from './table-critical-anomaly.module.css'
 
 
 const toMiliseconds = 1000 * 60
@@ -260,7 +261,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id} className='text-left'>
                       {headerGroup.headers.map((header) => (
-                        <th key={header.id} colSpan={header.colSpan} className="p-2">
+                    <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
                           <button
                             className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100`}
                             onClick={header.column.getToggleSortingHandler()}
@@ -296,7 +297,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
                   {table.getRowModel().rows.map((row) => (
                     <tr key={row.id}>
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                        <td key={cell.id} className={`${styles.first_child} px-1 py-4 whitespace-nowrap`}>
                           <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
                             {/* Severity Check */}
                             {cell.column.id === 'severity' &&

@@ -32,6 +32,7 @@ import TooltipServiceCollection from './collection/tooltip-service-collection'
 import BRImoEndToEndPanel from './panels/brimo-end-to-end-panel'
 import LatestAnomalyPanel, { LatestAnomalyPanelHandle } from './panels/latest-anomaly-panel'
 import AnomalyAmountPanel, { AnomalyAmountPanelHandle } from './panels/anomaly-amount-panel'
+import TopCriticalPanel, { TopCriticalPanelHandle } from './panels/top-critical-panel'
 
 // Define your data
 const sourceData = [
@@ -107,7 +108,6 @@ const MainPageOverview = () => {
   const [pieChartData, setPieChartData] = useState([])
   const [topServicesData, setTopServicesData] = useState<TopServicesResponse | null>(null)
   const [healthScoreData, setHealthScoreData] = useState<HealthScoreResponse[]>([])
-  const [topFiveCriticalData, setTopFiveCriticalData] = useState<TopFiveLatestCritical[]>([])
   const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
@@ -116,11 +116,10 @@ const MainPageOverview = () => {
   const [isLoadingPieChart, setIsLoadingPieChart] = useState(true)
   const [isLoadingTopServices, setIsLoadingTopServices] = useState(true)
   const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
-  const [isLoadingTopFiveCritical, setIsLoadingTopFiveCritical] = useState(true)
   const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
-  const [isErrorTopFiveCritical, setIsErrorTopFiveCritical] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
+  const topCriticalRef = useRef<TopCriticalPanelHandle>(null)
   const latestAnomalyRef = useRef<LatestAnomalyPanelHandle>(null)
   const anomalyAmountRef = useRef<AnomalyAmountPanelHandle>(null)
   const healthinessRef = useRef<HTMLDivElement>(null)
@@ -175,7 +174,6 @@ const MainPageOverview = () => {
     setIsLoadingPieChart(true);
     setIsLoadingTopServices(true);
     setIsLoadingGraphic(true)
-    setIsLoadingTopFiveCritical(true)
 
     const paramsTime = { start_time: startTime, end_time: endTime };
     const params = { type: selectedDataSource, ...paramsTime };
@@ -226,18 +224,6 @@ const MainPageOverview = () => {
         setChartData([]);
         setIsLoadingGraphic(false);
       });
-
-    GetTopFiveCritical(params)
-      .then((res) => {
-        setTopFiveCriticalData(res.data ?? [])
-        setIsErrorTopFiveCritical(false);
-      })
-      .catch(() => {
-        setIsErrorTopFiveCritical(true);
-      })
-      .finally(() => {
-        setIsLoadingTopFiveCritical(false);
-      })
   };
 
   const handleChangeFilterDS = (value: string) => {
@@ -251,7 +237,6 @@ const MainPageOverview = () => {
     setIsLoadingPieChart(true)
     setIsLoadingTopServices(true)
     setIsLoadingHealthScore(true)
-    setIsLoadingTopFiveCritical(true)
 
     GetPieChartsOverview(params)
       .then((res) => {
@@ -284,20 +269,6 @@ const MainPageOverview = () => {
       .finally(() => {
         setIsLoadingHealthScore(false);
       })
-
-    GetTopFiveCritical(params)
-      .then((res) => {
-        setTopFiveCriticalData(res.data ?? [])
-        setIsErrorTopFiveCritical(false);
-      })
-      .catch(() => {
-        setIsErrorTopFiveCritical(true);
-      })
-      .finally(() => {
-        setIsLoadingTopFiveCritical(false);
-      })
-
-
   }
 
   const handleLogicTitle = (title: string) => {
@@ -322,12 +293,12 @@ const MainPageOverview = () => {
 
   const refreshData = async () => {
     const { startTime, endTime } = handleStartEnd(selectedRange);
+    topCriticalRef.current?.refresh(selectedRange)
     latestAnomalyRef.current?.refresh(selectedRange)
     anomalyAmountRef.current?.refresh(selectedRange)
     setIsLoadingHealthScore(true);
     setIsLoadingPieChart(true);
     setIsLoadingTopServices(true);
-    setIsLoadingTopFiveCritical(true);
     setIsLoadingGraphic(true); // Add loading state for the chart
 
     const paramsTime = { start_time: startTime, end_time: endTime };
@@ -341,13 +312,11 @@ const MainPageOverview = () => {
         pieChartRes,
         topServicesRes,
         healthScoreRes,
-        topFiveCriticalRes,
         chartRes // Add chart response to the array
       ] = await Promise.all([
         GetPieChartsOverview(params),
         GetTopServicesOverview(params),
         GetHealthScoreOverview(paramsTime),
-        GetTopFiveCritical(paramsTime),
         GetChartsOverview(paramsTime), // Fetch chart data
       ]);
 
@@ -356,11 +325,9 @@ const MainPageOverview = () => {
       setTopServicesData(topServicesRes.data);
       if (healthScoreRes.data == null) throw Error("Empty response data");
       setHealthScoreData(healthScoreRes.data);
-      setTopFiveCriticalData(topFiveCriticalRes.data ?? []);
 
       // Reset error states
       setIsErrorHealthScore(false);
-      setIsErrorTopFiveCritical(false);
 
     } catch (error) {
       console.error('Error occurred:', error);
@@ -369,19 +336,16 @@ const MainPageOverview = () => {
       setPieChartData([]);
       setTopServicesData(null);
       setHealthScoreData([]);
-      setTopFiveCriticalData([]);
       setChartData([]); // Handle error for chart data
 
       // Set error states
       setIsErrorHealthScore(true);
-      setIsErrorTopFiveCritical(true);
 
     } finally {
       // Always reset loading states after completion
       setIsLoadingHealthScore(false);
       setIsLoadingPieChart(false);
       setIsLoadingTopServices(false);
-      setIsLoadingTopFiveCritical(false);
       setIsLoadingGraphic(false); // Reset loading state for the chart
     }
   };
@@ -419,7 +383,6 @@ const MainPageOverview = () => {
     setIsLoadingHealthScore(true)
     setIsLoadingPieChart(true)
     setIsLoadingTopServices(true)
-    setIsLoadingTopFiveCritical(true)
 
     const paramsTime = { start_time: startTime, end_time: endTime }
     const params = {
@@ -456,18 +419,6 @@ const MainPageOverview = () => {
       })
       .finally(() => {
         setIsLoadingHealthScore(false);
-      })
-
-    GetTopFiveCritical(paramsTime)
-      .then((res) => {
-        setTopFiveCriticalData(res.data ?? [])
-        setIsErrorTopFiveCritical(false);
-      })
-      .catch(() => {
-        setIsErrorTopFiveCritical(true);
-      })
-      .finally(() => {
-        setIsLoadingTopFiveCritical(false);
       })
 
     GetChartsOverview(paramsTime)
@@ -606,18 +557,13 @@ const MainPageOverview = () => {
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="flex flex-col gap-8 card">
-                  <span className="font-bold text-white text-2xl">Highlighted Anomalies</span>
-                  <TableTopCritical
-                    data={topFiveCriticalData}
-                    isLoading={isLoadingTopFiveCritical}
-                    queryParams={{
-                      time_range: autoRefresh ? selectedRange : `${startTime} - ${endTime}`,
-                    }}
-                  />
-                </div>
-              </div>
+              <TopCriticalPanel
+                ref={topCriticalRef}
+                timeRange={selectedRange}
+                queryParams={{
+                  time_range: autoRefresh ? selectedRange : `${startTime} - ${endTime}`,
+                }}
+              />
             </div>
 
             <LatestAnomalyPanel
