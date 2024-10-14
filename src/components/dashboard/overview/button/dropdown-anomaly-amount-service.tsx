@@ -1,19 +1,19 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import Button from '@/components/system/Button/Button';
+import Skeleton from '@/components/system/Skeleton/Skeleton';
+import { GetAmountServiceList } from '@/modules/usecases/overviews';
+import useDebounce from '@/hooks/use-debounce';
 
 interface DropdownAnomalyAmountServiceProps {
-  onSelectData: (value: string) => void;
-  handleReset: () => void;
-  selectedData: string[]; // Ensure selectedData is required
-  services: string[]; // Accept dynamic services list
+  onSelectData: (value: string[]) => void;
 }
 
 const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> = ({
   onSelectData,
-  handleReset,
-  selectedData,
-  services = [],
 }) => {
+  const [data, setData] = useState<string[]>([])
+  const [currentSelectedData, setCurrentSelectedData] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<number>(0);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -29,10 +29,24 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
     }
   };
 
-  const handleSelectData = (dataSelection: string) => {
-    onSelectData(dataSelection);
-  };
+  useEffect(() => {
+    GetAmountServiceList()
+      .then((res) => {
+        setData(res.data);
+      })
+      .catch((err) => {
+        console.error('Error fetching services list:', err);
+        setData([]); // Default to "All" if fetching fails
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [])
 
+  useEffect(() => {
+    onSelectData(data)
+  }, [data])
+  
   useEffect(() => {
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
@@ -59,11 +73,28 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
     }
   }, [isOpen]);
 
+  useDebounce(() => {
+    onSelectData(currentSelectedData.length === 0 ? data : currentSelectedData)
+  }, 750, [currentSelectedData]); // This effect runs when the service list or selected service changes
+
+  const handleSelectData = (value: string) => {
+    // Update the selected service in state
+    setCurrentSelectedData((prevs) =>
+      prevs.some(prev => prev === value) ?
+        prevs.filter(prev => prev !== value) :
+        [...prevs, value]
+    );
+  };
+
+  if (isLoading) return (
+    <Skeleton width={200} height={48} />
+  )
+
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {selectedData.length === 0 || selectedData.length === services.length ?
-        'All' : selectedData.join(", ")}
+        {currentSelectedData.length === 0 || currentSelectedData.length === data.length ?
+          'All' : currentSelectedData.join(", ")}
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"
@@ -84,27 +115,29 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
           <ul className="text-sm text-gray-800 w-48">
             <li>
               <div
-                onClick={handleReset}
+                onClick={() => setCurrentSelectedData([])}
                 className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
               >
                 <input
-                    type="checkbox"
-                    checked={selectedData.length === 0 || selectedData.length === services.length}
-                    className="mr-2"
+                  type="checkbox"
+                  checked={currentSelectedData.length === 0 || currentSelectedData.length === data.length}
+                  className="mr-2"
+                  readOnly
                 />
                 All
               </div>
             </li>
-            {services.map((dataSelection, dsid) => (
+            {data.map((dataSelection, dsid) => (
               <li key={dsid}>
                 <div
                   onClick={() => handleSelectData(dataSelection)}
                   className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
                 >
                   <input
-                      type="checkbox"
-                      checked={selectedData.includes(dataSelection)}
-                      className="mr-2"
+                    type="checkbox"
+                    checked={currentSelectedData.includes(dataSelection)}
+                    className="mr-2"
+                    readOnly
                   />
                   {dataSelection}
                 </div>

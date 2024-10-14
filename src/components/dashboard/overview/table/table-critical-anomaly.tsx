@@ -86,8 +86,8 @@ const TableBodyWrapper: React.FC<TableBodyWrapperProps> = ({
   children,
 }) => {
   if (isLoading) return (
-    Array.from(Array(pageSize), (_, j) => (
-      <tr>
+    Array.from(Array(pageSize), (_, i) => (
+      <tr key={i}>
         {Array.from(Array(columnSize), (_, j) => (
           <td key={j} className={`p-4`}>
             <Skeleton

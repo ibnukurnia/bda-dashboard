@@ -30,22 +30,13 @@ import TableServicesWrapper from './wrapper/table-services-wrapper'
 import GraphWrapper from './wrapper/graph-wrapper'
 import DonutChartWrapper from './wrapper/donut-wrapper'
 import TableSeverityWrapper from './wrapper/table-severity-wrapper'
-import TableCriticalAnomaly from './table/table-critical-anomaly'
-import DropdownSeverity from './button/dropdown-severity'
-import HealthinessTree from './panels/healthiness-tree'
-import HealthinessTreeWrapper from './wrapper/healthiness-tree-wrapper'
 import TableTopCritical from './table/table-top-critical'
-import AnomalyAmountChart from './chart/anomaly-amount-chart'
-import DropdownAnomalyAmountService from './button/dropdown-anomaly-amount-service'
-import AnomalyAmountWrapper from './wrapper/anomaly-amount-wrapper'
-import DropdownDataSourceLatestAnomaly from './button/dropdown-datasource-latest-anomaly'
 import AutoRefreshButton from '../anomaly/button/refreshButton'
 
-import { Skeleton, Typography } from '@mui/material'
 import TooltipServiceCollection from './collection/tooltip-service-collection'
-import useDebounce from '@/hooks/use-debounce'
 import BRImoEndToEndPanel from './panels/brimo-end-to-end-panel'
 import LatestAnomalyPanel from './panels/latest-anomaly-panel'
+import AnomalyAmountPanel from './panels/anomaly-amount-panel'
 
 const ANOMALY_AMOUNT_TYPE = 'brimo'
 const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
@@ -120,7 +111,6 @@ const defaultTimeRanges: Record<string, number> = {
 const MainPageOverview = () => {
   const [amountServiceList, setAmountServiceList] = useState<string[]>([]);
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
-  const [selectedAnomalyAmountService, setSelectedAnomalyAmountService] = useState<string[]>([])
   const [modalServices, setModalServices] = useState(false)
   const [tableMaxHeight, setTableMaxHeight] = useState(192)
   const [pieChartData, setPieChartData] = useState([])
@@ -128,12 +118,6 @@ const MainPageOverview = () => {
   const [healthScoreData, setHealthScoreData] = useState<HealthScoreResponse[]>([])
   const [topFiveCriticalData, setTopFiveCriticalData] = useState<TopFiveLatestCritical[]>([])
   const [dataSourceLatestAnomalyData, setDataSourceLatestAnomalyData] = useState<string[]>([])
-  const [anomalyAmountServicesData, setAnomalyAmountServicesData] = useState<string[]>([])
-  const [anomalyAmountData, setAnomalyAmountData] = useState<any>({
-    data: [],
-    anomalies: [],
-    title: "Anomaly Amount"
-  })
   const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
@@ -144,13 +128,9 @@ const MainPageOverview = () => {
   const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
   const [isLoadingTopFiveCritical, setIsLoadingTopFiveCritical] = useState(true)
   const [isLoadingDataSourceLatestAnomaly, setIsLoadingDataSourceLatestAnomaly] = useState(false)
-  const [isLoadingAnomalyAmountServices, setIsLoadingAnomalyAmountServices] = useState(true)
-  const [isLoadingAnomalyAmount, setIsLoadingAnomalyAmount] = useState(true)
   const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
   const [isErrorTopFiveCritical, setIsErrorTopFiveCritical] = useState(false)
-  const [isErrorAnomalyAmountServices, setIsErrorAnomalyAmountServices] = useState(false)
   const [isErrorDataSourceLatestAnomaly, setIsErrorDataSourceLatestAnomaly] = useState(false)
-  const [isErrorAnomalyAmount, setIsErrorAnomalyAmount] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
   const healthinessRef = useRef<HTMLDivElement>(null)
@@ -161,11 +141,6 @@ const MainPageOverview = () => {
   const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
   const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
   const handle = useFullScreenHandle();
-
-  const formatTimeToSecondsZero = (dateObj: Date) => {
-    return dateObj.toISOString().slice(0, 19).replace('T', ' ');
-  };
-
 
   const handleStartEnd = (time: string) => {
     const timeSplit = time.split(' - ')
@@ -213,12 +188,6 @@ const MainPageOverview = () => {
 
     const paramsTime = { start_time: startTime, end_time: endTime };
     const params = { type: selectedDataSource, ...paramsTime };
-    const paramsAmount = {
-      start_time: formattedStartTime,
-      end_time: formattedEndTime,
-      service_name: selectedAnomalyAmountService.length === 0 ? amountServiceList : selectedAnomalyAmountService
-    };
-
 
     // Fetch Pie Chart Data
     GetPieChartsOverview(params)
@@ -278,25 +247,6 @@ const MainPageOverview = () => {
       .finally(() => {
         setIsLoadingTopFiveCritical(false);
       })
-
-    // Make the API call with the correct params
-    GetAmountGraphic(paramsAmount)
-      .then((res) => {
-        // Check if the response has data and update the state
-        if (res && res.data) {
-          setAnomalyAmountData(res.data);
-        } else {
-          setAnomalyAmountData([]); // Set to an empty array if no data is returned
-        }
-      })
-      .catch((error) => {
-        console.error('Error fetching anomaly amount data:', error);
-        setAnomalyAmountData([]); // Handle error by resetting the data
-      })
-      .finally(() => {
-        // Always set loading to false after the API call finishes
-        setIsLoadingAnomalyAmount(false);
-      });
   };
 
   const handleChangeFilterDS = (value: string) => {
@@ -359,15 +309,6 @@ const MainPageOverview = () => {
 
   }
 
-  const handleChangeFilterAnomalyAmountService = (value: string) => {
-    // Update the selected service in state
-    setSelectedAnomalyAmountService((prevs) =>
-      prevs.some(prev => prev === value) ?
-        prevs.filter(prev => prev !== value) :
-        [...prevs, value]
-    );
-  };
-
   const handleLogicTitle = (title: string) => {
     if (title.toLowerCase().includes('apm')) {
       return 'error rate apm & brimo'
@@ -394,7 +335,6 @@ const MainPageOverview = () => {
     setIsLoadingPieChart(true);
     setIsLoadingTopServices(true);
     setIsLoadingTopFiveCritical(true);
-    setIsLoadingAnomalyAmountServices(true);
     setIsLoadingDataSourceLatestAnomaly(true);
     setIsLoadingGraphic(true); // Add loading state for the chart
 
@@ -412,7 +352,6 @@ const MainPageOverview = () => {
         topFiveCriticalRes,
         amountServiceListRes,
         dataSourceLatestAnomalyRes,
-        anomalyAmountServicesRes,
         chartRes // Add chart response to the array
       ] = await Promise.all([
         GetPieChartsOverview(params),
@@ -436,13 +375,10 @@ const MainPageOverview = () => {
       setTopFiveCriticalData(topFiveCriticalRes.data ?? []);
       setAmountServiceList(amountServiceListRes.data);
       setDataSourceLatestAnomalyData(dataSourceLatestAnomalyRes.data ?? []);
-      setAnomalyAmountServicesData(anomalyAmountServicesRes.data?.services ?? []);
-      setChartData(chartRes.data); // Set the chart data from the response
 
       // Reset error states
       setIsErrorHealthScore(false);
       setIsErrorTopFiveCritical(false);
-      setIsErrorAnomalyAmountServices(false);
       setIsErrorDataSourceLatestAnomaly(false);
 
     } catch (error) {
@@ -455,13 +391,11 @@ const MainPageOverview = () => {
       setTopFiveCriticalData([]);
       setAmountServiceList(['']);
       setDataSourceLatestAnomalyData([]);
-      setAnomalyAmountServicesData([]);
       setChartData([]); // Handle error for chart data
 
       // Set error states
       setIsErrorHealthScore(true);
       setIsErrorTopFiveCritical(true);
-      setIsErrorAnomalyAmountServices(true);
       setIsErrorDataSourceLatestAnomaly(true);
 
     } finally {
@@ -470,7 +404,6 @@ const MainPageOverview = () => {
       setIsLoadingPieChart(false);
       setIsLoadingTopServices(false);
       setIsLoadingTopFiveCritical(false);
-      setIsLoadingAnomalyAmountServices(false);
       setIsLoadingDataSourceLatestAnomaly(false);
       setIsLoadingGraphic(false); // Reset loading state for the chart
     }
@@ -500,7 +433,7 @@ const MainPageOverview = () => {
         clearInterval(intervalId);
       }
     };
-  }, [autoRefresh, refreshInterval, selectedRange, selectedDataSource, selectedAnomalyAmountService, amountServiceList]);
+  }, [autoRefresh, refreshInterval, selectedRange, selectedDataSource, amountServiceList]);
 
   useEffect(() => {
     const { startTime, endTime } = handleStartEnd(selectedRange);
@@ -569,100 +502,7 @@ const MainPageOverview = () => {
         setChartData([]);
         setIsLoadingGraphic(false);
       });
-
-    GetAmountServiceList()
-      .then((res) => {
-        if (res && res.data) {
-          // Assuming 'All' is not part of the API data, add it to the list
-          setAmountServiceList(res.data);
-        } else {
-          setSelectedAnomalyAmountService([]);
-        }
-      })
-      .catch((err) => {
-        console.error('Error fetching services list:', err);
-        setAmountServiceList([]); // Default to "All" if fetching fails
-      });
-
-    fetchServicesOption({
-      ...paramsTime,
-      type: ANOMALY_AMOUNT_TYPE,
-    })
-      .then((res) => {
-        setAnomalyAmountServicesData(res.data?.services ?? [])
-        setIsErrorAnomalyAmountServices(false);
-      })
-      .catch(() => {
-        setIsErrorAnomalyAmountServices(true);
-      })
-      .finally(() => {
-        setIsLoadingAnomalyAmountServices(false);
-      })
-
   }, [])
-
-  useEffect(() => {
-    // Ensure that amountServiceList is available and contains data before making the API call
-    if (amountServiceList.length > 0) {
-      const { startTime, endTime } = handleStartEnd(selectedRange);
-
-      const paramsAmount = {
-        start_time: startTime,
-        end_time: endTime,
-        service_name: selectedAnomalyAmountService.length === 0 ? amountServiceList : selectedAnomalyAmountService
-      };
-
-      setIsLoadingAnomalyAmount(true);
-
-      GetAmountGraphic(paramsAmount)
-        .then((res) => {
-          if (res && res.data) {
-            setAnomalyAmountData(res.data);
-          } else {
-            setAnomalyAmountData([]); // Handle empty data case
-          }
-        })
-        .catch((error) => {
-          console.error('Error fetching anomaly amount data:', error);
-          setAnomalyAmountData([]); // Handle error
-        })
-        .finally(() => {
-          setIsLoadingAnomalyAmount(false);
-        });
-    }
-  }, [amountServiceList]); // This effect runs when the service list or selected service changes
-
-  useDebounce(() => {
-    // Ensure that amountServiceList is available and contains data before making the API call
-    if (amountServiceList.length > 0) {
-      const { startTime, endTime } = handleStartEnd(selectedRange);
-
-      const paramsAmount = {
-        start_time: startTime,
-        end_time: endTime,
-        service_name: selectedAnomalyAmountService.length === 0 ? amountServiceList : selectedAnomalyAmountService
-      };
-
-      setIsLoadingAnomalyAmount(true);
-
-      GetAmountGraphic(paramsAmount)
-        .then((res) => {
-          if (res && res.data) {
-            setAnomalyAmountData(res.data);
-          } else {
-            setAnomalyAmountData([]); // Handle empty data case
-          }
-        })
-        .catch((error) => {
-          console.error('Error fetching anomaly amount data:', error);
-          setAnomalyAmountData([]); // Handle error
-        })
-        .finally(() => {
-          setIsLoadingAnomalyAmount(false);
-        });
-    }
-  }, 500, [amountServiceList, selectedAnomalyAmountService]); // This effect runs when the service list or selected service changes
-
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -828,34 +668,10 @@ const MainPageOverview = () => {
               </div>
             </GraphWrapper>
 
-            <div className='card flex flex-col gap-6'>
-              <div className='flex justify-between'>
-                <span className="font-bold text-white text-2xl content-center">Anomaly Amount</span>
-                {!handle.active && (
-                  isLoadingAnomalyAmountServices ?
-                    <Skeleton
-                      width={200}
-                      height={48}
-                    /> :
-                    <DropdownAnomalyAmountService
-                      onSelectData={(e) => handleChangeFilterAnomalyAmountService(e)}
-                      handleReset={() => setSelectedAnomalyAmountService([])}
-                      selectedData={selectedAnomalyAmountService}
-                      services={amountServiceList}
-                    />
-                )}
-              </div>
-              <AnomalyAmountWrapper
-                isLoading={isLoadingAnomalyAmount}
-              >
-                <AnomalyAmountChart
-                  series={anomalyAmountData}
-                  anomalies={anomalyAmountData?.anomalies as any[]}
-                  startTime={startTime} // Pass the calculated startTime
-                  endTime={endTime} // Pass the calculated endTime
-                />
-              </AnomalyAmountWrapper>
-            </div>
+            <AnomalyAmountPanel
+              timeRange={selectedRange}
+              isFullscreen={handle.active}
+            />
           </div>
         </div>
       </FullScreen>

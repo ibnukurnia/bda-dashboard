@@ -86,3 +86,9 @@ export interface TopServicesResponse {
   header: string[]
   data?: TopServiceData[]
 }
+
+export interface AnomalyAmountResponse {
+  service_name: string
+  data: { service_name: string; data: [string, number][] | null }[]
+  anomalies: { service_name: string; data: [string, number][] | null }[]
+}

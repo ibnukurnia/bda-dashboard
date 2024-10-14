@@ -1,33 +1,27 @@
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
 import { formatRupiah } from '@/helper';
+import { AnomalyAmountResponse } from '@/modules/models/overviews';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 interface AnomalyAmountChartProps {
-  anomalies: any[]; // Array of anomalies (optional)
-  series: { service_name: string; data: [string, number][] | null }[]; // Array of series with service name and data
+  data: AnomalyAmountResponse[] | null; // Array of series with service name and data
   startTime: string; // Add startTime prop
   endTime: string; // Add endTime prop
 }
 
-const AnomalyAmountChart = ({ anomalies = [], series = [], startTime, endTime }: AnomalyAmountChartProps) => {
+const AnomalyAmountChart = ({ data = [], startTime, endTime }: AnomalyAmountChartProps) => {
   // Ensure series is always treated as an array
-  const validSeries = Array.isArray(series) ? series : [series];
-
-  // Safeguard: Handle services that have null or empty data
-  console.log('Series structure:', validSeries);
+  const validSeries = Array.isArray(data) ? data : [];
 
   // Ensure services with null data are included but with empty data arrays
   const chartSeries = validSeries
     .filter(s => Array.isArray(s.data) && s.data.length > 0) // Only include services with valid data
     .map(s => ({
       name: s.service_name, // Name of the service for the legend
-      data: s.data!.map(d => [new Date(d[0]).getTime(), d[1]]) // Convert date strings to timestamps if data exists
+      data: s.data.map((d: any) => [new Date(d[0]).getTime(), d[1]]) // Convert date strings to timestamps if data exists
     }));
-
-  // Debugging: Check the chart series being passed to ApexCharts
-  console.log('Chart series being passed to ApexCharts:', chartSeries);
 
   // Calculate the min and max timestamps from the data
   const allTimestamps = chartSeries.flatMap(s => s.data.map(d => d[0])); // Extract all timestamps
