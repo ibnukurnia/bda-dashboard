@@ -34,8 +34,18 @@ export const TAB_DATA_SOURCE = [
     ],
   },
   {
-    namespace: "ivat",
     textLabel: "Network",
+    children: [
+      {
+        textLabel: "Ivat",
+        namespace: "ivat"
+      },
+      {
+        textLabel: "Solar Winds",
+        namespace: "solarwinds"
+      }
+
+    ]
   },
   {
     textLabel: "Security",
