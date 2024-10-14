@@ -28,7 +28,7 @@ interface ScrollableNodeListProps {
   queryParams?: {
     time_range: string;
     data_source: string;
-    metric_anomaly: string;
+    anomaly: string;
   };
   fullScreenHandle: FullScreenHandle; // From react-full-screen
   maxCount: number;
