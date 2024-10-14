@@ -7,24 +7,6 @@ import Pagination from '@/components/system/Pagination/Pagination';
 import { ROWS_PER_PAGE_OPTIONS } from '@/constants';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
 
-const columns = [{
-  id: "datasource",
-  header: "Data Source",
-  accessorKey: "datasource",
-}, {
-  id: "identifier_alias",
-  header: "Identifier",
-  accessorKey: "identifier_alias",
-}, {
-  id: "anomaly",
-  header: "Anomaly",
-  accessorKey: "anomaly",
-}, {
-  id: "total",
-  header: "Total",
-  accessorKey: "total",
-}]
-
 interface CellValueProps {
   cell: Cell<any, unknown>
   rowIndex: number
@@ -56,29 +38,6 @@ const CellValue: React.FC<CellValueProps> = ({
   )
 }
 
-interface TableWrapperProps {
-  isLoading: boolean;
-  isEmpty: boolean;
-  children: JSX.Element;
-}
-const TableWrapper: React.FC<TableWrapperProps> = ({
-  isLoading,
-  isEmpty,
-  children,
-}) => {
-  if (isLoading) return (
-    children
-  )
-  if (isEmpty) return (
-    <div className="text-center py-4">
-      <Typography variant="subtitle1" color="white" align="center">
-        No data available.
-      </Typography>
-    </div>
-  )
-  return children
-}
-
 interface TableHeaderWrapperProps {
   isLoading: boolean
   children: JSX.Element
@@ -104,19 +63,21 @@ const TableHeaderWrapper: React.FC<TableHeaderWrapperProps> = ({
 }
 interface TableBodyWrapperProps {
   isLoading: boolean
+  isEmpty: boolean
   pageSize: number
   columnSize: number
   children: JSX.Element
 }
 const TableBodyWrapper: React.FC<TableBodyWrapperProps> = ({
   isLoading,
+  isEmpty,
   pageSize,
   columnSize,
   children,
 }) => {
   if (isLoading) return (
-    Array.from(Array(pageSize), (_, j) => (
-      <tr>
+    Array.from(Array(pageSize), (_, i) => (
+      <tr key={i}>
         {Array.from(Array(columnSize), (_, j) => (
           <td key={j} className={`${styles.first_child} p-4`}>
             <Skeleton
@@ -128,6 +89,15 @@ const TableBodyWrapper: React.FC<TableBodyWrapperProps> = ({
         ))}
       </tr>
     ))
+  )
+  if (isEmpty) return (
+    <tr>
+      <td className={`p-4`} colSpan={columnSize}>
+        <Typography variant="subtitle1" color="white" align="center">
+          No data available.
+        </Typography>
+      </td>
+    </tr>
   )
   return children
 }
@@ -172,93 +142,92 @@ const TableHistoricalAnomaly = ({
     <div className='flex flex-col gap-2'>
       <div className={`w-full overflow-auto ${pagination.pageSize > 10 ? 'max-h-[75dvh]' : ''}`}>
         <div className="min-w-full">
-          <TableWrapper isLoading={isLoading} isEmpty={data.length === 0}>
-            <table className={`${styles.table} table-auto divide-y divide-gray-200 w-full`}>
-              <thead>
-                <TableHeaderWrapper
-                  isLoading={isLoadingHeader}
-                >
-                  <Fragment>
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      <tr key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => (
-                          <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
-                            <button
-                              className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100 `}
-                              onClick={header.column.getToggleSortingHandler()}
-                            >
-                              {typeof header.column.columnDef.header === 'function'
-                                ? header.column.columnDef.header({} as any) // Pass a dummy context
-                                : header.column.columnDef.header}
-                              {header.column.getCanSort() && (
-                                <Fragment>
-                                  {{
-                                    asc: '🔼',
-                                    desc: '🔽',
-                                    undefined: '🔽', // Default icon for unsorted state
-                                  }[header.column.getIsSorted() as string] || '🔽'}
-                                </Fragment>
+          <table className={`${styles.table} table-auto divide-y divide-gray-200 w-full`}>
+            <thead>
+              <TableHeaderWrapper
+                isLoading={isLoadingHeader}
+              >
+                <Fragment>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
+                          <button
+                            className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100 `}
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            {typeof header.column.columnDef.header === 'function'
+                              ? header.column.columnDef.header({} as any) // Pass a dummy context
+                              : header.column.columnDef.header}
+                            {header.column.getCanSort() && (
+                              <Fragment>
+                                {{
+                                  asc: '🔼',
+                                  desc: '🔽',
+                                  undefined: '🔽', // Default icon for unsorted state
+                                }[header.column.getIsSorted() as string] || '🔽'}
+                              </Fragment>
+                            )}
+                          </button>
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </Fragment>
+              </TableHeaderWrapper>
+            </thead>
+            <tbody className="divide-y divide-gray-200 text-gray-600">
+              <TableBodyWrapper
+                pageSize={pagination.pageSize}
+                columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 10 : table.getHeaderGroups()?.[0].headers.length}
+                isLoading={isLoading}
+                isEmpty={data.length === 0}
+              >
+                <Fragment>
+                  {table.getRowModel().rows.map((row) => (
+                    <tr key={row.id}>
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className={`${styles.first_child} whitespace-nowrap`}>
+                          <div className="w-full text-gray-100 inline-flex items-center px-4 py-4 rounded-full gap-x-2">
+                            {!isLoading && cell.column.id === 'severity' &&
+                              (cell.getValue() === 'Very High' ||
+                                cell.getValue() === 'High' ||
+                                cell.getValue() === 'Medium') && (
+                                <svg
+                                  width="14"
+                                  height="15"
+                                  viewBox="0 0 14 15"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
+                                    fill={
+                                      cell.getValue() === 'Very High'
+                                        ? '#dc2626' // Red for Very High
+                                        : cell.getValue() === 'High'
+                                          ? '#ea580c' // Orange for High
+                                          : cell.getValue() === 'Medium'
+                                            ? '#facc15' // Yellow for Medium
+                                            : ''
+                                    }
+                                  />
+                                </svg>
                               )}
-                            </button>
-                          </th>
-                        ))}
-                      </tr>
-                    ))}
-                  </Fragment>
-                </TableHeaderWrapper>
-              </thead>
-              <tbody className="divide-y divide-gray-200 text-gray-600">
-                <TableBodyWrapper
-                  pageSize={pagination.pageSize}
-                  columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 10 : table.getHeaderGroups()?.[0].headers.length}
-                  isLoading={isLoading}
-                >
-                  <Fragment>
-                    {table.getRowModel().rows.map((row) => (
-                      <tr key={row.id}>
-                        {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id} className={`${styles.first_child} whitespace-nowrap`}>
-                            <div className="w-full text-gray-100 inline-flex items-center px-4 py-4 rounded-full gap-x-2">
-                              {!isLoading && cell.column.id === 'severity' &&
-                                (cell.getValue() === 'Very High' ||
-                                  cell.getValue() === 'High' ||
-                                  cell.getValue() === 'Medium') && (
-                                  <svg
-                                    width="14"
-                                    height="15"
-                                    viewBox="0 0 14 15"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path
-                                      d="M2.6075 12.75H11.3925C12.2908 12.75 12.8508 11.7759 12.4017 11L8.00917 3.41085C7.56 2.63502 6.44 2.63502 5.99083 3.41085L1.59833 11C1.14917 11.7759 1.70917 12.75 2.6075 12.75ZM7 8.66669C6.67917 8.66669 6.41667 8.40419 6.41667 8.08335V6.91669C6.41667 6.59585 6.67917 6.33335 7 6.33335C7.32083 6.33335 7.58333 6.59585 7.58333 6.91669V8.08335C7.58333 8.40419 7.32083 8.66669 7 8.66669ZM7.58333 11H6.41667V9.83335H7.58333V11Z"
-                                      fill={
-                                        cell.getValue() === 'Very High'
-                                          ? '#dc2626' // Red for Very High
-                                          : cell.getValue() === 'High'
-                                            ? '#ea580c' // Orange for High
-                                            : cell.getValue() === 'Medium'
-                                              ? '#facc15' // Yellow for Medium
-                                              : ''
-                                      }
-                                    />
-                                  </svg>
-                                )}
-                              <CellValue
-                                cell={cell}
-                                rowIndex={row.index}
-                                highlights={highlights}
-                              />
-                            </div>
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </Fragment>
-                </TableBodyWrapper>
-              </tbody>
-            </table>
-          </TableWrapper>
+                            <CellValue
+                              cell={cell}
+                              rowIndex={row.index}
+                              highlights={highlights}
+                            />
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </Fragment>
+              </TableBodyWrapper>
+            </tbody>
+          </table>
         </div>
       </div>
       {data.length > 0 &&
