@@ -10,12 +10,7 @@ import {
   GetPieChartsOverview,
   GetTopFiveCritical,
   GetTopServicesOverview,
-  GetAmountGraphic,
-  GetAmountServiceList,
-  GetDataSourceLatestAnomaly
 } from '@/modules/usecases/overviews'
-import { GetMetricLogAnomalies } from '@/modules/usecases/anomaly-predictions'
-import { fetchServicesOption } from '@/lib/api'
 import { HealthScoreResponse, TopFiveLatestCritical, TopServicesResponse } from '@/modules/models/overviews'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import { SEVERITY_LABELS } from '@/constants'
@@ -35,11 +30,8 @@ import AutoRefreshButton from '../anomaly/button/refreshButton'
 
 import TooltipServiceCollection from './collection/tooltip-service-collection'
 import BRImoEndToEndPanel from './panels/brimo-end-to-end-panel'
-import LatestAnomalyPanel from './panels/latest-anomaly-panel'
-import AnomalyAmountPanel from './panels/anomaly-amount-panel'
-
-const ANOMALY_AMOUNT_TYPE = 'brimo'
-const ANOMALY_AMOUNT_METRIC_NAME = 'sum_amount'
+import LatestAnomalyPanel, { LatestAnomalyPanelHandle } from './panels/latest-anomaly-panel'
+import AnomalyAmountPanel, { AnomalyAmountPanelHandle } from './panels/anomaly-amount-panel'
 
 // Define your data
 const sourceData = [
@@ -109,7 +101,6 @@ const defaultTimeRanges: Record<string, number> = {
 }
 
 const MainPageOverview = () => {
-  const [amountServiceList, setAmountServiceList] = useState<string[]>([]);
   const [selectedDataSource, setSelectedDataSource] = useState<string>('')
   const [modalServices, setModalServices] = useState(false)
   const [tableMaxHeight, setTableMaxHeight] = useState(192)
@@ -117,7 +108,6 @@ const MainPageOverview = () => {
   const [topServicesData, setTopServicesData] = useState<TopServicesResponse | null>(null)
   const [healthScoreData, setHealthScoreData] = useState<HealthScoreResponse[]>([])
   const [topFiveCriticalData, setTopFiveCriticalData] = useState<TopFiveLatestCritical[]>([])
-  const [dataSourceLatestAnomalyData, setDataSourceLatestAnomalyData] = useState<string[]>([])
   const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
@@ -127,13 +117,14 @@ const MainPageOverview = () => {
   const [isLoadingTopServices, setIsLoadingTopServices] = useState(true)
   const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
   const [isLoadingTopFiveCritical, setIsLoadingTopFiveCritical] = useState(true)
-  const [isLoadingDataSourceLatestAnomaly, setIsLoadingDataSourceLatestAnomaly] = useState(false)
   const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
   const [isErrorTopFiveCritical, setIsErrorTopFiveCritical] = useState(false)
-  const [isErrorDataSourceLatestAnomaly, setIsErrorDataSourceLatestAnomaly] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
+  const latestAnomalyRef = useRef<LatestAnomalyPanelHandle>(null)
+  const anomalyAmountRef = useRef<AnomalyAmountPanelHandle>(null)
   const healthinessRef = useRef<HTMLDivElement>(null)
+
   const thSeverity = ['Severity', 'Count']
   const configDataKey = ['service_name', 'very_high', 'high', 'medium']
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
@@ -331,11 +322,12 @@ const MainPageOverview = () => {
 
   const refreshData = async () => {
     const { startTime, endTime } = handleStartEnd(selectedRange);
+    latestAnomalyRef.current?.refresh(selectedRange)
+    anomalyAmountRef.current?.refresh(selectedRange)
     setIsLoadingHealthScore(true);
     setIsLoadingPieChart(true);
     setIsLoadingTopServices(true);
     setIsLoadingTopFiveCritical(true);
-    setIsLoadingDataSourceLatestAnomaly(true);
     setIsLoadingGraphic(true); // Add loading state for the chart
 
     const paramsTime = { start_time: startTime, end_time: endTime };
@@ -350,20 +342,12 @@ const MainPageOverview = () => {
         topServicesRes,
         healthScoreRes,
         topFiveCriticalRes,
-        amountServiceListRes,
-        dataSourceLatestAnomalyRes,
         chartRes // Add chart response to the array
       ] = await Promise.all([
         GetPieChartsOverview(params),
         GetTopServicesOverview(params),
         GetHealthScoreOverview(paramsTime),
         GetTopFiveCritical(paramsTime),
-        GetAmountServiceList(),
-        GetDataSourceLatestAnomaly(),
-        fetchServicesOption({
-          ...paramsTime,
-          type: ANOMALY_AMOUNT_TYPE,
-        }),
         GetChartsOverview(paramsTime), // Fetch chart data
       ]);
 
@@ -373,13 +357,10 @@ const MainPageOverview = () => {
       if (healthScoreRes.data == null) throw Error("Empty response data");
       setHealthScoreData(healthScoreRes.data);
       setTopFiveCriticalData(topFiveCriticalRes.data ?? []);
-      setAmountServiceList(amountServiceListRes.data);
-      setDataSourceLatestAnomalyData(dataSourceLatestAnomalyRes.data ?? []);
 
       // Reset error states
       setIsErrorHealthScore(false);
       setIsErrorTopFiveCritical(false);
-      setIsErrorDataSourceLatestAnomaly(false);
 
     } catch (error) {
       console.error('Error occurred:', error);
@@ -389,14 +370,11 @@ const MainPageOverview = () => {
       setTopServicesData(null);
       setHealthScoreData([]);
       setTopFiveCriticalData([]);
-      setAmountServiceList(['']);
-      setDataSourceLatestAnomalyData([]);
       setChartData([]); // Handle error for chart data
 
       // Set error states
       setIsErrorHealthScore(true);
       setIsErrorTopFiveCritical(true);
-      setIsErrorDataSourceLatestAnomaly(true);
 
     } finally {
       // Always reset loading states after completion
@@ -404,7 +382,6 @@ const MainPageOverview = () => {
       setIsLoadingPieChart(false);
       setIsLoadingTopServices(false);
       setIsLoadingTopFiveCritical(false);
-      setIsLoadingDataSourceLatestAnomaly(false);
       setIsLoadingGraphic(false); // Reset loading state for the chart
     }
   };
@@ -433,7 +410,7 @@ const MainPageOverview = () => {
         clearInterval(intervalId);
       }
     };
-  }, [autoRefresh, refreshInterval, selectedRange, selectedDataSource, amountServiceList]);
+  }, [autoRefresh, refreshInterval, selectedRange, selectedDataSource]);
 
   useEffect(() => {
     const { startTime, endTime } = handleStartEnd(selectedRange);
@@ -644,6 +621,7 @@ const MainPageOverview = () => {
             </div>
 
             <LatestAnomalyPanel
+              ref={latestAnomalyRef}
               timeRange={selectedRange}
               isFullscreen={handle.active}
             />
@@ -669,6 +647,7 @@ const MainPageOverview = () => {
             </GraphWrapper>
 
             <AnomalyAmountPanel
+              ref={anomalyAmountRef}
               timeRange={selectedRange}
               isFullscreen={handle.active}
             />

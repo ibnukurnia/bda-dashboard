@@ -1,5 +1,5 @@
 import { Typography } from '@mui/material'
-import { Fragment, useEffect, useState } from 'react';
+import { forwardRef, Fragment, useEffect, useImperativeHandle, useState } from 'react';
 import { Cell, ColumnDef, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { GetLatestCritical } from '@/modules/usecases/overviews';
 import { format } from 'date-fns';
@@ -118,11 +118,15 @@ interface TableCriticalAnomalyProps {
   severity: { value: any; id: number; label: string }[]
 }
 
-const TableCriticalAnomaly = ({
+export interface TableCriticalAnomalyHandle {
+  refresh: (timeRange: string) => void
+}
+
+const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCriticalAnomalyProps>(({
   timeRange,
   dataSource,
   severity,
-}: TableCriticalAnomalyProps) => {
+}, ref) => {
   const [isLoadingHeader, setIsLoadingHeader] = useState(true)
   const [isTableLoading, setIsTableLoading] = useState(true)
   const [data, setData] = useState<any>([])
@@ -133,6 +137,14 @@ const TableCriticalAnomaly = ({
   })
   const [totalRows, setTotalRows] = useState<number>(1)
   const [pauseEffectPagination, setPauseEffectPagination] = useState(false)
+
+  // Use useImperativeHandle to expose the custom method
+  useImperativeHandle(ref, () => ({
+    refresh(timeRange) {
+      setIsTableLoading(true)
+      fetchData(pagination.pageIndex, timeRange)
+    },
+  }));
 
   const table = useReactTable({
     data,
@@ -166,9 +178,10 @@ const TableCriticalAnomaly = ({
   }, [pagination])
 
   function fetchData(
-    page?: number
+    page?: number,
+    customTimeRange?: string
   ) {
-    const { startTime, endTime } = handleStartEnd(timeRange)
+    const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange)
 
     GetLatestCritical({
       start_time: startTime,
@@ -341,6 +354,6 @@ const TableCriticalAnomaly = ({
       }
     </div>
   )
-}
+})
 
 export default TableCriticalAnomaly

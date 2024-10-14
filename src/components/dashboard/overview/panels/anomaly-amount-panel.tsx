@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import DropdownAnomalyAmountService from '../button/dropdown-anomaly-amount-service'
 import AnomalyAmountWrapper from '../wrapper/anomaly-amount-wrapper'
 import AnomalyAmountChart from '../chart/anomaly-amount-chart'
 import { format } from 'date-fns'
-import useDebounce from '@/hooks/use-debounce'
-import { GetAmountGraphic, GetAmountServiceList } from '@/modules/usecases/overviews'
+import { GetAmountGraphic } from '@/modules/usecases/overviews'
 import { AnomalyAmountResponse } from '@/modules/models/overviews'
 
 const toMiliseconds = 1000 * 60
@@ -40,31 +39,47 @@ interface AnomalyAmountPanelProps {
   isFullscreen: boolean
 }
 
-const AnomalyAmountPanel = ({
+// Define the exposed methods type
+export interface AnomalyAmountPanelHandle {
+  refresh: (timeRange: string) => void
+}
+
+const AnomalyAmountPanel = forwardRef<AnomalyAmountPanelHandle, AnomalyAmountPanelProps>(({
   timeRange,
   isFullscreen,
-}: AnomalyAmountPanelProps) => {
+}, ref) => {
   const [selectedAnomalyAmountService, setSelectedAnomalyAmountService] = useState<string[]>([])
   const [anomalyAmountData, setAnomalyAmountData] = useState<AnomalyAmountResponse[] | null>([])
 
   const [isLoadingAnomalyAmount, setIsLoadingAnomalyAmount] = useState(true)
 
+  // Use useImperativeHandle to expose the custom method
+  useImperativeHandle(ref, () => ({
+    refresh(timeRange) {
+      fetchData(timeRange)
+    },
+  }));
+
   // Get start and end times from selected range for passing to DynamicUpdatingChart
   const { startTime, endTime } = handleStartEnd(timeRange)
 
   useEffect(() => {
+    fetchData()
+  }, [timeRange, selectedAnomalyAmountService]); // This effect runs when the service list or selected service changes
+
+  function fetchData(customTimeRange?: string) {
     if (selectedAnomalyAmountService.length === 0) return
-    
+
+    setIsLoadingAnomalyAmount(true);
+
     // Ensure that amountServiceList is available and contains data before making the API call
-    const { startTime, endTime } = handleStartEnd(timeRange);
+    const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange);
 
     const paramsAmount = {
       start_time: startTime,
       end_time: endTime,
       service_name: selectedAnomalyAmountService
     };
-
-    setIsLoadingAnomalyAmount(true);
 
     GetAmountGraphic(paramsAmount)
       .then((res) => {
@@ -77,7 +92,7 @@ const AnomalyAmountPanel = ({
       .finally(() => {
         setIsLoadingAnomalyAmount(false);
       });
-  }, [timeRange, selectedAnomalyAmountService]); // This effect runs when the service list or selected service changes
+  }
 
   return (
     <div className='card flex flex-col gap-6'>
@@ -98,6 +113,6 @@ const AnomalyAmountPanel = ({
       </AnomalyAmountWrapper>
     </div>
   )
-}
+})
 
 export default AnomalyAmountPanel
