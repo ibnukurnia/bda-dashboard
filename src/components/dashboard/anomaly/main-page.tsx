@@ -14,16 +14,7 @@ const MainPageAnomaly = () => {
 
   const logs = ['Log APM', 'Log Brimo']; // Example logs
   const [selectedLog, setSelectedLog] = useState(logs[0]);
-  const [selectedUtilization, setSelectedUtilization] = useState('');
-  const [selectedSecurity, setSelectedSecurity] = useState('');
   const [activeTab, setActiveTab] = useState('');
-  const [isDropdownOpenLog, setIsDropdownOpenLog] = useState(false);
-  const [isDropdownOpenUtilization, setIsDropdownOpenUtilization] = useState(false);
-  const [isDropdownOpenSecurity, setIsDropdownOpenSecurity] = useState(false);
-  // Explicitly type the refs
-  const dropdownRefLog = useRef<HTMLDivElement | null>(null);
-  const dropdownRefUtilization = useRef<HTMLDivElement | null>(null);
-  const dropdownRefSecurity = useRef<HTMLDivElement | null>(null);
   const searchParams = useSearchParams()
   const dataSource = searchParams.get("data_source") ?? DEFAULT_DATA_SOURCE_NAMESPACE
   const timeRange = searchParams.get("time_range") ?? DEFAULT_TIME_RANGE
@@ -35,25 +26,6 @@ const MainPageAnomaly = () => {
     }
   }, []);
 
-  // Handle outside click to close the dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRefLog.current && !dropdownRefLog.current.contains(event.target as Node)) {
-        setIsDropdownOpenLog(false);
-      }
-      if (dropdownRefUtilization.current && !dropdownRefUtilization.current.contains(event.target as Node)) {
-        setIsDropdownOpenUtilization(false);
-      }
-      if (dropdownRefSecurity.current && !dropdownRefSecurity.current.contains(event.target as Node)) {
-        setIsDropdownOpenSecurity(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
 
   return (

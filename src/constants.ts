@@ -43,8 +43,11 @@ export const TAB_DATA_SOURCE = [
       {
         textLabel: "Solar Winds",
         namespace: "solarwinds"
+      },
+      {
+        textLabel: "DNS",
+        namespace: "dns_rt"
       }
-
     ]
   },
   {

@@ -36,11 +36,11 @@ const TabContent: React.FC<TabContentProps> = ({
 }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
-
     const selectedAnomalyOptions = searchParams.getAll("anomaly")
     const selectedClustersOptions = searchParams.getAll("cluster")
     const selectedServicesOptions = searchParams.getAll("service")
     const selectedSeverityOptions = searchParams.getAll("severity").map(Number);
+    const selectedOperationOptions = searchParams.get("operation");
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
@@ -72,36 +72,48 @@ const TabContent: React.FC<TabContentProps> = ({
     })
     const handle = useFullScreenHandle();
 
-    // Helper function to calculate startTime and endTime
+
     const getTimeRange = (timeRange: string = selectedTimeRange) => {
-        let startTime: string
-        let endTime: string
+        if (!PREDEFINED_TIME_RANGES[timeRange]) {
+            throw new Error(`Invalid time range: ${timeRange}`);
+        }
+
+        let startTime: string;
+        let endTime: string;
+
+        console.log(`Time Range passed: ${timeRange}`);
+
+        if (!timeRange || typeof timeRange !== 'string') {
+            throw new Error(`Invalid timeRange passed: ${timeRange}`);
+        }
 
         if (timeRange.includes(' - ')) {
-            // Handle custom range
             const [start, end] = timeRange.split(' - ');
+            if (!start || !end) {
+                throw new Error(`Invalid custom range: ${timeRange}`);
+            }
             startTime = start;
             endTime = end;
         } else {
-            // Handle predefined ranges
-            const selectedTimeRange = PREDEFINED_TIME_RANGES[timeRange]; // Get the selected time range in minutes
+            const predefinedRange = PREDEFINED_TIME_RANGES[timeRange];
+            if (!predefinedRange) {
+                throw new Error(`Predefined time range not found for: ${timeRange}`);
+            }
 
-            // Calculate endDate as the current time, rounding down the seconds to 00
-            const endDateObj = new Date();
-            endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
+            const endDate = new Date();
+            endDate.setSeconds(0, 0);
+            const startDate = new Date(endDate.getTime() - predefinedRange * 60000);
 
-            // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
-            const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
-
-            // Convert startDate and endDate to strings
-            startTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
-            endTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
+            startTime = format(startDate, 'yyyy-MM-dd HH:mm:ss');
+            endTime = format(endDate, 'yyyy-MM-dd HH:mm:ss');
         }
 
         return { startTime, endTime };
     };
 
+
     const handleRangeChange = async (rangeKey: string) => {
+
         // Update the selected range state
         const params = new URLSearchParams(searchParams.toString());
         params.set('time_range', rangeKey);
@@ -111,6 +123,7 @@ const TabContent: React.FC<TabContentProps> = ({
         const filterClusters = selectedClustersOptions.length > 0 ? selectedClustersOptions : [];
         const filterServices = selectedServicesOptions.length > 0 ? selectedServicesOptions : [];
         const filterSeverities = selectedSeverityOptions.length > 0 ? selectedSeverityOptions : []; // These are now numbers
+        // const filterOperation = selectedOpe
 
         loadClusterFilterOptions();
         loadServicesFilterOptions();
@@ -130,6 +143,7 @@ const TabContent: React.FC<TabContentProps> = ({
             filterClusters,
             filterServices,
             filterSeverities,
+            rangeKey
         );
     };
 
@@ -213,23 +227,34 @@ const TabContent: React.FC<TabContentProps> = ({
         clusterOptions?: string[],
         serviceOptions?: string[],
         severityOptions?: number[],
+        timeRange?: string, // Ensure this is a valid timeRange
+        selectedOperation?: string // Add the selectedOperation parameter here
     ) => {
-        setIsTableLoading(true)
+        setIsTableLoading(true);
+        console.log(selectedOperation, "iqwjdqidqokodk")
 
-        // Use passed startTime and endTime, or default to helper function values
-        const { startTime, endTime } = getTimeRange();
+        // Ensure that timeRange is correctly passed, fallback to selectedTimeRange if invalid
+        const validTimeRange = PREDEFINED_TIME_RANGES[timeRange as keyof typeof PREDEFINED_TIME_RANGES]
+            ? timeRange
+            : selectedTimeRange; // fallback to selectedTimeRange if an invalid timeRange is passed
 
-        // Start the API call with either the passed or default start/end time values
+        // Now pass the validTimeRange to getTimeRange
+        const { startTime, endTime } = getTimeRange(validTimeRange);
+
+        console.log(startTime, endTime, "ini");
+
+        // Pass the selectedOperation to the API call
         const logAnomaliesPromise = GetHistoricalLogAnomalies(
             logType,
             limit,
             page,
-            anomalyOptions ?? selectedAnomalyOptions,      // Pass anomaly filter options
-            clusterOptions ?? selectedClustersOptions,      // Pass cluster filter options
-            serviceOptions ?? selectedServicesOptions,      // Pass service filter options
+            anomalyOptions ?? selectedAnomalyOptions,
+            clusterOptions ?? selectedClustersOptions,
+            serviceOptions ?? selectedServicesOptions,
             severityOptions ?? selectedSeverityOptions,
-            startTime,      // Use finalStartTime (either passed or default)
-            endTime         // Use finalEndTime (either passed or default)
+            startTime,
+            endTime,
+            selectedOperation as string// Pass the selectedOperation to the API call
         );
 
         // Handle the result of the API call
@@ -260,7 +285,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
                     // Update the table data
                     setData(newData);
-                    setHighlights(highlights)
+                    setHighlights(highlights);
 
                     setLastRefreshTime(new Date());
                 } else {
@@ -271,8 +296,8 @@ const TabContent: React.FC<TabContentProps> = ({
                 handleApiError(error);
             })
             .finally(() => {
-                setIsTableHeaderLoading(false)
-                setIsTableLoading(false)
+                setIsTableHeaderLoading(false);
+                setIsTableLoading(false);
             });
     };
 
@@ -389,9 +414,10 @@ const TabContent: React.FC<TabContentProps> = ({
             selectedSeverities: number[]
             selectedClusters: ClusterOptionResponse[];
             selectedServices: string[];
+            selectedOperation: string
         }) => {
-        const { selectedAnomalies, selectedServices, selectedSeverities, selectedClusters } = filters;
-
+        const { selectedAnomalies, selectedServices, selectedSeverities, selectedClusters, selectedOperation } = filters;
+        console.log(selectedOperation)
         // Update the state with the selected options
         const params = new URLSearchParams(searchParams.toString());
 
@@ -407,6 +433,10 @@ const TabContent: React.FC<TabContentProps> = ({
         params.delete("service")
         selectedServices.forEach(service => params.append("service", service))
         // Clear old severity params
+
+        // Add selected operation (OR/AND) to the URL or use it in logic as needed
+        params.delete("operation");
+        params.append("operation", selectedOperation);
 
         router.replace(`/dashboard/anomaly-detection?${params.toString()}`);
 
@@ -425,6 +455,7 @@ const TabContent: React.FC<TabContentProps> = ({
             selectedClusters.map(cluster => cluster.name),
             selectedServices,
             selectedSeverities,
+            selectedOperation
         )
     };
 

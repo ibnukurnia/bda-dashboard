@@ -207,7 +207,7 @@ const TableHistoricalAnomaly = ({
                   </Fragment>
                 </TableHeaderWrapper>
               </thead>
-              <tbody className="divide-y divide-gray-200 text-gray-600">
+              <tbody className="divide-y divide-gray-200 text-gray-600 text-center">
                 <TableBodyWrapper
                   pageSize={pagination.pageSize}
                   columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 10 : table.getHeaderGroups()?.[0].headers.length}
@@ -217,8 +217,8 @@ const TableHistoricalAnomaly = ({
                     {table.getRowModel().rows.map((row) => (
                       <tr key={row.id}>
                         {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id} className={`${styles.first_child} whitespace-nowrap`}>
-                            <div className="text-gray-100 inline-flex items-center px-4 py-4 rounded-full gap-x-2">
+                          <td key={cell.id} className={`${styles.first_child} whitespace-nowrap `}>
+                            <div className="text-center text-gray-100 inline-flex items-center px-4 py-4 rounded-full gap-x-2">
                               {!isLoading && cell.column.id === 'severity' &&
                                 (cell.getValue() === 'Very High' ||
                                   cell.getValue() === 'High' ||

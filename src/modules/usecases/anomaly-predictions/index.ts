@@ -19,7 +19,8 @@ const GetHistoricalLogAnomalies = async (
   filterServices: string[],
   filterSeverities: number[],
   start_time: string,
-  end_time: string
+  end_time: string,
+  selectedOperation: string // Add selectedOperation as a new parameter
 ) => {
   let endPoint = `anomaly-predictions?type=${type}&limit=${limit}&page=${page}&start_time=${start_time}&end_time=${end_time}`
 
@@ -39,12 +40,16 @@ const GetHistoricalLogAnomalies = async (
     endPoint += `&severity=${f}`
   })
 
+  // Append the selectedOperation to the API endpoint
+  endPoint += `&operation=${selectedOperation}`;
+
   const response: ApiResponse<PaginatedResponse> = await get(endPoint, {
     withAuth: true,
   })
 
   return response
 }
+
 
 const GetMetricLogAnomalies = async (payload: { type: string, start_time: string, end_time: string, cluster: string[], service_name: string | null, metric_name: string[] }, signal?: AbortSignal) => {
   let endPoint = `anomaly-predictions/metrics-per-service`

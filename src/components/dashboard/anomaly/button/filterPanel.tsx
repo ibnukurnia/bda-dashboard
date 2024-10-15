@@ -23,8 +23,9 @@ interface FilterPanelProps {
         filters: {
             selectedAnomalies: string[],
             selectedSeverities: number[],
-            selectedClusters: ClusterOptionResponse[]
-            selectedServices: string[]
+            selectedClusters: ClusterOptionResponse[],
+            selectedServices: string[],
+            selectedOperation: string
         }
     ) => void;
     onResetFilters: () => void;
@@ -47,7 +48,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     hasErrorFilterSeverity
 }) => {
     const searchParams = useSearchParams();
-
+    const [selectedOperation, setSelectedOperation] = useState<string>('OR'); // default to 'OR'
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
@@ -86,6 +87,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         );
     };
 
+    const handleOperationChange = (operation: string) => {
+        setSelectedOperation(operation);
+    };
+
     const handleClusterChange = (value: ClusterOptionResponse) => {
         setSelectedClusterOptions((prev) =>
             prev.includes(value) ? prev.filter((option) => option.name !== value.name) : [...prev, value]
@@ -104,7 +109,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             selectedSeverities: selectedSeverityOptions,
             selectedClusters: selectedClusterOptions,
             selectedServices: selectedServiceOptions,
+            selectedOperation: selectedOperation
         });
+        console.log(selectedOperation)
         setIsOpen(false); // Close the panel after applying filters
     };
 
@@ -211,7 +218,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     const gridCount = 2 + (clusterOptions ? 1 : 0) + (servicesOptions ? 1 : 0);
 
     return (
-        <div className="flex self-start z-50">
+        <div className="flex self-start z-99999">
             <button
                 className="font-medium rounded-lg text-sm py-3 ps-4 pe-9 text-white text-center bg-blue-700 hover:bg-blue-800 inline-flex items-center gap-2"
                 onClick={togglePanel}
@@ -243,45 +250,84 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
                         {/* Responsive Grid Section */}
                         <div className={`grid gap-4 w-full`} style={{ gridTemplateColumns: `repeat(${gridCount}, 1fr)` }}>
-                            {/* Anomaly Section */}
-                            <div className="flex flex-col gap-3">
-                                <div className="flex flex-col gap-2">
-                                    <h3 className="font-semibold text-lg">Anomaly</h3>
-                                    <p className="text-sm text-gray-600">
-                                        Selected Anomalies: <span className="text-blue-600">{selectedAnomalyOptions.length}</span>
-                                    </p>
-                                    <button
-                                        onClick={handleSelectAllAnomalies}
-                                        className="text-blue-500 text-sm text-left "
-                                        disabled={selectedSeverityOptions.length > 0}
-                                    >
-                                        {selectedAnomalyOptions.length === checkboxOptions.length ? 'Unselect All' : 'Select All'}
-                                    </button>
+
+                            <div className='flex flex-col gap-3'> {/* Anomaly Section */}
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="font-semibold text-lg">Anomaly</h3>
+                                        <p className="text-sm text-gray-600">
+                                            Selected Anomalies: <span className="text-blue-600">{selectedAnomalyOptions.length}</span>
+                                        </p>
+                                        <button
+                                            onClick={handleSelectAllAnomalies}
+                                            className="text-blue-500 text-sm text-left "
+                                            disabled={selectedSeverityOptions.length > 0}
+                                        >
+                                            {selectedAnomalyOptions.length === checkboxOptions.length ? 'Unselect All' : 'Select All'}
+                                        </button>
+                                    </div>
+                                    <div className="overflow-y-auto max-h-36">
+                                        {hasErrorFilterAnomaly ? (
+                                            <p className="text-red-500 whitespace-break-spaces">An error occurred. Please try again later.</p>
+                                        ) : checkboxOptions.length > 0 ? (
+                                            checkboxOptions.map((option) => (
+                                                <label key={option.id} className="flex items-center justify-between mb-1">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            value={option.id}
+                                                            checked={selectedAnomalyOptions.includes(option.id)}
+                                                            onChange={() => handleAnomalyChange(option.id)}
+                                                            className="mr-2"
+                                                            disabled={selectedSeverityOptions.length > 0}
+                                                        />
+                                                        {option.label}
+                                                    </div>
+                                                </label>
+                                            ))
+                                        ) : (
+                                            <p>No options available</p>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="overflow-y-auto max-h-48">
-                                    {hasErrorFilterAnomaly ? (
-                                        <p className="text-red-500 whitespace-break-spaces">An error occurred. Please try again later.</p>
-                                    ) : checkboxOptions.length > 0 ? (
-                                        checkboxOptions.map((option) => (
-                                            <label key={option.id} className="flex items-center justify-between mb-1">
-                                                <div className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        value={option.id}
-                                                        checked={selectedAnomalyOptions.includes(option.id)}
-                                                        onChange={() => handleAnomalyChange(option.id)}
-                                                        className="mr-2"
-                                                        disabled={selectedSeverityOptions.length > 0}
-                                                    />
-                                                    {option.label}
-                                                </div>
-                                            </label>
-                                        ))
-                                    ) : (
-                                        <p>No options available</p>
-                                    )}
+
+                                {/* Operation Section */}
+                                <div className="flex flex-col gap-3 mt-6">
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="font-semibold text-lg">Operation</h3>
+                                        <p className="text-sm text-gray-600">
+                                            Select an operation type
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <label className="flex items-center justify-between mb-1">
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    value="OR"
+                                                    checked={selectedOperation === 'OR'} // Handle state for selected operation
+                                                    onChange={() => handleOperationChange('OR')} // Update operation change handler
+                                                    className="mr-2"
+                                                />
+                                                OR
+                                            </div>
+                                        </label>
+                                        <label className="flex items-center justify-between mb-1">
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    value="AND"
+                                                    checked={selectedOperation === 'AND'} // Handle state for selected operation
+                                                    onChange={() => handleOperationChange('AND')} // Update operation change handler
+                                                    className="mr-2"
+                                                />
+                                                AND
+                                            </div>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
+
 
                             {/* Severity Section */}
                             <div className="flex flex-col gap-3">
@@ -298,7 +344,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                         {selectedSeverityOptions.length === severityOptions.length ? 'Unselect All' : 'Select All'}
                                     </button>
                                 </div>
-                                <div className="overflow-y-auto max-h-48">
+                                <div className="overflow-y-auto max-h-40">
                                     {hasErrorFilterAnomaly ? (
                                         <p className="text-red-500 whitespace-break-spaces">An error occurred. Please try again later.</p>
                                     ) : severityOptions.length > 0 ? (
@@ -337,7 +383,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     </div>
 
                                     <div className='flex flex-col gap-2'>
-                                        <div className="overflow-y-auto max-h-48">
+                                        <div className="overflow-y-auto max-h-40">
                                             {hasErrorFilterCluster ? (
                                                 <p className="text-red-500">
                                                     An error occurred while fetching cluster. Please try again later.
@@ -393,7 +439,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     />
 
                                     {/* Services with filtered results */}
-                                    <div className="overflow-y-auto max-h-48">
+                                    <div className="overflow-y-auto max-h-40">
                                         {hasErrorFilterService ? (
                                             <p className="text-red-500 whitespace-nowrap">An error occurred while fetching services. Please try again later.</p>
                                         ) : filteredServicesOptions.length > 0 ? (
