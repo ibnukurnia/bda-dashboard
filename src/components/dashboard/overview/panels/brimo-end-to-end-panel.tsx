@@ -2,10 +2,11 @@ import { Typography } from '@mui/material'
 import styles from './brimo-end-to-end-panel.module.css'
 import HealthinessTreeWrapper from '../wrapper/healthiness-tree-wrapper'
 import HealthinessTree from './healthiness-tree'
-import { useEffect, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import { HealthScoreResponse } from '@/modules/models/overviews'
-import { formatNumberWithCommas } from '@/helper'
+import { formatNumberWithCommas, handleStartEnd } from '@/helper'
 import Skeleton from '@/components/system/Skeleton/Skeleton'
+import { GetHealthScoreOverview } from '@/modules/usecases/overviews'
 
 const healthinessLegend = [
   {
@@ -23,24 +24,54 @@ const healthinessLegend = [
 ]
 
 interface BRImoEndToEndPanelProps {
-  data: HealthScoreResponse[]
-  isLoading: boolean
-  isError: boolean
+  timeRange: string
 }
 
-const BRImoEndToEndPanel = ({
-  data,
-  isLoading,
-  isError,
-}: BRImoEndToEndPanelProps) => {
+export interface BRImoEndToEndPanelHandle {
+  refresh: (timeRange: string) => void
+}
+
+const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPanelProps>(({
+  timeRange,
+}, ref) => {
+  const [data, setData] = useState<HealthScoreResponse[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isError, setIsError] = useState(false)
   const [detectAbuseAnomaly, setDetectAbuseAnomaly] = useState(false)
   const [totalBrimoHealth, setTotalBrimoHealth] = useState(100)
 
+  // Use useImperativeHandle to expose the custom method
+  useImperativeHandle(ref, () => ({
+    refresh(timeRange) {
+      setIsLoading(true)
+      fetchData(timeRange)
+    },
+  }));
+
   useEffect(() => {
-    if (!data) return
-    let totalScore = data.reduce((total, d) => total + d.score, 0)
-    setTotalBrimoHealth(totalScore / data.length)
-  }, [data])
+    setIsLoading(true)
+    fetchData()
+  }, [timeRange])
+
+  function fetchData(customTimeRange?: string) {
+    const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange);
+    const paramsTime = { start_time: startTime, end_time: endTime };
+
+    GetHealthScoreOverview(paramsTime)
+      .then((res) => {
+        if (res.data == null) throw Error("Empty response data")
+        let totalScore = data.reduce((total, d) => total + d.score, 0)
+        setTotalBrimoHealth(totalScore / data.length)
+        setData(res.data)
+        setIsError(false)
+      })
+      .catch(_ => {
+        setIsError(true)
+      })
+      .finally(() => {
+        setIsLoading(false);
+      })
+  }
 
   return (
     <div className="flex flex-col gap-8 card relative">
@@ -145,8 +176,7 @@ const BRImoEndToEndPanel = ({
         />
       </HealthinessTreeWrapper>
     </div>
-
   )
-}
+})
 
 export default BRImoEndToEndPanel

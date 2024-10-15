@@ -6,9 +6,7 @@ import { format } from 'date-fns'
 import { Maximize } from 'react-feather'
 import {
   GetChartsOverview,
-  GetHealthScoreOverview,
 } from '@/modules/usecases/overviews'
-import { HealthScoreResponse } from '@/modules/models/overviews'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import Button from '@/components/system/Button/Button'
 import DropdownTime from './button/dropdown-time'
@@ -16,7 +14,7 @@ import DynamicUpdatingChart from './chart/dynamic-updating-chart'
 import GraphWrapper from './wrapper/graph-wrapper'
 import AutoRefreshButton from '../anomaly/button/refreshButton'
 
-import BRImoEndToEndPanel from './panels/brimo-end-to-end-panel'
+import BRImoEndToEndPanel, { BRImoEndToEndPanelHandle } from './panels/brimo-end-to-end-panel'
 import LatestAnomalyPanel, { LatestAnomalyPanelHandle } from './panels/latest-anomaly-panel'
 import AnomalyAmountPanel, { AnomalyAmountPanelHandle } from './panels/anomaly-amount-panel'
 import TopCriticalPanel, { TopCriticalPanelHandle } from './panels/top-critical-panel'
@@ -34,18 +32,14 @@ const defaultTimeRanges: Record<string, number> = {
 }
 
 const MainPageOverview = () => {
-  const [modalServices, setModalServices] = useState(false)
   const [tableServiceMaxHeight, setTableServiceMaxHeight] = useState(192)
-  const [healthScoreData, setHealthScoreData] = useState<HealthScoreResponse[]>([])
-  const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
   const [chartData, setChartData] = useState<any[]>([])
   const [isLoadingGraphic, setIsLoadingGraphic] = useState(true)
-  const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
-  const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
+  const brimoEndToEndRef = useRef<BRImoEndToEndPanelHandle>(null)
   const anomalyOverviewRef = useRef<AnomalyOverviewPanelHandle>(null)
   const topCriticalRef = useRef<TopCriticalPanelHandle>(null)
   const latestAnomalyRef = useRef<LatestAnomalyPanelHandle>(null)
@@ -92,24 +86,9 @@ const MainPageOverview = () => {
     };
 
     setSelectedRange(time);
-    setIsLoadingHealthScore(true);
     setIsLoadingGraphic(true)
 
     const paramsTime = { start_time: startTime, end_time: endTime };
-
-    // Fetch Health Score Data
-    GetHealthScoreOverview(paramsTime)
-      .then((res) => {
-        if (res.data == null) throw Error("Empty response data")
-        setHealthScoreData(res.data);
-        setIsErrorHealthScore(false);
-      })
-      .catch(() => {
-        setIsErrorHealthScore(true);
-      })
-      .finally(() => {
-        setIsLoadingHealthScore(false);
-      })
 
     // Fetch Chart Data (Updated part) (if custom need to re-render the chart)
     GetChartsOverview(paramsTime)
@@ -145,44 +124,30 @@ const MainPageOverview = () => {
 
   const refreshData = async () => {
     const { startTime, endTime } = handleStartEnd(selectedRange);
+    brimoEndToEndRef.current?.refresh(selectedRange)
     anomalyOverviewRef.current?.refresh(selectedRange)
     topCriticalRef.current?.refresh(selectedRange)
     latestAnomalyRef.current?.refresh(selectedRange)
     anomalyAmountRef.current?.refresh(selectedRange)
-    setIsLoadingHealthScore(true);
     setIsLoadingGraphic(true); // Add loading state for the chart
 
     const paramsTime = { start_time: startTime, end_time: endTime };
 
     try {
       const [
-        healthScoreRes,
         chartRes // Add chart response to the array
       ] = await Promise.all([
-        GetHealthScoreOverview(paramsTime),
         GetChartsOverview(paramsTime), // Fetch chart data
       ]);
-
-      // Handle results after all calls complete
-      if (healthScoreRes.data == null) throw Error("Empty response data");
-      setHealthScoreData(healthScoreRes.data);
-
-      // Reset error states
-      setIsErrorHealthScore(false);
 
     } catch (error) {
       console.error('Error occurred:', error);
 
       // Handle errors for each call as needed
-      setHealthScoreData([]);
       setChartData([]); // Handle error for chart data
-
-      // Set error states
-      setIsErrorHealthScore(true);
 
     } finally {
       // Always reset loading states after completion
-      setIsLoadingHealthScore(false);
       setIsLoadingGraphic(false); // Reset loading state for the chart
     }
   };
@@ -215,24 +180,7 @@ const MainPageOverview = () => {
 
   useEffect(() => {
     const { startTime, endTime } = handleStartEnd(selectedRange);
-
-
-    setIsLoadingHealthScore(true)
-
     const paramsTime = { start_time: startTime, end_time: endTime }
-
-    GetHealthScoreOverview(paramsTime)
-      .then((res) => {
-        if (res.data == null) throw Error("Empty response data")
-        setHealthScoreData(res.data)
-        setIsErrorHealthScore(false);
-      })
-      .catch(() => {
-        setIsErrorHealthScore(true)
-      })
-      .finally(() => {
-        setIsLoadingHealthScore(false);
-      })
 
     GetChartsOverview(paramsTime)
       .then((res) => {
@@ -243,30 +191,12 @@ const MainPageOverview = () => {
         setChartData([]);
         setIsLoadingGraphic(false);
       });
-      
+
     window.addEventListener('resize', handleTableServiceHeight);
     return () => {
       window.removeEventListener('resize', handleTableServiceHeight);
     }
   }, [])
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
-        setModalServices(false) // Close the panel when clicking outside of it
-      }
-    }
-
-    if (modalServices) {
-      document.addEventListener('mousedown', handleClickOutside)
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [modalServices])
 
   useLayoutEffect(() => {
     handleTableServiceHeight()
@@ -312,9 +242,8 @@ const MainPageOverview = () => {
         <div className="flex flex-row">
           <div className="flex-1 grid gap-8">
             <BRImoEndToEndPanel
-              data={healthScoreData}
-              isLoading={isLoadingHealthScore}
-              isError={isErrorHealthScore}
+              ref={brimoEndToEndRef}
+              timeRange={autoRefresh ? selectedRange : `${startTime} - ${endTime}`}
             />
             <div className="grid 2xl:grid-cols-2 grid-cols-1 gap-8">
               <AnomalyOverviewPanel

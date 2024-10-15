@@ -23,8 +23,6 @@ interface TableServicesProps {
   selectedDataSource: string;
   queryParams?: {
     time_range?: string;
-    start_time?: string;
-    end_time?: string;
   };
 }
 
@@ -115,9 +113,10 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
 export default TableServices;
 
 function escapeAndRemoveSpaces(stringToEscape: string) {
-  return stringToEscape.replace(/[\(\)\s]/g, match => {
+  return stringToEscape.replace(/[\(\)\s\.]/g, match => {
     if (match === '(') return '';
     if (match === ')') return '';
+    if (match === '.') return '_';
     return ''; // remove spaces
   });
 }

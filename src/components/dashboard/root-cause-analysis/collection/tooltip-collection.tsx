@@ -90,11 +90,10 @@ const TooltipCollection: React.FC<TooltipCollectionProps> = ({
 export default TooltipCollection;
 
 function escapeAndRemoveSpaces(stringToEscape: string) {
-  return stringToEscape.replace(/[\(\)\s]/g, match => {
+  return stringToEscape.replace(/[\(\)\s\.]/g, match => {
       if (match === '(') return '';
       if (match === ')') return '';
-      // if (match === '(') return '\\(';
-      // if (match === ')') return '\\)';
+      if (match === '.') return '_';
       return ''; // remove spaces
   });
 }
