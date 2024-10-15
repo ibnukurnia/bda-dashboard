@@ -3,6 +3,7 @@ import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import { HealthScoreResponse } from '@/modules/models/overviews';
 import { formatNumberWithCommas } from '@/helper';
 import { Typography } from '@mui/material';
+import CollapseIcon from '@/components/system/Icon/CollapseIcon';
 
 const getColor = (severity: number) => {
   if (severity === 0 || severity === 3) {
@@ -18,22 +19,25 @@ const getColor = (severity: number) => {
 }
 
 interface NodeProps {
+  className?: string;
   title: string;
   iconName: string;
   score: number;
   severity: number;
+  handleOnClick?: () => void;
 }
 const Node = forwardRef<HTMLDivElement, NodeProps>(({
+  className,
   title,
   iconName,
   score,
   severity,
+  handleOnClick,
 }, ref) => (
-  <div className='flex flex-col items-center'>
+  <div className={`${className} ${handleOnClick != null ? 'cursor-pointer' : ''} flex flex-col items-center`} onClick={handleOnClick}>
     <div
       ref={ref}
-      className
-      ={`w-[52px] h-[52px] flex justify-center items-center rounded-2xl ${severity === 1 ? "blinking-bg" : ""} bg-[rgb(${getColor(severity)})]`}
+      className={`w-[52px] h-[52px] flex justify-center items-center rounded-2xl ${severity === 1 ? "blinking-bg" : ""} bg-[rgb(${getColor(severity)})]`}
       style={{
         '--dynamic-color': getColor(severity),
         backgroundColor: 'rgb(var(--dynamic-color))',
@@ -47,23 +51,105 @@ const Node = forwardRef<HTMLDivElement, NodeProps>(({
       />
     </div>
     <Typography
-      fontWeight={700}
-      fontSize={14}
+      fontWeight={600}
+      fontSize={16}
       color={'white'}
-      lineHeight={'17.07px'}
+      lineHeight={'19.5px'}
+      align='center'
+      sx={{ whiteSpace: 'pre-wrap' }}
     >
       {title}
     </Typography>
-    <Typography 
-      fontWeight={700}
+    <Typography
+      fontWeight={500}
       fontSize={14}
-      color={'white'}
+      color={'#FFFFFFBF'}
       lineHeight={'17.07px'}
     >
       {score ? formatNumberWithCommas(score, 2) : score}%
     </Typography>
   </div>
 ))
+
+
+interface GroupProps {
+  children: React.ReactNode
+  className?: string
+  title: string
+  score: number
+  severity: number
+  expanded: boolean
+  iconName: string
+  handleOnClick: () => void
+}
+const GroupNode: React.FC<GroupProps> = ({
+  children,
+  className,
+  title,
+  score,
+  severity,
+  expanded,
+  iconName,
+  handleOnClick,
+}) => {
+  if (!expanded) {
+    return (
+      <Node
+        className='mt-10'
+        title={title}
+        iconName={iconName}
+        score={score}
+        severity={severity}
+        handleOnClick={handleOnClick}
+      />
+    )
+  }
+  return (
+    <div
+      className={`${className} flex flex-col gap-4 border-[1px] border-white border-opacity-30 bg-white bg-opacity-5 rounded-2xl`}
+      style={{
+        '--dynamic-color': getColor(severity),
+        borderColor: 'rgb(var(--dynamic-color))',
+      } as React.CSSProperties}
+    >
+      <div className='py-3 px-5 w-full flex gap-4 items-center justify-between'>
+        <div className='flex flex-col'>
+          <Typography
+            fontWeight={700}
+            fontSize={16}
+            color={'white'}
+            lineHeight={'19.5px'}
+          >
+            {title}
+          </Typography>
+          <Typography
+            fontWeight={500}
+            fontSize={14}
+            color={'#FFFFFFCC'}
+            lineHeight={'17.07px'}
+          >
+            {formatNumberWithCommas(score)}%
+          </Typography>
+        </div>
+        <button
+          className=' py-1 px-3 flex gap-[5px] items-center rounded-md bg-white bg-opacity-10'
+          onClick={handleOnClick}
+        >
+          <CollapseIcon />
+          <Typography
+            fontWeight={700}
+            fontSize={12}
+            color={'white'}
+            lineHeight={'14.63px'}
+          >
+            Collapse
+          </Typography>
+        </button>
+      </div>
+      {children}
+    </div>
+  )
+}
 
 interface HealthinessTreeProps {
   data: HealthScoreResponse[];
@@ -75,34 +161,128 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
   const containerRef = useRef<HTMLDivElement>(null); // Ref for the wrapper div
 
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  const [firewallData, setFirewallData] = useState({
+    title: 'Firewall',
+    iconName: 'node-icon-firewall.svg',
+    score: 100,
+    severity: 0,
+  })
+  const [ssloData, setSsloData] = useState({
+    title: 'SSLO',
+    iconName: 'node-icon-sslo.svg',
+    score: 100,
+    severity: 0,
+  })
+  const [wafData, setWafData] = useState({
+    title: 'WAF',
+    iconName: 'node-icon-waf.svg',
+    score: 100,
+    severity: 0,
+  })
   const [securityData, setSecurityData] = useState({
+    title: 'Security',
+    iconName: 'node-icon-security.svg',
+    score: 100,
+    severity: 0,
+  })
+
+  const [storageData, setStorageData] = useState({
+    title: 'Storage',
+    iconName: 'node-icon-storage.svg',
+    score: 100,
+    severity: 0,
+  })
+  const [vmData, setVmData] = useState({
+    title: 'VM',
+    iconName: 'node-icon-vm.svg',
+    score: 100,
+    severity: 0,
+  })
+  const [computeData, setComputeData] = useState({
+    title: 'Compute',
+    iconName: 'node-icon-compute.svg',
+    score: 100,
+    severity: 0,
+  })
+
+  const [f5Data, setF5Data] = useState({
+    title: 'F5',
+    iconName: 'node-icon-f5.svg',
+    score: 100,
+    severity: 0,
+  })
+  const [ivatData, setIvatData] = useState({
+    title: 'IVAT',
+    iconName: 'node-icon-ivat.svg',
+    score: 100,
+    severity: 0,
+  })
+  const [dwdmData, setDwdmData] = useState({
+    title: 'DWDM',
+    iconName: 'node-icon-dwdm.svg',
+    score: 100,
+    severity: 0,
+  })
+  const [dnsData, setDnsData] = useState({
+    title: 'DNS',
+    iconName: 'node-icon-dns.svg',
+    score: 100,
+    severity: 0,
+  })
+  const [perangkatInternalData, setPerangkatInternalData] = useState({
+    title: 'Perangkat\nInternal',
+    iconName: 'node-icon-perangkat-internal.svg',
     score: 100,
     severity: 0,
   })
   const [networkData, setNetworkData] = useState({
+    title: 'Network',
+    iconName: 'node-icon-network.svg',
     score: 100,
     severity: 0,
   })
+
   const [apmData, setApmData] = useState({
+    title: 'APM',
+    iconName: 'node-icon-apm.svg',
     score: 100,
     severity: 0,
   })
   const [brimoData, setBrimoData] = useState({
+    title: 'BRImo',
+    iconName: 'node-icon-brimo.svg',
     score: 100,
     severity: 0,
   })
   const [ocpData, setOcpData] = useState({
+    title: 'OCP',
+    iconName: 'node-icon-ocp.svg',
     score: 100,
     severity: 0,
   })
   const [databaseData, setDatabaseData] = useState({
+    title: 'Database',
+    iconName: 'node-icon-database.svg',
     score: 100,
     severity: 0,
   })
   const [redisData, setRedisData] = useState({
+    title: 'Redis',
+    iconName: 'node-icon-redis.svg',
     score: 100,
     severity: 0,
   })
+  const [totalAppsData, setTotalAppsData] = useState({
+    title: 'Apps',
+    iconName: 'node-icon-apps.svg',
+    score: 100,
+    severity: 0,
+  })
+  const [appsExpanded, setAppsExpanded] = useState(true)
+  const [computeExpanded, setComputeExpanded] = useState(false)
+  const [securityExpanded, setSecurityExpanded] = useState(false)
+  const [networkExpanded, setNetworkExpanded] = useState(false)
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -119,24 +299,85 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
       window.removeEventListener('resize', updateDimensions);
     };
   }, [])
-  
+
   useEffect(() => {
+    const firewall = data.find(d => d.data_source === "firewall")
+    const sslo = data.find(d => d.data_source === "sslo")
+    const waf = data.find(d => d.data_source === "waf")
     const security = data.find(d => d.data_source === "security")
+
+    const storage = data.find(d => d.data_source === "storage")
+    const vm = data.find(d => d.data_source === "vm")
+    const compute = data.find(d => d.data_source === "compute")
+
+    const f5 = data.find(d => d.data_source === "f5")
+    const ivat = data.find(d => d.data_source === "ivat")
+    const dwdm = data.find(d => d.data_source === "dwdm")
+    const dns = data.find(d => d.data_source === "dns")
+    const perangkatInternal = data.find(d => d.data_source === "perangkat_internal")
     const network = data.find(d => d.data_source === "network")
+
     const database = data.find(d => d.data_source === "k8s_db")
     const redis = data.find(d => d.data_source === "k8s_redis")
     const ocp = data.find(d => d.data_source === "k8s_prometheus")
     const apm = data.find(d => d.data_source === "apm")
     const brimo = data.find(d => d.data_source === "brimo")
 
+    setFirewallData(prev => ({
+      ...prev,
+      ...firewall,
+    }))
+    setSsloData(prev => ({
+      ...prev,
+      ...sslo,
+    }))
+    setWafData(prev => ({
+      ...prev,
+      ...waf,
+    }))
     setSecurityData(prev => ({
       ...prev,
       ...security,
+    }))
+
+    setStorageData(prev => ({
+      ...prev,
+      ...storage,
+    }))
+    setVmData(prev => ({
+      ...prev,
+      ...vm,
+    }))
+    setComputeData(prev => ({
+      ...prev,
+      ...compute,
+    }))
+
+    setF5Data(prev => ({
+      ...prev,
+      ...f5,
+    }))
+    setIvatData(prev => ({
+      ...prev,
+      ...ivat,
+    }))
+    setDwdmData(prev => ({
+      ...prev,
+      ...dwdm,
+    }))
+    setDnsData(prev => ({
+      ...prev,
+      ...dns,
+    }))
+    setPerangkatInternalData(prev => ({
+      ...prev,
+      ...perangkatInternal,
     }))
     setNetworkData(prev => ({
       ...prev,
       ...network,
     }))
+
     setApmData(prev => ({
       ...prev,
       ...apm,
@@ -157,16 +398,55 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
       ...prev,
       ...redis,
     }))
+
+    const apps = [apm, brimo, ocp, database, redis]
+    const totalAppsScore = apps.reduce((temp, app) => {
+      return temp + (app?.score ?? 100)
+    }, 0) / apps.length
+
+    const warnedApps = apps.filter(app => app != null && app.severity !== 0)
+    const totalAppsSeverity = warnedApps.length !== 0
+      ? Math.min(...warnedApps.map(app => app?.severity ?? 3))
+      : 0
+    setTotalAppsData(prev => ({
+      ...prev,
+      score: totalAppsScore,
+      severity: totalAppsSeverity
+    }))
   }, [data])
-  
+
+  const getSecurityLinkWidth = () => {
+    if (securityExpanded && computeExpanded) return 40
+    if (securityExpanded) return 49
+    if (computeExpanded) return 46
+    return 55
+  }
+  const getVerticalLinkHeight = () => {
+    if (computeExpanded) return 47
+    if (securityExpanded || networkExpanded) return 126
+    return 87
+  }
+  const getNetworkLinkWidth = () => {
+    if (networkExpanded && computeExpanded) return 40
+    if (networkExpanded) return 49
+    if (computeExpanded) return 46
+    return 57
+  }
+
   return (
     <div
       className='w-full flex flex-col gap-[47px] justify-center items-center'
     >
-      <div
-        className='w-full border-[1px] border-white border-opacity-30 bg-white bg-opacity-5 rounded-2xl'
+      <GroupNode
+        className='w-full'
+        title={totalAppsData.title}
+        iconName={totalAppsData.iconName}
+        score={totalAppsData.score}
+        severity={totalAppsData.severity}
+        expanded={appsExpanded}
+        handleOnClick={() => setAppsExpanded(prev => !prev)}
       >
-        <div className='p-14'>
+        <div className='p-14 pt-0'>
           <div
             ref={containerRef}
             className='w-full grid justify-between items-center'
@@ -178,22 +458,22 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               <div className='relative' >
                 <svg
                   className='absolute top-0 right-14'
-                  width={dimensions.width/2.5 - 30}
+                  width={dimensions.width / 2.5 - 30}
                   height={dimensions.height}
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path d={`M ${dimensions.width / 2.5} 26 C 0 26 0 26 0 84`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
-                  <path d={`M ${dimensions.width/ 2.5 - 30} 26 C ${dimensions.width / 5} 26 ${dimensions.width / 5} 26 ${dimensions.width / 5} 84`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M ${dimensions.width / 2.5 - 30} 26 C ${dimensions.width / 5} 26 ${dimensions.width / 5} 26 ${dimensions.width / 5} 84`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
                 </svg>
                 <Node
-                  title='OCP'
-                  iconName='node-icon-ocp.svg'
+                  title={ocpData.title}
+                  iconName={ocpData.iconName}
                   score={ocpData.score}
                   severity={ocpData.severity}
                 />
                 <svg
                   className='absolute top-0 left-14'
-                  width={dimensions.width/2.5}
+                  width={dimensions.width / 2.5}
                   height={dimensions.height}
                   xmlns="http://www.w3.org/2000/svg"
                 >
@@ -203,72 +483,180 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               </div>
             </div>
             <Node
-              title='APM'
-              iconName='node-icon-apm.svg'
+              title={apmData.title}
+              iconName={apmData.iconName}
               score={apmData.score}
               severity={apmData.severity}
             />
             <Node
-              title='BRImo'
-              iconName='node-icon-brimo.svg'
+              title={brimoData.title}
+              iconName={brimoData.iconName}
               score={brimoData.score}
               severity={brimoData.severity}
             />
             <div />
             <Node
-              title='Database'
-              iconName='node-icon-database.svg'
+              title={databaseData.title}
+              iconName={databaseData.iconName}
               score={databaseData.score}
               severity={databaseData.severity}
             />
             <Node
-              title='Redis'
-              iconName='node-icon-redis.svg'
+              title={redisData.title}
+              iconName={redisData.iconName}
               score={redisData.score}
               severity={redisData.severity}
             />
           </div>
         </div>
-      </div>
+      </GroupNode>
       <div
-        className='px-14 relative w-full grid justify-between items-center'
-        style={{
-          gridTemplateColumns: "repeat(5, 1fr)",
-        }}
+        className='relative flex justify-center items-center gap-10'
       >
-        <div />
-        <Node
-          title='Network'
-          iconName='node-icon-network.svg'
-          score={networkData.score}
-          severity={networkData.severity}
-        />
-        <div
-          className={'relative h-full'}
-          style={{
-            width: `calc(100% + ${dimensions.width/10 - 30}px`,
-          }}
-        >
+          <GroupNode
+            className='w-auto'
+            title={securityData.title}
+            iconName={securityData.iconName}
+            score={securityData.score}
+            severity={securityData.severity}
+            expanded={securityExpanded}
+            handleOnClick={() => setSecurityExpanded(prev => !prev)}
+          >
+            <div className='pb-4 px-8 grid grid-cols-3 gap-4 justify-center'>
+              <Node
+                className='h-28'
+                title={firewallData.title}
+                iconName={firewallData.iconName}
+                score={firewallData.score}
+                severity={firewallData.severity}
+              />
+              <Node
+                className='h-28'
+                title={ssloData.title}
+                iconName={ssloData.iconName}
+                score={ssloData.score}
+                severity={ssloData.severity}
+              />
+              <Node
+                className='h-28'
+                title={wafData.title}
+                iconName={wafData.iconName}
+                score={wafData.score}
+                severity={wafData.severity}
+              />
+            </div>
+          </GroupNode>
+        <div className='relative'>
+          <GroupNode
+            className='w-auto'
+            title={computeData.title}
+            iconName={computeData.iconName}
+            score={computeData.score}
+            severity={computeData.severity}
+            expanded={computeExpanded}
+            handleOnClick={() => setComputeExpanded(prev => !prev)}
+          >
+            <div className='pb-4 px-8 grid grid-cols-2 gap-4 justify-center'>
+              <Node
+                className='h-28'
+                title={storageData.title}
+                iconName={storageData.iconName}
+                score={storageData.score}
+                severity={storageData.severity}
+              />
+              <Node
+                className='h-28'
+                title={vmData.title}
+                iconName={vmData.iconName}
+                score={vmData.score}
+                severity={vmData.severity}
+              />
+            </div>
+          </GroupNode>
           <svg
             className={`absolute`}
+            height={getVerticalLinkHeight()}
+            width={2}
             xmlns="http://www.w3.org/2000/svg"
             style={{
-              top: '-44px',
-              left: `-${dimensions.width/10 - 30}px`,
-              width: `calc(100% + ${dimensions.width/10 - 30}px`,
+              top: !computeExpanded && (securityExpanded || networkExpanded) ? '-86px' : '-47px',
+              left: `50%`,
             }}
           >
-            <path d={`M ${dimensions.width/5-30} 0 L ${dimensions.width/5-30} 64`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
-            <path d={`M 0 70 L ${dimensions.width/2.5} 70`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+            <path d={`M 0 ${getVerticalLinkHeight()} L 0 0`} stroke="white" strokeWidth={4} opacity={0.3} fill="transparent" />
+          </svg>
+          <svg
+            className={`absolute`}
+            width={getSecurityLinkWidth()}
+            height={4}
+            xmlns="http://www.w3.org/2000/svg"
+            style={{
+              top: '50%',
+              left: `${-46 + (securityExpanded ? 6 : 0)}px`,
+            }}
+          >
+            <path d={`M 0 0 L ${getSecurityLinkWidth()} 0`} stroke="white" strokeWidth={4} opacity={0.3} fill="transparent" />
+          </svg>
+          <svg
+            className={`absolute`}
+            width={getNetworkLinkWidth()}
+            height={4}
+            xmlns="http://www.w3.org/2000/svg"
+            style={{
+              top: '50%',
+              right: `${-47 + (networkExpanded ? 7 : 0)}px`,
+            }}
+          >
+            <path d={`M 0 0 L ${getNetworkLinkWidth()} 0`} stroke="white" strokeWidth={4} opacity={0.3} fill="transparent" />
           </svg>
         </div>
-        <Node
-          title='Security'
-          iconName='node-icon-security.svg'
-          score={securityData.score}
-          severity={securityData.severity}
-        />
-        <div />
+        <GroupNode
+          className='w-auto'
+          title={networkData.title}
+          iconName={networkData.iconName}
+          score={networkData.score}
+          severity={networkData.severity}
+          expanded={networkExpanded}
+          handleOnClick={() => setNetworkExpanded(prev => !prev)}
+        >
+          <div className='pb-4 px-8 grid grid-cols-5 gap-4 justify-center'>
+            <Node
+              className='h-28'
+              title={f5Data.title}
+              iconName={f5Data.iconName}
+              score={f5Data.score}
+              severity={f5Data.severity}
+            />
+            <Node
+              className='h-28'
+              title={ivatData.title}
+              iconName={ivatData.iconName}
+              score={ivatData.score}
+              severity={ivatData.severity}
+            />
+            <Node
+              className='h-28'
+              title={dwdmData.title}
+              iconName={dwdmData.iconName}
+              score={dwdmData.score}
+              severity={dwdmData.severity}
+            />
+            <Node
+              className='h-28'
+              title={dnsData.title}
+              iconName={dnsData.iconName}
+              score={dnsData.score}
+              severity={dnsData.severity}
+            />
+            <Node
+              className='h-28'
+              title={perangkatInternalData.title}
+              iconName={perangkatInternalData.iconName}
+              score={perangkatInternalData.score}
+              severity={perangkatInternalData.severity}
+            />
+          </div>
+        </GroupNode>
       </div>
     </div>
   );
