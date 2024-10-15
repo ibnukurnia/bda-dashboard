@@ -153,9 +153,9 @@ const TooltipServiceCollection: React.FC<TooltipServiceCollectionProps> = ({
                     Medium
                   </Typography>
                 </div>
-                {item.detail_cluster.map(detail => 
+                {item.detail_cluster.map((detail, i) => 
                   <Typography
-                    key={detail.medium}
+                    key={i}
                     fontWeight={600}
                     fontSize={10}
                     color={'#FFFFFFCC'}
@@ -177,11 +177,10 @@ const TooltipServiceCollection: React.FC<TooltipServiceCollectionProps> = ({
 export default TooltipServiceCollection;
 
 function escapeAndRemoveSpaces(stringToEscape: string) {
-  return stringToEscape.replace(/[\(\)\s]/g, match => {
+  return stringToEscape.replace(/[\(\)\s\.]/g, match => {
       if (match === '(') return '';
       if (match === ')') return '';
-      // if (match === '(') return '\\(';
-      // if (match === ')') return '\\)';
+      if (match === '.') return '_';
       return ''; // remove spaces
   });
 }

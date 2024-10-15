@@ -43,7 +43,7 @@ const TableServicesWrapper: React.FC<TableServicesWrapperProps> = ({
               {Array.from(Array(3), (_, i) => (
                 <div
                   key={i}
-                  className="w-[100px] flex justify-center"
+                  className="w-[100px] h-5 flex justify-center"
                 >
                   <Skeleton
                     width={"75px"}

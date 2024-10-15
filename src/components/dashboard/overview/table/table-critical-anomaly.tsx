@@ -1,5 +1,5 @@
 import { Typography } from '@mui/material'
-import { Fragment, useEffect, useState } from 'react';
+import { forwardRef, Fragment, useEffect, useImperativeHandle, useState } from 'react';
 import { Cell, ColumnDef, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { GetLatestCritical } from '@/modules/usecases/overviews';
 import { format } from 'date-fns';
@@ -9,6 +9,7 @@ import { formatNumberWithCommas } from '../../../../helper';
 import useDebounce from '@/hooks/use-debounce';
 import Pagination from '@/components/system/Pagination/Pagination';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
+import styles from './table-critical-anomaly.module.css'
 
 
 const toMiliseconds = 1000 * 60
@@ -50,15 +51,17 @@ const CellValue: React.FC<CellValueProps> = ({
 
 interface TableHeaderWrapperProps {
   isLoading: boolean
+  columnSize: number
   children: JSX.Element
 }
 const TableHeaderWrapper: React.FC<TableHeaderWrapperProps> = ({
   isLoading,
+  columnSize,
   children,
 }) => {
   if (isLoading) return (
     <tr>
-      {Array.from(Array(10), (_, j) => (
+      {Array.from(Array(columnSize), (_, j) => (
         <th key={j} className={`p-4 py-6`}>
           <Skeleton
             className='m-auto px-3'
@@ -86,8 +89,8 @@ const TableBodyWrapper: React.FC<TableBodyWrapperProps> = ({
   children,
 }) => {
   if (isLoading) return (
-    Array.from(Array(pageSize), (_, j) => (
-      <tr>
+    Array.from(Array(pageSize), (_, i) => (
+      <tr key={i}>
         {Array.from(Array(columnSize), (_, j) => (
           <td key={j} className={`p-4`}>
             <Skeleton
@@ -118,11 +121,15 @@ interface TableCriticalAnomalyProps {
   severity: { value: any; id: number; label: string }[]
 }
 
-const TableCriticalAnomaly = ({
+export interface TableCriticalAnomalyHandle {
+  refresh: (timeRange: string) => void
+}
+
+const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCriticalAnomalyProps>(({
   timeRange,
   dataSource,
   severity,
-}: TableCriticalAnomalyProps) => {
+}, ref) => {
   const [isLoadingHeader, setIsLoadingHeader] = useState(true)
   const [isTableLoading, setIsTableLoading] = useState(true)
   const [data, setData] = useState<any>([])
@@ -133,6 +140,14 @@ const TableCriticalAnomaly = ({
   })
   const [totalRows, setTotalRows] = useState<number>(1)
   const [pauseEffectPagination, setPauseEffectPagination] = useState(false)
+
+  // Use useImperativeHandle to expose the custom method
+  useImperativeHandle(ref, () => ({
+    refresh(timeRange) {
+      setIsTableLoading(true)
+      fetchData(pagination.pageIndex, timeRange)
+    },
+  }));
 
   const table = useReactTable({
     data,
@@ -166,9 +181,10 @@ const TableCriticalAnomaly = ({
   }, [pagination])
 
   function fetchData(
-    page?: number
+    page?: number,
+    customTimeRange?: string
   ) {
-    const { startTime, endTime } = handleStartEnd(timeRange)
+    const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange)
 
     GetLatestCritical({
       start_time: startTime,
@@ -242,14 +258,15 @@ const TableCriticalAnomaly = ({
             <thead>
               <TableHeaderWrapper
                 isLoading={isLoadingHeader}
+                columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 5 : table.getHeaderGroups()?.[0].headers.length}
               >
                 <Fragment>
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id} className='text-left'>
                       {headerGroup.headers.map((header) => (
-                        <th key={header.id} colSpan={header.colSpan} className="p-2">
+                    <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
                           <button
-                            className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} px-3 text-gray-100`}
+                            className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100`}
                             onClick={header.column.getToggleSortingHandler()}
                           >
                             {typeof header.column.columnDef.header === 'function'
@@ -275,7 +292,7 @@ const TableCriticalAnomaly = ({
             <tbody className="divide-y !divide-gray-200 text-gray-600">
               <TableBodyWrapper
                 pageSize={pagination.pageSize}
-                columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 10 : table.getHeaderGroups()?.[0].headers.length}
+                columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 5 : table.getHeaderGroups()?.[0].headers.length}
                 isLoading={isTableLoading}
                 isEmpty={data.length === 0}
               >
@@ -283,7 +300,7 @@ const TableCriticalAnomaly = ({
                   {table.getRowModel().rows.map((row) => (
                     <tr key={row.id}>
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
+                        <td key={cell.id} className={`${styles.first_child} px-1 py-4 whitespace-nowrap`}>
                           <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
                             {/* Severity Check */}
                             {cell.column.id === 'severity' &&
@@ -341,6 +358,6 @@ const TableCriticalAnomaly = ({
       }
     </div>
   )
-}
+})
 
 export default TableCriticalAnomaly

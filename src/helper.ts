@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { PREDEFINED_TIME_RANGES, TAB_DATA_SOURCE } from "./constants";
 
 export const validDataSource = (dataSource: string) => {
@@ -49,3 +50,29 @@ export const formatNumberWithCommas = (value: number, decimals: number = 2): str
 export const formatRupiah = (value: number) => {
 	return `Rp. ${value.toLocaleString('id-ID')}`;
 };
+
+const toMiliseconds = 1000 * 60
+const defaultTimeRanges: Record<string, number> = {
+  'Last 5 minutes': 5,
+  'Last 10 minutes': 10,
+  'Last 15 minutes': 15,
+  'Last 30 minutes': 30,
+  'Last 1 hours': 60,
+  'Last 3 hours': 180,
+}
+export const handleStartEnd = (time: string) => {
+    const timeSplit = time.split(' - ')
+
+    let startTime: string | Date
+    let endTime: string | Date
+
+    if (timeSplit.length > 1) {
+      startTime = timeSplit?.[0]
+      endTime = timeSplit?.[1]
+    } else {
+      startTime = format(new Date(new Date().getTime() - toMiliseconds * defaultTimeRanges[time]), 'yyyy-MM-dd HH:mm:ss')
+      endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+    }
+
+    return { startTime, endTime }
+  }

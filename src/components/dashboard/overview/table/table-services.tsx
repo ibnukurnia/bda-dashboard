@@ -1,5 +1,4 @@
-import { Check, Minus } from 'react-feather';
-import './table-services.css';
+import styles from './table-services.module.css';
 import Link from 'next/link';
 import { TopServiceData } from '@/modules/models/overviews';
 
@@ -24,14 +23,12 @@ interface TableServicesProps {
   selectedDataSource: string;
   queryParams?: {
     time_range?: string;
-    start_time?: string;
-    end_time?: string;
   };
 }
 
 const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSource, queryParams }: TableServicesProps) => {
   return (
-    <div className="relative overflow-auto min-h-48 scrollbar" style={{ maxHeight }}>
+    <div className={`relative overflow-auto min-h-48 ${styles.scrollbar}`} style={{ maxHeight }}>
       <div>
         <table className="w-full text-white">
           <thead>
@@ -55,7 +52,6 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
                         {(cdk === 'service_name' && (sdt.fungsi != null || sdt.detail_cluster != null)) &&
                           <a
                             id={`top-service-${escapeAndRemoveSpaces(sdt.service_name)}`}
-                            className='mt-1'
                             data-tooltip-place={'right-end'}
                           >
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -117,9 +113,10 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
 export default TableServices;
 
 function escapeAndRemoveSpaces(stringToEscape: string) {
-  return stringToEscape.replace(/[\(\)\s]/g, match => {
+  return stringToEscape.replace(/[\(\)\s\.]/g, match => {
     if (match === '(') return '';
     if (match === ')') return '';
+    if (match === '.') return '_';
     return ''; // remove spaces
   });
 }

@@ -198,11 +198,20 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                     return rupiahFormatter.format(value).replace("Rp", "Rp."); // Adding dot after "Rp."
                                 }
 
-                                // Otherwise, format as a regular number with up to 7 decimal places
-                                return parseFloat(value.toFixed(7)).toString();
+                                // Handle small decimal numbers (less than 1 but greater than 0)
+                                if (value < 1 && value > 0) {
+                                    return value.toString(); // Show full precision for small decimal values
+                                }
+
+                                // Format larger numbers with thousands separators and two decimal places
+                                const numberFormatter = new Intl.NumberFormat('en-US', {
+                                    minimumFractionDigits: 2, // Show 2 decimal places
+                                    maximumFractionDigits: 2, // Limit to 2 decimal places
+                                });
+
+                                return numberFormatter.format(value); // Format with thousands separators
                             },
                         },
-                        decimalsInFloat: 2, // Ensure decimals are shown in the axis
                         axisBorder: {
                             show: true,
                             color: 'white',
@@ -252,7 +261,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             name: metric.title,
                             data: metric.data.map(([date, number]) => ({
                                 x: date,
-                                y: parseFloat(number.toString()) // Ensure it's treated as a float
+                                y: number
                             })),
                         }]}
                         type="line"

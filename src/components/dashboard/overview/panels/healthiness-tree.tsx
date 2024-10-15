@@ -1,7 +1,7 @@
 import './healthiness-tree.css'; // Import the custom CSS for styling paths
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import { HealthScoreResponse } from '@/modules/models/overviews';
-import { formatNumberWithCommas, toFixed } from '@/helper';
+import { formatNumberWithCommas } from '@/helper';
 import { Typography } from '@mui/material';
 
 const getColor = (severity: number) => {
@@ -73,13 +73,6 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
   data,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null); // Ref for the wrapper div
-  const nodeApmRef = useRef<HTMLDivElement>(null);
-  const nodeBrimoRef = useRef<HTMLDivElement>(null);
-  const nodeOcpRef = useRef<HTMLDivElement>(null);
-  const nodeDatabaseRef = useRef<HTMLDivElement>(null);
-  const nodeRedisRef = useRef<HTMLDivElement>(null);
-  const nodeNetworkRef = useRef<HTMLDivElement>(null);
-  const nodeSecurityRef = useRef<HTMLDivElement>(null);
 
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [securityData, setSecurityData] = useState({
@@ -193,7 +186,6 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
                   <path d={`M ${dimensions.width/ 2.5 - 30} 26 C ${dimensions.width / 5} 26 ${dimensions.width / 5} 26 ${dimensions.width / 5} 84`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
                 </svg>
                 <Node
-                  ref={nodeOcpRef}
                   title='OCP'
                   iconName='node-icon-ocp.svg'
                   score={ocpData.score}
@@ -211,14 +203,12 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               </div>
             </div>
             <Node
-              ref={nodeApmRef}
               title='APM'
               iconName='node-icon-apm.svg'
               score={apmData.score}
               severity={apmData.severity}
             />
             <Node
-              ref={nodeBrimoRef}
               title='BRImo'
               iconName='node-icon-brimo.svg'
               score={brimoData.score}
@@ -226,14 +216,12 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             />
             <div />
             <Node
-              ref={nodeDatabaseRef}
               title='Database'
               iconName='node-icon-database.svg'
               score={databaseData.score}
               severity={databaseData.severity}
             />
             <Node
-              ref={nodeRedisRef}
               title='Redis'
               iconName='node-icon-redis.svg'
               score={redisData.score}
@@ -250,7 +238,6 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
       >
         <div />
         <Node
-          ref={nodeNetworkRef}
           title='Network'
           iconName='node-icon-network.svg'
           score={networkData.score}
@@ -276,7 +263,6 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
           </svg>
         </div>
         <Node
-          ref={nodeSecurityRef}
           title='Security'
           iconName='node-icon-security.svg'
           score={securityData.score}

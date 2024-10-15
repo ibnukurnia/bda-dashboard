@@ -143,9 +143,10 @@ const Node: React.FC<NodeProps> = ({
 export default Node;
 
 function escapeAndRemoveSpaces(stringToEscape: string) {
-  return stringToEscape.replace(/[\(\)\s]/g, match => {
+  return stringToEscape.replace(/[\(\)\s\.]/g, match => {
     if (match === '(') return '';
     if (match === ')') return '';
+    if (match === '.') return '_';
     return ''; // remove spaces
   });
 }

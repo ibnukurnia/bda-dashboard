@@ -13,7 +13,7 @@ const HealthinessTreeWrapper: React.FC<HealthinessTreeWrapperProps> = ({
   isError,
 }) => {
   if (isError) return (
-    <span className="text-center text-white absolute top-1/2 w-full left-0">
+    <span className="text-center text-white w-full">
       Terjadi kesalahan. Silakan refresh halaman ini atau coba beberapa saat lagi
     </span>
   )

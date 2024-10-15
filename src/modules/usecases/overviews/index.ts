@@ -1,6 +1,7 @@
 import { get } from '@/common/api'
 import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 import {
+  AnomalyAmountResponse,
   HealthScoreResponse,
   InsightOverviewResponse,
   MetricsOverviewResponse,
@@ -117,7 +118,7 @@ const GetTopFiveCritical = async (params?: { start_time: string | Date; end_time
 }
 
 const GetAmountGraphic = async (params: { start_time: string; end_time: string; service_name: string[] }) => {
-  const response: ApiResponse<TopFiveLatestCritical[]> = await get('overview/grafik-amount', {
+  const response: ApiResponse<AnomalyAmountResponse[]> = await get('overview/grafik-amount', {
     withAuth: true,
     queries: params,  // Pass the params object containing start_time, end_time, and service_name
   })
