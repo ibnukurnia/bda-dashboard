@@ -153,9 +153,9 @@ const TooltipServiceCollection: React.FC<TooltipServiceCollectionProps> = ({
                     Medium
                   </Typography>
                 </div>
-                {item.detail_cluster.map(detail => 
+                {item.detail_cluster.map((detail, i) => 
                   <Typography
-                    key={detail.medium}
+                    key={i}
                     fontWeight={600}
                     fontSize={10}
                     color={'#FFFFFFCC'}

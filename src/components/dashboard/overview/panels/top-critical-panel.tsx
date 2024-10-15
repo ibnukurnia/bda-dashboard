@@ -17,9 +17,6 @@ const defaultTimeRanges: Record<string, number> = {
 
 interface TopCriticalPanelProps {
   timeRange: string
-  queryParams?: {
-    time_range?: string;
-  };
 }
 
 export interface TopCriticalPanelHandle {
@@ -29,7 +26,6 @@ export interface TopCriticalPanelHandle {
 
 const TopCriticalPanel = forwardRef<TopCriticalPanelHandle, TopCriticalPanelProps>(({
   timeRange,
-  queryParams,
 }, ref) => {
   const [topFiveCriticalData, setTopFiveCriticalData] = useState<TopFiveLatestCritical[]>([])
   const [isLoadingTopFiveCritical, setIsLoadingTopFiveCritical] = useState(true)  // Create a ref for the button DOM element
@@ -86,7 +82,9 @@ const TopCriticalPanel = forwardRef<TopCriticalPanelHandle, TopCriticalPanelProp
         <TableTopCritical
           data={topFiveCriticalData}
           isLoading={isLoadingTopFiveCritical}
-          queryParams={queryParams}
+          queryParams={{
+            time_range: timeRange
+          }}
         />
       </div>
     </div>

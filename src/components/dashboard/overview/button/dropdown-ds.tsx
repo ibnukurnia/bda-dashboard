@@ -1,17 +1,63 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { format } from 'date-fns'
-
 import Button from '@/components/system/Button/Button'
 
 import './dropdown-ds.css'
 
+// Define your data
+const data = [
+  {
+    id: '',
+    label: 'All Data Source',
+  },
+  {
+    id: 'apm',
+    label: 'Log APM BRIMO',
+  },
+  {
+    id: 'brimo',
+    label: 'Log Transaksi BRIMO',
+  },
+  {
+    id: 'k8s_prometheus',
+    label: 'OCP',
+  },
+  {
+    id: 'k8s_db',
+    label: 'DB',
+  },
+  {
+    id: 'panw',
+    label: 'PANW',
+  },
+  {
+    id: 'waf',
+    label: 'WAF',
+  },
+  {
+    id: 'forti',
+    label: 'FORTI',
+
+  },
+  {
+    id: 'ivat',
+    label: 'IVAT',
+
+  },
+  {
+    id: 'prtg',
+    label: 'PRTG',
+  },
+  {
+    id: 'zabbix',
+    label: 'ZABBIX',
+  },
+]
 interface DropdownDSProps {
-  data: { value: any; id: string | number; label: string }[]
   onSelectData: (id: string) => void
   selectedData: string
 }
 
-const DropdownDS: React.FC<DropdownDSProps> = ({ data, onSelectData, selectedData }) => {
+const DropdownDS: React.FC<DropdownDSProps> = ({ onSelectData, selectedData }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [position, setPosition] = useState<number>(0)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
@@ -61,7 +107,7 @@ const DropdownDS: React.FC<DropdownDSProps> = ({ data, onSelectData, selectedDat
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {data.find((el) => el.value === selectedData)?.label || 'All Data Source'}
+        {data.find((el) => el.id === selectedData)?.label || 'All Data Source'}
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"
@@ -83,7 +129,7 @@ const DropdownDS: React.FC<DropdownDSProps> = ({ data, onSelectData, selectedDat
             {data.map((dataSelection, dsid) => (
               <li key={dsid}>
                 <div
-                  onClick={() => handleSelectData(dataSelection.value)}
+                  onClick={() => handleSelectData(dataSelection.id)}
                   className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
                 >
                   {dataSelection.label}

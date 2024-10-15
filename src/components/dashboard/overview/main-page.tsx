@@ -7,88 +7,20 @@ import { Maximize } from 'react-feather'
 import {
   GetChartsOverview,
   GetHealthScoreOverview,
-  GetPieChartsOverview,
-  GetTopFiveCritical,
-  GetTopServicesOverview,
 } from '@/modules/usecases/overviews'
-import { HealthScoreResponse, TopFiveLatestCritical, TopServicesResponse } from '@/modules/models/overviews'
+import { HealthScoreResponse } from '@/modules/models/overviews'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
-import { SEVERITY_LABELS } from '@/constants'
 import Button from '@/components/system/Button/Button'
-import DropdownDS from './button/dropdown-ds'
 import DropdownTime from './button/dropdown-time'
-import DonutChart from './chart/donut-chart'
 import DynamicUpdatingChart from './chart/dynamic-updating-chart'
-import TableServices from './table/table-services'
-import TableSeverity from './table/table-severity'
-import TableServicesWrapper from './wrapper/table-services-wrapper'
 import GraphWrapper from './wrapper/graph-wrapper'
-import DonutChartWrapper from './wrapper/donut-wrapper'
-import TableSeverityWrapper from './wrapper/table-severity-wrapper'
-import TableTopCritical from './table/table-top-critical'
 import AutoRefreshButton from '../anomaly/button/refreshButton'
 
-import TooltipServiceCollection from './collection/tooltip-service-collection'
 import BRImoEndToEndPanel from './panels/brimo-end-to-end-panel'
 import LatestAnomalyPanel, { LatestAnomalyPanelHandle } from './panels/latest-anomaly-panel'
 import AnomalyAmountPanel, { AnomalyAmountPanelHandle } from './panels/anomaly-amount-panel'
 import TopCriticalPanel, { TopCriticalPanelHandle } from './panels/top-critical-panel'
-
-// Define your data
-const sourceData = [
-  {
-    name: 'Log APM BRIMO',
-    count: 1865,
-    value: 'apm',
-  },
-  {
-    name: 'Log Transaksi BRIMO',
-    count: 1862,
-    value: 'brimo',
-  },
-  {
-    name: 'OCP',
-    count: 1567,
-    value: 'k8s_prometheus',
-  },
-  {
-    name: 'DB',
-    count: 1567,
-    value: 'k8s_db',
-  },
-  {
-    name: 'PANW',
-    count: 684,
-    value: 'panw',
-  },
-  {
-    name: 'WAF',
-    count: 684,
-    value: 'waf',
-  },
-  {
-    name: 'FORTI',
-    count: 684,
-    value: 'forti',
-
-  },
-  {
-    name: 'IVAT',
-    count: 684,
-    value: 'ivat',
-
-  },
-  {
-    name: 'PRTG',
-    count: 684,
-    value: 'prtg',
-  },
-  {
-    name: 'ZABBIX',
-    count: 684,
-    value: 'zabbix',
-  },
-]
+import AnomalyOverviewPanel, { AnomalyOverviewPanelHandle } from './panels/anomaly-overview-panel'
 
 const toMiliseconds = 1000 * 60
 
@@ -102,29 +34,23 @@ const defaultTimeRanges: Record<string, number> = {
 }
 
 const MainPageOverview = () => {
-  const [selectedDataSource, setSelectedDataSource] = useState<string>('')
   const [modalServices, setModalServices] = useState(false)
-  const [tableMaxHeight, setTableMaxHeight] = useState(192)
-  const [pieChartData, setPieChartData] = useState([])
-  const [topServicesData, setTopServicesData] = useState<TopServicesResponse | null>(null)
+  const [tableServiceMaxHeight, setTableServiceMaxHeight] = useState(192)
   const [healthScoreData, setHealthScoreData] = useState<HealthScoreResponse[]>([])
   const panelRef = useRef<HTMLDivElement>(null)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
   const [chartData, setChartData] = useState<any[]>([])
   const [isLoadingGraphic, setIsLoadingGraphic] = useState(true)
-  const [isLoadingPieChart, setIsLoadingPieChart] = useState(true)
-  const [isLoadingTopServices, setIsLoadingTopServices] = useState(true)
   const [isLoadingHealthScore, setIsLoadingHealthScore] = useState(true)
   const [isErrorHealthScore, setIsErrorHealthScore] = useState(false)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
+  const anomalyOverviewRef = useRef<AnomalyOverviewPanelHandle>(null)
   const topCriticalRef = useRef<TopCriticalPanelHandle>(null)
   const latestAnomalyRef = useRef<LatestAnomalyPanelHandle>(null)
   const anomalyAmountRef = useRef<AnomalyAmountPanelHandle>(null)
 
-  const thSeverity = ['Severity', 'Count']
-  const configDataKey = ['service_name', 'very_high', 'high', 'medium']
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
   const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
   const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
@@ -165,39 +91,11 @@ const MainPageOverview = () => {
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:00`;
     };
 
-    const formattedStartTime = formatTimeToString(startDateObj);
-    const formattedEndTime = formatTimeToString(endDateObj);
-
     setSelectedRange(time);
     setIsLoadingHealthScore(true);
-    setIsLoadingPieChart(true);
-    setIsLoadingTopServices(true);
     setIsLoadingGraphic(true)
 
     const paramsTime = { start_time: startTime, end_time: endTime };
-    const params = { type: selectedDataSource, ...paramsTime };
-
-    // Fetch Pie Chart Data
-    GetPieChartsOverview(params)
-      .then((res) => {
-        setPieChartData(res.data.data);
-        setIsLoadingPieChart(false);
-      })
-      .catch(() => {
-        setPieChartData([]);
-        setIsLoadingPieChart(false);
-      });
-
-    // Fetch Top Services Data
-    GetTopServicesOverview(params)
-      .then((res) => {
-        setTopServicesData(res.data);
-        setIsLoadingTopServices(false);
-      })
-      .catch(() => {
-        setTopServicesData(null);
-        setIsLoadingTopServices(false);
-      });
 
     // Fetch Health Score Data
     GetHealthScoreOverview(paramsTime)
@@ -225,51 +123,6 @@ const MainPageOverview = () => {
       });
   };
 
-  const handleChangeFilterDS = (value: string) => {
-    const { startTime, endTime } = handleStartEnd(selectedRange)
-    const params = { type: value, start_time: startTime, end_time: endTime }
-    const paramsHealth = { start_time: startTime, end_time: endTime }
-
-    // console.log("Data source selected:", value);  // Debug here
-    setSelectedDataSource(value)
-
-    setIsLoadingPieChart(true)
-    setIsLoadingTopServices(true)
-    setIsLoadingHealthScore(true)
-
-    GetPieChartsOverview(params)
-      .then((res) => {
-        setPieChartData(res.data.data)
-        setIsLoadingPieChart(false)
-      })
-      .catch(() => {
-        setPieChartData([])
-        setIsLoadingPieChart(false)
-      })
-    GetTopServicesOverview(params)
-      .then((res) => {
-        setTopServicesData(res.data)
-        setIsLoadingTopServices(false)
-      })
-      .catch(() => {
-        setTopServicesData(null)
-        setIsLoadingTopServices(false)
-      })
-    // Fetch Health Score Data
-    GetHealthScoreOverview(paramsHealth)
-      .then((res) => {
-        if (res.data == null) throw Error("Empty response data")
-        setHealthScoreData(res.data);
-        setIsErrorHealthScore(false);
-      })
-      .catch(() => {
-        setIsErrorHealthScore(true);
-      })
-      .finally(() => {
-        setIsLoadingHealthScore(false);
-      })
-  }
-
   const handleLogicTitle = (title: string) => {
     if (title.toLowerCase().includes('apm')) {
       return 'error rate apm & brimo'
@@ -292,36 +145,25 @@ const MainPageOverview = () => {
 
   const refreshData = async () => {
     const { startTime, endTime } = handleStartEnd(selectedRange);
+    anomalyOverviewRef.current?.refresh(selectedRange)
     topCriticalRef.current?.refresh(selectedRange)
     latestAnomalyRef.current?.refresh(selectedRange)
     anomalyAmountRef.current?.refresh(selectedRange)
     setIsLoadingHealthScore(true);
-    setIsLoadingPieChart(true);
-    setIsLoadingTopServices(true);
     setIsLoadingGraphic(true); // Add loading state for the chart
 
     const paramsTime = { start_time: startTime, end_time: endTime };
-    const params = {
-      type: selectedDataSource,
-      ...paramsTime,
-    };
 
     try {
       const [
-        pieChartRes,
-        topServicesRes,
         healthScoreRes,
         chartRes // Add chart response to the array
       ] = await Promise.all([
-        GetPieChartsOverview(params),
-        GetTopServicesOverview(params),
         GetHealthScoreOverview(paramsTime),
         GetChartsOverview(paramsTime), // Fetch chart data
       ]);
 
       // Handle results after all calls complete
-      setPieChartData(pieChartRes.data.data);
-      setTopServicesData(topServicesRes.data);
       if (healthScoreRes.data == null) throw Error("Empty response data");
       setHealthScoreData(healthScoreRes.data);
 
@@ -332,8 +174,6 @@ const MainPageOverview = () => {
       console.error('Error occurred:', error);
 
       // Handle errors for each call as needed
-      setPieChartData([]);
-      setTopServicesData(null);
       setHealthScoreData([]);
       setChartData([]); // Handle error for chart data
 
@@ -343,8 +183,6 @@ const MainPageOverview = () => {
     } finally {
       // Always reset loading states after completion
       setIsLoadingHealthScore(false);
-      setIsLoadingPieChart(false);
-      setIsLoadingTopServices(false);
       setIsLoadingGraphic(false); // Reset loading state for the chart
     }
   };
@@ -373,40 +211,16 @@ const MainPageOverview = () => {
         clearInterval(intervalId);
       }
     };
-  }, [autoRefresh, refreshInterval, selectedRange, selectedDataSource]);
+  }, [autoRefresh, refreshInterval, selectedRange]);
 
   useEffect(() => {
     const { startTime, endTime } = handleStartEnd(selectedRange);
 
 
     setIsLoadingHealthScore(true)
-    setIsLoadingPieChart(true)
-    setIsLoadingTopServices(true)
 
     const paramsTime = { start_time: startTime, end_time: endTime }
-    const params = {
-      type: selectedDataSource,
-      ...paramsTime,
-    }
 
-    GetPieChartsOverview(params)
-      .then((res) => {
-        setPieChartData(res.data.data)
-        setIsLoadingPieChart(false)
-      })
-      .catch(() => {
-        setPieChartData([])
-        setIsLoadingPieChart(false)
-      })
-    GetTopServicesOverview(params)
-      .then((res) => {
-        setTopServicesData(res.data)
-        setIsLoadingTopServices(false)
-      })
-      .catch(() => {
-        setTopServicesData(null)
-        setIsLoadingTopServices(false)
-      })
     GetHealthScoreOverview(paramsTime)
       .then((res) => {
         if (res.data == null) throw Error("Empty response data")
@@ -463,11 +277,11 @@ const MainPageOverview = () => {
     if (containerElement) {
       const calculatedTableHeight = containerElement.offsetHeight - 310
       if (calculatedTableHeight > 192 && window.innerWidth >= 1440) {
-        setTableMaxHeight(containerElement.offsetHeight - 310)
+        setTableServiceMaxHeight(containerElement.offsetHeight - 310)
       } else if (window.innerWidth < 1440) {
-        setTableMaxHeight(260 - 16)
+        setTableServiceMaxHeight(260 - 16)
       } else {
-        setTableMaxHeight(192)
+        setTableServiceMaxHeight(192)
       }
     }
   }
@@ -502,80 +316,22 @@ const MainPageOverview = () => {
               isLoading={isLoadingHealthScore}
               isError={isErrorHealthScore}
             />
-            {/* <div className="flex gap-8"> */}
             <div className="grid 2xl:grid-cols-2 grid-cols-1 gap-8">
-              <div className="grid grid-cols-1 gap-4">
-                <div className="flex flex-col gap-8 card">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-white text-2xl">Anomaly Overview</span>
-                    {!handle.active && <DropdownDS
-                      data={[
-                        { id: 'semua-data-source', value: '', label: 'All Data Source' },
-                        ...sourceData.map((item) => ({ id: item.name, value: item.value, label: item.name })),
-                      ]}
-                      onSelectData={(e) => handleChangeFilterDS(e)}
-                      selectedData={selectedDataSource}
-                    />}
-                  </div>
-                  <div className="grid grid-cols-2 2xl:flex 2xl:flex-col gap-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <DonutChartWrapper
-                        isLoading={isLoadingPieChart}
-                      >
-                        <DonutChart
-                          series={pieChartData.map((item: any) => item.count)}
-                          labels={pieChartData.map((sditem: any) => SEVERITY_LABELS[sditem.severity])}
-                        />
-                      </DonutChartWrapper>
-                      <TableSeverityWrapper
-                        isLoading={isLoadingPieChart}
-                      >
-                        <TableSeverity
-                          tableHeader={thSeverity}
-                          data={pieChartData}
-                          clickable={selectedDataSource?.length > 0}
-                          queryParams={{
-                            time_range: autoRefresh ? selectedRange : `${startTime} - ${endTime}`,
-                            data_source: selectedDataSource
-                          }}
-                        />
-                      </TableSeverityWrapper>
-                    </div>
-                    <TableServicesWrapper
-                      isLoading={isLoadingTopServices}
-                    >
-                      <TableServices
-                        data={topServicesData?.data}
-                        tableHeader={topServicesData?.header ?? []}
-                        dataKeys={configDataKey}
-                        maxHeight={tableMaxHeight}
-                        selectedDataSource={selectedDataSource}
-                        queryParams={{
-                          ...(autoRefresh
-                            ? { time_range: selectedRange }  // Use time_range if autoRefresh is true
-                            : { time_range: `${startTime} - ${endTime}` }  // Use start_time and end_time if autoRefresh is false
-                          ),
-                        }}
-                      />
-                      <TooltipServiceCollection
-                        data={topServicesData?.data}
-                      />
-                    </TableServicesWrapper>
-                  </div>
-                </div>
-              </div>
+              <AnomalyOverviewPanel
+                ref={anomalyOverviewRef}
+                timeRange={autoRefresh ? selectedRange : `${startTime} - ${endTime}`}
+                isFullscreen={handle.active}
+                tableServiceMaxHeight={tableServiceMaxHeight}
+              />
               <TopCriticalPanel
                 ref={topCriticalRef}
-                timeRange={selectedRange}
-                queryParams={{
-                  time_range: autoRefresh ? selectedRange : `${startTime} - ${endTime}`,
-                }}
+                timeRange={autoRefresh ? selectedRange : `${startTime} - ${endTime}`}
               />
             </div>
 
             <LatestAnomalyPanel
               ref={latestAnomalyRef}
-              timeRange={selectedRange}
+              timeRange={autoRefresh ? selectedRange : `${startTime} - ${endTime}`}
               isFullscreen={handle.active}
             />
 
@@ -601,7 +357,7 @@ const MainPageOverview = () => {
 
             <AnomalyAmountPanel
               ref={anomalyAmountRef}
-              timeRange={selectedRange}
+              timeRange={autoRefresh ? selectedRange : `${startTime} - ${endTime}`}
               isFullscreen={handle.active}
             />
           </div>

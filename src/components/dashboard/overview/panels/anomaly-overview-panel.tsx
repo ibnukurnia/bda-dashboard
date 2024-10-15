@@ -1,8 +1,19 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
-import TableTopCritical from '../table/table-top-critical'
-import { TopFiveLatestCritical } from '@/modules/models/overviews'
-import { GetTopFiveCritical } from '@/modules/usecases/overviews'
+import { TopServicesResponse } from '@/modules/models/overviews'
+import { GetPieChartsOverview, GetTopServicesOverview } from '@/modules/usecases/overviews'
 import { format } from 'date-fns'
+import DropdownDS from '../button/dropdown-ds'
+import DonutChartWrapper from '../wrapper/donut-wrapper'
+import DonutChart from '../chart/donut-chart'
+import TableSeverityWrapper from '../wrapper/table-severity-wrapper'
+import TableSeverity from '../table/table-severity'
+import TableServicesWrapper from '../wrapper/table-services-wrapper'
+import TableServices from '../table/table-services'
+import TooltipServiceCollection from '../collection/tooltip-service-collection'
+import { SEVERITY_LABELS } from '@/constants'
+
+const thSeverity = ['Severity', 'Count']
+const configDataKey = ['service_name', 'very_high', 'high', 'medium']
 
 const toMiliseconds = 1000 * 60
 
@@ -17,9 +28,8 @@ const defaultTimeRanges: Record<string, number> = {
 
 interface AnomalyOverviewPanelProps {
   timeRange: string
-  queryParams?: {
-    time_range?: string;
-  };
+  tableServiceMaxHeight: number
+  isFullscreen: boolean
 }
 
 // Define the exposed methods type
@@ -29,34 +39,56 @@ export interface AnomalyOverviewPanelHandle {
 
 const AnomalyOverviewPanel = forwardRef<AnomalyOverviewPanelHandle, AnomalyOverviewPanelProps>(({
   timeRange,
-  queryParams,
+  tableServiceMaxHeight,
+  isFullscreen,
 }, ref) => {
-  const [topFiveCriticalData, setTopFiveCriticalData] = useState<TopFiveLatestCritical[]>([])
-  const [isLoadingTopFiveCritical, setIsLoadingTopFiveCritical] = useState(true)
+  const [selectedDataSource, setSelectedDataSource] = useState<string>('')
+  const [pieChartData, setPieChartData] = useState([])
+  const [topServicesData, setTopServicesData] = useState<TopServicesResponse | null>(null)
+  const [isLoadingPieChart, setIsLoadingPieChart] = useState(true)
+  const [isLoadingTopServices, setIsLoadingTopServices] = useState(true)
 
   // Use useImperativeHandle to expose the custom method
   useImperativeHandle(ref, () => ({
     refresh(timeRange) {
-      setIsLoadingTopFiveCritical(true)
+      setIsLoadingPieChart(true)
+      setIsLoadingTopServices(true)
       fetchData(timeRange)
     },
   }));
 
   useEffect(() => {
-    setIsLoadingTopFiveCritical(true)
+    setIsLoadingPieChart(true)
+    setIsLoadingTopServices(true)
     fetchData()
-  }, [timeRange])
-  
+  }, [timeRange, selectedDataSource])
+
   function fetchData(customTimeRange?: string) {
     const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange);
+    const paramsTime = { start_time: startTime, end_time: endTime };
+    const params = { type: selectedDataSource, ...paramsTime };
 
-    GetTopFiveCritical({ start_time: startTime, end_time: endTime })
+    // Fetch Pie Chart Data
+    GetPieChartsOverview(params)
       .then((res) => {
-        setTopFiveCriticalData(res.data ?? [])
+        setPieChartData(res.data.data);
+        setIsLoadingPieChart(false);
       })
-      .finally(() => {
-        setIsLoadingTopFiveCritical(false);
+      .catch(() => {
+        setPieChartData([]);
+        setIsLoadingPieChart(false);
+      });
+
+    // Fetch Top Services Data
+    GetTopServicesOverview(params)
+      .then((res) => {
+        setTopServicesData(res.data);
+        setIsLoadingTopServices(false);
       })
+      .catch(() => {
+        setTopServicesData(null);
+        setIsLoadingTopServices(false);
+      });
   }
 
   const handleStartEnd = (time: string) => {
@@ -79,12 +111,55 @@ const AnomalyOverviewPanel = forwardRef<AnomalyOverviewPanelHandle, AnomalyOverv
   return (
     <div className="grid grid-cols-1 gap-4">
       <div className="flex flex-col gap-8 card">
-        <span className="font-bold text-white text-2xl">Highlighted Anomalies</span>
-        <TableTopCritical
-          data={topFiveCriticalData}
-          isLoading={isLoadingTopFiveCritical}
-          queryParams={queryParams}
-        />
+        <div className="flex justify-between items-center">
+          <span className="font-bold text-white text-2xl">Anomaly Overview</span>
+          {!isFullscreen && <DropdownDS
+            onSelectData={(e) => setSelectedDataSource(e)}
+            selectedData={selectedDataSource}
+          />}
+        </div>
+        <div className="grid grid-cols-2 2xl:flex 2xl:flex-col gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <DonutChartWrapper
+              isLoading={isLoadingPieChart}
+            >
+              <DonutChart
+                series={pieChartData.map((item: any) => item.count)}
+                labels={pieChartData.map((sditem: any) => SEVERITY_LABELS[sditem.severity])}
+              />
+            </DonutChartWrapper>
+            <TableSeverityWrapper
+              isLoading={isLoadingPieChart}
+            >
+              <TableSeverity
+                tableHeader={thSeverity}
+                data={pieChartData}
+                clickable={selectedDataSource?.length > 0}
+                queryParams={{
+                  time_range: timeRange,
+                  data_source: selectedDataSource
+                }}
+              />
+            </TableSeverityWrapper>
+          </div>
+          <TableServicesWrapper
+            isLoading={isLoadingTopServices}
+          >
+            <TableServices
+              data={topServicesData?.data}
+              tableHeader={topServicesData?.header ?? []}
+              dataKeys={configDataKey}
+              maxHeight={tableServiceMaxHeight}
+              selectedDataSource={selectedDataSource}
+              queryParams={{
+                time_range: timeRange,
+              }}
+            />
+            <TooltipServiceCollection
+              data={topServicesData?.data}
+            />
+          </TableServicesWrapper>
+        </div>
       </div>
     </div>
   )
