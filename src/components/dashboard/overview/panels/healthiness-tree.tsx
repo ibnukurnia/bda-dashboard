@@ -227,6 +227,13 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     score: 100,
     severity: 0,
   })
+  const [hostData, setHostData] = useState({
+    title: 'Host',
+    dataSource: 'host',
+    iconName: 'node-icon-host.svg',
+    score: 100,
+    severity: 0,
+  })
   const [vmData, setVmData] = useState({
     title: 'VM',
     dataSource: 'vm',
@@ -327,9 +334,9 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     severity: 0,
   })
   const [appsExpanded, setAppsExpanded] = useState(true)
-  const [computeExpanded, setComputeExpanded] = useState(false)
-  const [securityExpanded, setSecurityExpanded] = useState(false)
-  const [networkExpanded, setNetworkExpanded] = useState(false)
+  const [computeExpanded, setComputeExpanded] = useState(true)
+  const [securityExpanded, setSecurityExpanded] = useState(true)
+  const [networkExpanded, setNetworkExpanded] = useState(true)
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -354,6 +361,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     const security = data.find(d => d.data_source === "security")
 
     const storage = data.find(d => d.data_source === "storage")
+    const host = data.find(d => d.data_source === "host")
     const vm = data.find(d => d.data_source === "vm")
     const compute = data.find(d => d.data_source === "compute")
 
@@ -390,6 +398,10 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     setStorageData(prev => ({
       ...prev,
       ...storage,
+    }))
+    setHostData(prev => ({
+      ...prev,
+      ...host,
     }))
     setVmData(prev => ({
       ...prev,
@@ -611,7 +623,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             expanded={computeExpanded}
             handleOnClick={() => setComputeExpanded(prev => !prev)}
           >
-            <div className='pb-4 px-8 grid grid-cols-2 gap-4 justify-center'>
+            <div className='pb-4 px-8 grid grid-cols-3 gap-4 justify-center'>
               <Node
                 className='h-28'
                 title={storageData.title}
@@ -619,6 +631,14 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
                 iconName={storageData.iconName}
                 score={storageData.score}
                 severity={storageData.severity}
+              />
+              <Node
+                className='h-28'
+                title={hostData.title}
+                dataSource={hostData.dataSource}
+                iconName={hostData.iconName}
+                score={hostData.score}
+                severity={hostData.severity}
               />
               <Node
                 className='h-28'
@@ -630,6 +650,34 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               />
             </div>
           </GroupNode>
+          {!appsExpanded && securityExpanded && !networkExpanded && 
+            <svg
+              className={`absolute transform scale-x-[-1]`}
+              height={66}
+              width={83}
+              xmlns="http://www.w3.org/2000/svg"
+              style={{
+                top: computeExpanded ? '-110px' : '-149px',
+                left: `calc(50% - 81px)`,
+              }}
+            >
+              <path d={`M 81 1 C 1 1 1 1 1 63.1`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+            </svg>
+          }
+          {!appsExpanded && networkExpanded &&
+            <svg
+              className={`absolute`}
+              height={66}
+              width={!securityExpanded ? 205 : 99}
+              xmlns="http://www.w3.org/2000/svg"
+              style={{
+                top: computeExpanded ? '-112px' : '-151px',
+                left: `50%`,
+              }}
+            >
+              <path d={`M ${!securityExpanded ? 205 : 99} 1 C 1 1 1 1 1 65.1`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+            </svg>
+          }
           <svg
             className={`absolute`}
             height={getVerticalLinkHeight()}
