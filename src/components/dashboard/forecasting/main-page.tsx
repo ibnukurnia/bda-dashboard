@@ -110,6 +110,7 @@ const MainPageForecasting = () => {
   const chartIntervalUpdate = useMemo(() => {
     return (
       <SynchronizedCharts
+        chartTitle={`${filter.serviceName?.length ? filter.serviceName + ' - ' : ''} ${filter.sourceData}`}
         dataCharts={graphData.map((el) => ({
           ...el,
           title: el?.title?.toLowerCase()?.includes('existing') ? 'Actual' : el?.title,

@@ -152,3 +152,21 @@
   right: 60px;
   top: 0;
 }
+
+@keyframes blinking {
+  0% {
+      opacity: 1;
+  }
+
+  50% {
+      opacity: .75;
+  }
+
+  100% {
+      opacity: .5;
+  }
+}
+
+.blinking {
+  animation: blinking 1s infinite;
+}

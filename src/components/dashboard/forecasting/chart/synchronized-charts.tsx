@@ -41,12 +41,12 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 
   // Format numbers to include commas, e.g., 1000 -> 1,000
   const formatNumber = (val: number) => {
-    return val.toLocaleString('en-US')
+    return val?.toLocaleString('en-US')
   }
 
   // Function to check service name and apply currency formatting
-  const formatWithCurrency = (val: number, title: string) => {
-    if (title === 'sales_volume') { // Replace 'x' with the actual service name you want to check for
+  const formatWithCurrency = (val: number, title?: string) => {
+    if (title?.trim() === 'sales_volume') { // Replace 'x' with the actual service name you want to check for
       return `Rp. ${formatNumber(val)}`
     }
     return formatNumber(val)
@@ -133,13 +133,10 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
         style: {
           colors: 'white', // White color for y-axis text
         },
-        formatter: (val, opts) => {
-          const firstData = opts?.w?.globals?.series[0];
-          const serviceName = firstData?.name || ''; // Replace with how you identify the service name
-
+        formatter: (val) => {
           // If it's a number, apply formatting
           if (!isNaN(val)) {
-            return formatWithCurrency(val, serviceName);
+            return formatWithCurrency(val, chartTitle);
           }
           return val?.toString(); // Return string as is if not a number
         },
