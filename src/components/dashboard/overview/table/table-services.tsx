@@ -75,7 +75,11 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
                             {sdt?.[cdk]}
                           </Link>
                         ) : (
-                          <span>{sdt?.[cdk as keyof Omit<TopServiceData, "detail_cluster">]}</span>
+                          <span
+                            className={cdk === 'very_high' && sdt.very_high > 0 || cdk === 'high' && sdt.high > 0 ? 'blinking text-[#FF4E42] font-bold' : ''}
+                          >
+                            {sdt?.[cdk as keyof Omit<TopServiceData, "detail_cluster">]}
+                          </span>
                         )}
                       </div>
                     </td>
