@@ -16,4 +16,5 @@
 
 .scrollbar th {
   background-color: #060f2c;
+  z-index: 1;
 }
