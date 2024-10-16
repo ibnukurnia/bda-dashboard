@@ -83,6 +83,8 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'k8s_db': "Database",
   'redis': "Redis",
   'ivat': "IVAT",
+  'solarwinds': "Solar Winds",
+  'dns_rt': "DNS",
   'panw': "PANW",
   'forti': "FORTI",
   'waf': "WAF",

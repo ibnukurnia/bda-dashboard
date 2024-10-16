@@ -60,8 +60,8 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
     GetHealthScoreOverview(paramsTime)
       .then((res) => {
         if (res.data == null) throw Error("Empty response data")
-        let totalScore = data.reduce((total, d) => total + d.score, 0)
-        setTotalBrimoHealth(totalScore / data.length)
+        let totalScore = res.data.reduce((total, d) => total + d.score, 0)
+        setTotalBrimoHealth(totalScore / res.data.length)
         setData(res.data)
         setIsError(false)
       })

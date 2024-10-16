@@ -19,6 +19,8 @@ import LatestAnomalyPanel, { LatestAnomalyPanelHandle } from './panels/latest-an
 import AnomalyAmountPanel, { AnomalyAmountPanelHandle } from './panels/anomaly-amount-panel'
 import TopCriticalPanel, { TopCriticalPanelHandle } from './panels/top-critical-panel'
 import AnomalyOverviewPanel, { AnomalyOverviewPanelHandle } from './panels/anomaly-overview-panel'
+import { handleStartEnd } from '@/helper'
+import useUpdateEffect from '@/hooks/use-update-effect'
 
 const toMiliseconds = 1000 * 60
 
@@ -35,6 +37,7 @@ const MainPageOverview = () => {
   const [tableServiceMaxHeight, setTableServiceMaxHeight] = useState(192)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
+  const [lastTimeRange, setLastTimeRange] = useState(handleStartEnd(selectedRange))
   const [chartData, setChartData] = useState<any[]>([])
   const [isLoadingGraphic, setIsLoadingGraphic] = useState(true)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
@@ -50,26 +53,6 @@ const MainPageOverview = () => {
   const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
   const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
   const handle = useFullScreenHandle();
-
-  const handleStartEnd = (time: string) => {
-    const timeSplit = time.split(' - ')
-
-    let startTime: string | Date
-    let endTime: string | Date
-
-    if (timeSplit.length > 1) {
-      startTime = timeSplit?.[0]
-      endTime = timeSplit?.[1]
-    } else {
-      startTime = format(new Date(new Date().getTime() - toMiliseconds * timeRanges[time]), 'yyyy-MM-dd HH:mm:ss')
-      endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-    }
-
-    return { startTime, endTime }
-  }
-
-  // Get start and end times from selected range for passing to DynamicUpdatingChart
-  const { startTime, endTime } = handleStartEnd(selectedRange)
 
   const handleChangeTimeRange = (time: string) => {
     const { startTime, endTime } = handleStartEnd(time);
@@ -198,6 +181,11 @@ const MainPageOverview = () => {
     }
   }, [])
 
+  useUpdateEffect(() => {
+    const { startTime, endTime } = handleStartEnd(selectedRange)
+    setLastTimeRange({ startTime: startTime, endTime:endTime })
+  }, [selectedRange])
+  
   useLayoutEffect(() => {
     handleTableServiceHeight()
   }, [topCriticalRef])
@@ -243,24 +231,24 @@ const MainPageOverview = () => {
           <div className="flex-1 grid gap-8">
             <BRImoEndToEndPanel
               ref={brimoEndToEndRef}
-              timeRange={autoRefresh ? selectedRange : `${startTime} - ${endTime}`}
+              timeRange={autoRefresh ? selectedRange : `${lastTimeRange.startTime} - ${lastTimeRange.endTime}`}
             />
             <div className="grid 2xl:grid-cols-2 grid-cols-1 gap-8">
               <AnomalyOverviewPanel
                 ref={anomalyOverviewRef}
-                timeRange={autoRefresh ? selectedRange : `${startTime} - ${endTime}`}
+                timeRange={autoRefresh ? selectedRange : `${lastTimeRange.startTime} - ${lastTimeRange.endTime}`}
                 isFullscreen={handle.active}
                 tableServiceMaxHeight={tableServiceMaxHeight}
               />
               <TopCriticalPanel
                 ref={topCriticalRef}
-                timeRange={autoRefresh ? selectedRange : `${startTime} - ${endTime}`}
+                timeRange={autoRefresh ? selectedRange : `${lastTimeRange.startTime} - ${lastTimeRange.endTime}`}
               />
             </div>
 
             <LatestAnomalyPanel
               ref={latestAnomalyRef}
-              timeRange={autoRefresh ? selectedRange : `${startTime} - ${endTime}`}
+              timeRange={autoRefresh ? selectedRange : `${lastTimeRange.startTime} - ${lastTimeRange.endTime}`}
               isFullscreen={handle.active}
             />
 
@@ -275,8 +263,8 @@ const MainPageOverview = () => {
                         series={item.data}
                         spike={item.last_spike}
                         id={id}
-                        startTime={startTime} // Pass the calculated startTime
-                        endTime={endTime} // Pass the calculated endTime
+                        startTime={lastTimeRange.startTime}
+                        endTime={lastTimeRange.endTime}
                       />
                     </div>
                   ))}
@@ -286,7 +274,7 @@ const MainPageOverview = () => {
 
             <AnomalyAmountPanel
               ref={anomalyAmountRef}
-              timeRange={autoRefresh ? selectedRange : `${startTime} - ${endTime}`}
+              timeRange={autoRefresh ? selectedRange : `${lastTimeRange.startTime} - ${lastTimeRange.endTime}`}
               isFullscreen={handle.active}
             />
           </div>
