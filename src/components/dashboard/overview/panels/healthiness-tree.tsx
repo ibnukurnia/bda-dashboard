@@ -4,6 +4,7 @@ import { HealthScoreResponse } from '@/modules/models/overviews';
 import { formatNumberWithCommas } from '@/helper';
 import { Typography } from '@mui/material';
 import CollapseIcon from '@/components/system/Icon/CollapseIcon';
+import Link from 'next/link';
 
 const getColor = (severity: number) => {
   if (severity === 0 || severity === 3) {
@@ -18,9 +19,32 @@ const getColor = (severity: number) => {
   return '213,213,213'
 }
 
+interface ConditionalLinkProps {
+  dataSource?: string;
+  children: React.ReactNode
+}
+const ConditionalLink: React.FC<ConditionalLinkProps> = ({ dataSource, children }) => {
+  return dataSource ? (
+    <Link
+      className='inline-block hover:bg-white hover:bg-opacity-20 rounded text-center'
+      href={{
+        pathname: '/dashboard/root-cause-analysis',
+        query: {
+          data_source: dataSource,
+        },
+      }}
+    >
+      {children}
+    </Link>
+  ) : (
+    <>{children}</>
+  );
+};
+
 interface NodeProps {
   className?: string;
   title: string;
+  dataSource?: string;
   iconName: string;
   score: number;
   severity: number;
@@ -29,45 +53,50 @@ interface NodeProps {
 const Node = forwardRef<HTMLDivElement, NodeProps>(({
   className,
   title,
+  dataSource,
   iconName,
   score,
   severity,
   handleOnClick,
 }, ref) => (
-  <div className={`${className} ${handleOnClick != null ? 'cursor-pointer' : ''} flex flex-col items-center`} onClick={handleOnClick}>
-    <div
-      ref={ref}
-      className={`w-[52px] h-[52px] flex justify-center items-center rounded-2xl ${severity === 1 ? "blinking-bg" : ""} bg-[rgb(${getColor(severity)})]`}
-      style={{
-        '--dynamic-color': getColor(severity),
-        backgroundColor: 'rgb(var(--dynamic-color))',
-      } as React.CSSProperties}
+  <div className={`${className} ${handleOnClick != null ? 'cursor-pointer hover:bg-white hover:bg-opacity-20 rounded' : ''} flex flex-col items-center`} onClick={handleOnClick}>
+    <ConditionalLink
+      dataSource={dataSource}
     >
-      <img
-        src={`/assets/dashboard/overview/${iconName}`}
-        width={29}
-        height={28}
-        alt='logo'
-      />
-    </div>
-    <Typography
-      fontWeight={600}
-      fontSize={16}
-      color={'white'}
-      lineHeight={'19.5px'}
-      align='center'
-      sx={{ whiteSpace: 'pre-wrap' }}
-    >
-      {title}
-    </Typography>
-    <Typography
-      fontWeight={500}
-      fontSize={14}
-      color={'#FFFFFFBF'}
-      lineHeight={'17.07px'}
-    >
-      {score ? formatNumberWithCommas(score, 2) : score}%
-    </Typography>
+      <div
+        ref={ref}
+        className={`w-[52px] h-[52px] m-auto flex justify-center items-center rounded-2xl ${severity === 1 ? "blinking-bg" : ""} bg-[rgb(${getColor(severity)})]`}
+        style={{
+          '--dynamic-color': getColor(severity),
+          backgroundColor: 'rgb(var(--dynamic-color))',
+        } as React.CSSProperties}
+      >
+        <img
+          src={`/assets/dashboard/overview/${iconName}`}
+          width={29}
+          height={28}
+          alt='logo'
+        />
+      </div>
+      <Typography
+        fontWeight={600}
+        fontSize={16}
+        color={'white'}
+        lineHeight={'19.5px'}
+        align='center'
+        sx={{ whiteSpace: 'pre-wrap' }}
+      >
+        {title}
+      </Typography>
+      <Typography
+        fontWeight={500}
+        fontSize={14}
+        color={'#FFFFFFBF'}
+        lineHeight={'17.07px'}
+      >
+        {score ? formatNumberWithCommas(score, 2) : score}%
+      </Typography>
+    </ConditionalLink>
   </div>
 ))
 
@@ -132,7 +161,7 @@ const GroupNode: React.FC<GroupProps> = ({
           </Typography>
         </div>
         <button
-          className=' py-1 px-3 flex gap-[5px] items-center rounded-md bg-white bg-opacity-10'
+          className=' py-1 px-3 flex gap-[5px] items-center rounded-md bg-white bg-opacity-10 hover:bg-opacity-20'
           onClick={handleOnClick}
         >
           <CollapseIcon />
@@ -164,24 +193,28 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
 
   const [firewallData, setFirewallData] = useState({
     title: 'Firewall',
+    dataSource: 'firewall',
     iconName: 'node-icon-firewall.svg',
     score: 100,
     severity: 0,
   })
   const [ssloData, setSsloData] = useState({
     title: 'SSLO',
+    dataSource: 'sslo',
     iconName: 'node-icon-sslo.svg',
     score: 100,
     severity: 0,
   })
   const [wafData, setWafData] = useState({
     title: 'WAF',
+    dataSource: 'waf',
     iconName: 'node-icon-waf.svg',
     score: 100,
     severity: 0,
   })
   const [securityData, setSecurityData] = useState({
     title: 'Security',
+    dataSource: 'security',
     iconName: 'node-icon-security.svg',
     score: 100,
     severity: 0,
@@ -189,18 +222,21 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
 
   const [storageData, setStorageData] = useState({
     title: 'Storage',
+    dataSource: 'storage',
     iconName: 'node-icon-storage.svg',
     score: 100,
     severity: 0,
   })
   const [vmData, setVmData] = useState({
     title: 'VM',
+    dataSource: 'vm',
     iconName: 'node-icon-vm.svg',
     score: 100,
     severity: 0,
   })
   const [computeData, setComputeData] = useState({
     title: 'Compute',
+    dataSource: 'compute',
     iconName: 'node-icon-compute.svg',
     score: 100,
     severity: 0,
@@ -208,36 +244,42 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
 
   const [f5Data, setF5Data] = useState({
     title: 'F5',
+    dataSource: 'f5',
     iconName: 'node-icon-f5.svg',
     score: 100,
     severity: 0,
   })
   const [ivatData, setIvatData] = useState({
     title: 'IVAT',
+    dataSource: 'ivat',
     iconName: 'node-icon-ivat.svg',
     score: 100,
     severity: 0,
   })
   const [dwdmData, setDwdmData] = useState({
     title: 'DWDM',
+    dataSource: 'dwdm',
     iconName: 'node-icon-dwdm.svg',
     score: 100,
     severity: 0,
   })
   const [dnsData, setDnsData] = useState({
     title: 'DNS',
+    dataSource: 'dns_rt',
     iconName: 'node-icon-dns.svg',
     score: 100,
     severity: 0,
   })
   const [perangkatInternalData, setPerangkatInternalData] = useState({
     title: 'Perangkat\nInternal',
+    dataSource: 'perangkat_internal',
     iconName: 'node-icon-perangkat-internal.svg',
     score: 100,
     severity: 0,
   })
   const [networkData, setNetworkData] = useState({
     title: 'Network',
+    dataSource: 'network',
     iconName: 'node-icon-network.svg',
     score: 100,
     severity: 0,
@@ -245,30 +287,35 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
 
   const [apmData, setApmData] = useState({
     title: 'APM',
+    dataSource: 'apm',
     iconName: 'node-icon-apm.svg',
     score: 100,
     severity: 0,
   })
   const [brimoData, setBrimoData] = useState({
     title: 'BRImo',
+    dataSource: 'brimo',
     iconName: 'node-icon-brimo.svg',
     score: 100,
     severity: 0,
   })
   const [ocpData, setOcpData] = useState({
     title: 'OCP',
+    dataSource: 'k8s_prometheus',
     iconName: 'node-icon-ocp.svg',
     score: 100,
     severity: 0,
   })
   const [databaseData, setDatabaseData] = useState({
     title: 'Database',
+    dataSource: 'k8s_db',
     iconName: 'node-icon-database.svg',
     score: 100,
     severity: 0,
   })
   const [redisData, setRedisData] = useState({
     title: 'Redis',
+    dataSource: 'k8s_redis',
     iconName: 'node-icon-redis.svg',
     score: 100,
     severity: 0,
@@ -313,7 +360,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     const f5 = data.find(d => d.data_source === "f5")
     const ivat = data.find(d => d.data_source === "ivat")
     const dwdm = data.find(d => d.data_source === "dwdm")
-    const dns = data.find(d => d.data_source === "dns")
+    const dns = data.find(d => d.data_source === "dns_rt")
     const perangkatInternal = data.find(d => d.data_source === "perangkat_internal")
     const network = data.find(d => d.data_source === "network")
 
@@ -459,7 +506,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
                 <svg
                   className='absolute top-0 right-14'
                   width={dimensions.width / 2.5 - 30}
-                  height={dimensions.height}
+                  height={dimensions.height / 2}
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path d={`M ${dimensions.width / 2.5} 26 C 0 26 0 26 0 84`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
@@ -467,6 +514,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
                 </svg>
                 <Node
                   title={ocpData.title}
+                  dataSource={ocpData.dataSource}
                   iconName={ocpData.iconName}
                   score={ocpData.score}
                   severity={ocpData.severity}
@@ -474,7 +522,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
                 <svg
                   className='absolute top-0 left-14'
                   width={dimensions.width / 2.5}
-                  height={dimensions.height}
+                  height={dimensions.height / 2}
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path d={`M 0 26 C ${dimensions.width / 5 - 30} 26 ${dimensions.width / 5 - 30} 26 ${dimensions.width / 5 - 30} 84`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
@@ -484,12 +532,14 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             </div>
             <Node
               title={apmData.title}
+              dataSource={apmData.dataSource}
               iconName={apmData.iconName}
               score={apmData.score}
               severity={apmData.severity}
             />
             <Node
               title={brimoData.title}
+              dataSource={brimoData.dataSource}
               iconName={brimoData.iconName}
               score={brimoData.score}
               severity={brimoData.severity}
@@ -497,12 +547,14 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             <div />
             <Node
               title={databaseData.title}
+              dataSource={databaseData.dataSource}
               iconName={databaseData.iconName}
               score={databaseData.score}
               severity={databaseData.severity}
             />
             <Node
               title={redisData.title}
+              dataSource={redisData.dataSource}
               iconName={redisData.iconName}
               score={redisData.score}
               severity={redisData.severity}
@@ -513,39 +565,42 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
       <div
         className='relative flex justify-center items-center gap-10'
       >
-          <GroupNode
-            className='w-auto'
-            title={securityData.title}
-            iconName={securityData.iconName}
-            score={securityData.score}
-            severity={securityData.severity}
-            expanded={securityExpanded}
-            handleOnClick={() => setSecurityExpanded(prev => !prev)}
-          >
-            <div className='pb-4 px-8 grid grid-cols-3 gap-4 justify-center'>
-              <Node
-                className='h-28'
-                title={firewallData.title}
-                iconName={firewallData.iconName}
-                score={firewallData.score}
-                severity={firewallData.severity}
-              />
-              <Node
-                className='h-28'
-                title={ssloData.title}
-                iconName={ssloData.iconName}
-                score={ssloData.score}
-                severity={ssloData.severity}
-              />
-              <Node
-                className='h-28'
-                title={wafData.title}
-                iconName={wafData.iconName}
-                score={wafData.score}
-                severity={wafData.severity}
-              />
-            </div>
-          </GroupNode>
+        <GroupNode
+          className='w-auto'
+          title={securityData.title}
+          iconName={securityData.iconName}
+          score={securityData.score}
+          severity={securityData.severity}
+          expanded={securityExpanded}
+          handleOnClick={() => setSecurityExpanded(prev => !prev)}
+        >
+          <div className='pb-4 px-8 grid grid-cols-3 gap-4 justify-center'>
+            <Node
+              className='h-28'
+              title={firewallData.title}
+              dataSource={firewallData.dataSource}
+              iconName={firewallData.iconName}
+              score={firewallData.score}
+              severity={firewallData.severity}
+            />
+            <Node
+              className='h-28'
+              title={ssloData.title}
+              dataSource={ssloData.dataSource}
+              iconName={ssloData.iconName}
+              score={ssloData.score}
+              severity={ssloData.severity}
+            />
+            <Node
+              className='h-28'
+              title={wafData.title}
+              dataSource={wafData.dataSource}
+              iconName={wafData.iconName}
+              score={wafData.score}
+              severity={wafData.severity}
+            />
+          </div>
+        </GroupNode>
         <div className='relative'>
           <GroupNode
             className='w-auto'
@@ -560,6 +615,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               <Node
                 className='h-28'
                 title={storageData.title}
+                dataSource={storageData.dataSource}
                 iconName={storageData.iconName}
                 score={storageData.score}
                 severity={storageData.severity}
@@ -567,6 +623,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               <Node
                 className='h-28'
                 title={vmData.title}
+                dataSource={vmData.dataSource}
                 iconName={vmData.iconName}
                 score={vmData.score}
                 severity={vmData.severity}
@@ -623,6 +680,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             <Node
               className='h-28'
               title={f5Data.title}
+              dataSource={f5Data.dataSource}
               iconName={f5Data.iconName}
               score={f5Data.score}
               severity={f5Data.severity}
@@ -630,6 +688,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             <Node
               className='h-28'
               title={ivatData.title}
+              dataSource={ivatData.dataSource}
               iconName={ivatData.iconName}
               score={ivatData.score}
               severity={ivatData.severity}
@@ -637,6 +696,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             <Node
               className='h-28'
               title={dwdmData.title}
+              dataSource={dwdmData.dataSource}
               iconName={dwdmData.iconName}
               score={dwdmData.score}
               severity={dwdmData.severity}
@@ -644,6 +704,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             <Node
               className='h-28'
               title={dnsData.title}
+              dataSource={dnsData.dataSource}
               iconName={dnsData.iconName}
               score={dnsData.score}
               severity={dnsData.severity}
@@ -651,6 +712,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             <Node
               className='h-28'
               title={perangkatInternalData.title}
+              dataSource={perangkatInternalData.dataSource}
               iconName={perangkatInternalData.iconName}
               score={perangkatInternalData.score}
               severity={perangkatInternalData.severity}
