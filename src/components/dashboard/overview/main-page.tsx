@@ -2,7 +2,6 @@
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './main-page.css'
-import { format } from 'date-fns'
 import { Maximize } from 'react-feather'
 import {
   GetChartsOverview,
@@ -21,8 +20,6 @@ import TopCriticalPanel, { TopCriticalPanelHandle } from './panels/top-critical-
 import AnomalyOverviewPanel, { AnomalyOverviewPanelHandle } from './panels/anomaly-overview-panel'
 import { handleStartEnd } from '@/helper'
 import useUpdateEffect from '@/hooks/use-update-effect'
-
-const toMiliseconds = 1000 * 60
 
 const defaultTimeRanges: Record<string, number> = {
   'Last 5 minutes': 5,

@@ -1,7 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import { TopServicesResponse } from '@/modules/models/overviews'
 import { GetPieChartsOverview, GetTopServicesOverview } from '@/modules/usecases/overviews'
-import { format } from 'date-fns'
 import DropdownDS from '../button/dropdown-ds'
 import DonutChartWrapper from '../wrapper/donut-wrapper'
 import DonutChart from '../chart/donut-chart'
@@ -11,20 +10,10 @@ import TableServicesWrapper from '../wrapper/table-services-wrapper'
 import TableServices from '../table/table-services'
 import TooltipServiceCollection from '../collection/tooltip-service-collection'
 import { SEVERITY_LABELS } from '@/constants'
+import { handleStartEnd } from '@/helper'
 
 const thSeverity = ['Severity', 'Count']
 const configDataKey = ['service_name', 'very_high', 'high', 'medium']
-
-const toMiliseconds = 1000 * 60
-
-const defaultTimeRanges: Record<string, number> = {
-  'Last 5 minutes': 5,
-  'Last 10 minutes': 10,
-  'Last 15 minutes': 15,
-  'Last 30 minutes': 30,
-  'Last 1 hours': 60,
-  'Last 3 hours': 180,
-}
 
 interface AnomalyOverviewPanelProps {
   timeRange: string
@@ -42,7 +31,7 @@ const AnomalyOverviewPanel = forwardRef<AnomalyOverviewPanelHandle, AnomalyOverv
   tableServiceMaxHeight,
   isFullscreen,
 }, ref) => {
-  const [selectedDataSource, setSelectedDataSource] = useState<string>('')
+  const [selectedDataSource, setSelectedDataSource] = useState<string | null | undefined>(null)
   const [pieChartData, setPieChartData] = useState([])
   const [topServicesData, setTopServicesData] = useState<TopServicesResponse | null>(null)
   const [isLoadingPieChart, setIsLoadingPieChart] = useState(true)
@@ -66,7 +55,7 @@ const AnomalyOverviewPanel = forwardRef<AnomalyOverviewPanelHandle, AnomalyOverv
   function fetchData(customTimeRange?: string) {
     const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange);
     const paramsTime = { start_time: startTime, end_time: endTime };
-    const params = { type: selectedDataSource, ...paramsTime };
+    const params = { ...paramsTime, type: selectedDataSource };
 
     // Fetch Pie Chart Data
     GetPieChartsOverview(params)
@@ -89,23 +78,6 @@ const AnomalyOverviewPanel = forwardRef<AnomalyOverviewPanelHandle, AnomalyOverv
         setTopServicesData(null);
         setIsLoadingTopServices(false);
       });
-  }
-
-  const handleStartEnd = (time: string) => {
-    const timeSplit = time.split(' - ')
-
-    let startTime: string | Date
-    let endTime: string | Date
-
-    if (timeSplit.length > 1) {
-      startTime = timeSplit?.[0]
-      endTime = timeSplit?.[1]
-    } else {
-      startTime = format(new Date(new Date().getTime() - toMiliseconds * defaultTimeRanges[time]), 'yyyy-MM-dd HH:mm:ss')
-      endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-    }
-
-    return { startTime, endTime }
   }
 
   return (
@@ -134,7 +106,7 @@ const AnomalyOverviewPanel = forwardRef<AnomalyOverviewPanelHandle, AnomalyOverv
               <TableSeverity
                 tableHeader={thSeverity}
                 data={pieChartData}
-                clickable={selectedDataSource?.length > 0}
+                clickable={selectedDataSource != null}
                 queryParams={{
                   time_range: timeRange,
                   data_source: selectedDataSource

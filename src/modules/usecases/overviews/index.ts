@@ -2,6 +2,7 @@ import { get } from '@/common/api'
 import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 import {
   AnomalyAmountResponse,
+  DataSourceAnomalyOverviewResponse,
   HealthScoreResponse,
   InsightOverviewResponse,
   MetricsOverviewResponse,
@@ -52,7 +53,20 @@ const GetChartsOverview = async (params?: any) => {
   return response
 }
 
-const GetPieChartsOverview = async (params?: { type: string; start_time: string | Date; end_time: string | Date }) => {
+const GetDataSourceAnomalyOverview   = async () => {
+  const response: ApiResponse<DataSourceAnomalyOverviewResponse[]> = await get('overview/top-services/list-data-source', {
+    withAuth: true,
+  });
+
+  return response;
+};
+
+
+const GetPieChartsOverview = async (params?: {
+  start_time: string | Date;
+  end_time: string | Date;
+  type?: string | null;
+}) => {
   const response: ApiResponse<any> = await get('overview/piechart', {
     withAuth: true,
     queries: params,
@@ -62,9 +76,9 @@ const GetPieChartsOverview = async (params?: { type: string; start_time: string 
 }
 
 const GetTopServicesOverview = async (params?: {
-  type: string
   start_time: string | Date
   end_time: string | Date
+  type?: string | null
 }) => {
   const response: ApiResponse<TopServicesResponse> = await get('overview/top-services', {
     withAuth: true,
@@ -142,6 +156,7 @@ export {
   GetMetricsOverview,
   GetChartsOverview,
   GetHealthScoreOverview,
+  GetDataSourceAnomalyOverview,
   GetPieChartsOverview,
   GetTopServicesOverview,
   GetDataSourceLatestAnomaly,

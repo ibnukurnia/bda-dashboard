@@ -9,7 +9,7 @@ interface TableSeverityProps {
     time_range?: string;
     startTime?: string;  // Add optional startTime
     endTime?: string;
-    data_source?: string;
+    data_source?: string | null;
   };
 }
 

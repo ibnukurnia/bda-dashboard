@@ -20,7 +20,7 @@ interface TableServicesProps {
   dataKeys: string[];
   data: TopServiceData[] | null | undefined;
   maxHeight?: number | string;
-  selectedDataSource: string;
+  selectedDataSource?: string | null;
   queryParams?: {
     time_range?: string;
   };
@@ -67,7 +67,7 @@ const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSou
                               pathname: '/dashboard/root-cause-analysis',
                               query: {
                                 ...queryParams,
-                                data_source: selectedDataSource?.length > 0 ? selectedDataSource : LABELS_TO_NAMESPACE[sdt?.[cdk]],
+                                data_source: selectedDataSource ?? LABELS_TO_NAMESPACE[sdt?.[cdk]],
                               },
                             }}
                             passHref

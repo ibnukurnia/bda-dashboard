@@ -5,10 +5,10 @@ import { paths } from '@/paths'
 
 export const navItems: NavItemConfig[] = [
   { key: 'overview', href: paths.dashboard.overview, icon: 'menu-overview' },
+  { key: 'root-cause-anaylis', href: paths.dashboard.rootCauseAnalysis, icon: 'menu-root-cause-analysis' },
   { key: 'anomaly-detection', href: paths.dashboard.anomaly, icon: 'menu-anomaly-detection' },
   // { key: 'situation', href: paths.dashboard.situation, icon: 'database' },
   { key: 'forecasting', href: paths.dashboard.forecasting, icon: 'menu-forecasting' },
-  { key: 'root-cause-anaylis', href: paths.dashboard.rootCauseAnalysis, icon: 'menu-root-cause-analysis' },
   { key: 'anomaly-notification', href: paths.dashboard.anomalyNotification, icon: 'bell' },
   { key: 'users-management', href: paths.dashboard.userManagement, icon: 'menu-user-management' },
   // { key: 'settings', title: 'Settings', href: paths.dashboard.settings, icon: 'gear-six' },

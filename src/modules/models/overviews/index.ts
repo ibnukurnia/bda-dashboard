@@ -68,6 +68,11 @@ export interface HealthScoreResponse {
   severity: number
 }
 
+export interface DataSourceAnomalyOverviewResponse {
+  key: string
+  title: string
+}
+
 interface DetailCluster {
   cluster: string
   very_high: number
