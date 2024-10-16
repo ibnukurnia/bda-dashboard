@@ -334,6 +334,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             format(new Date(maxX), 'yyyy-MM-dd HH:mm:ss'),
         )
     }
+
     const handleOnApplyFilter = (selectedScales: ColumnOption[], selectedCluster: ClusterOptionResponse[], selectedService: string | null) => {
         setSelectedFilter({
             scale: selectedScales,
@@ -342,6 +343,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         })
 
     }
+
     const handleSelectToggle = (value: ToggleOption) => {
         setSelectedGraphToggle(value)
     }

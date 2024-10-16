@@ -6,12 +6,13 @@ import { AnomalyAmountResponse } from '@/modules/models/overviews';
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 interface AnomalyAmountChartProps {
-  data: AnomalyAmountResponse[] | null; // Array of series with service name and data
-  startTime: string; // Add startTime prop
-  endTime: string; // Add endTime prop
+  data: AnomalyAmountResponse[] | null;
+  startTime: string;
+  endTime: string;
+  onZoomOut: (newStartTime: string, newEndTime: string) => void; // Add the zoom-out handler
 }
 
-const AnomalyAmountChart = ({ data = [], startTime, endTime }: AnomalyAmountChartProps) => {
+const AnomalyAmountChart = ({ data = [], startTime, endTime, onZoomOut }: AnomalyAmountChartProps) => {
   // Ensure series is always treated as an array
   const validSeries = Array.isArray(data) ? data : [];
 
@@ -34,18 +35,76 @@ const AnomalyAmountChart = ({ data = [], startTime, endTime }: AnomalyAmountChar
       type: 'line',
       height: 300,
       toolbar: {
-        show: false,
+        show: true, // Enable the toolbar for zoom in/out/reset controls
+        tools: {
+          zoom: false,
+          zoomin: true,
+          zoomout: true,
+          pan: false,
+          reset: false, // Allows reset zoom functionality
+          download: false,
+        },
+        autoSelected: 'zoom', // Set zoom as the default selected tool
       },
       zoom: {
-        enabled: false,
+        enabled: true, // Enable zooming
+        type: 'x', // Ensure zoom is only applied to x-axis
+        zoomedArea: {
+          fill: {
+            color: '#90CAF9', // Color of the zoomed area
+            opacity: 0.4,
+          },
+          stroke: {
+            color: '#0D47A1', // Border color of the zoomed area
+            opacity: 0.4,
+            width: 1,
+          },
+        },
+      },
+      events: {
+        // Disable zoom out if zoom is within min-max range
+        updated(_, options) {
+          if (minTimestamp >= options.globals.minX && maxTimestamp <= options.globals.maxX) {
+            console.log('Zoom is at the limit.');
+            // Disable zoom out button logic here
+          } else {
+            console.log('Zoom is active.');
+            // Enable zoom out button logic here
+          }
+        },
+        beforeZoom: (chartContext, { xaxis }) => {
+          const newMin = Math.max(minTimestamp, xaxis.min);
+          const newMax = Math.min(maxTimestamp, xaxis.max);
+
+          if (newMin === minTimestamp && newMax === maxTimestamp) {
+            // Disable zoom out button
+            console.log('Cannot zoom out further.');
+          }
+
+          return {
+            xaxis: {
+              min: newMin,
+              max: newMax,
+            },
+          };
+        },
+        zoomed: (chartContext, { xaxis }) => {
+          const zoomedMin = new Date(xaxis.min).toISOString();
+          const zoomedMax = new Date(xaxis.max).toISOString();
+
+          if (xaxis.min < minTimestamp || xaxis.max > maxTimestamp) {
+            console.log('Zoom out detected, refetching data for the extended range.');
+            onZoomOut(zoomedMin, zoomedMax); // Call the onZoomOut handler to refetch data
+          }
+        },
       },
     },
     tooltip: {
       enabled: true,
     },
     xaxis: {
-      min: minTimestamp, // Use min timestamp from the data
-      max: maxTimestamp, // Use max timestamp from the data
+      min: minTimestamp, // Minimum timestamp to set the lower zoom limit
+      max: maxTimestamp, // Maximum timestamp to set the upper zoom limit
       type: 'datetime',
       labels: {
         formatter(value) {

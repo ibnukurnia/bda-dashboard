@@ -218,7 +218,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             width: 2,
                         },
                     },
-
                     stroke: {
                         curve: 'smooth',
                         width: 4,

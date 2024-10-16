@@ -48,7 +48,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     hasErrorFilterSeverity
 }) => {
     const searchParams = useSearchParams();
-    const [selectedOperation, setSelectedOperation] = useState<string>('OR'); // default to 'OR'
+    const [selectedOperation, setSelectedOperation] = useState<string>(''); // default to 'OR'
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
@@ -111,7 +111,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             selectedServices: selectedServiceOptions,
             selectedOperation: selectedOperation
         });
-        console.log(selectedOperation)
+        // console.log(selectedOperation)
         setIsOpen(false); // Close the panel after applying filters
     };
 
@@ -119,6 +119,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         setSelectedAnomalyOptions([]);
         setSelectedSeverityOptions([]);
         setSelectedServiceOptions([]);
+        setSelectedOperation('');
         setSearchValue('');
         onResetFilters();
 

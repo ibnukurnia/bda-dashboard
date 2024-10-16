@@ -40,7 +40,7 @@ const TabContent: React.FC<TabContentProps> = ({
     const selectedClustersOptions = searchParams.getAll("cluster")
     const selectedServicesOptions = searchParams.getAll("service")
     const selectedSeverityOptions = searchParams.getAll("severity").map(Number);
-    const selectedOperationOptions = searchParams.get("operation");
+    const selectedOperationOptions = searchParams.get("operation") as string;
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
@@ -81,7 +81,7 @@ const TabContent: React.FC<TabContentProps> = ({
         let startTime: string;
         let endTime: string;
 
-        console.log(`Time Range passed: ${timeRange}`);
+        // console.log(`Time Range passed: ${timeRange}`);
 
         if (!timeRange || typeof timeRange !== 'string') {
             throw new Error(`Invalid timeRange passed: ${timeRange}`);
@@ -231,7 +231,7 @@ const TabContent: React.FC<TabContentProps> = ({
         selectedOperation?: string // Add the selectedOperation parameter here
     ) => {
         setIsTableLoading(true);
-        console.log(selectedOperation, "iqwjdqidqokodk")
+        console.log(selectedOperation, "fetchHistorical")
 
         // Ensure that timeRange is correctly passed, fallback to selectedTimeRange if invalid
         const validTimeRange = PREDEFINED_TIME_RANGES[timeRange as keyof typeof PREDEFINED_TIME_RANGES]
@@ -241,7 +241,7 @@ const TabContent: React.FC<TabContentProps> = ({
         // Now pass the validTimeRange to getTimeRange
         const { startTime, endTime } = getTimeRange(validTimeRange);
 
-        console.log(startTime, endTime, "ini");
+        // console.log(startTime, endTime, "ini");
 
         // Pass the selectedOperation to the API call
         const logAnomaliesPromise = GetHistoricalLogAnomalies(
@@ -254,7 +254,7 @@ const TabContent: React.FC<TabContentProps> = ({
             severityOptions ?? selectedSeverityOptions,
             startTime,
             endTime,
-            selectedOperation as string// Pass the selectedOperation to the API call
+            selectedOperation ?? selectedOperationOptions// Default to OR if undefined
         );
 
         // Handle the result of the API call
@@ -417,7 +417,7 @@ const TabContent: React.FC<TabContentProps> = ({
             selectedOperation: string
         }) => {
         const { selectedAnomalies, selectedServices, selectedSeverities, selectedClusters, selectedOperation } = filters;
-        console.log(selectedOperation)
+        // console.log(selectedOperation, "inside handleApplyFilters");
         // Update the state with the selected options
         const params = new URLSearchParams(searchParams.toString());
 
@@ -432,7 +432,6 @@ const TabContent: React.FC<TabContentProps> = ({
 
         params.delete("service")
         selectedServices.forEach(service => params.append("service", service))
-        // Clear old severity params
 
         // Add selected operation (OR/AND) to the URL or use it in logic as needed
         params.delete("operation");
@@ -440,13 +439,15 @@ const TabContent: React.FC<TabContentProps> = ({
 
         router.replace(`/dashboard/anomaly-detection?${params.toString()}`);
 
+        console.log("Before calling fetchHistoricalAnomalyRecords, selectedOperation:", selectedOperation);
+
         const page = 1 // Reset to the first page when page size changes
         setPagination((prev) => ({
             ...prev,
             pageIndex: page,
         }));
 
-        // Initiate both API calls concurrently and independently
+        // Invoke fetchHistoricalAnomalyRecords
         fetchHistoricalAnomalyRecords(
             selectedDataSource,
             page,
@@ -456,7 +457,7 @@ const TabContent: React.FC<TabContentProps> = ({
             selectedServices,
             selectedSeverities,
             selectedOperation
-        )
+        );
     };
 
     useEffect(() => {

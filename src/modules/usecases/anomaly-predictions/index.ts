@@ -20,35 +20,39 @@ const GetHistoricalLogAnomalies = async (
   filterSeverities: number[],
   start_time: string,
   end_time: string,
-  selectedOperation: string // Add selectedOperation as a new parameter
+  operation: string // Ensure this is correctly passed
 ) => {
-  let endPoint = `anomaly-predictions?type=${type}&limit=${limit}&page=${page}&start_time=${start_time}&end_time=${end_time}`
+  let endPoint = `anomaly-predictions?type=${type}&limit=${limit}&page=${page}&start_time=${start_time}&end_time=${end_time}`;
 
   filterAnomaly.forEach((f) => {
-    endPoint += `&filters=${f}`
-  })
+    endPoint += `&filters=${f}`;
+  });
 
   filterClusters.forEach((f) => {
-    endPoint += `&cluster=${f}`
-  })
+    endPoint += `&cluster=${f}`;
+  });
 
   filterServices.forEach((f) => {
-    endPoint += `&service_name=${f}`
-  })
+    endPoint += `&service_name=${f}`;
+  });
 
   filterSeverities.forEach((f) => {
-    endPoint += `&severity=${f}`
-  })
+    endPoint += `&severity=${f}`;
+  });
 
-  // Append the selectedOperation to the API endpoint
-  endPoint += `&operation=${selectedOperation}`;
+  // Append the operation parameter to the URL
+  if (operation) {
+    endPoint += `&operation=${operation}`;
+  } else {
+    console.warn('Operation is missing in API call');
+  }
 
   const response: ApiResponse<PaginatedResponse> = await get(endPoint, {
     withAuth: true,
-  })
+  });
 
-  return response
-}
+  return response;
+};
 
 
 const GetMetricLogAnomalies = async (payload: { type: string, start_time: string, end_time: string, cluster: string[], service_name: string | null, metric_name: string[] }, signal?: AbortSignal) => {
