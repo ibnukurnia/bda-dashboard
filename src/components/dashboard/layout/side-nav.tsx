@@ -118,13 +118,14 @@ interface NavItemProps extends Omit<NavItemConfig, 'items'> {
   pathname: string;
 }
 
-function NavItem({ disabled, external, href, icon, matcher, pathname, onClick }: NavItemProps): React.ReactElement {
+function NavItem({ title, disabled, external, href, icon, matcher, pathname, onClick }: NavItemProps): React.ReactElement {
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
   const Icon = icon ? navIcons[icon] : null;
 
   return (
     <li>
       <Box
+        title={title}
         {...(href
           ? {
             component: external ? 'a' : RouterLink,
