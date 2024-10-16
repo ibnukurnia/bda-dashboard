@@ -74,19 +74,10 @@ const TabContent: React.FC<TabContentProps> = ({
 
 
     const getTimeRange = (timeRange: string = selectedTimeRange) => {
-        if (!PREDEFINED_TIME_RANGES[timeRange]) {
-            throw new Error(`Invalid time range: ${timeRange}`);
-        }
-
         let startTime: string;
         let endTime: string;
 
-        // console.log(`Time Range passed: ${timeRange}`);
-
-        if (!timeRange || typeof timeRange !== 'string') {
-            throw new Error(`Invalid timeRange passed: ${timeRange}`);
-        }
-
+        // Check if a custom range in the format 'start - end' is provided
         if (timeRange.includes(' - ')) {
             const [start, end] = timeRange.split(' - ');
             if (!start || !end) {
@@ -95,14 +86,15 @@ const TabContent: React.FC<TabContentProps> = ({
             startTime = start;
             endTime = end;
         } else {
+            // Handle predefined time ranges
             const predefinedRange = PREDEFINED_TIME_RANGES[timeRange];
             if (!predefinedRange) {
-                throw new Error(`Predefined time range not found for: ${timeRange}`);
+                throw new Error(`Invalid time range: ${timeRange}`);
             }
 
             const endDate = new Date();
-            endDate.setSeconds(0, 0);
-            const startDate = new Date(endDate.getTime() - predefinedRange * 60000);
+            endDate.setSeconds(0, 0); // Round down to the nearest minute
+            const startDate = new Date(endDate.getTime() - predefinedRange * 60000); // Subtract the range in minutes
 
             startTime = format(startDate, 'yyyy-MM-dd HH:mm:ss');
             endTime = format(endDate, 'yyyy-MM-dd HH:mm:ss');
@@ -110,7 +102,6 @@ const TabContent: React.FC<TabContentProps> = ({
 
         return { startTime, endTime };
     };
-
 
     const handleRangeChange = async (rangeKey: string) => {
 
@@ -215,6 +206,7 @@ const TabContent: React.FC<TabContentProps> = ({
             selectedClustersOptions,
             selectedServicesOptions,
             selectedSeverityOptions,
+            selectedOperationOptions
         );
 
     };
@@ -227,19 +219,14 @@ const TabContent: React.FC<TabContentProps> = ({
         clusterOptions?: string[],
         serviceOptions?: string[],
         severityOptions?: number[],
-        timeRange?: string, // Ensure this is a valid timeRange
         selectedOperation?: string // Add the selectedOperation parameter here
     ) => {
         setIsTableLoading(true);
-        console.log(selectedOperation, "fetchHistorical")
+        console.log(anomalyOptions, clusterOptions, serviceOptions, severityOptions, selectedOperation, "fetchHistorical")
 
-        // Ensure that timeRange is correctly passed, fallback to selectedTimeRange if invalid
-        const validTimeRange = PREDEFINED_TIME_RANGES[timeRange as keyof typeof PREDEFINED_TIME_RANGES]
-            ? timeRange
-            : selectedTimeRange; // fallback to selectedTimeRange if an invalid timeRange is passed
 
         // Now pass the validTimeRange to getTimeRange
-        const { startTime, endTime } = getTimeRange(validTimeRange);
+        const { startTime, endTime } = getTimeRange();
 
         // console.log(startTime, endTime, "ini");
 
@@ -417,7 +404,7 @@ const TabContent: React.FC<TabContentProps> = ({
             selectedOperation: string
         }) => {
         const { selectedAnomalies, selectedServices, selectedSeverities, selectedClusters, selectedOperation } = filters;
-        // console.log(selectedOperation, "inside handleApplyFilters");
+        console.log(selectedOperation, "inside handleApplyFilters");
         // Update the state with the selected options
         const params = new URLSearchParams(searchParams.toString());
 
@@ -500,7 +487,8 @@ const TabContent: React.FC<TabContentProps> = ({
                             selectedAnomalyOptions,    // Anomaly filter options
                             selectedClustersOptions,   // Cluster filter options
                             selectedServicesOptions,   // Service filter options
-                            selectedSeverityOptions
+                            selectedSeverityOptions,
+                            selectedOperationOptions
                         );
                         console.log('Auto-refresh triggered');
                     } catch (error) {
