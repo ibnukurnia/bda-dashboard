@@ -277,14 +277,14 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     score: 100,
     severity: 0,
   })
-  const [perangkatInternalData, setPerangkatInternalData] = useState({
+  const [perangkatInternalData, setInternalData] = useState({
     title: 'Perangkat\nInternal',
-    dataSource: 'perangkat_internal',
+    dataSource: 'internal',
     iconName: 'node-icon-perangkat-internal.svg',
     score: 100,
     severity: 0,
   })
-  const [networkData, setNetworkData] = useState({
+  const [totalNetworkData, setTotalNetworkData] = useState({
     title: 'Network',
     dataSource: 'network',
     iconName: 'node-icon-network.svg',
@@ -369,8 +369,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     const ivat = data.find(d => d.data_source === "ivat")
     const dwdm = data.find(d => d.data_source === "dwdm")
     const dns = data.find(d => d.data_source === "dns_rt")
-    const perangkatInternal = data.find(d => d.data_source === "perangkat_internal")
-    const network = data.find(d => d.data_source === "network")
+    const internal = data.find(d => d.data_source === "internal")
 
     const database = data.find(d => d.data_source === "k8s_db")
     const redis = data.find(d => d.data_source === "k8s_redis")
@@ -428,13 +427,24 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
       ...prev,
       ...dns,
     }))
-    setPerangkatInternalData(prev => ({
+    setInternalData(prev => ({
       ...prev,
-      ...perangkatInternal,
+      ...internal,
     }))
-    setNetworkData(prev => ({
+    
+    const network = [f5, ivat, dwdm, dns, internal]
+    const totalNetworkScore = network.reduce((temp, app) => {
+      return temp + (app?.score ?? 100)
+    }, 0) / network.length
+
+    const warnedNetwork = network.filter(app => app != null && app.severity !== 0)
+    const totalNetworkSeverity = warnedNetwork.length !== 0
+      ? Math.min(...warnedNetwork.map(app => app?.severity ?? 3))
+      : 0
+    setTotalNetworkData(prev => ({
       ...prev,
-      ...network,
+      score: totalNetworkScore,
+      severity: totalNetworkSeverity
     }))
 
     setApmData(prev => ({
@@ -717,10 +727,10 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
         </div>
         <GroupNode
           className='w-auto'
-          title={networkData.title}
-          iconName={networkData.iconName}
-          score={networkData.score}
-          severity={networkData.severity}
+          title={totalNetworkData.title}
+          iconName={totalNetworkData.iconName}
+          score={totalNetworkData.score}
+          severity={totalNetworkData.severity}
           expanded={networkExpanded}
           handleOnClick={() => setNetworkExpanded(prev => !prev)}
         >
