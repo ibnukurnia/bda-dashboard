@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ProgressBar from '../bar/progress-bar';
 import { Typography } from '@mui/material';
-import { ChevronRight, Info } from 'react-feather';
-import { replaceWordingDataSource } from '../helper';
 import Link from 'next/link';
 import { NLP } from '@/modules/models/root-cause-analysis';
 
 interface NodeProps {
   percentage: number; // Accepts a number between 0 and 100
   title: string;
+  fungsi?: string;
   count?: number;
   expanded: boolean;
   handleOnClickNode: () => void;
@@ -16,7 +15,7 @@ interface NodeProps {
   queryParams?: {
     time_range?: string;
     data_source?: string;
-    metric_anomaly?: string;
+    anomaly?: string;
     cluster?: string;
     service?: string;
   };
@@ -31,6 +30,7 @@ interface NodeProps {
 const Node: React.FC<NodeProps> = ({
   percentage,
   title,
+  fungsi,
   count,
   expanded,
   handleOnClickNode,
@@ -77,14 +77,14 @@ const Node: React.FC<NodeProps> = ({
   return (
     <button
       ref={containerRef}
-      className={`w-full min-h-20 relative flex flex-col gap-[9px] outline-none snap-start ${count == null ? "cursor-default" : ""}`}
+      className={`w-full min-h-20 relative flex flex-col outline-none snap-start ${count == null ? "cursor-default" : ""}`}
       onClick={handleClickNode}
     >
       {count != null && <ProgressBar progress={percentage} />}
-      <div className='w-full flex gap-2'>
+      <div className='w-full flex gap-2 justify-between'>
         {tooltips != null &&
           <a
-            id={`${queryParams?.data_source}-${queryParams?.metric_anomaly}-${escapeAndRemoveSpaces(title)}`}
+            id={`${queryParams?.data_source}-${queryParams?.cluster}-${queryParams?.anomaly}-${escapeAndRemoveSpaces(title)}`}
             className='mt-1'
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -93,16 +93,59 @@ const Node: React.FC<NodeProps> = ({
           </a>
         }
         {count == null && <div className='w-5 h-5 bg-orange-500 rounded-md' />}
-        <div className='w-full flex'>
+        <div className='w-4/5 flex flex-col'>
           <Typography
             color={'white'}
             fontWeight={expanded ? 700 : 400}
             fontSize={14}
             lineHeight={"17.07px"}
             align='left'
+            noWrap
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              maxWidth: '100%', // Adjust as needed
+            }}
           >
-            {replaceWordingDataSource(title)}
+            {title}
           </Typography>
+          {queryParams?.cluster &&
+            <Typography
+              color={'white'}
+              fontWeight={expanded ? 700 : 400}
+              fontSize={14}
+              lineHeight={"17.07px"}
+              align='left'
+              noWrap
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '100%', // Adjust as needed
+              }}
+            >
+              {queryParams?.cluster}
+            </Typography>
+          }
+          {fungsi &&
+            <Typography
+              color={'white'}
+              fontWeight={expanded ? 700 : 400}
+              fontSize={14}
+              lineHeight={"17.07px"}
+              align='left'
+              noWrap
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '100%', // Adjust as needed
+              }}
+            >
+              {fungsi}
+            </Typography>
+          }
         </div>
         <div className='flex flex-col gap-[5px] justify-between'>
           {count != null &&

@@ -19,9 +19,11 @@ import { DEFAULT_TIME_RANGE, PREDEFINED_TIME_RANGES } from '@/constants'
 import RCATreeWrapper from './wrapper/rca-tree-wrapper'
 import TooltipCollection from './collection/tooltip-collection'
 import TableNLP from './table/table'
+import { TreeNodeType } from './tree/types'
 
 const MainPageRootCauseAnalysis = () => {
-  const [dataTree, setDataTree] = useState<RootCauseAnalysisTreeResponse[] | null>(null)
+  const [responseData, setResponseData] = useState<RootCauseAnalysisTreeResponse[] | null>(null)
+  const [mappedData, setMappedData] = useState<TreeNodeType[]>([])
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | undefined>(undefined);
   const [lastUpdateString, setLastUpdateString] = useState("")
   const [lastFetchTimeRange, setLastFetchTimeRange] = useState<{
@@ -65,7 +67,30 @@ const MainPageRootCauseAnalysis = () => {
     setLastFetchTimeRange({ startTime, endTime })
     GetRootCauseAnalysisTree({ start_time: startTime, end_time: endTime })
       .then(result => {
-        setDataTree(result.data)
+        setResponseData(result.data)
+        if (!result.data) throw Error("Empty response data")
+        setMappedData(result.data.map(s => ({
+          name: s.source,
+          namespace: s.type,
+          anomalyCount: s.routes.reduce((count, r) => count + r.total, 0),
+          children: s.routes.map(r => ({
+            name: r.name,
+            namespace: r.anomaly,
+            anomalyCount: r.total,
+            children: r.impacted_services.map(is => ({
+              name: is.service_alias,
+              cluster: is.cluster,
+              namespace: is.service,
+              fungsi: is.function,
+              anomalyCount: is.total,
+              tooltips: is.tooltips,
+              nlp: is.nlp,
+              children: is.impacted.map(i => ({
+                name: i,
+              }))
+            })).sort((a, b) => b.anomalyCount - a.anomalyCount)
+          })).sort((a, b) => b.anomalyCount - a.anomalyCount)
+        })).sort((a, b) => b.anomalyCount - a.anomalyCount))
         setLastRefreshTime(new Date())
         setIsError(false)
       })
@@ -144,14 +169,14 @@ const MainPageRootCauseAnalysis = () => {
               isError={isError}
             >
               <RCATree
-                data={dataTree}
+                data={mappedData}
                 fullScreenHandle={handle}
                 isLoading={isLoading}
                 timeRange={autoRefresh.enabled ? timeRange : `${lastFetchTimeRange.startTime} - ${lastFetchTimeRange.endTime}`}
                 handleSelectNLP={(value) => setNlpData(value)}
               />
               <TooltipCollection
-                data={dataTree}
+                data={responseData}
               />
             </RCATreeWrapper>
           </div>

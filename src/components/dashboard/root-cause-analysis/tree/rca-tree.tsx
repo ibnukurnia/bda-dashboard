@@ -5,7 +5,6 @@ import TopBar from '../bar/top-bar';
 import { NLP, RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis';
 import { Typography } from '@mui/material';
 import { FullScreenHandle } from 'react-full-screen';
-import { replaceWordingDataSource } from '../helper';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const nodeHeight = 80
@@ -17,14 +16,14 @@ type ExpandedNodesType = {
 
 interface RCATreeProps {
   isLoading: boolean;
-  data: RootCauseAnalysisTreeResponse[] | null;
+  data?: TreeNodeType[];
   timeRange: string;
   fullScreenHandle: FullScreenHandle; // From react-full-screen
   handleSelectNLP: (value: NLP | null) => void;
 }
 const RCATree: React.FC<RCATreeProps> = ({
   isLoading,
-  data,
+  data = [],
   timeRange,
   fullScreenHandle, // Use handle from react-full-screen
   handleSelectNLP,
@@ -34,52 +33,26 @@ const RCATree: React.FC<RCATreeProps> = ({
 
   const [expandedNodes, setExpandedNodes] = useState<ExpandedNodesType[]>([]);
   const [scrollTopPositions, setScrollTopPositions] = useState<number[]>([])
-  const [mappedData, setMappedData] = useState<TreeNodeType[]>([])
   const [totalAnomaly, setTotalAnomaly] = useState<number>(0)
-
-  useEffect(() => {
-    if (!data) return
-    setMappedData(data.map(s => ({
-      name: s.source,
-      namespace: s.type,
-      anomalyCount: s.routes.reduce((count, r) => count + r.total, 0),
-      children: s.routes.map(r => ({
-        name: r.name,
-        namespace: r.anomaly,
-        anomalyCount: r.total,
-        children: r.impacted_services.map(is => ({
-          name: is.service_alias,
-          cluster: is.cluster,
-          namespace: is.service,
-          anomalyCount: is.total,
-          tooltips: is.tooltips,
-          nlp: is.nlp,
-          children: is.impacted.map(i => ({
-            name: i,
-          }))
-        })).sort((a, b) => b.anomalyCount - a.anomalyCount)
-      })).sort((a, b) => b.anomalyCount - a.anomalyCount)
-    })).sort((a, b) => b.anomalyCount - a.anomalyCount))
-  }, [data])
 
   useEffect(() => {
     const dataSource = searchParams.get('data_source');
 
-    setTotalAnomaly(mappedData.reduce((total, data) => total + (data.anomalyCount ?? 0), 0))
+    setTotalAnomaly(data.reduce((total, data) => total + (data.anomalyCount ?? 0), 0))
     setExpandedNodes(prev => {
       const newArr: ExpandedNodesType[] = []
       let tempNode: TreeNodeType
 
       if (dataSource && prev.length === 0) {
-        const newExpandedNodeIndex = mappedData.findIndex(node => node.namespace === dataSource)
+        const newExpandedNodeIndex = data.findIndex(node => node.namespace === dataSource)
         if (newExpandedNodeIndex === -1) return newArr
-        newArr.push({ node: mappedData[newExpandedNodeIndex], nodeIndex: newExpandedNodeIndex })
+        newArr.push({ node: data[newExpandedNodeIndex], nodeIndex: newExpandedNodeIndex })
         return newArr
       }
 
       prev.forEach((expNode, prevIdx) => {
         const prevExpName = prevIdx === 0 && dataSource ? dataSource : expNode.node.namespace
-        const list = tempNode?.children ?? mappedData
+        const list = tempNode?.children ?? data
         if (list == null) return
 
         const newExpandedNodeIndex = list.findIndex(node => node.namespace === prevExpName)
@@ -90,7 +63,7 @@ const RCATree: React.FC<RCATreeProps> = ({
       })
       return newArr
     })
-  }, [mappedData, searchParams])
+  }, [data, searchParams])
 
   useEffect(() => {
     setScrollTopPositions(prev => {
@@ -153,10 +126,10 @@ const RCATree: React.FC<RCATreeProps> = ({
           gridTemplateColumns: "repeat(4, 1fr)"
         }}
       >
-        {mappedData &&
+        {data &&
           <TopBar
             title={"Data Source"}
-            subtitle={replaceWordingDataSource(expandedNodes[0]?.node?.name)}
+            subtitle={expandedNodes[0]?.node?.name}
             isLoading={isLoading}
           />
         }
@@ -189,8 +162,8 @@ const RCATree: React.FC<RCATreeProps> = ({
         }}
       >
         <ScrollableNodeList
-          nodes={mappedData}
-          handleOnClickNode={(index) => handleOnClickNode(0, index, mappedData[index])}
+          nodes={data}
+          handleOnClickNode={(index) => handleOnClickNode(0, index, data[index])}
           expandedIndex={expandedNodes[0]?.nodeIndex}
           expandedChildIndex={expandedNodes[1]?.nodeIndex - scrollTopPositions[1] / nodeHeight}
           handleOnScroll={(scrollTop) => handleOnScroll(0, scrollTop)}

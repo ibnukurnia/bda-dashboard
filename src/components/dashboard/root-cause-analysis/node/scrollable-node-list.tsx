@@ -182,8 +182,9 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
         >
           {nodes.map((node, index) => (
             <Node
-              key={node.name}
+              key={`${node.name}-${node.cluster}`}
               title={node.name}
+              fungsi={node.fungsi}
               percentage={getPercentageValue(node.anomalyCount)}
               count={node.anomalyCount}
               expanded={expandedIndex === index}
