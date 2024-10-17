@@ -31,6 +31,7 @@ const defaultTimeRanges: Record<string, number> = {
 }
 
 const MainPageOverview = () => {
+  const [refreshSignal, setRefreshSignal] = useState<number>(0);
   const [tableServiceMaxHeight, setTableServiceMaxHeight] = useState(192)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
@@ -119,6 +120,7 @@ const MainPageOverview = () => {
       ] = await Promise.all([
         GetChartsOverview(paramsTime), // Fetch chart data
       ]);
+      setRefreshSignal((prevSignal) => prevSignal + 1);
 
     } catch (error) {
       console.error('Error occurred:', error);
@@ -180,9 +182,9 @@ const MainPageOverview = () => {
 
   useUpdateEffect(() => {
     const { startTime, endTime } = handleStartEnd(selectedRange)
-    setLastTimeRange({ startTime: startTime, endTime:endTime })
+    setLastTimeRange({ startTime: startTime, endTime: endTime })
   }, [selectedRange])
-  
+
   useLayoutEffect(() => {
     handleTableServiceHeight()
   }, [topCriticalRef])
@@ -243,11 +245,11 @@ const MainPageOverview = () => {
               />
             </div>
 
-            <LatestAnomalyPanel
+            {/* {/* <LatestAnomalyPanel
               ref={latestAnomalyRef}
               timeRange={autoRefresh ? selectedRange : `${lastTimeRange.startTime} - ${lastTimeRange.endTime}`}
               isFullscreen={handle.active}
-            />
+            /> */}
 
             <GraphWrapper isLoading={isLoadingGraphic}>
               <div className='flex flex-col gap-6 z-0'>
@@ -271,7 +273,8 @@ const MainPageOverview = () => {
 
             <AnomalyAmountPanel
               ref={anomalyAmountRef}
-              timeRange={autoRefresh ? selectedRange : `${lastTimeRange.startTime} - ${lastTimeRange.endTime}`}
+              refreshSignal={refreshSignal}
+              // timeRange={autoRefresh ? selectedRange : `${lastTimeRange.startTime} - ${lastTimeRange.endTime}`}
               isFullscreen={handle.active}
             />
           </div>

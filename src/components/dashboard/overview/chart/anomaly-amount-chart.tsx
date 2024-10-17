@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
-import { formatRupiah } from '@/helper';
+import { format } from 'date-fns';
+import { useState } from 'react';
 import { AnomalyAmountResponse } from '@/modules/models/overviews';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
@@ -9,25 +10,41 @@ interface AnomalyAmountChartProps {
   data: AnomalyAmountResponse[] | null;
   startTime: string;
   endTime: string;
-  onZoomOut: (newStartTime: string, newEndTime: string) => void; // Add the zoom-out handler
+  onZoomOut: (newStartTime: string, newEndTime: string) => void; // Add onZoomOut handler
+  onZoomIn?: (newStartTime: string, newEndTime: string) => void; // Add onZoomIn handler (optional)
 }
 
-const AnomalyAmountChart = ({ data = [], startTime, endTime, onZoomOut }: AnomalyAmountChartProps) => {
+const AnomalyAmountChart = ({
+  data = [],
+  startTime,
+  endTime,
+  onZoomOut,
+  onZoomIn,
+}: AnomalyAmountChartProps) => {
   // Ensure series is always treated as an array
   const validSeries = Array.isArray(data) ? data : [];
 
   // Ensure services with null data are included but with empty data arrays
   const chartSeries = validSeries
-    .filter(s => Array.isArray(s.data) && s.data.length > 0) // Only include services with valid data
+    .filter(s => Array.isArray(s.data) && s.data.length > 0)
     .map(s => ({
-      name: s.service_name, // Name of the service for the legend
-      data: s.data.map((d: any) => [new Date(d[0]).getTime(), d[1]]) // Convert date strings to timestamps if data exists
+      name: s.service_name,
+      data: s.data.map((d: any) => [new Date(d[0]).getTime(), d[1]]), // Convert date strings to timestamps
     }));
 
   // Calculate the min and max timestamps from the data
-  const allTimestamps = chartSeries.flatMap(s => s.data.map(d => d[0])); // Extract all timestamps
-  const minTimestamp = Math.min(...allTimestamps);
-  const maxTimestamp = Math.max(...allTimestamps);
+  const allTimestamps = chartSeries.flatMap(s => s.data.map(d => d[0]));
+  const minTimestamp = Math.min(...allTimestamps); // Midnight timestamp (00:00)
+  const maxTimestamp = Math.max(...allTimestamps); // Current time (endTime)
+
+  // Calculate default view (middle of 00:00 - current)
+  const defaultViewMidpoint = (minTimestamp + maxTimestamp) / 2;
+  const defaultViewRange = (maxTimestamp - minTimestamp) / 4; // Show 25% of the total range
+
+  const [xaxisRange, setXaxisRange] = useState({
+    min: defaultViewMidpoint - defaultViewRange / 2,
+    max: defaultViewMidpoint + defaultViewRange / 2,
+  });
 
   const options: ApexOptions = {
     chart: {
@@ -35,116 +52,109 @@ const AnomalyAmountChart = ({ data = [], startTime, endTime, onZoomOut }: Anomal
       type: 'line',
       height: 300,
       toolbar: {
-        show: true, // Enable the toolbar for zoom in/out/reset controls
+        show: true,
         tools: {
-          zoom: false,
+          zoom: true,
           zoomin: true,
           zoomout: true,
           pan: false,
-          reset: false, // Allows reset zoom functionality
-          download: false,
+          reset: true,
         },
-        autoSelected: 'zoom', // Set zoom as the default selected tool
+        autoSelected: 'zoom',
       },
       zoom: {
-        enabled: true, // Enable zooming
-        type: 'x', // Ensure zoom is only applied to x-axis
+        enabled: true,
+        type: 'x',
         zoomedArea: {
           fill: {
-            color: '#90CAF9', // Color of the zoomed area
+            color: '#90CAF9',
             opacity: 0.4,
           },
           stroke: {
-            color: '#0D47A1', // Border color of the zoomed area
+            color: '#0D47A1',
             opacity: 0.4,
             width: 1,
           },
         },
       },
       events: {
-        // Disable zoom out if zoom is within min-max range
         updated(_, options) {
-          if (minTimestamp >= options.globals.minX && maxTimestamp <= options.globals.maxX) {
-            console.log('Zoom is at the limit.');
-            // Disable zoom out button logic here
-          } else {
-            console.log('Zoom is active.');
-            // Enable zoom out button logic here
+          const currentMin = options.globals.minX;
+          const currentMax = options.globals.maxX;
+
+          // Prevent zoom out beyond midnight
+          if (currentMin < minTimestamp) {
+            setXaxisRange({
+              min: minTimestamp,
+              max: currentMax,
+            });
+          }
+
+          // Prevent zoom out beyond the current time
+          if (currentMax > maxTimestamp) {
+            setXaxisRange({
+              min: currentMin,
+              max: maxTimestamp,
+            });
           }
         },
         beforeZoom: (chartContext, { xaxis }) => {
-          const newMin = Math.max(minTimestamp, xaxis.min);
-          const newMax = Math.min(maxTimestamp, xaxis.max);
+          const zoomedMin = Math.max(minTimestamp, xaxis.min); // Don't zoom out beyond midnight
+          const zoomedMax = Math.min(maxTimestamp, xaxis.max); // Don't zoom out beyond the current time
 
-          if (newMin === minTimestamp && newMax === maxTimestamp) {
-            // Disable zoom out button
-            console.log('Cannot zoom out further.');
+          // Limit zooming in to per-minute intervals (no seconds)
+          const oneMinute = 60000;
+          if (zoomedMax - zoomedMin < oneMinute) {
+            return {
+              xaxis: {
+                min: zoomedMin,
+                max: zoomedMin + oneMinute, // Minimum zoom level is one minute
+              },
+            };
           }
 
+          // Ensure zoom out does not go beyond midnight or beyond the current time
           return {
             xaxis: {
-              min: newMin,
-              max: newMax,
+              min: zoomedMin,
+              max: zoomedMax,
             },
           };
         },
-        zoomed: (chartContext, { xaxis }) => {
-          const zoomedMin = new Date(xaxis.min).toISOString();
-          const zoomedMax = new Date(xaxis.max).toISOString();
-
-          if (xaxis.min < minTimestamp || xaxis.max > maxTimestamp) {
-            console.log('Zoom out detected, refetching data for the extended range.');
-            onZoomOut(zoomedMin, zoomedMax); // Call the onZoomOut handler to refetch data
-          }
-        },
       },
     },
-    tooltip: {
-      enabled: true,
-    },
     xaxis: {
-      min: minTimestamp, // Minimum timestamp to set the lower zoom limit
-      max: maxTimestamp, // Maximum timestamp to set the upper zoom limit
+      min: xaxisRange.min,
+      max: xaxisRange.max,
       type: 'datetime',
       labels: {
         formatter(value) {
           const date = new Date(value);
-          return date.toLocaleString('id-ID', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          }).split(', ');
+          return format(date, 'yyyy-MM-dd HH:mm');
         },
         style: {
-          colors: 'white', // White color for x-axis text
+          colors: 'white',
         },
-        rotate: 0,
-        hideOverlappingLabels: true,
-        trim: true,
       },
       crosshairs: { show: true },
-      axisBorder: { show: false },
     },
     yaxis: {
       min: 0,
       labels: {
-        formatter: (value) => formatRupiah(value), // Reuse the formatRupiah function here
         style: {
-          colors: 'white', // White color for y-axis text
+          colors: 'white',
         },
       },
       tickAmount: 5,
     },
     stroke: {
       curve: 'smooth',
-      width: 2, // Ensure line width is visible
+      width: 2,
     },
     markers: {
-      size: 0.0000001, // Workaround hover marker not showing because discrete options
+      size: 0.0000001,
       hover: {
-        size: 6, // Size of the marker when hovered
+        size: 6,
       },
     },
     grid: {
@@ -158,28 +168,21 @@ const AnomalyAmountChart = ({ data = [], startTime, endTime, onZoomOut }: Anomal
       },
     },
     legend: {
-      show: true, // Enable legend for multiple series
+      show: true,
       labels: {
         colors: 'white',
       },
     },
   };
 
-  // Conditionally render the chart or the "Data not available" message
   return (
-    <>
-      {chartSeries.length > 0 ? (
-        <Chart
-          options={options}
-          series={chartSeries} // Pass the converted series for all services
-          type="line"
-          height={300}
-          width={'100%'}
-        />
-      ) : (
-        <p className="text-center text-gray-500">Data is not available at the selected time</p>
-      )}
-    </>
+    <Chart
+      options={options}
+      series={chartSeries}
+      type="line"
+      height={300}
+      width="100%"
+    />
   );
 };
 
