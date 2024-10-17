@@ -92,22 +92,6 @@
     background: #373737;
 }
 
-th:first-child,
-td:first-child {
-    position: sticky;
-    z-index: 2;
-    left: 0;
-    background-color: #060f2c;
-}
-
-thead {
-    position: sticky;
-    top: 0;
-    background-color: #060f2c;
-    z-index: 3;
-}
-
-
 @keyframes blinking {
     0% {
         opacity: 1;

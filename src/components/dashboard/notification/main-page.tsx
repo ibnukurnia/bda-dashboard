@@ -4,13 +4,21 @@ import React, { useEffect, useState } from 'react';
 import { GetNotificationList } from '@/modules/usecases/notification';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, ColumnDef } from '@tanstack/react-table';
 import Pagination from '@/components/system/Pagination/Pagination';
+import './main-page.css'
+import Link from 'next/link';
 
 interface Anomaly {
+    source_identifier: string;
     source: string;
+    fungsi: string;
+    anomaly_identifier: string;
     anomaly_description: string;
     identifier: string;
+    identifier_alias: string;
+    timestamp_identifier: string;
     timestamp: string;
     site: string;
+    site_identifier: string;
 }
 
 const AnomalyNotificationPage = () => {
@@ -50,7 +58,7 @@ const AnomalyNotificationPage = () => {
                 setTotalRows(total_rows);
 
                 // Set the rows (data) for the table
-                setData(rows);
+                setData(rows as Anomaly[]);
                 setIsError(false);
             }
         } catch (error) {
@@ -82,7 +90,7 @@ const AnomalyNotificationPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#0816358F] text-white p-8">
+        <div className="bg-[#0816358F] text-white p-8">
             <div className="rounded-lg w-full flex flex-col gap-6">
                 <div className={`w-full max-h-[75dvh] ${!isLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
                     <div className="min-w-full">
@@ -103,16 +111,32 @@ const AnomalyNotificationPage = () => {
 
                             <tbody className="divide-y !divide-gray-200 text-gray-600">
                                 {table.getRowModel().rows.map((row) => (
-                                    <tr key={row.id}>
+                                    <tr
+                                        key={row.id}
+                                        className={"hover:bg-white hover:bg-opacity-20 text-gray-100"}
+                                    >
                                         {row.getVisibleCells().map((cell) => (
-                                            <td key={cell.id} className="px-1 py-4 whitespace-nowrap">
-                                                <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
+                                            <td key={cell.id} className="whitespace-nowrap">
+                                                <Link
+                                                    className='w-full h-full flex px-4 py-4 items-center rounded-full gap-x-2'
+                                                    href={{
+                                                        pathname: '/dashboard/anomaly-detection',
+                                                        query: {
+                                                            data_source: data[row.index].source_identifier,
+                                                            time_range: `${data[row.index].timestamp_identifier} - ${data[row.index].timestamp_identifier}`,
+                                                            anomaly: data[row.index].anomaly_identifier,
+                                                            ...((data[row.index].site_identifier != null && data[row.index].site_identifier.length > 0) && { cluster: data[row.index].site_identifier }), // Only include cluster if it's not null or undefined
+                                                            service: data[row.index].identifier,
+                                                        },
+                                                    }}
+                                                    passHref
+                                                >
                                                     {typeof cell.getValue() === 'number' ? (
                                                         <span>{new Intl.NumberFormat('en-US').format(cell.getValue() as number)}</span> // Format number with commas
                                                     ) : (
                                                         <span>{cell.getValue() as string}</span> // Display non-numeric values
                                                     )}
-                                                </div>
+                                                </Link>
                                             </td>
                                         ))}
                                     </tr>
