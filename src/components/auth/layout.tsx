@@ -19,10 +19,7 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
         flexDirection: 'column',
         gridTemplateColumns: 'auto 802px',
         minHeight: '100%',
-        backgroundImage: 'url(/assets/background.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
+        background: 'radial-gradient(105.48% 165.73% at 100% -2.82%, #000C6F 0%, #01040D 100%)'
       }}
     >
       <Box sx={{ position: 'absolute', display: 'flex', justifyContent: 'center', gap: 4, marginTop: '59px', marginLeft: '83px' }}>

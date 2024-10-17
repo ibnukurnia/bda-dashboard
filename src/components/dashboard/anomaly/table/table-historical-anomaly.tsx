@@ -188,8 +188,12 @@ const TableHistoricalAnomaly = ({
                     <tr key={row.id}>
                       {row.getVisibleCells().map((cell) => (
                         <td key={cell.id} className={`${styles.first_child} whitespace-nowrap`}>
-                          <div className="w-full text-gray-100 inline-flex items-center px-4 py-4 rounded-full gap-x-2">
-                            {!isLoading && cell.column.id === 'severity' &&
+                          <div
+                            className={`w-full text-gray-100 inline-flex items-center px-4 py-4 rounded-full ${cell.column.id === 'severity' ? 'gap-x-2' : ''
+                              }`}
+                          >
+                            {!isLoading &&
+                              cell.column.id === 'severity' &&
                               (cell.getValue() === 'Very High' ||
                                 cell.getValue() === 'High' ||
                                 cell.getValue() === 'Medium') && (
@@ -214,12 +218,9 @@ const TableHistoricalAnomaly = ({
                                   />
                                 </svg>
                               )}
-                            <CellValue
-                              cell={cell}
-                              rowIndex={row.index}
-                              highlights={highlights}
-                            />
+                            <CellValue cell={cell} rowIndex={row.index} highlights={highlights} />
                           </div>
+
                         </td>
                       ))}
                     </tr>
