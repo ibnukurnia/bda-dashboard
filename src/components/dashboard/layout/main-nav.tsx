@@ -16,10 +16,17 @@ import { MobileNav } from './mobile-nav';
 
 
 interface Notification {
-  timestamp: string;
+  source_identifier: string;
   source: string;
-  identifier: string;
+  fungsi: string;
+  anomaly_identifier: string;
   anomaly_description: string;
+  identifier: string;
+  identifier_alias: string;
+  timestamp_identifier: string;
+  timestamp: string;
+  site: string;
+  site_identifier: string;
 }
 
 interface MainNavProps {
@@ -155,22 +162,17 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
     const fetchNotifications = async () => {
       try {
         setIsLoading(true);
-        const response = await GetNotificationList();
-        const { rows } = response.data; // Assuming data.rows contains the notification data
+        const response = await GetNotificationList({
+            page: 1,
+            limit: 3,
+        });
 
-        // Format the notifications and sort by timestamp descending to get latest ones
-        const filteredNotifications = rows
-          .map((row: Notification) => ({
-            timestamp: row.timestamp,
-            source: row.source,
-            identifier: row.identifier,
-            anomaly_description: row.anomaly_description,
-          }))
-          .sort((a: { timestamp: string | number | Date; }, b: { timestamp: string | number | Date; }) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) // Sort by timestamp descending
-          .slice(0, 3); // Get the latest 4 notifications
+        if (response?.data) {
+          const { rows } = response.data; // Assuming data.rows contains the notification data
 
-        setNotifications(filteredNotifications);
-        setIsError(false);
+          setNotifications(rows as Notification[]);
+          setIsError(false);
+        }
       } catch (error) {
         console.error('Error fetching notifications:', error);
         setIsError(true);
@@ -299,7 +301,22 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
               <div className="text-white">Loading...</div>
             ) : (
               notifications.slice(0, 5).map((notif, index) => (
-                <div key={index} className="bg-[#1f2a48] p-4 rounded-lg flex flex-col gap-5">
+                <Link
+                  key={index}
+                  className="bg-[#1f2a48] hover:bg-opacity-50 p-4 rounded-lg flex flex-col gap-5"
+                  href={{
+                    pathname: '/dashboard/anomaly-detection',
+                    query: {
+                      data_source: notif.source_identifier,
+                      time_range: `${notif.timestamp_identifier} - ${notif.timestamp_identifier}`,
+                      anomaly: notif.anomaly_identifier,
+                      ...((notif.site_identifier != null && notif.site_identifier.length > 0) && { cluster: notif.site_identifier }), // Only include cluster if it's not null or undefined
+                      service: notif.identifier,
+                    },
+                  }}
+                  passHref
+                  onClick={() => setIsNotifDetailsOpen(false)}
+                >
                   <div className="flex flex-row items-center justify-between gap-6">
                     <div>
                       <p className="text-white font-semibold">Anomaly Detected!</p>
@@ -322,7 +339,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
                       </span> {notif.identifier}
                     </p>
                   </div>
-                </div>
+                </Link>
               ))
             )}
           </div>
