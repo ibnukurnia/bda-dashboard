@@ -143,7 +143,7 @@ const TableHistoricalAnomaly = ({
       <div className={`w-full overflow-auto ${pagination.pageSize > 10 ? 'max-h-[75dvh]' : ''}`}>
         <div className="min-w-full">
           <table className={`${styles.table} table-auto divide-y divide-gray-200 w-full`}>
-            <thead>
+            <thead className={styles.table_header}>
               <TableHeaderWrapper
                 isLoading={isLoadingHeader}
               >

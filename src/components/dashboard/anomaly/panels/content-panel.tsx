@@ -134,6 +134,7 @@ const TabContent: React.FC<TabContentProps> = ({
             filterClusters,
             filterServices,
             filterSeverities,
+            undefined,
             rangeKey
         );
     };
@@ -219,14 +220,15 @@ const TabContent: React.FC<TabContentProps> = ({
         clusterOptions?: string[],
         serviceOptions?: string[],
         severityOptions?: number[],
-        selectedOperation?: string // Add the selectedOperation parameter here
+        selectedOperation?: string, // Add the selectedOperation parameter here
+        timeRange?: string,
     ) => {
         setIsTableLoading(true);
         console.log(anomalyOptions, clusterOptions, serviceOptions, severityOptions, selectedOperation, "fetchHistorical")
 
 
         // Now pass the validTimeRange to getTimeRange
-        const { startTime, endTime } = getTimeRange();
+        const { startTime, endTime } = getTimeRange(timeRange);
 
         // console.log(startTime, endTime, "ini");
 
