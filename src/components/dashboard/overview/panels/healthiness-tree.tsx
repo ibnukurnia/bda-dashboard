@@ -1,10 +1,11 @@
 import './healthiness-tree.css'; // Import the custom CSS for styling paths
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
-import { HealthScoreResponse } from '@/modules/models/overviews';
 import { formatNumberWithCommas } from '@/helper';
 import { Typography } from '@mui/material';
 import CollapseIcon from '@/components/system/Icon/CollapseIcon';
 import Link from 'next/link';
+import { MappedHealthinessTree } from './brimo-end-to-end-panel';
+import { SECTIONS_CONFIG } from './constants/brimo-end-to-end-contstans';
 
 const getColor = (severity: number) => {
   if (severity === 0 || severity === 3) {
@@ -181,7 +182,7 @@ const GroupNode: React.FC<GroupProps> = ({
 }
 
 interface HealthinessTreeProps {
-  data: HealthScoreResponse[];
+  data: MappedHealthinessTree;
 }
 
 const HealthinessTree: React.FC<HealthinessTreeProps> = ({
@@ -191,148 +192,6 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
 
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-  const [firewallData, setFirewallData] = useState({
-    title: 'Firewall',
-    dataSource: 'firewall',
-    iconName: 'node-icon-firewall.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [ssloData, setSsloData] = useState({
-    title: 'SSLO',
-    dataSource: 'sslo',
-    iconName: 'node-icon-sslo.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [wafData, setWafData] = useState({
-    title: 'WAF',
-    dataSource: 'waf',
-    iconName: 'node-icon-waf.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [securityData, setSecurityData] = useState({
-    title: 'Security',
-    dataSource: 'security',
-    iconName: 'node-icon-security.svg',
-    score: 100,
-    severity: 0,
-  })
-
-  const [storageData, setStorageData] = useState({
-    title: 'Storage',
-    dataSource: 'storage',
-    iconName: 'node-icon-storage.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [hostData, setHostData] = useState({
-    title: 'Host',
-    dataSource: 'host',
-    iconName: 'node-icon-host.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [vmData, setVmData] = useState({
-    title: 'VM',
-    dataSource: 'vm',
-    iconName: 'node-icon-vm.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [computeData, setComputeData] = useState({
-    title: 'Compute',
-    dataSource: 'compute',
-    iconName: 'node-icon-compute.svg',
-    score: 100,
-    severity: 0,
-  })
-
-  const [f5Data, setF5Data] = useState({
-    title: 'F5',
-    dataSource: 'f5',
-    iconName: 'node-icon-f5.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [ivatData, setIvatData] = useState({
-    title: 'IVAT',
-    dataSource: 'ivat',
-    iconName: 'node-icon-ivat.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [dwdmData, setDwdmData] = useState({
-    title: 'DWDM',
-    dataSource: 'dwdm',
-    iconName: 'node-icon-dwdm.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [dnsData, setDnsData] = useState({
-    title: 'DNS',
-    dataSource: 'dns_rt',
-    iconName: 'node-icon-dns.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [perangkatInternalData, setInternalData] = useState({
-    title: 'Perangkat\nInternal',
-    dataSource: 'internal',
-    iconName: 'node-icon-perangkat-internal.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [totalNetworkData, setTotalNetworkData] = useState({
-    title: 'Network',
-    dataSource: 'network',
-    iconName: 'node-icon-network.svg',
-    score: 100,
-    severity: 0,
-  })
-
-  const [apmData, setApmData] = useState({
-    title: 'APM',
-    dataSource: 'apm',
-    iconName: 'node-icon-apm.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [brimoData, setBrimoData] = useState({
-    title: 'BRImo',
-    dataSource: 'brimo',
-    iconName: 'node-icon-brimo.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [ocpData, setOcpData] = useState({
-    title: 'OCP',
-    dataSource: 'k8s_prometheus',
-    iconName: 'node-icon-ocp.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [databaseData, setDatabaseData] = useState({
-    title: 'Database',
-    dataSource: 'k8s_db',
-    iconName: 'node-icon-database.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [redisData, setRedisData] = useState({
-    title: 'Redis',
-    dataSource: 'k8s_redis',
-    iconName: 'node-icon-redis.svg',
-    score: 100,
-    severity: 0,
-  })
-  const [totalAppsData, setTotalAppsData] = useState({
-    title: 'Apps',
-    iconName: 'node-icon-apps.svg',
-    score: 100,
-    severity: 0,
-  })
   const [appsExpanded, setAppsExpanded] = useState(true)
   const [computeExpanded, setComputeExpanded] = useState(true)
   const [securityExpanded, setSecurityExpanded] = useState(true)
@@ -353,136 +212,6 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
       window.removeEventListener('resize', updateDimensions);
     };
   }, [])
-
-  useEffect(() => {
-    const firewall = data.find(d => d.data_source === "firewall")
-    const sslo = data.find(d => d.data_source === "sslo")
-    const waf = data.find(d => d.data_source === "waf")
-    const security = data.find(d => d.data_source === "security")
-
-    const storage = data.find(d => d.data_source === "storage")
-    const host = data.find(d => d.data_source === "host")
-    const vm = data.find(d => d.data_source === "vm")
-    const compute = data.find(d => d.data_source === "compute")
-
-    const f5 = data.find(d => d.data_source === "f5")
-    const ivat = data.find(d => d.data_source === "ivat")
-    const dwdm = data.find(d => d.data_source === "dwdm")
-    const dns = data.find(d => d.data_source === "dns_rt")
-    const internal = data.find(d => d.data_source === "internal")
-
-    const database = data.find(d => d.data_source === "k8s_db")
-    const redis = data.find(d => d.data_source === "k8s_redis")
-    const ocp = data.find(d => d.data_source === "k8s_prometheus")
-    const apm = data.find(d => d.data_source === "apm")
-    const brimo = data.find(d => d.data_source === "brimo")
-
-    setFirewallData(prev => ({
-      ...prev,
-      ...firewall,
-    }))
-    setSsloData(prev => ({
-      ...prev,
-      ...sslo,
-    }))
-    setWafData(prev => ({
-      ...prev,
-      ...waf,
-    }))
-    setSecurityData(prev => ({
-      ...prev,
-      ...security,
-    }))
-
-    setStorageData(prev => ({
-      ...prev,
-      ...storage,
-    }))
-    setHostData(prev => ({
-      ...prev,
-      ...host,
-    }))
-    setVmData(prev => ({
-      ...prev,
-      ...vm,
-    }))
-    setComputeData(prev => ({
-      ...prev,
-      ...compute,
-    }))
-
-    setF5Data(prev => ({
-      ...prev,
-      ...f5,
-    }))
-    setIvatData(prev => ({
-      ...prev,
-      ...ivat,
-    }))
-    setDwdmData(prev => ({
-      ...prev,
-      ...dwdm,
-    }))
-    setDnsData(prev => ({
-      ...prev,
-      ...dns,
-    }))
-    setInternalData(prev => ({
-      ...prev,
-      ...internal,
-    }))
-    
-    const network = [f5, ivat, dwdm, dns, internal]
-    const totalNetworkScore = network.reduce((temp, app) => {
-      return temp + (app?.score ?? 100)
-    }, 0) / network.length
-
-    const warnedNetwork = network.filter(app => app != null && app.severity !== 0)
-    const totalNetworkSeverity = warnedNetwork.length !== 0
-      ? Math.min(...warnedNetwork.map(app => app?.severity ?? 3))
-      : 0
-    setTotalNetworkData(prev => ({
-      ...prev,
-      score: totalNetworkScore,
-      severity: totalNetworkSeverity
-    }))
-
-    setApmData(prev => ({
-      ...prev,
-      ...apm,
-    }))
-    setBrimoData(prev => ({
-      ...prev,
-      ...brimo,
-    }))
-    setOcpData(prev => ({
-      ...prev,
-      ...ocp,
-    }))
-    setDatabaseData(prev => ({
-      ...prev,
-      ...database,
-    }))
-    setRedisData(prev => ({
-      ...prev,
-      ...redis,
-    }))
-
-    const apps = [apm, brimo, ocp, database, redis]
-    const totalAppsScore = apps.reduce((temp, app) => {
-      return temp + (app?.score ?? 100)
-    }, 0) / apps.length
-
-    const warnedApps = apps.filter(app => app != null && app.severity !== 0)
-    const totalAppsSeverity = warnedApps.length !== 0
-      ? Math.min(...warnedApps.map(app => app?.severity ?? 3))
-      : 0
-    setTotalAppsData(prev => ({
-      ...prev,
-      score: totalAppsScore,
-      severity: totalAppsSeverity
-    }))
-  }, [data])
 
   const getSecurityLinkWidth = () => {
     if (securityExpanded && computeExpanded) return 40
@@ -508,10 +237,10 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     >
       <GroupNode
         className='w-full'
-        title={totalAppsData.title}
-        iconName={totalAppsData.iconName}
-        score={totalAppsData.score}
-        severity={totalAppsData.severity}
+        title={'Apps'}
+        iconName={'node-icon-apps.svg'}
+        score={data.apps.score}
+        severity={data.apps.severity}
         expanded={appsExpanded}
         handleOnClick={() => setAppsExpanded(prev => !prev)}
       >
@@ -535,11 +264,11 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
                   <path d={`M ${dimensions.width / 2.5 - 30} 26 C ${dimensions.width / 5} 26 ${dimensions.width / 5} 26 ${dimensions.width / 5} 84`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
                 </svg>
                 <Node
-                  title={ocpData.title}
-                  dataSource={ocpData.dataSource}
-                  iconName={ocpData.iconName}
-                  score={ocpData.score}
-                  severity={ocpData.severity}
+                  title={'OCP'}
+                  dataSource={SECTIONS_CONFIG.apps.ocp}
+                  iconName={'node-icon-ocp.svg'}
+                  score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.ocp)?.score ?? 100}
+                  severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.ocp)?.severity ?? 0}
                 />
                 <svg
                   className='absolute top-0 left-14'
@@ -553,33 +282,33 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               </div>
             </div>
             <Node
-              title={apmData.title}
-              dataSource={apmData.dataSource}
-              iconName={apmData.iconName}
-              score={apmData.score}
-              severity={apmData.severity}
+              title={'APM'}
+              dataSource={SECTIONS_CONFIG.apps.apm}
+              iconName={'node-icon-apm.svg'}
+              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.apm)?.score ?? 100}
+              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.apm)?.severity ?? 0}
             />
             <Node
-              title={brimoData.title}
-              dataSource={brimoData.dataSource}
-              iconName={brimoData.iconName}
-              score={brimoData.score}
-              severity={brimoData.severity}
+              title={'BRImo'}
+              dataSource={SECTIONS_CONFIG.apps.brimo}
+              iconName={'node-icon-brimo.svg'}
+              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.brimo)?.score ?? 100}
+              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.brimo)?.severity ?? 0}
             />
             <div />
             <Node
-              title={databaseData.title}
-              dataSource={databaseData.dataSource}
-              iconName={databaseData.iconName}
-              score={databaseData.score}
-              severity={databaseData.severity}
+              title={'Database'}
+              dataSource={SECTIONS_CONFIG.apps.database}
+              iconName={'node-icon-database.svg'}
+              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.score ?? 100}
+              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.severity ?? 0}
             />
             <Node
-              title={redisData.title}
-              dataSource={redisData.dataSource}
-              iconName={redisData.iconName}
-              score={redisData.score}
-              severity={redisData.severity}
+              title={'Redis'}
+              dataSource={SECTIONS_CONFIG.apps.redis}
+              iconName={'node-icon-redis.svg'}
+              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis)?.score ?? 100}
+              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis)?.severity ?? 0}
             />
           </div>
         </div>
@@ -589,78 +318,78 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
       >
         <GroupNode
           className='w-auto'
-          title={securityData.title}
-          iconName={securityData.iconName}
-          score={securityData.score}
-          severity={securityData.severity}
+          title={'Security'}
+          iconName={'node-icon-security.svg'}
+          score={data.security.score}
+          severity={data.security.severity}
           expanded={securityExpanded}
           handleOnClick={() => setSecurityExpanded(prev => !prev)}
         >
           <div className='pb-4 px-8 grid grid-cols-3 gap-4 justify-center'>
             <Node
               className='h-28'
-              title={firewallData.title}
-              dataSource={firewallData.dataSource}
-              iconName={firewallData.iconName}
-              score={firewallData.score}
-              severity={firewallData.severity}
+              title={'Firewall'}
+              dataSource={SECTIONS_CONFIG.security.firewall}
+              iconName={'node-icon-firewall.svg'}
+              score={data.security.nodes.find(node => node.dataSource === SECTIONS_CONFIG.security.firewall)?.score ?? 100}
+              severity={data.security.nodes.find(node => node.dataSource === SECTIONS_CONFIG.security.firewall)?.severity ?? 0}
             />
             <Node
               className='h-28'
-              title={ssloData.title}
-              dataSource={ssloData.dataSource}
-              iconName={ssloData.iconName}
-              score={ssloData.score}
-              severity={ssloData.severity}
+              title={'SSLO'}
+              dataSource={SECTIONS_CONFIG.security.sslo}
+              iconName={'node-icon-sslo.svg'}
+              score={data.security.nodes.find(node => node.dataSource === SECTIONS_CONFIG.security.sslo)?.score ?? 100}
+              severity={data.security.nodes.find(node => node.dataSource === SECTIONS_CONFIG.security.sslo)?.severity ?? 0}
             />
             <Node
               className='h-28'
-              title={wafData.title}
-              dataSource={wafData.dataSource}
-              iconName={wafData.iconName}
-              score={wafData.score}
-              severity={wafData.severity}
+              title={'WAF'}
+              dataSource={SECTIONS_CONFIG.security.waf}
+              iconName={'node-icon-waf.svg'}
+              score={data.security.nodes.find(node => node.dataSource === SECTIONS_CONFIG.security.waf)?.score ?? 100}
+              severity={data.security.nodes.find(node => node.dataSource === SECTIONS_CONFIG.security.waf)?.severity ?? 0}
             />
           </div>
         </GroupNode>
         <div className='relative'>
           <GroupNode
             className='w-auto'
-            title={computeData.title}
-            iconName={computeData.iconName}
-            score={computeData.score}
-            severity={computeData.severity}
+            title={'Compute'}
+            iconName={'node-icon-compute.svg'}
+            score={data.compute.score}
+            severity={data.compute.severity}
             expanded={computeExpanded}
             handleOnClick={() => setComputeExpanded(prev => !prev)}
           >
             <div className='pb-4 px-8 grid grid-cols-3 gap-4 justify-center'>
               <Node
                 className='h-28'
-                title={storageData.title}
-                dataSource={storageData.dataSource}
-                iconName={storageData.iconName}
-                score={storageData.score}
-                severity={storageData.severity}
+                title={'Storage'}
+                dataSource={SECTIONS_CONFIG.compute.storage}
+                iconName={'node-icon-storage.svg'}
+                score={data.compute.nodes.find(node => node.dataSource === SECTIONS_CONFIG.compute.storage)?.score ?? 100}
+                severity={data.compute.nodes.find(node => node.dataSource === SECTIONS_CONFIG.compute.storage)?.severity ?? 0}
               />
               <Node
                 className='h-28'
-                title={hostData.title}
-                dataSource={hostData.dataSource}
-                iconName={hostData.iconName}
-                score={hostData.score}
-                severity={hostData.severity}
+                title={'Host'}
+                dataSource={SECTIONS_CONFIG.compute.host}
+                iconName={'node-icon-host.svg'}
+                score={data.compute.nodes.find(node => node.dataSource === SECTIONS_CONFIG.compute.host)?.score ?? 100}
+                severity={data.compute.nodes.find(node => node.dataSource === SECTIONS_CONFIG.compute.host)?.severity ?? 0}
               />
               <Node
                 className='h-28'
-                title={vmData.title}
-                dataSource={vmData.dataSource}
-                iconName={vmData.iconName}
-                score={vmData.score}
-                severity={vmData.severity}
+                title={'VM'}
+                dataSource={SECTIONS_CONFIG.compute.vm}
+                iconName={'node-icon-vm.svg'}
+                score={data.compute.nodes.find(node => node.dataSource === SECTIONS_CONFIG.compute.vm)?.score ?? 100}
+                severity={data.compute.nodes.find(node => node.dataSource === SECTIONS_CONFIG.compute.vm)?.severity ?? 0}
               />
             </div>
           </GroupNode>
-          {!appsExpanded && securityExpanded && !networkExpanded && 
+          {!appsExpanded && securityExpanded && !networkExpanded &&
             <svg
               className={`absolute transform scale-x-[-1]`}
               height={66}
@@ -727,53 +456,53 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
         </div>
         <GroupNode
           className='w-auto'
-          title={totalNetworkData.title}
-          iconName={totalNetworkData.iconName}
-          score={totalNetworkData.score}
-          severity={totalNetworkData.severity}
+          title={'Network'}
+          iconName={'node-icon-network.svg'}
+          score={data.network.score}
+          severity={data.network.severity}
           expanded={networkExpanded}
           handleOnClick={() => setNetworkExpanded(prev => !prev)}
         >
           <div className='pb-4 px-8 grid grid-cols-5 gap-4 justify-center'>
             <Node
               className='h-28'
-              title={f5Data.title}
-              dataSource={f5Data.dataSource}
-              iconName={f5Data.iconName}
-              score={f5Data.score}
-              severity={f5Data.severity}
+              title={'F5'}
+              dataSource={SECTIONS_CONFIG.network.f5}
+              iconName={'node-icon-f5.svg'}
+              score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.f5)?.score ?? 100}
+              severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.f5)?.severity ?? 0}
             />
             <Node
               className='h-28'
-              title={ivatData.title}
-              dataSource={ivatData.dataSource}
-              iconName={ivatData.iconName}
-              score={ivatData.score}
-              severity={ivatData.severity}
+              title={'IVAT'}
+              dataSource={SECTIONS_CONFIG.network.ivat}
+              iconName={'node-icon-ivat.svg'}
+              score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.ivat)?.score ?? 100}
+              severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.ivat)?.severity ?? 0}
             />
             <Node
               className='h-28'
-              title={dwdmData.title}
-              dataSource={dwdmData.dataSource}
-              iconName={dwdmData.iconName}
-              score={dwdmData.score}
-              severity={dwdmData.severity}
+              title={'DWDM'}
+              dataSource={SECTIONS_CONFIG.network.dwdm}
+              iconName={'node-icon-dwdm.svg'}
+              score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dwdm)?.score ?? 100}
+              severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dwdm)?.severity ?? 0}
             />
             <Node
               className='h-28'
-              title={dnsData.title}
-              dataSource={dnsData.dataSource}
-              iconName={dnsData.iconName}
-              score={dnsData.score}
-              severity={dnsData.severity}
+              title={'DNS'}
+              dataSource={SECTIONS_CONFIG.network.dns}
+              iconName={'node-icon-host.svg'}
+              score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dns)?.score ?? 100}
+              severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dns)?.severity ?? 0}
             />
             <Node
               className='h-28'
-              title={perangkatInternalData.title}
-              dataSource={perangkatInternalData.dataSource}
-              iconName={perangkatInternalData.iconName}
-              score={perangkatInternalData.score}
-              severity={perangkatInternalData.severity}
+              title={'Perangkat\nInternal'}
+              dataSource={SECTIONS_CONFIG.network.internal}
+              iconName={'node-icon-host.svg'}
+              score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.internal)?.score ?? 100}
+              severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.internal)?.severity ?? 0}
             />
           </div>
         </GroupNode>

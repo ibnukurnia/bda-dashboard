@@ -2,26 +2,60 @@ import { Typography } from '@mui/material'
 import styles from './brimo-end-to-end-panel.module.css'
 import HealthinessTreeWrapper from '../wrapper/healthiness-tree-wrapper'
 import HealthinessTree from './healthiness-tree'
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react'
 import { HealthScoreResponse } from '@/modules/models/overviews'
 import { formatNumberWithCommas, handleStartEnd } from '@/helper'
 import Skeleton from '@/components/system/Skeleton/Skeleton'
 import { GetHealthScoreOverview } from '@/modules/usecases/overviews'
+import { HEALTHINESS_LEGEND, SECTIONS_CONFIG } from './constants/brimo-end-to-end-contstans'
 
-const healthinessLegend = [
-  {
-    color: '#D23636',
-    label: 'Very High',
-  },
-  {
-    color: '#FF802D',
-    label: 'High',
-  },
-  // {
-  //   color: '#08B96D',
-  //   label: 'Low',
-  // },
-]
+type Node = {
+  dataSource: string;
+  score: number;
+  severity: number;
+};
+
+type Section = {
+  score: number;
+  severity: number;
+  nodes: Node[];
+};
+
+// Define the type for the entire result
+export type MappedHealthinessTree = {
+  apps: Section;
+  security: Section;
+  compute: Section;
+  network: Section;
+};
+
+// Helper function to get node data
+const getNodeData = (data: HealthScoreResponse[], dataSource: string) => {
+  return data.find(item => item.data_source === dataSource) || { score: 100, severity: 0 };
+};
+
+// Mock function to generate nodes
+const generateNodes = (data: HealthScoreResponse[], sectionConfig: { [key: string]: string }) => {
+  return Object.entries(sectionConfig).map(([_, value]) => ({
+    dataSource: value,
+    ...getNodeData(data, value)
+  }));
+};
+
+// Helper function to calculate the average score of a section's nodes
+const calculateAverageScore = (nodes: Node[]): number => {
+  if (nodes.length === 0) return 0;
+  const totalScore = nodes.reduce((sum, node) => sum + node.score, 0);
+  return totalScore / nodes.length;
+};
+
+// Helper function to calculate the severity based on nodes' severities
+const calculateSeverity = (nodes: Node[]): number => {
+  if (nodes.every(node => node.severity === 0)) {
+    return 0;
+  }
+  return Math.min(...nodes.filter(node => node.severity > 0).map(node => node.severity));
+};
 
 interface BRImoEndToEndPanelProps {
   timeRange: string
@@ -34,7 +68,7 @@ export interface BRImoEndToEndPanelHandle {
 const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPanelProps>(({
   timeRange,
 }, ref) => {
-  const [data, setData] = useState<HealthScoreResponse[]>([])
+  const [responseData, setResponseData] = useState<HealthScoreResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [detectAbuseAnomaly, setDetectAbuseAnomaly] = useState(false)
@@ -53,6 +87,43 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
     fetchData()
   }, [timeRange])
 
+  const mappedData: MappedHealthinessTree = useMemo(() => {
+    const appsNodes = generateNodes(responseData, SECTIONS_CONFIG.apps);
+    const securityNodes = generateNodes(responseData, SECTIONS_CONFIG.security);
+    const computeNodes = generateNodes(responseData, SECTIONS_CONFIG.compute);
+    const networkNodes = generateNodes(responseData, SECTIONS_CONFIG.network);
+
+    const mapData = {
+      apps: {
+        nodes: appsNodes,
+        score: calculateAverageScore(appsNodes),
+        severity: calculateSeverity(appsNodes),
+      },
+      security: {
+        nodes: securityNodes,
+        score: calculateAverageScore(securityNodes),
+        severity: calculateSeverity(securityNodes),
+      },
+      compute: {
+        nodes: computeNodes,
+        score: calculateAverageScore(computeNodes),
+        severity: calculateSeverity(computeNodes),
+      },
+      network: {
+        nodes: networkNodes,
+        score: calculateAverageScore(networkNodes),
+        severity: calculateSeverity(networkNodes),
+      },
+    }
+
+    let totalScore = responseData.reduce((total, d) => total + d.score, 0)
+    setTotalBrimoHealth(totalScore / responseData.length)
+
+    setIsLoading(false)
+
+    return mapData
+  }, [responseData]);
+
   function fetchData(customTimeRange?: string) {
     const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange);
     const paramsTime = { start_time: startTime, end_time: endTime };
@@ -60,16 +131,11 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
     GetHealthScoreOverview(paramsTime)
       .then((res) => {
         if (res.data == null) throw Error("Empty response data")
-        let totalScore = res.data.reduce((total, d) => total + d.score, 0)
-        setTotalBrimoHealth(totalScore / res.data.length)
-        setData(res.data)
+        setResponseData(res.data)
         setIsError(false)
       })
       .catch(_ => {
         setIsError(true)
-      })
-      .finally(() => {
-        setIsLoading(false);
       })
   }
 
@@ -147,7 +213,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
             TOPOLOGY LEGEND
           </Typography>
           <div className='flex gap-4'>
-            {healthinessLegend.map(legend => (
+            {HEALTHINESS_LEGEND.map(legend => (
               <div key={legend.label} className='flex gap-2 items-center'>
                 <div className={`w-[12px] h-[12px] rounded-[4px]`}
                   style={{
@@ -172,7 +238,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
         isError={isError}
       >
         <HealthinessTree
-          data={data}
+          data={mappedData}
         />
       </HealthinessTreeWrapper>
     </div>
