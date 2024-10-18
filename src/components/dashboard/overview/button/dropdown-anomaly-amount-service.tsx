@@ -12,7 +12,7 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
   onSelectData,
 }) => {
   const [data, setData] = useState<string[]>([])
-  const [currentSelectedData, setCurrentSelectedData] = useState<string[]>([])
+  const [currentSelectedData, setCurrentSelectedData] = useState<string[]>(['mylta-brimo']) // Default to 'mylta-brimo'
   const [isLoading, setIsLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<number>(0);
@@ -44,9 +44,15 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
   }, [])
 
   useEffect(() => {
-    onSelectData(data)
+    // If 'mylta-brimo' is available in the list, select it by default
+    if (data.includes('mylta-brimo')) {
+      setCurrentSelectedData(['mylta-brimo']);
+      onSelectData(['mylta-brimo']);
+    } else {
+      onSelectData(data); // Fallback to all data if 'mylta-brimo' isn't present
+    }
   }, [data])
-  
+
   useEffect(() => {
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
@@ -75,7 +81,7 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
 
   useDebounce(() => {
     onSelectData(currentSelectedData.length === 0 ? data : currentSelectedData)
-  }, 750, [currentSelectedData]); // This effect runs when the service list or selected service changes
+  }, 750, [currentSelectedData]);
 
   const handleSelectData = (value: string) => {
     // Update the selected service in state

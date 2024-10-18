@@ -60,6 +60,7 @@ const AnomalyAmountChart = ({
           zoomout: true,
           pan: false,
           reset: true,
+          download: false
         },
         autoSelected: 'zoom',
       },

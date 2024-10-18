@@ -50,6 +50,7 @@ const MainPageForecasting = () => {
       data_source: selectedSource ?? '',
       service_name: selectedService ?? '',
       date: selectedDate,
+      method: 'XGBoost', // Hardcoded method value
     })
       .then((res) => {
         setGraphData(res.data)
@@ -78,6 +79,7 @@ const MainPageForecasting = () => {
       data_source: dataSource,
       service_name: service,
       date,
+      method: 'XGBoost', // Hardcoded method value
     })
       .then((res) => {
         setGraphData(res.data)
@@ -99,6 +101,7 @@ const MainPageForecasting = () => {
       data_source: filter.sourceData ?? '',
       service_name: filter.serviceName ?? '',
       date: filter.selectedDate,
+      method: 'XGBoost', // Hardcoded method value
     })
       .then((res) => {
         setGraphData(res.data)
@@ -130,9 +133,7 @@ const MainPageForecasting = () => {
       <Stack sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
         <FilterPanel onApplyFilters={handleApplyFilters} activeFilter={filter} />
         <div className="ml-auto flex">
-          <Button
-            onClick={handle.enter}
-          >
+          <Button onClick={handle.enter}>
             <Maximize className='w-6 h-6' />
           </Button>
         </div>
@@ -159,10 +160,7 @@ const MainPageForecasting = () => {
                       {`${filter.serviceName?.length ? filter.serviceName + ' - ' : ''} ${filter.sourceData}`}
                     </Typography>
                     {chartLoading ?
-                      <Skeleton
-                        width={'100%'}
-                        height={400}
-                      /> : chartIntervalUpdate
+                      <Skeleton width={'100%'} height={400} /> : chartIntervalUpdate
                     }
                   </div>
                 </div>
@@ -176,3 +174,4 @@ const MainPageForecasting = () => {
 }
 
 export default MainPageForecasting
+

@@ -46,7 +46,7 @@ const GetFilterOptional = async () => {
 }
 
 const GetForecastingData = async (
-  params: { data_source: string; service_name: string; date: string },
+  params: { data_source: string; service_name: string; date: string, method: string },
   signal?: AbortSignal
 ) => {
   let endPoint = `forecasting`

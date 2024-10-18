@@ -1,8 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { GetFilterServiceList } from '@/modules/usecases/forecasting'
-
 import Button from '@/components/system/Button/Button'
-
 import DropdownFilter from './dropdown'
 
 interface FilterPanelProps {
@@ -15,7 +13,8 @@ interface FilterPanelProps {
     selectedSource: string | null
     selectedService: string | null
     selectedDate: string
-  }) => void // Separate filters for anomalies and services
+    selectedMethod: string // Add selectedMethod to the filters
+  }) => void
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters }) => {
@@ -24,6 +23,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
 
   const [selectedSource, setSelectedSource] = useState<string | null>(activeFilter.sourceData)
   const [selectedService, setSelectedService] = useState<string | null>(activeFilter.serviceName)
+  const [selectedMethod, setSelectedMethod] = useState<string>('XGBoost') // Default method
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [services, setServices] = useState<any[]>([])
 
@@ -70,6 +70,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
       selectedSource,
       selectedService,
       selectedDate,
+      selectedMethod, // Pass the selected method
     })
     setIsOpen(false) // Close the panel after applying filters
   }
@@ -78,6 +79,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
     setSelectedSource(null)
     setSelectedService(null)
     setSelectedDate('')
+    setSelectedMethod('XGBoost') // Reset the method dropdown
   }
 
   useEffect(() => {
@@ -151,6 +153,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
                 selected={selectedService}
               />
             }
+            {/* Add Method Dropdown */}
+            <DropdownFilter
+              label="Method"
+              data={['XGBoost', 'LSTM']}
+              onChange={(item: string) => {
+                setSelectedMethod(item) // Set selected method
+              }}
+              selected={selectedMethod}
+            />
             <label>Select Date</label>
             <input
               type="date"
@@ -170,7 +181,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
                   : {}
               }
             />
-            {/* <DatePicker /> */}
             <div className="flex justify-between mt-6 space-x-4">
               <Button variant="secondary" onClick={handleReset}>
                 RESET
