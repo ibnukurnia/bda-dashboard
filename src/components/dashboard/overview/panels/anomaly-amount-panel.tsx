@@ -41,11 +41,11 @@ const AnomalyAmountPanel = forwardRef<AnomalyAmountPanelHandle, AnomalyAmountPan
     const [xaxisRange, setXaxisRange] = useState<{ min: number; max: number }>({ min: 0, max: 0 });
 
     // Use useImperativeHandle to expose the custom method
-    useImperativeHandle(ref, () => ({
-      refresh(timeRange) {
-        fetchData();
-      },
-    }));
+    // useImperativeHandle(ref, () => ({
+    //   refresh(timeRange) {
+    //     fetchData();
+    //   },
+    // }));
 
     useEffect(() => {
       fetchData();
@@ -85,9 +85,14 @@ const AnomalyAmountPanel = forwardRef<AnomalyAmountPanelHandle, AnomalyAmountPan
         })
         .finally(() => {
           setIsLoadingAnomalyAmount(false);
-          console.log(anomalyAmountData)
+          console.log(anomalyAmountData, "ini")
         });
     }
+
+    useEffect(() => {
+      console.log(anomalyAmountData, "UseEffect")
+    }, [anomalyAmountData])
+
 
     // Handle Zoom Out (show newer data)
     const handleZoomOut = () => {

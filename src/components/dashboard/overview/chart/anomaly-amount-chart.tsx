@@ -1,9 +1,8 @@
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
 import { format } from 'date-fns';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { AnomalyAmountResponse } from '@/modules/models/overviews';
-import Skeleton from '@/components/system/Skeleton/Skeleton';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -11,8 +10,8 @@ interface AnomalyAmountChartProps {
   data: AnomalyAmountResponse[] | null;
   startTime: string;
   endTime: string;
-  onZoomOut: (newStartTime: string, newEndTime: string) => void; // Add onZoomOut handler
-  onZoomIn?: (newStartTime: string, newEndTime: string) => void; // Add onZoomIn handler (optional)
+  onZoomOut: (newStartTime: string, newEndTime: string) => void;
+  onZoomIn?: (newStartTime: string, newEndTime: string) => void;
 }
 
 const AnomalyAmountChart = ({
@@ -31,15 +30,13 @@ const AnomalyAmountChart = ({
     .map(s => ({
       name: s.service_name,
       data: s.data.map((d: any) => [new Date(d[0]).getTime(), d[1]]), // Convert date strings to timestamps
+      anomalies: Array.isArray(s.anomalies) ? s.anomalies.map((a: any) => [new Date(a[0]).getTime(), a[1]]) : [] // Handle anomalies
     }));
-
-  console.log(chartSeries)
-
 
   // Calculate the min and max timestamps from the data
   const allTimestamps = chartSeries.flatMap(s => s.data.map(d => d[0]));
-  const minTimestamp = Math.min(...allTimestamps); // Midnight timestamp (00:00)
-  const maxTimestamp = Math.max(...allTimestamps); // Current time (endTime)
+  const minTimestamp = Math.min(...allTimestamps); // Midnight timestamp
+  const maxTimestamp = Math.max(...allTimestamps); // Current time
 
   // Calculate default view (middle of 00:00 - current)
   const defaultViewMidpoint = (minTimestamp + maxTimestamp) / 2;
@@ -49,43 +46,12 @@ const AnomalyAmountChart = ({
     min: defaultViewMidpoint - defaultViewRange / 2,
     max: defaultViewMidpoint + defaultViewRange / 2,
   });
-  const [isVisible, setIsVisible] = useState(false);
-  const chartRef = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect(); // Stop observing once the chart is loaded
-        }
-      },
-      {
-        root: null, // Uses the viewport as the default root
-        rootMargin: '0px',
-        threshold: 0.1, // Trigger when 10% of the element is visible
-      }
-    );
-
-    if (chartRef.current) {
-      observer.observe(chartRef.current);
-    }
-
-    return () => {
-      if (chartRef.current) {
-        observer.unobserve(chartRef.current);
-      }
-    };
-  }, []);
 
   const options: ApexOptions = {
     chart: {
       group: 'overview',
       type: 'line',
       height: 300,
-      animations: {
-        enabled: false,
-      },
       toolbar: {
         show: true,
         tools: {
@@ -117,38 +83,44 @@ const AnomalyAmountChart = ({
           const currentMin = options.globals.minX;
           const currentMax = options.globals.maxX;
 
-          // Prevent zoom out beyond midnight
-          if (currentMin < minTimestamp) {
+          // Prevent zoom out beyond midnight (minTimestamp) and current time (maxTimestamp)
+          if (currentMin < minTimestamp || currentMax > maxTimestamp) {
             setXaxisRange({
-              min: minTimestamp,
-              max: currentMax,
-            });
-          }
-
-          // Prevent zoom out beyond the current time
-          if (currentMax > maxTimestamp) {
-            setXaxisRange({
-              min: currentMin,
-              max: maxTimestamp,
+              min: Math.max(minTimestamp, currentMin),
+              max: Math.min(maxTimestamp, currentMax),
             });
           }
         },
         beforeZoom: (chartContext, { xaxis }) => {
-          const zoomedMin = Math.max(minTimestamp, xaxis.min); // Don't zoom out beyond midnight
-          const zoomedMax = Math.min(maxTimestamp, xaxis.max); // Don't zoom out beyond the current time
+          const zoomedMin = Math.max(minTimestamp, xaxis.min);
+          const zoomedMax = Math.min(maxTimestamp, xaxis.max);
 
-          // Limit zooming in to per-minute intervals (no seconds)
           const oneMinute = 60000;
           if (zoomedMax - zoomedMin < oneMinute) {
             return {
               xaxis: {
                 min: zoomedMin,
-                max: zoomedMin + oneMinute, // Minimum zoom level is one minute
+                max: zoomedMin + oneMinute,
               },
             };
           }
 
-          // Ensure zoom out does not go beyond midnight or beyond the current time
+          if (zoomedMin < minTimestamp || zoomedMax > maxTimestamp) {
+            return {
+              xaxis: {
+                min: Math.max(minTimestamp, zoomedMin),
+                max: Math.min(maxTimestamp, zoomedMax),
+              },
+            };
+          }
+
+          if (onZoomIn && zoomedMax - zoomedMin > oneMinute) {
+            onZoomIn(
+              format(new Date(zoomedMin), 'yyyy-MM-dd HH:mm:ss'),
+              format(new Date(zoomedMax), 'yyyy-MM-dd HH:mm:ss')
+            );
+          }
+
           return {
             xaxis: {
               min: zoomedMin,
@@ -179,6 +151,15 @@ const AnomalyAmountChart = ({
         style: {
           colors: 'white',
         },
+        formatter: (value) => {
+          const formatter = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+          });
+          return formatter.format(value).replace('Rp', 'Rp.');
+        },
       },
       tickAmount: 5,
     },
@@ -191,13 +172,18 @@ const AnomalyAmountChart = ({
       hover: {
         size: 6,
       },
-      discrete: allTimestamps.map(a => ({
-        seriesIndex: 0,
-        dataPointIndex: allTimestamps.findIndex(d => d[1] === a[0]),
-        fillColor: '#FF0000',
-        strokeColor: '#FF0000',
-        size: 4,
-      }))
+      discrete: chartSeries.flatMap((metric, index) =>
+        metric.anomalies.map((anomaly) => {
+          const dataPointIndex = metric.data.findIndex(d => d[0] === anomaly[0]);
+          return {
+            seriesIndex: index,
+            dataPointIndex,
+            fillColor: '#FF0000',
+            strokeColor: '#FF0000',
+            size: 6,
+          };
+        }).filter(marker => marker.dataPointIndex !== -1)
+      ),
     },
     grid: {
       borderColor: '#bdbdbd',
@@ -217,23 +203,15 @@ const AnomalyAmountChart = ({
     },
   };
 
+
   return (
-    <div ref={chartRef}>
-      {isVisible ?
-        <Chart
-          options={options}
-          series={chartSeries}
-          type="line"
-          height={300}
-          width="100%"
-        /> :
-        <Skeleton
-          variant="rounded"
-          width={"100%"}
-          height={230}
-        />
-      }
-    </div>
+    <Chart
+      options={options}
+      series={chartSeries}
+      type="line"
+      height={300}
+      width="100%"
+    />
   );
 };
 

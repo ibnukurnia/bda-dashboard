@@ -31,7 +31,7 @@ const TopCriticalPanel = forwardRef<TopCriticalPanelHandle, TopCriticalPanelProp
   const [isLoadingTopFiveCritical, setIsLoadingTopFiveCritical] = useState(true)  // Create a ref for the button DOM element
   const containerRef = useRef<HTMLDivElement>(null);
 
-  console.log(topFiveCriticalData)
+  // console.log(topFiveCriticalData)
 
   useImperativeHandle(ref, () => ({
     getContainerElement() {

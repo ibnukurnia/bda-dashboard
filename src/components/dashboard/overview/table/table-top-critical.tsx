@@ -31,7 +31,7 @@ interface CellValueProps {
 const CellValue: React.FC<CellValueProps> = ({
   cell,
 }) => {
-  console.log(cell);
+  // console.log(cell);
 
 
   if (typeof cell.getValue() === 'number') {
