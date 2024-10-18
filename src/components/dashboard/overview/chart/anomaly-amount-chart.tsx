@@ -1,8 +1,9 @@
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { AnomalyAmountResponse } from '@/modules/models/overviews';
+import Skeleton from '@/components/system/Skeleton/Skeleton';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -45,12 +46,43 @@ const AnomalyAmountChart = ({
     min: defaultViewMidpoint - defaultViewRange / 2,
     max: defaultViewMidpoint + defaultViewRange / 2,
   });
+  const [isVisible, setIsVisible] = useState(false);
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect(); // Stop observing once the chart is loaded
+        }
+      },
+      {
+        root: null, // Uses the viewport as the default root
+        rootMargin: '0px',
+        threshold: 0.1, // Trigger when 10% of the element is visible
+      }
+    );
+
+    if (chartRef.current) {
+      observer.observe(chartRef.current);
+    }
+
+    return () => {
+      if (chartRef.current) {
+        observer.unobserve(chartRef.current);
+      }
+    };
+  }, []);
 
   const options: ApexOptions = {
     chart: {
       group: 'overview',
       type: 'line',
       height: 300,
+      animations: {
+        enabled: false,
+      },
       toolbar: {
         show: true,
         tools: {
@@ -176,13 +208,22 @@ const AnomalyAmountChart = ({
   };
 
   return (
-    <Chart
-      options={options}
-      series={chartSeries}
-      type="line"
-      height={300}
-      width="100%"
-    />
+    <div ref={chartRef}>
+      {isVisible ?
+        <Chart
+          options={options}
+          series={chartSeries}
+          type="line"
+          height={300}
+          width="100%"
+        /> :
+        <Skeleton
+          variant="rounded"
+          width={"100%"}
+          height={230}
+        />
+      }
+    </div>
   );
 };
 

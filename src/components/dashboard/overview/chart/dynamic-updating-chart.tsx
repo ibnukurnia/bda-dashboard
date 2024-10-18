@@ -18,6 +18,9 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
       group: 'overview',
       type: 'line',
       height: 120,
+      animations: {
+        enabled: false,
+      },
       toolbar: {
         show: false,
       },
