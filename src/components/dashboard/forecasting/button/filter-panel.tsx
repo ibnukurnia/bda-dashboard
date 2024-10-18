@@ -1,53 +1,38 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { GetFilterServiceList } from '@/modules/usecases/forecasting'
-import Button from '@/components/system/Button/Button'
-import DropdownFilter from './dropdown'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { GetFilterServiceList } from '@/modules/usecases/forecasting';
+import Button from '@/components/system/Button/Button';
+import DropdownFilter from './dropdown';
 
 interface FilterPanelProps {
   activeFilter: {
-    sourceData: string | null
-    serviceName: string | null
-    selectedDate: string
-  }
+    sourceData: string | null;
+    serviceName: string | null;
+    selectedDate: string;
+  };
   onApplyFilters: (filters: {
-    selectedSource: string | null
-    selectedService: string | null
-    selectedDate: string
-    selectedMethod: string // Add selectedMethod to the filters
-  }) => void
+    selectedSource: string | null;
+    selectedService: string | null;
+    selectedDate: string;
+    selectedMethod: string; // Add selectedMethod to the filters
+  }) => void;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters }) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const panelRef = useRef<HTMLDivElement>(null)
+  const [isOpen, setIsOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
 
-  const [selectedSource, setSelectedSource] = useState<string | null>(activeFilter.sourceData)
-  const [selectedService, setSelectedService] = useState<string | null>(activeFilter.serviceName)
-  const [selectedMethod, setSelectedMethod] = useState<string>('XGBoost') // Default method
-  const [selectedDate, setSelectedDate] = useState<string>('')
-  const [services, setServices] = useState<any[]>([])
+  const [selectedSource, setSelectedSource] = useState<string | null>(activeFilter.sourceData);
+  const [selectedService, setSelectedService] = useState<string | null>(activeFilter.serviceName);
+  const [selectedMethod, setSelectedMethod] = useState<string>('XGBoost'); // Default method
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [services, setServices] = useState<any[]>([]);
 
-  const dataSource = ['tpm', 'sales_volume', 'error_rate']
-  const dataSourceWithoutServices = ['sales_volume', 'error_rate']
+  const dataSource = ['tpm', 'sales_volume', 'error_rate'];
+  const dataSourceWithoutServices = ['sales_volume', 'error_rate'];
 
-  const today = new Date()
-  const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate())
-  const maxDate = new Date(
-    new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).setDate(todayZero.getDate() + 29)
-  ).toDateString()
+  const today = new Date();
+  const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate());
 
-  const isUnavailableDate = () => {
-    const parsedSelectedDate = new Date(selectedDate)
-    const selectedDateZero = new Date(
-      parsedSelectedDate?.getFullYear(),
-      parsedSelectedDate?.getMonth(),
-      parsedSelectedDate?.getDate()
-    )
-    const resLogicDate =
-      selectedDateZero.getTime() > new Date(maxDate).getTime()
-
-    return resLogicDate
-  }
 
   const formatDate = (date: Date | string) => {
     var d = new Date(date),
@@ -61,9 +46,23 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
     return [year, month, day].join('-')
   }
 
+
+  // Disable future dates if the selected method is LSTM
+  const maxDate = selectedMethod === 'LSTM' ? formatDate(todayZero) : formatDate(new Date(todayZero.setDate(todayZero.getDate() + 29)));
+
+  const isUnavailableDate = () => {
+    const parsedSelectedDate = new Date(selectedDate);
+    const selectedDateZero = new Date(
+      parsedSelectedDate?.getFullYear(),
+      parsedSelectedDate?.getMonth(),
+      parsedSelectedDate?.getDate()
+    );
+    return selectedDateZero.getTime() > new Date(maxDate).getTime();
+  };
+
   const togglePanel = () => {
-    setIsOpen(!isOpen)
-  }
+    setIsOpen(!isOpen);
+  };
 
   const handleApply = () => {
     onApplyFilters({
@@ -71,44 +70,44 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
       selectedService,
       selectedDate,
       selectedMethod, // Pass the selected method
-    })
-    setIsOpen(false) // Close the panel after applying filters
-  }
+    });
+    setIsOpen(false); // Close the panel after applying filters
+  };
 
   const handleReset = () => {
-    setSelectedSource(null)
-    setSelectedService(null)
-    setSelectedDate('')
-    setSelectedMethod('XGBoost') // Reset the method dropdown
-  }
+    setSelectedSource(null);
+    setSelectedService(null);
+    setSelectedDate('');
+    setSelectedMethod('XGBoost'); // Reset the method dropdown
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
-        setIsOpen(false) // Close the panel when clicking outside of it
+        setIsOpen(false); // Close the panel when clicking outside of it
       }
-    }
+    };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleClickOutside);
     } else {
-      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isOpen])
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
-    setSelectedSource(activeFilter.sourceData)
-    setSelectedService(activeFilter.serviceName)
-    setSelectedDate(activeFilter.selectedDate)
-  }, [isOpen])
+    setSelectedSource(activeFilter.sourceData);
+    setSelectedService(activeFilter.serviceName);
+    setSelectedDate(activeFilter.selectedDate);
+  }, [isOpen]);
 
   useLayoutEffect(() => {
-    GetFilterServiceList().then((service) => setServices(service.data))
-  }, [])
+    GetFilterServiceList().then((service) => setServices(service.data));
+  }, []);
 
   return (
     <div className="flex self-end z-50">
@@ -137,37 +136,39 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
               label="Source Data"
               data={dataSource}
               onChange={(item: string) => {
-                setSelectedSource(item)
-                setSelectedService(null)
+                setSelectedSource(item);
+                setSelectedService(null);
               }}
               selected={selectedSource}
             />
-            {!dataSourceWithoutServices.includes(selectedSource ?? '') &&
+            {!dataSourceWithoutServices.includes(selectedSource ?? '') && (
               <DropdownFilter
                 disabled={selectedSource === null}
                 label="Service Name"
                 data={services}
                 onChange={(item: string) => {
-                  setSelectedService(item)
+                  setSelectedService(item);
                 }}
                 selected={selectedService}
               />
-            }
+            )}
             {/* Add Method Dropdown */}
-            <DropdownFilter
-              label="Method"
-              data={['XGBoost', 'LSTM']}
-              onChange={(item: string) => {
-                setSelectedMethod(item) // Set selected method
-              }}
-              selected={selectedMethod}
-            />
+            {!dataSourceWithoutServices.includes(selectedSource ?? '') && (
+              <DropdownFilter
+                label="Method"
+                data={['XGBoost', 'LSTM']}
+                onChange={(item: string) => {
+                  setSelectedMethod(item); // Set selected method
+                }}
+                selected={selectedMethod}
+              />
+            )}
             <label>Select Date</label>
             <input
               type="date"
               name=""
               id=""
-              max={formatDate(maxDate)}
+              max={maxDate} // Use the dynamic max date for LSTM or other methods
               className={`text-black border border-gray-300 bg-light-700 disabled:bg-gray-100 disabled:text-gray-400 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm p-2 w-full`}
               onChange={(e) => setSelectedDate(e.target.value)}
               value={selectedDate}
@@ -201,7 +202,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ activeFilter, onApplyFilters 
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default FilterPanel
+export default FilterPanel;
