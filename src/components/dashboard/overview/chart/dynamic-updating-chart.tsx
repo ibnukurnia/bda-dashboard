@@ -1,5 +1,7 @@
 import dynamic from 'next/dynamic'
 import { ApexOptions } from 'apexcharts'
+import { Fragment, useEffect, useRef, useState } from 'react'
+import Skeleton from '@/components/system/Skeleton/Skeleton'
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
@@ -13,11 +15,43 @@ interface DynamicUpdatingChartProps {
 }
 
 const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: DynamicUpdatingChartProps) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect(); // Stop observing once the chart is loaded
+        }
+      },
+      {
+        root: null, // Uses the viewport as the default root
+        rootMargin: '0px',
+        threshold: 0.1, // Trigger when 10% of the element is visible
+      }
+    );
+
+    if (chartRef.current) {
+      observer.observe(chartRef.current);
+    }
+
+    return () => {
+      if (chartRef.current) {
+        observer.unobserve(chartRef.current);
+      }
+    };
+  }, []);
+
   const options: ApexOptions = {
     chart: {
       group: 'overview',
       type: 'line',
       height: 120,
+      animations: {
+        enabled: false,
+      },
       toolbar: {
         show: false,
       },
@@ -128,23 +162,41 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
 
 
   return (
-    <>
-
-      <Chart
-        options={options}
-        series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
-        type="line"
-        height={350}
-        width={'100%'}
-      />
-      <p className="text-white text-sm ml-3">
-        Last Spike: {spike ? spike : '-'}
-      </p>
-
-
-    </>
-
-
+    <div ref={chartRef}>
+      {isVisible ?
+        <Fragment>
+          <Chart
+            options={options}
+            series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
+            type="line"
+            height={350}
+            width={'100%'}
+          />
+          <p className="text-white text-sm ml-3">
+            Last Spike: {spike ?? '-'}
+          </p>
+        </Fragment> :
+        <div className={`chart-section-col flex flex-col gap-2`}>
+          <Skeleton
+            height={12}
+            width={"75px"}
+          />
+          <Skeleton
+            height={12}
+            width={"75px"}
+          />
+          <Skeleton
+            variant="rounded"
+            width={"100%"}
+            height={230}
+          />
+          <Skeleton
+            height={20}
+            width={"125px"}
+          />
+        </div>
+      }
+    </div>
   )
 }
 

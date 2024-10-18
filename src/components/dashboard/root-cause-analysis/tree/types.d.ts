@@ -9,6 +9,7 @@ export interface TreeNodeType {
     name: string;
     cluster?: string;
     namespace?: string;
+    fungsi?: string;
     anomalyCount?: number;
     children?: TreeNodeType[];
     tooltips?: Tooltip[]

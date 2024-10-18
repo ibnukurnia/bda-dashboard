@@ -21,6 +21,7 @@ type ImpactedService = {
   service_alias: string
   total: number
   impacted: string[]
+  function: string
   tooltips: Tooltip[]
   nlp?: NLP
 }

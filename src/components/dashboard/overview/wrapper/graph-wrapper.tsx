@@ -27,6 +27,10 @@ const GraphWrapper: React.FC<GraphWrapperProps> = ({
             width={"100%"}
             height={230}
           />
+          <Skeleton
+            height={20}
+            width={"125px"}
+          />
         </div>
       ))}
     </div>

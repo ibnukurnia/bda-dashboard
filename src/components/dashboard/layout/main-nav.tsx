@@ -13,6 +13,7 @@ import router from 'next/dist/client/router';
 import { logger } from '@/lib/default-logger';
 import { useEffect, useState } from 'react';
 import { MobileNav } from './mobile-nav';
+import useInterval from '@/hooks/use-interval';
 
 
 interface Notification {
@@ -158,32 +159,32 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
     });
   };
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        setIsLoading(true);
-        const response = await GetNotificationList({
-            page: 1,
-            limit: 3,
-        });
+  const fetchNotifications = async () => {
+    try {
+      const response = await GetNotificationList({
+          page: 1,
+          limit: 3,
+      });
 
-        if (response?.data) {
-          const { rows } = response.data; // Assuming data.rows contains the notification data
+      if (response?.data) {
+        const { rows } = response.data; // Assuming data.rows contains the notification data
 
-          setNotifications(rows as Notification[]);
-          setIsError(false);
-        }
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-        setIsError(true);
-      } finally {
-        setIsLoading(false);
+        setNotifications(rows as Notification[]);
+        setIsError(false);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchNotifications();
   }, []);
 
+  useInterval(() => fetchNotifications(), 60000, true)
 
   // Close dropdowns if clicked outside
   const handleClickOutside = (event: MouseEvent) => {
@@ -344,7 +345,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
             )}
           </div>
           <div className="border-t border-gray-600">
-            <Link href="/dashboard/anomaly-notification" passHref>
+            <Link href="/dashboard/anomaly-notification" passHref onClick={() => setIsNotifDetailsOpen(false)}>
               <Button component="a" className="w-full text-center py-3 text-blue-500 hover:bg-gray-800">
                 View All Anomaly
               </Button>

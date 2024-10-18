@@ -6,6 +6,7 @@ import { Typography } from "@mui/material";
 interface TooltipData {
   type: string;
   anomaly: string;
+  cluster: string;
   service: string;
   service_alias: string;
   tooltips: {
@@ -31,7 +32,8 @@ const TooltipCollection: React.FC<TooltipCollectionProps> = ({
           servicesWithTooltip.push({
             type: item.type,
             anomaly: route.anomaly,
-            service: escapeAndRemoveSpaces(service.service_alias),
+            cluster: service.cluster,
+            service: service.service,
             service_alias: service.service_alias,
             tooltips: service.tooltips,
           });
@@ -42,12 +44,13 @@ const TooltipCollection: React.FC<TooltipCollectionProps> = ({
   
   return servicesWithTooltip.map(service => 
     <Tooltip
-      key={`#${service?.type}-${service?.anomaly}-${service.service}`}
-      anchorSelect={`#${service?.type}-${service?.anomaly}-${service.service}`}
+      key={`#${service?.type}-${service?.cluster}-${service?.anomaly}-${escapeAndRemoveSpaces(service.service_alias)}`}
+      anchorSelect={`#${service?.type}-${service?.cluster}-${service?.anomaly}-${escapeAndRemoveSpaces(service.service_alias)}`}
       className="py-3 px-4 !bg-[#1A223D] !border-white !rounded-xl"
       noArrow
       style={{
         boxShadow: "0px 4px 24.5px 0px rgba(0, 0, 0, 0.25)",
+        zIndex: 20,
       }}
       opacity={1}
     >
