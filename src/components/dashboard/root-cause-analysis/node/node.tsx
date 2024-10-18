@@ -93,8 +93,9 @@ const Node: React.FC<NodeProps> = ({
           </a>
         }
         {count == null && <div className='w-5 h-5 bg-orange-500 rounded-md' />}
-        <div className='w-4/5 flex flex-col'>
+        <div className='w-[calc(100%_-_(0.5rem_+_44px))] flex flex-col'>
           <Typography
+            title={title}
             color={'white'}
             fontWeight={expanded ? 700 : 400}
             fontSize={14}
@@ -112,6 +113,7 @@ const Node: React.FC<NodeProps> = ({
           </Typography>
           {queryParams?.cluster &&
             <Typography
+              title={queryParams?.cluster}
               color={'white'}
               fontWeight={expanded ? 700 : 400}
               fontSize={14}
@@ -130,6 +132,7 @@ const Node: React.FC<NodeProps> = ({
           }
           {fungsi &&
             <Typography
+              title={fungsi}
               color={'white'}
               fontWeight={expanded ? 700 : 400}
               fontSize={14}

@@ -12,8 +12,16 @@ const TopBar: React.FC<TopBarProps> = ({ title, subtitle, isLoading }) => {
   return (
     <div className="w-full h-16">
       <Typography
+        title={title}
         variant="subtitle1"
         color={'white'}
+        noWrap
+        sx={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          maxWidth: '100%', // Adjust as needed
+        }}
       >
         {title}
       </Typography>
@@ -25,8 +33,16 @@ const TopBar: React.FC<TopBarProps> = ({ title, subtitle, isLoading }) => {
           height={20}
         /> :
         <Typography
+          title={subtitle}
           variant="subtitle1"
           color={'white'}
+          noWrap
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            maxWidth: '100%', // Adjust as needed
+          }}
         >
           {subtitle}
         </Typography>

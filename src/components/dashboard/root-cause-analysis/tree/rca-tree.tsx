@@ -121,10 +121,7 @@ const RCATree: React.FC<RCATreeProps> = ({
   return (
     <div className='w-full px-6 pb-8 flex flex-col gap-8'>
       <div
-        className="w-full grid gap-16 justify-center"
-        style={{
-          gridTemplateColumns: "repeat(4, 1fr)"
-        }}
+        className="w-full grid grid-cols-4 gap-16 justify-center"
       >
         {data &&
           <TopBar
@@ -156,10 +153,7 @@ const RCATree: React.FC<RCATreeProps> = ({
         }
       </div>
       <div
-        className="grid gap-16 justify-center items-center"
-        style={{
-          gridTemplateColumns: "repeat(4, minmax(0, 1fr))"
-        }}
+        className="grid grid-cols-4 gap-16 justify-center items-center"
       >
         <ScrollableNodeList
           nodes={data}
