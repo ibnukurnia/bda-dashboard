@@ -47,3 +47,85 @@ export const fetchServicesOption = async (payload: {
 
   return response
 }
+
+export const fetchSolarWindsNetworkOption = async (payload: {
+  start_time: string
+  end_time: string
+}): Promise<ApiResponse<string[]>> => {
+  const response: ApiResponse<string[]> = await get(`list-identifier/solarwinds/network`, {
+    withAuth: true,
+    queries: payload,
+  })
+
+  return response
+}
+
+export const fetchSolarWindsNodeOption = async (payload: {
+  start_time: string
+  end_time: string
+}): Promise<ApiResponse<string[]>> => {
+  const response: ApiResponse<string[]> = await get(`list-identifier/solarwinds/node_name`, {
+    withAuth: true,
+    queries: payload,
+  })
+
+  return response
+}
+
+export const fetchSolarWindsInterfaceOption = async (payload: {
+  start_time: string
+  end_time: string
+}): Promise<ApiResponse<string[]>> => {
+  const response: ApiResponse<string[]> = await get(`list-identifier/solarwinds/interface_name`, {
+    withAuth: true,
+    queries: payload,
+  })
+
+  return response
+}
+
+export const fetchDnsDomainOption = async (payload: {
+  start_time: string
+  end_time: string
+}): Promise<ApiResponse<string[]>> => {
+  const response: ApiResponse<string[]> = await get(`list-identifier/dns_rt/domain`, {
+    withAuth: true,
+    queries: payload,
+  })
+
+  return response
+}
+export const fetchDnsCategoryOption = async (payload: {
+  start_time: string
+  end_time: string
+}): Promise<ApiResponse<string[]>> => {
+  const response: ApiResponse<string[]> = await get(`list-identifier/dns_rt/category`, {
+    withAuth: true,
+    queries: payload,
+  })
+
+  return response
+}
+
+export const fetchPrtgTrafficDeviceOption = async (payload: {
+  start_time: string
+  end_time: string
+}): Promise<ApiResponse<string[]>> => {
+  const response: ApiResponse<string[]> = await get(`list-identifier/prtg_traffic/device`, {
+    withAuth: true,
+    queries: payload,
+  })
+
+  return response
+}
+export const fetchPrtgTrafficSensorOption = async (payload: {
+  start_time: string
+  end_time: string
+}): Promise<ApiResponse<string[]>> => {
+  const response: ApiResponse<string[]> = await get(`list-identifier/prtg_traffic/sensor`, {
+    withAuth: true,
+    queries: payload,
+  })
+
+  return response
+}

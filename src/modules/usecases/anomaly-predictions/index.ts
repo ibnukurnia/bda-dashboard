@@ -10,45 +10,26 @@ import {
   ServiceOptionByClusterResponse,
 } from '@/modules/models/anomaly-predictions'
 
-const GetHistoricalLogAnomalies = async (
+const GetHistoricalLogAnomalies = async (payload: {
   type: string,
   limit: number,
   page: number,
-  filterAnomaly: string[],
-  filterClusters: string[],
-  filterServices: string[],
-  filterSeverities: number[],
   start_time: string,
   end_time: string,
+  filters: string[],
+  cluster: string[],
+  service_name: string[],
+  severity: number[],
   operation: string // Ensure this is correctly passed
-) => {
-  let endPoint = `anomaly-predictions?type=${type}&limit=${limit}&page=${page}&start_time=${start_time}&end_time=${end_time}`;
-
-  filterAnomaly.forEach((f) => {
-    endPoint += `&filters=${f}`;
-  });
-
-  filterClusters.forEach((f) => {
-    endPoint += `&cluster=${f}`;
-  });
-
-  filterServices.forEach((f) => {
-    endPoint += `&service_name=${f}`;
-  });
-
-  filterSeverities.forEach((f) => {
-    endPoint += `&severity=${f}`;
-  });
-
-  // Append the operation parameter to the URL
-  if (operation) {
-    endPoint += `&operation=${operation}`;
-  } else {
-    console.warn('Operation is missing in API call');
-  }
-
-  const response: ApiResponse<PaginatedResponse> = await get(endPoint, {
+  network: string[],
+  node: string[],
+  interface: string[],
+  category: string[],
+  domain: string[],
+}) => {
+  const response: ApiResponse<PaginatedResponse> = await get('anomaly-predictions', {
     withAuth: true,
+    queries: payload,
   });
 
   return response;
