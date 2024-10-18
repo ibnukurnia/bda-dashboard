@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic'
 import { ApexOptions } from 'apexcharts'
 import { Fragment, useEffect, useRef, useState } from 'react'
+import Skeleton from '@/components/system/Skeleton/Skeleton'
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
@@ -162,19 +163,38 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
 
   return (
     <div ref={chartRef}>
-      {isVisible &&
-      <Fragment>
-        <Chart
-          options={options}
-          series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
-          type="line"
-          height={350}
-          width={'100%'}
-        />
-        <p className="text-white text-sm ml-3">
-          Last Spike: {spike ? spike : '-'}
-        </p>
-      </Fragment>
+      {isVisible ?
+        <Fragment>
+          <Chart
+            options={options}
+            series={series.length > 1 ? series.sort((a, b) => a.name.localeCompare(b.name)) : (series as ApexAxisChartSeries)}
+            type="line"
+            height={350}
+            width={'100%'}
+          />
+          <p className="text-white text-sm ml-3">
+            Last Spike: {spike ?? '-'}
+          </p>
+        </Fragment> :
+        <div className={`chart-section-col flex flex-col gap-2`}>
+          <Skeleton
+            height={12}
+            width={"75px"}
+          />
+          <Skeleton
+            height={12}
+            width={"75px"}
+          />
+          <Skeleton
+            variant="rounded"
+            width={"100%"}
+            height={230}
+          />
+          <Skeleton
+            height={20}
+            width={"125px"}
+          />
+        </div>
       }
     </div>
   )
