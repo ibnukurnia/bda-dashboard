@@ -28,9 +28,9 @@ export const SECTIONS_CONFIG = {
     waf: 'waf',
   },
   compute: {
-    storage: 'storage',
-    host: 'host',
-    vm: 'vm',
+    storage: 'compute_storage',
+    host: 'compute_host',
+    vm: 'compute_vm',
   },
   network: {
     f5: 'f5',
