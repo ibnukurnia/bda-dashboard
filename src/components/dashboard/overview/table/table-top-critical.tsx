@@ -31,6 +31,9 @@ interface CellValueProps {
 const CellValue: React.FC<CellValueProps> = ({
   cell,
 }) => {
+  console.log(cell);
+
+
   if (typeof cell.getValue() === 'number') {
     return (
       <span
@@ -41,11 +44,13 @@ const CellValue: React.FC<CellValueProps> = ({
     )
   }
 
+
   if (typeof cell.column.columnDef.cell === 'function') {
     return <Fragment>
       {cell.column.columnDef.cell(cell.getContext())}
     </Fragment>
   }
+
   return <Fragment>
     {cell.column.columnDef.cell}
   </Fragment>

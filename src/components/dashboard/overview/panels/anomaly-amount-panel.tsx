@@ -85,6 +85,7 @@ const AnomalyAmountPanel = forwardRef<AnomalyAmountPanelHandle, AnomalyAmountPan
         })
         .finally(() => {
           setIsLoadingAnomalyAmount(false);
+          console.log(anomalyAmountData)
         });
     }
 

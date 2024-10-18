@@ -245,11 +245,11 @@ const MainPageOverview = () => {
               />
             </div>
 
-            {/* {/* <LatestAnomalyPanel
+            {<LatestAnomalyPanel
               ref={latestAnomalyRef}
               timeRange={autoRefresh ? selectedRange : `${lastTimeRange.startTime} - ${lastTimeRange.endTime}`}
               isFullscreen={handle.active}
-            /> */}
+            />}
 
             <GraphWrapper isLoading={isLoadingGraphic}>
               <div className='flex flex-col gap-6 z-0'>

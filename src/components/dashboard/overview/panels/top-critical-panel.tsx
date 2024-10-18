@@ -31,6 +31,8 @@ const TopCriticalPanel = forwardRef<TopCriticalPanelHandle, TopCriticalPanelProp
   const [isLoadingTopFiveCritical, setIsLoadingTopFiveCritical] = useState(true)  // Create a ref for the button DOM element
   const containerRef = useRef<HTMLDivElement>(null);
 
+  console.log(topFiveCriticalData)
+
   useImperativeHandle(ref, () => ({
     getContainerElement() {
       return containerRef.current;
@@ -45,7 +47,7 @@ const TopCriticalPanel = forwardRef<TopCriticalPanelHandle, TopCriticalPanelProp
     setIsLoadingTopFiveCritical(true)
     fetchData()
   }, [timeRange])
-  
+
   function fetchData(customTimeRange?: string) {
     const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange);
 

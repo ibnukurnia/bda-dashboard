@@ -32,6 +32,9 @@ const AnomalyAmountChart = ({
       data: s.data.map((d: any) => [new Date(d[0]).getTime(), d[1]]), // Convert date strings to timestamps
     }));
 
+  console.log(chartSeries)
+
+
   // Calculate the min and max timestamps from the data
   const allTimestamps = chartSeries.flatMap(s => s.data.map(d => d[0]));
   const minTimestamp = Math.min(...allTimestamps); // Midnight timestamp (00:00)
@@ -156,6 +159,13 @@ const AnomalyAmountChart = ({
       hover: {
         size: 6,
       },
+      discrete: allTimestamps.map(a => ({
+        seriesIndex: 0,
+        dataPointIndex: allTimestamps.findIndex(d => d[1] === a[0]),
+        fillColor: '#FF0000',
+        strokeColor: '#FF0000',
+        size: 4,
+      }))
     },
     grid: {
       borderColor: '#bdbdbd',
