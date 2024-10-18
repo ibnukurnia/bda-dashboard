@@ -28,7 +28,7 @@ interface TableServicesProps {
 
 const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSource, queryParams }: TableServicesProps) => {
   return (
-    <div className={`relative overflow-auto min-h-48 ${styles.scrollbar}`} style={{ maxHeight }}>
+    <div className={`relative overflow-auto min-h-48 2xl:h-[40dvh] ${styles.scrollbar}`} style={{ maxHeight }}>
       <div>
         <table className="w-full text-white">
           <thead>

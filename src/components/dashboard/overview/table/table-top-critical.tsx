@@ -150,12 +150,12 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                 isEmpty={data.length === 0}
               >
                 <Fragment>
-                  {table.getRowModel().rows.map((row) => (
+                  {table.getRowModel().rows.map((row, i) => (
                     <tr
                       key={row.id}
                       className={`${styles.row_hover} hover:bg-slate-300 text-gray-100 hover:text-black`}
                     >
-                      {row.getVisibleCells().map((cell) => (
+                      {row.getVisibleCells().map((cell, j) => (
                         <td key={cell.id} className={`${styles.first_child} whitespace-nowrap`}>
                           <Link
                             className='w-full h-full flex px-4 py-4 items-center rounded-full gap-x-2'
@@ -170,7 +170,16 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                             }}
                             passHref
                           >
-                            <CellValue cell={cell} />
+                            {table.getHeaderGroups()[0].headers[j]?.id === "identifier_alias" ?
+                              <div className='flex flex-col'>
+                                <span>{data[i].identifier}</span>
+                                <span>{data[i].fungsi}</span>
+                                <span>{data[i].cluster}</span>
+                              </div> :
+                              <CellValue
+                                cell={cell}
+                              />
+                            }
                           </Link>
                         </td>
                       ))}

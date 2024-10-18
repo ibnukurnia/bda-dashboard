@@ -111,25 +111,6 @@ const Node: React.FC<NodeProps> = ({
           >
             {title}
           </Typography>
-          {queryParams?.cluster &&
-            <Typography
-              title={queryParams?.cluster}
-              color={'white'}
-              fontWeight={expanded ? 700 : 400}
-              fontSize={14}
-              lineHeight={"17.07px"}
-              align='left'
-              noWrap
-              sx={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: '100%', // Adjust as needed
-              }}
-            >
-              {queryParams?.cluster}
-            </Typography>
-          }
           {fungsi &&
             <Typography
               title={fungsi}
@@ -147,6 +128,25 @@ const Node: React.FC<NodeProps> = ({
               }}
             >
               {fungsi}
+            </Typography>
+          }
+          {queryParams?.cluster &&
+            <Typography
+              title={queryParams?.cluster}
+              color={'white'}
+              fontWeight={expanded ? 700 : 400}
+              fontSize={14}
+              lineHeight={"17.07px"}
+              align='left'
+              noWrap
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '100%', // Adjust as needed
+              }}
+            >
+              {queryParams?.cluster}
             </Typography>
           }
         </div>
