@@ -12,6 +12,17 @@ import Toggle, { ToggleOption } from "../button/toggle";
 import useInterval from "@/hooks/use-interval";
 import { NAMESPACE_LABELS } from "@/constants";
 
+const initialFilter = {
+    scale: [],
+    cluster: [],
+    service: null,
+    network: null,
+    interface: null,
+    node: null,
+    category: null,
+    domain: null,
+}
+
 const toggleList: ToggleOption[] = [
     {
         id: "multi-scale",
@@ -129,6 +140,13 @@ interface GraphicAnomalyCardProps {
     timeRanges: Record<string, number>;
     clusterOptions: ClusterOptionResponse[] | null | undefined;
     servicesOptions: string[] | null | undefined;
+    networkOptions: string[] | null | undefined;
+    nodeOptions: string[] | null | undefined;
+    interfaceOptions: string[] | null | undefined;
+    categoryOptions: string[] | null | undefined;
+    domainOptions: string[] | null | undefined;
+    deviceOptions: string[] | null | undefined;
+    sensorOptions: string[] | null | undefined;
     isFullScreen: boolean;
     autoRefresh?: {
         enabled: boolean;
@@ -142,6 +160,13 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     timeRanges,
     clusterOptions,
     servicesOptions,
+    networkOptions,
+    nodeOptions,
+    interfaceOptions,
+    categoryOptions,
+    domainOptions,
+    deviceOptions,
+    sensorOptions,
     isFullScreen,
     autoRefresh = {
         enabled: false,
@@ -164,7 +189,16 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         endTime: string;
     }>({ startTime: new Date().toString(), endTime: new Date().toString() })
     const [dateRangeMode, setDateRangeMode] = useState<"predefined" | "custom">("predefined")
-    const [selectedFilter, setSelectedFilter] = useState<{ scale: ColumnOption[], cluster: ClusterOptionResponse[], service: string | null }>({ scale: [], cluster: [], service: null })
+    const [selectedFilter, setSelectedFilter] = useState<{
+        scale: ColumnOption[]
+        cluster: ClusterOptionResponse[]
+        service: string | null
+        network: string | null
+        interface: string | null
+        node: string | null
+        category: string | null
+        domain: string | null
+    }>(initialFilter)
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0])
     const [initialLoading, setInitialLoading] = useState(true)
 
@@ -211,7 +245,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
     useEffect(() => {
         setDataColumn({ columns: [] })
-        setSelectedFilter({ scale: [], cluster: [], service: null })
+        setSelectedFilter(initialFilter)
         GetColumnOption(selectedDataSource)
             .then((result) => {
                 if (result.data) {
@@ -282,7 +316,12 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         if (
             selectedFilter.scale.length === 0 ||
             (clusterOptions != null && selectedFilter.cluster.length === 0) ||
-            (servicesOptions != null && selectedFilter.service == null)
+            (servicesOptions != null && selectedFilter.service == null) ||
+            (networkOptions != null && selectedFilter.network == null) ||
+            (interfaceOptions != null && selectedFilter.interface == null) ||
+            (nodeOptions != null && selectedFilter.node == null) ||
+            (categoryOptions != null && selectedFilter.category == null) ||
+            (domainOptions != null && selectedFilter.domain == null)
         ) return
 
         // Create a new AbortController instance for the new fetch request
@@ -293,9 +332,14 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             type: selectedDataSource,
             start_time: startTime,
             end_time: endTime,
+            metric_name: selectedFilter.scale.map(scale => scale.name),
             cluster: selectedFilter.cluster.map(cluster => cluster.name),
             service_name: selectedFilter.service,
-            metric_name: selectedFilter.scale.map(scale => scale.name),
+            network: selectedFilter.network,
+            interface: selectedFilter.interface,
+            node: selectedFilter.node,
+            category: selectedFilter.category,
+            domain: selectedFilter.domain,
         }, controller.signal)
 
         return metricResultPromise
@@ -335,13 +379,26 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         )
     }
 
-    const handleOnApplyFilter = (selectedScales: ColumnOption[], selectedCluster: ClusterOptionResponse[], selectedService: string | null) => {
+    const handleOnApplyFilter = (
+        selectedScales: ColumnOption[],
+        selectedCluster: ClusterOptionResponse[],
+        selectedService: string | null,
+        selectedNetwork: string | null,
+        selectedInterface: string | null,
+        selectedNode: string | null,
+        selectedCategory: string | null,
+        selectedDomain: string | null,
+    ) => {
         setSelectedFilter({
             scale: selectedScales,
             cluster: selectedCluster,
             service: selectedService,
+            network: selectedNetwork,
+            interface: selectedInterface,
+            node: selectedNode,
+            category: selectedCategory,
+            domain: selectedDomain,
         })
-
     }
 
     const handleSelectToggle = (value: ToggleOption) => {
@@ -354,9 +411,21 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 currentSelectedScales={selectedFilter.scale}
                 currentSelectedCluster={selectedFilter.cluster}
                 currentSelectedService={selectedFilter.service}
+                currentSelectedNetwork={selectedFilter.network}
+                currentSelectedInterface={selectedFilter.interface}
+                currentSelectedNode={selectedFilter.node}
+                currentSelectedCategory={selectedFilter.category}
+                currentSelectedDomain={selectedFilter.domain}
                 scaleOptions={dataColumn.columns}
                 clusterOptions={clusterOptions}
                 servicesOptions={servicesOptions}
+                networkOptions={networkOptions}
+                nodeOptions={nodeOptions}
+                interfaceOptions={interfaceOptions}
+                categoryOptions={categoryOptions}
+                domainOptions={domainOptions}
+                deviceOptions={deviceOptions}
+                sensorOptions={sensorOptions}
                 onApplyFilters={handleOnApplyFilter}
             />}
             <div className='flex flex-col gap-2'>

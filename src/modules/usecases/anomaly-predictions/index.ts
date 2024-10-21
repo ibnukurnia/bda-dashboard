@@ -10,59 +10,54 @@ import {
   ServiceOptionByClusterResponse,
 } from '@/modules/models/anomaly-predictions'
 
-const GetHistoricalLogAnomalies = async (
-  type: string,
-  limit: number,
-  page: number,
-  filterAnomaly: string[],
-  filterClusters: string[],
-  filterServices: string[],
-  filterSeverities: number[],
-  start_time: string,
-  end_time: string,
+const GetHistoricalLogAnomalies = async (payload: {
+  type: string
+  limit: number
+  page: number
+  start_time: string
+  end_time: string
+  filters: string[]
+  cluster: string[]
+  service_name: string[]
+  severity: number[]
   operation: string // Ensure this is correctly passed
-) => {
-  let endPoint = `anomaly-predictions?type=${type}&limit=${limit}&page=${page}&start_time=${start_time}&end_time=${end_time}`;
-
-  filterAnomaly.forEach((f) => {
-    endPoint += `&filters=${f}`;
-  });
-
-  filterClusters.forEach((f) => {
-    endPoint += `&cluster=${f}`;
-  });
-
-  filterServices.forEach((f) => {
-    endPoint += `&service_name=${f}`;
-  });
-
-  filterSeverities.forEach((f) => {
-    endPoint += `&severity=${f}`;
-  });
-
-  // Append the operation parameter to the URL
-  if (operation) {
-    endPoint += `&operation=${operation}`;
-  } else {
-    console.warn('Operation is missing in API call');
-  }
-
-  const response: ApiResponse<PaginatedResponse> = await get(endPoint, {
+  network: string[]
+  node: string[]
+  interface: string[]
+  category: string[]
+  domain: string[]
+}) => {
+  const response: ApiResponse<PaginatedResponse> = await get('anomaly-predictions', {
     withAuth: true,
-  });
+    queries: payload,
+  })
 
-  return response;
-};
+  return response
+}
 
-
-const GetMetricLogAnomalies = async (payload: { type: string, start_time: string, end_time: string, cluster: string[], service_name: string | null, metric_name: string[] }, signal?: AbortSignal) => {
+const GetMetricLogAnomalies = async (
+  payload: {
+    type: string
+    start_time: string
+    end_time: string
+    metric_name: string[]
+    cluster: string[]
+    service_name: string | null
+    network: string | null
+    interface: string | null
+    node: string | null
+    category: string | null
+    domain: string | null
+  },
+  signal?: AbortSignal
+) => {
   let endPoint = `anomaly-predictions/metrics-per-service`
 
   const response: ApiResponse<MetricLogAnomalyResponse[]> = await get(endPoint, {
     withAuth: true,
     queries: payload,
-    signal: signal
-  },)
+    signal: signal,
+  })
 
   return response
 }
@@ -100,37 +95,46 @@ const GetFetchAnomalyOption = async (): Promise<ApiResponse<AnomalyOptionRespons
 }
 
 const GetColumnOption = async (table: string): Promise<ApiResponse<AnomalyOptionResponse>> => {
-  const response: ApiResponse<AnomalyOptionResponse> = await get(`anomaly-predictions/filter-column-on-table?table=${table}`, {
-    withAuth: true,
-  })
+  const response: ApiResponse<AnomalyOptionResponse> = await get(
+    `anomaly-predictions/filter-column-on-table?table=${table}`,
+    {
+      withAuth: true,
+    }
+  )
 
   return response
 }
 
-const GetClusterOption = async (payload: {
-  type: string
-  start_time: string
-  end_time: string
-}, signal?: AbortSignal) => {
+const GetClusterOption = async (
+  payload: {
+    type: string
+    start_time: string
+    end_time: string
+  },
+  signal?: AbortSignal
+) => {
   let endPoint = `list-cluster`
 
   const response: ApiResponse<ClusterOptionResponse[]> = await get(endPoint, {
     withAuth: true,
     queries: payload,
-    signal: signal
-  },)
+    signal: signal,
+  })
 
   return response
 }
 
-const GetServicesOptionByCluster = async (payload: { type: string, start_time: string, end_time: string, cluster: string }, signal?: AbortSignal) => {
+const GetServicesOptionByCluster = async (
+  payload: { type: string; start_time: string; end_time: string; cluster: string },
+  signal?: AbortSignal
+) => {
   let endPoint = `log-services-on-cluster`
 
   const response: ApiResponse<ServiceOptionByClusterResponse[]> = await get(endPoint, {
     withAuth: true,
     queries: payload,
-    signal: signal
-  },)
+    signal: signal,
+  })
 
   return response
 }

@@ -1,29 +1,23 @@
 import React, { useEffect, useState } from 'react'
 import { ClusterOptionResponse, Column } from '@/modules/models/anomaly-predictions'
 import { GetClusterOption, GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
-import { Box, TablePagination, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import {
     ColumnDef,
-    getCoreRowModel,
-    getFilteredRowModel,
-    getSortedRowModel,
-    useReactTable,
 } from '@tanstack/react-table'
-import { CheckboxOption, fetchAnomalyOption, fetchServicesOption } from '@/lib/api'
+import { CheckboxOption, fetchAnomalyOption, fetchDnsCategoryOption, fetchDnsDomainOption, fetchPrtgTrafficDeviceOption, fetchPrtgTrafficSensorOption, fetchServicesOption, fetchSolarWindsInterfaceOption, fetchSolarWindsNetworkOption, fetchSolarWindsNodeOption } from '@/lib/api'
 import DropdownTime from '../button/dropdown-time'
 import FilterPanel from '../button/filterPanel'
 import GraphAnomalyCard from '../card/graph-anomaly-card'
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { format } from 'date-fns';
 import AutoRefreshButton from '../button/refreshButton'
-import { NAMESPACE_LABELS, PREDEFINED_TIME_RANGES, ROWS_PER_PAGE_OPTIONS } from '@/constants'
+import { NAMESPACE_LABELS, PREDEFINED_TIME_RANGES } from '@/constants'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { formatNumberWithCommas } from '../../../../helper';
 import { Maximize } from 'react-feather'
 import Button from '@/components/system/Button/Button'
-import Pagination from '@/components/system/Pagination/Pagination'
 import TableHistoricalAnomaly from '../table/table-historical-anomaly'
-import cluster from 'cluster'
+import useUpdateEffect from '@/hooks/use-update-effect'
 
 interface TabContentProps {
     selectedDataSource: string
@@ -36,11 +30,17 @@ const TabContent: React.FC<TabContentProps> = ({
 }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const timeRange = searchParams.get("time_range")
     const selectedAnomalyOptions = searchParams.getAll("anomaly")
     const selectedClustersOptions = searchParams.getAll("cluster")
     const selectedServicesOptions = searchParams.getAll("service")
     const selectedSeverityOptions = searchParams.getAll("severity").map(Number);
     const selectedOperationOptions = searchParams.get("operation") as string;
+    const selectedNetworkOptions = searchParams.getAll("network")
+    const selectedNodeOptions = searchParams.getAll("node")
+    const selectedInterfaceOptions = searchParams.getAll("interface")
+    const selectedCategoryOptions = searchParams.getAll("category")
+    const selectedDomainOptions = searchParams.getAll("domain")
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
@@ -55,10 +55,24 @@ const TabContent: React.FC<TabContentProps> = ({
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
     const [filterClusterOptions, setFilterClusterOptions] = useState<ClusterOptionResponse[] | null | undefined>(null)
     const [filterServiceOptions, setFilterServiceOptions] = useState<string[] | null | undefined>(null)
+    const [filterSolarWindsNetworkOptions, setFilterSolarWindsNetworkOptions] = useState<string[] | null | undefined>(null)
+    const [filterSolarWindsNodeOptions, setFilterSolarWindsNodeOptions] = useState<string[] | null | undefined>(null)
+    const [filterSolarWindsInterfaceOptions, setFilterSolarWindsInterfaceOptions] = useState<string[] | null | undefined>(null)
+    const [filterDnsDomainOptions, setFilterDnsDomainOptions] = useState<string[] | null | undefined>(null)
+    const [filterDnsCategoryOptions, setFilterDnsCategoryOptions] = useState<string[] | null | undefined>(null)
+    const [filterPrtgTrafficDeviceOptions, setFilterPrtgTrafficDeviceOptions] = useState<string[] | null | undefined>(null)
+    const [filterPrtgTrafficSensorOptions, setFilterPrtgTrafficSensorOptions] = useState<string[] | null | undefined>(null)
     const [filterSeverityOptions, setFilterSeverityOptions] = useState<{ id: number; label: string; type: string }[]>([]);
     const [hasErrorFilterAnomaly, setHasErrorFilterAnomaly] = useState<boolean>(false)
     const [hasErrorFilterCluster, setHasErrorFilterCluster] = useState<boolean>(false)
     const [hasErrorFilterService, setHasErrorFilterService] = useState<boolean>(false)
+    const [hasErrorFilterSolarWindsNetwork, setHasErrorFilterSolarWindsNetwork] = useState<boolean>(false)
+    const [hasErrorFilterSolarWindsNode, setHasErrorFilterSolarWindsNode] = useState<boolean>(false)
+    const [hasErrorFilterSolarWindsInterface, setHasErrorFilterSolarWindsInterface] = useState<boolean>(false)
+    const [hasErrorFilterDnsDomain, setHasErrorFilterDnsDomain] = useState<boolean>(false)
+    const [hasErrorFilterDnsCategory, setHasErrorFilterDnsCategory] = useState<boolean>(false)
+    const [hasErrorFilterPrtgTrafficDevice, setHasErrorFilterPrtgTrafficDevice] = useState<boolean>(false)
+    const [hasErrorFilterPrtgTrafficSensor, setHasErrorFilterPrtgTrafficSensor] = useState<boolean>(false)
     const [hasErrorFilterSeverity, setHasErrorFilterSeverity] = useState<boolean>(false)
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
     const [highlights, setHighlights] = useState<string[][] | null | undefined>([])
@@ -114,10 +128,6 @@ const TabContent: React.FC<TabContentProps> = ({
         const filterClusters = selectedClustersOptions.length > 0 ? selectedClustersOptions : [];
         const filterServices = selectedServicesOptions.length > 0 ? selectedServicesOptions : [];
         const filterSeverities = selectedSeverityOptions.length > 0 ? selectedSeverityOptions : []; // These are now numbers
-        // const filterOperation = selectedOpe
-
-        loadClusterFilterOptions();
-        loadServicesFilterOptions();
 
         const page = 1 // Reset to the first page when page size changes
         setPagination((prev) => ({
@@ -126,17 +136,16 @@ const TabContent: React.FC<TabContentProps> = ({
         }));
 
         // Initiate both API calls concurrently and independently
-        fetchHistoricalAnomalyRecords(
-            selectedDataSource,
-            page,
-            pagination.pageSize,
-            filtersAnomaly,
-            filterClusters,
-            filterServices,
-            filterSeverities,
-            undefined,
-            rangeKey
-        );
+        fetchHistoricalAnomalyRecords({
+            logType: selectedDataSource,
+            page: page,
+            limit: pagination.pageSize,
+            timeRange: rangeKey,
+            anomalies: filtersAnomaly,
+            clusters: filterClusters,
+            services: filterServices,
+            severities: filterSeverities,
+        });
     };
 
     const updateTimeDifference = () => {
@@ -166,11 +175,11 @@ const TabContent: React.FC<TabContentProps> = ({
             try {
                 // const { startTime, endTime } = getTimeRange()
                 // Call fetchDataByLog with time range values
-                await fetchHistoricalAnomalyRecords(
-                    selectedDataSource,
-                    pagination.pageIndex,     // Page number
-                    pagination.pageSize,      // Page size (limit)
-                );
+                await fetchHistoricalAnomalyRecords({
+                    logType: selectedDataSource,
+                    page: pagination.pageIndex,     // Page number
+                    limit: pagination.pageSize,      // Page size (limit)
+                });
                 console.log('Manual refresh triggered');
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -199,52 +208,58 @@ const TabContent: React.FC<TabContentProps> = ({
         }));
 
         // Call API with the new page size and the startTime and endTime values
-        fetchHistoricalAnomalyRecords(
-            selectedDataSource,
-            page, // Reset to the first page
-            newPageSize, // Set limit as the new page size
-            selectedAnomalyOptions,
-            selectedClustersOptions,
-            selectedServicesOptions,
-            selectedSeverityOptions,
-            selectedOperationOptions
-        );
+        fetchHistoricalAnomalyRecords({
+            logType: selectedDataSource,
+            page: page, // Reset to the first page
+            limit: newPageSize, // Set limit as the new page size
+            anomalies: selectedAnomalyOptions,
+            clusters: selectedClustersOptions,
+            services: selectedServicesOptions,
+            severities: selectedSeverityOptions,
+            operation: selectedOperationOptions,
+        });
 
     };
 
-    const fetchHistoricalAnomalyRecords = async (
+    const fetchHistoricalAnomalyRecords = async (payload: {
         logType: string,
         page: number,
         limit: number,
-        anomalyOptions?: string[],
-        clusterOptions?: string[],
-        serviceOptions?: string[],
-        severityOptions?: number[],
-        selectedOperation?: string, // Add the selectedOperation parameter here
         timeRange?: string,
-    ) => {
+        anomalies?: string[],
+        operation?: string, // Add the selectedOperation parameter here
+        severities?: number[],
+        clusters?: string[],
+        services?: string[],
+        network?: string[],
+        node?: string[],
+        interface?: string[],
+        category?: string[],
+        domain?: string[],
+    }) => {
         setIsTableLoading(true);
-        console.log(anomalyOptions, clusterOptions, serviceOptions, severityOptions, selectedOperation, "fetchHistorical")
-
 
         // Now pass the validTimeRange to getTimeRange
-        const { startTime, endTime } = getTimeRange(timeRange);
-
-        // console.log(startTime, endTime, "ini");
+        const { startTime, endTime } = getTimeRange(payload.timeRange);
 
         // Pass the selectedOperation to the API call
-        const logAnomaliesPromise = GetHistoricalLogAnomalies(
-            logType,
-            limit,
-            page,
-            anomalyOptions ?? selectedAnomalyOptions,
-            clusterOptions ?? selectedClustersOptions,
-            serviceOptions ?? selectedServicesOptions,
-            severityOptions ?? selectedSeverityOptions,
-            startTime,
-            endTime,
-            selectedOperation ?? selectedOperationOptions// Default to OR if undefined
-        );
+        const logAnomaliesPromise = GetHistoricalLogAnomalies({
+            type: payload.logType,
+            limit: payload.limit,
+            page: payload.page,
+            filters: payload.anomalies ?? selectedAnomalyOptions,
+            cluster: payload.clusters ?? selectedClustersOptions,
+            service_name: payload.services ?? selectedServicesOptions,
+            severity: payload.severities ?? selectedSeverityOptions,
+            start_time: startTime,
+            end_time: endTime,
+            operation: payload.operation ?? selectedOperationOptions,// Default to OR if undefined
+            network: payload.network ?? selectedNetworkOptions,
+            node: payload.node ?? selectedNodeOptions,
+            interface: payload.interface ?? selectedInterfaceOptions,
+            category: payload.category ?? selectedCategoryOptions,
+            domain: payload.domain ?? selectedDomainOptions,
+        });
 
         // Handle the result of the API call
         logAnomaliesPromise
@@ -375,6 +390,145 @@ const TabContent: React.FC<TabContentProps> = ({
         }
     }
 
+    const loadSolarWindsNetworkFilterOptions = async () => {
+        try {
+            const { startTime, endTime } = getTimeRange()
+
+            const response = await fetchSolarWindsNetworkOption({
+                start_time: startTime,
+                end_time: endTime
+            })
+
+            setFilterSolarWindsNetworkOptions(response.data) // Update state with fetched service options
+            setHasErrorFilterSolarWindsNetwork(false)
+        } catch (error) {
+            console.error('Failed to load Solar Winds network options', error)
+            setHasErrorFilterSolarWindsNetwork(true)
+        }
+    }
+    const loadSolarWindsNodeFilterOptions = async () => {
+        try {
+            const { startTime, endTime } = getTimeRange()
+
+            const response = await fetchSolarWindsNodeOption({
+                start_time: startTime,
+                end_time: endTime
+            })
+
+            setFilterSolarWindsNodeOptions(response.data) // Update state with fetched service options
+            setHasErrorFilterSolarWindsNode(false)
+        } catch (error) {
+            console.error('Failed to load Solar Winds node options', error)
+            setHasErrorFilterSolarWindsNode(true)
+        }
+    }
+    const loadSolarWindsInterfaceFilterOptions = async () => {
+        try {
+            const { startTime, endTime } = getTimeRange()
+
+            const response = await fetchSolarWindsInterfaceOption({
+                start_time: startTime,
+                end_time: endTime
+            })
+
+            setFilterSolarWindsInterfaceOptions(response.data) // Update state with fetched service options
+            setHasErrorFilterSolarWindsInterface(false)
+        } catch (error) {
+            console.error('Failed to load Solar Winds interface options', error)
+            setHasErrorFilterSolarWindsInterface(true)
+        }
+    }
+
+    const loadDnsDomainFilterOptions = async () => {
+        try {
+            const { startTime, endTime } = getTimeRange()
+
+            const response = await fetchDnsDomainOption({
+                start_time: startTime,
+                end_time: endTime
+            })
+
+            setFilterDnsDomainOptions(response.data) // Update state with fetched service options
+            setHasErrorFilterDnsDomain(false)
+        } catch (error) {
+            console.error('Failed to load DNS interface options', error)
+            setHasErrorFilterDnsDomain(true)
+        }
+    }
+    const loadDnsCategoryFilterOptions = async () => {
+        try {
+            const { startTime, endTime } = getTimeRange()
+
+            const response = await fetchDnsCategoryOption({
+                start_time: startTime,
+                end_time: endTime
+            })
+
+            setFilterDnsCategoryOptions(response.data) // Update state with fetched service options
+            setHasErrorFilterDnsCategory(false)
+        } catch (error) {
+            console.error('Failed to load DNS interface options', error)
+            setHasErrorFilterDnsCategory(true)
+        }
+    }
+
+    const loadPrtgTrafficDeviceFilterOptions = async () => {
+        try {
+            const { startTime, endTime } = getTimeRange()
+
+            const response = await fetchPrtgTrafficDeviceOption({
+                start_time: startTime,
+                end_time: endTime
+            })
+
+            setFilterPrtgTrafficDeviceOptions(response.data) // Update state with fetched service options
+            setHasErrorFilterPrtgTrafficDevice(false)
+        } catch (error) {
+            console.error('Failed to load PRTG Traffic interface options', error)
+            setHasErrorFilterPrtgTrafficDevice(true)
+        }
+    }
+    const loadPrtgTrafficSensorFilterOptions = async () => {
+        try {
+            const { startTime, endTime } = getTimeRange()
+
+            const response = await fetchPrtgTrafficSensorOption({
+                start_time: startTime,
+                end_time: endTime
+            })
+
+            setFilterPrtgTrafficSensorOptions(response.data) // Update state with fetched service options
+            setHasErrorFilterPrtgTrafficSensor(false)
+        } catch (error) {
+            console.error('Failed to load PRTG Traffic interface options', error)
+            setHasErrorFilterPrtgTrafficSensor(true)
+        }
+    }
+
+    const loadFiltersOptions = () => {
+        loadAnomalyFilterOptions();
+        loadSeverityFilterOptions();
+        if (selectedDataSource === "solarwinds") {
+            loadSolarWindsNetworkFilterOptions();
+            loadSolarWindsNodeFilterOptions();
+            loadSolarWindsInterfaceFilterOptions();
+            return
+        }
+        if (selectedDataSource === "dns_rt") {
+            loadClusterFilterOptions();
+            loadDnsDomainFilterOptions();
+            loadDnsCategoryFilterOptions();
+            return
+        }
+        if (selectedDataSource === "prtg_traffic") {
+            loadPrtgTrafficDeviceFilterOptions();
+            loadPrtgTrafficSensorFilterOptions();
+            return
+        }
+        loadClusterFilterOptions();
+        loadServicesFilterOptions();
+    
+    }
     const handleResetFilters = () => {
         // Clear the selected options
         const params = new URLSearchParams(searchParams.toString());
@@ -388,11 +542,11 @@ const TabContent: React.FC<TabContentProps> = ({
         setIsTableLoading(true); // Set loading to true before making the API call
 
         setPagination((prev) => {
-            fetchHistoricalAnomalyRecords(
-                selectedDataSource,
-                page,
-                prev.pageSize,
-            );
+            fetchHistoricalAnomalyRecords({
+                logType: selectedDataSource,
+                page: page,
+                limit: prev.pageSize,
+            });
             return { ...prev, pageIndex: page };
         });
     };
@@ -400,13 +554,29 @@ const TabContent: React.FC<TabContentProps> = ({
     const handleApplyFilters = async (
         filters: {
             selectedAnomalies: string[];
+            selectedOperation: string
             selectedSeverities: number[]
             selectedClusters: ClusterOptionResponse[];
             selectedServices: string[];
-            selectedOperation: string
+            selectedNetwork: string[];
+            selectedNode: string[];
+            selectedInterface: string[];
+            selectedCategory: string[];
+            selectedDomain: string[];
         }) => {
-        const { selectedAnomalies, selectedServices, selectedSeverities, selectedClusters, selectedOperation } = filters;
-        console.log(selectedOperation, "inside handleApplyFilters");
+        const {
+            selectedAnomalies,
+            selectedServices,
+            selectedSeverities,
+            selectedClusters,
+            selectedOperation,
+            selectedNetwork,
+            selectedNode,
+            selectedInterface,
+            selectedCategory,
+            selectedDomain,
+        } = filters;
+        
         // Update the state with the selected options
         const params = new URLSearchParams(searchParams.toString());
 
@@ -422,13 +592,26 @@ const TabContent: React.FC<TabContentProps> = ({
         params.delete("service")
         selectedServices.forEach(service => params.append("service", service))
 
+        params.delete("network")
+        selectedNetwork.forEach(network => params.append("network", network))
+
+        params.delete("node")
+        selectedNode.forEach(node => params.append("node", node))
+
+        params.delete("interface")
+        selectedInterface.forEach(i => params.append("interface", i))
+
+        params.delete("category")
+        selectedCategory.forEach(category => params.append("category", category))
+
+        params.delete("domain")
+        selectedDomain.forEach(domain => params.append("domain", domain))
+
         // Add selected operation (OR/AND) to the URL or use it in logic as needed
         params.delete("operation");
         params.append("operation", selectedOperation);
 
         router.replace(`/dashboard/anomaly-detection?${params.toString()}`);
-
-        console.log("Before calling fetchHistoricalAnomalyRecords, selectedOperation:", selectedOperation);
 
         const page = 1 // Reset to the first page when page size changes
         setPagination((prev) => ({
@@ -437,29 +620,48 @@ const TabContent: React.FC<TabContentProps> = ({
         }));
 
         // Invoke fetchHistoricalAnomalyRecords
-        fetchHistoricalAnomalyRecords(
-            selectedDataSource,
-            page,
-            pagination.pageSize, // Use the current page size
-            selectedAnomalies,
-            selectedClusters.map(cluster => cluster.name),
-            selectedServices,
-            selectedSeverities,
-            selectedOperation
-        );
+        fetchHistoricalAnomalyRecords({
+            logType: selectedDataSource,
+            page: page,
+            limit: pagination.pageSize, // Use the current page size
+            anomalies: selectedAnomalies,
+            operation: selectedOperation,
+            clusters: selectedClusters.map(cluster => cluster.name),
+            severities: selectedSeverities,
+            services: selectedServices,
+            network: selectedNetwork,
+            node: selectedNode,
+            interface: selectedInterface,
+            category: selectedCategory,
+            domain: selectedDomain,
+        });
     };
 
     useEffect(() => {
         setIsTableHeaderLoading(true);
         setIsTableLoading(true);
+        setFilterSolarWindsNetworkOptions(null)
+        setFilterSolarWindsNodeOptions(null)
+        setFilterSolarWindsInterfaceOptions(null)
+        setFilterDnsCategoryOptions(null)
+        setFilterDnsDomainOptions(null)
+        setFilterPrtgTrafficDeviceOptions(null)
+        setFilterPrtgTrafficSensorOptions(null)
+        setFilterClusterOptions(null)
+        setFilterServiceOptions(null)
 
-        fetchHistoricalAnomalyRecords(selectedDataSource, pagination.pageIndex, pagination.pageSize);
-        // Load filter options
-        loadAnomalyFilterOptions();
-        loadClusterFilterOptions();
-        loadServicesFilterOptions();
-        loadSeverityFilterOptions();
+        fetchHistoricalAnomalyRecords({
+            logType: selectedDataSource,
+            page: pagination.pageIndex,
+            limit: pagination.pageSize,
+        });
+
+        loadFiltersOptions()
     }, [selectedDataSource]);
+
+    useUpdateEffect(() => {
+        loadFiltersOptions()
+    }, [timeRange])
 
     useEffect(() => {
         // Update the time difference every second
@@ -482,16 +684,16 @@ const TabContent: React.FC<TabContentProps> = ({
                         await new Promise((resolve) => setTimeout(resolve, 1000));
 
                         // Call fetchDataByLog with the required parameters
-                        await fetchHistoricalAnomalyRecords(
-                            selectedDataSource,
-                            pagination.pageIndex,     // Page number
-                            pagination.pageSize,      // Page size (limit)
-                            selectedAnomalyOptions,    // Anomaly filter options
-                            selectedClustersOptions,   // Cluster filter options
-                            selectedServicesOptions,   // Service filter options
-                            selectedSeverityOptions,
-                            selectedOperationOptions
-                        );
+                        await fetchHistoricalAnomalyRecords({
+                            logType: selectedDataSource,
+                            page: pagination.pageIndex,     // Page number
+                            limit: pagination.pageSize,      // Page size (limit)
+                            anomalies: selectedAnomalyOptions,    // Anomaly filter options
+                            clusters: selectedClustersOptions,   // Cluster filter options
+                            services: selectedServicesOptions,   // Service filter options
+                            severities: selectedSeverityOptions,
+                            operation: selectedOperationOptions
+                        });
                         console.log('Auto-refresh triggered');
                     } catch (error) {
                         console.error('Error fetching data during auto-refresh:', error);
@@ -539,8 +741,15 @@ const TabContent: React.FC<TabContentProps> = ({
                         {!handle.active && (
                             <FilterPanel
                                 clusterOptions={filterClusterOptions}
-                                servicesOptions={filterServiceOptions}
                                 checkboxOptions={filterAnomalyOptions}
+                                servicesOptions={filterServiceOptions}
+                                solarWindsNetworkOptions={filterSolarWindsNetworkOptions}
+                                solarWindsNodeOptions={filterSolarWindsNodeOptions}
+                                solarWindsInterfaceOptions={filterSolarWindsInterfaceOptions}
+                                dnsCategoryOptions={filterDnsCategoryOptions}
+                                dnsDomainOptions={filterDnsDomainOptions}
+                                prtgTrafficDeviceOptions={filterPrtgTrafficDeviceOptions}
+                                prtgTrafficSensorOptions={filterPrtgTrafficSensorOptions}
                                 severityOptions={filterSeverityOptions}
                                 onApplyFilters={handleApplyFilters}
                                 onResetFilters={handleResetFilters}
@@ -548,6 +757,11 @@ const TabContent: React.FC<TabContentProps> = ({
                                 hasErrorFilterService={hasErrorFilterService}
                                 hasErrorFilterCluster={hasErrorFilterCluster}
                                 hasErrorFilterSeverity={hasErrorFilterSeverity}
+                                hasErrorFilterSolarWindsNetwork={hasErrorFilterSolarWindsNetwork}
+                                hasErrorFilterSolarWindsNode={hasErrorFilterSolarWindsNode}
+                                hasErrorFilterSolarWindsInterface={hasErrorFilterSolarWindsInterface}
+                                hasErrorFilterDnsCategory={hasErrorFilterDnsCategory}
+                                hasErrorFilterDnsDomain={hasErrorFilterDnsDomain}
                             />
                         )}
                         <div className='flex flex-col gap-2'>
@@ -594,6 +808,13 @@ const TabContent: React.FC<TabContentProps> = ({
                         selectedDataSource={selectedDataSource}
                         clusterOptions={filterClusterOptions}
                         servicesOptions={filterServiceOptions}
+                        networkOptions={filterSolarWindsNetworkOptions}
+                        nodeOptions={filterSolarWindsNodeOptions}
+                        interfaceOptions={filterSolarWindsInterfaceOptions}
+                        categoryOptions={filterDnsCategoryOptions}
+                        domainOptions={filterDnsDomainOptions}
+                        deviceOptions={filterPrtgTrafficDeviceOptions}
+                        sensorOptions={filterPrtgTrafficSensorOptions}
                         selectedTimeRangeKey={selectedTimeRange}
                         timeRanges={PREDEFINED_TIME_RANGES}
                         autoRefresh={graphAutoRefresh}
