@@ -96,6 +96,14 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                     toggleZoomOutButton(false)
                                 }
                             },
+                            beforeResetZoom() {
+                              return {
+                                xaxis: {
+                                    min: minXOnEmpty,
+                                    max: maxXOnEmpty,
+                                  },
+                              }
+                            },
                             beforeZoom: (chartContext, { xaxis }) => {
                                 if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {
                                     if (!zoomOutDisabled) {
