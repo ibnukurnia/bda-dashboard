@@ -50,7 +50,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
               onClick={() => ds.children ? handleTabClick(i) : handleDropdownClick(ds.namespace)}
               className={`flex items-center px-4 py-2 border rounded text-white ${activeTab?.textLabel === ds.textLabel ? 'active' : 'bg-transparent'} transition duration-300 ease-in-out`}
             >
-              {ds.children && 
+              {ds.children &&
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   {/* SVG paths */}
                 </svg>
@@ -70,7 +70,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
                   <button
                     key={child.namespace}
                     onClick={() => handleDropdownClick(child.namespace)}
-                    className={`text-black block w-full text-left p-6 text-sm ${child.namespace === selectedDataSource ? 'text-blue-600' : 'text-black'} transition duration-300 ease-in-out hover:bg-blue-100`}
+                    className={`text-black block w-full text-left px-5 py-4 text-sm ${child.namespace === selectedDataSource ? 'text-blue-600' : 'text-black'} transition duration-300 ease-in-out hover:bg-blue-100`}
                   >
                     {child.textLabel}
                   </button>

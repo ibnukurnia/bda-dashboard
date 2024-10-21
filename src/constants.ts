@@ -31,6 +31,18 @@ export const TAB_DATA_SOURCE = [
         namespace: DATA_SOURCE_NAMESPACE_REDIS,
         textLabel: "Redis",
       },
+      {
+        namespace: "compute_vm",
+        textLabel: "Compute VM",
+      },
+      {
+        namespace: "compute_host",
+        textLabel: "Compute Host",
+      },
+      {
+        namespace: "compute_datastore",
+        textLabel: "Compute Datastore",
+      },
     ],
   },
   {
@@ -45,8 +57,14 @@ export const TAB_DATA_SOURCE = [
         namespace: "solarwinds"
       },
       {
+
         textLabel: "DNS",
         namespace: "dns_rt"
+      },
+      {
+
+        textLabel: "F5",
+        namespace: "f5"
       }
     ]
   },
@@ -82,6 +100,7 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'k8s_prometheus': "OCP",
   'k8s_db': "Database",
   'redis': "Redis",
+  'compute_vm': "Compute",
   'ivat': "IVAT",
   'solarwinds': "Solar Winds",
   'dns_rt': "DNS",

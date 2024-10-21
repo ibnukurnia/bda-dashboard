@@ -16,8 +16,6 @@ interface AnomalyAmountChartProps {
 
 const AnomalyAmountChart = ({
   data = [],
-  startTime,
-  endTime,
   onZoomOut,
   onZoomIn,
 }: AnomalyAmountChartProps) => {
@@ -51,7 +49,7 @@ const AnomalyAmountChart = ({
     chart: {
       group: 'overview',
       type: 'line',
-      height: 300,
+      height: 400,
       toolbar: {
         show: true,
         tools: {
@@ -162,7 +160,6 @@ const AnomalyAmountChart = ({
           return formatter.format(value).replace('Rp', 'Rp.');
         },
       },
-      tickAmount: 5,
     },
     stroke: {
       curve: 'smooth',
@@ -210,7 +207,7 @@ const AnomalyAmountChart = ({
       options={options}
       series={chartSeries}
       type="line"
-      height={300}
+      height={400}
       width="100%"
     />
   );
