@@ -663,6 +663,51 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     </div>
                                 </div>
                             )}
+                            {solarWindsInterfaceOptions != null && (
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="font-semibold text-lg">Interface</h3>
+                                        <p className="text-sm text-gray-600">
+                                            Selected Interface: <span className="text-blue-600">{selectedInterfaceOptions.length}</span>
+                                        </p>
+
+                                        {/* Select All Interface button */}
+                                        <button onClick={handleSelectAllSolarWindsInterface} className="text-blue-500 text-sm text-left">
+                                            {selectedInterfaceOptions.length === solarWindsInterfaceOptions.length ? 'Unselect All' : 'Select All'}
+                                        </button>
+                                    </div>
+
+                                    <input
+                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                        placeholder="Search interface"
+                                        value={searchInterfaceValue}
+                                        onChange={handleSearchSolarWindsInterface}
+                                    />
+
+                                    <div className="overflow-y-auto max-h-40">
+                                        {hasErrorFilterSolarWindsInterface ? (
+                                            <p className="text-red-500 whitespace-nowrap">An error occurred while fetching interface. Please try again later.</p>
+                                        ) : filteredSolarWindsInterfaceOptions.length > 0 ? (
+                                            filteredSolarWindsInterfaceOptions.map((interace_name, index) => (
+                                                <label key={index} className="flex items-center justify-between mb-1">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            value={interace_name}
+                                                            checked={selectedInterfaceOptions.includes(interace_name)}
+                                                            onChange={() => handleInterfaceChange(interace_name)}
+                                                            className="mr-2"
+                                                        />
+                                                        {interace_name}
+                                                    </div>
+                                                </label>
+                                            ))
+                                        ) : (
+                                            <p>No interface available</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                             {solarWindsNodeOptions != null && (
                                 <div className="flex flex-col gap-3">
                                     <div className="flex flex-col gap-2">
@@ -709,52 +754,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     </div>
                                 </div>
                             )}
-                            {solarWindsInterfaceOptions != null && (
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-col gap-2">
-                                        <h3 className="font-semibold text-lg">Interface</h3>
-                                        <p className="text-sm text-gray-600">
-                                            Selected Interface: <span className="text-blue-600">{selectedInterfaceOptions.length}</span>
-                                        </p>
-
-                                        {/* Select All Interface button */}
-                                        <button onClick={handleSelectAllSolarWindsInterface} className="text-blue-500 text-sm text-left">
-                                            {selectedInterfaceOptions.length === solarWindsInterfaceOptions.length ? 'Unselect All' : 'Select All'}
-                                        </button>
-                                    </div>
-
-                                    <input
-                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                        placeholder="Search interface"
-                                        value={searchInterfaceValue}
-                                        onChange={handleSearchSolarWindsInterface}
-                                    />
-
-                                    <div className="overflow-y-auto max-h-40">
-                                        {hasErrorFilterSolarWindsInterface ? (
-                                            <p className="text-red-500 whitespace-nowrap">An error occurred while fetching interface. Please try again later.</p>
-                                        ) : filteredSolarWindsInterfaceOptions.length > 0 ? (
-                                            filteredSolarWindsInterfaceOptions.map((interace_name, index) => (
-                                                <label key={index} className="flex items-center justify-between mb-1">
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={interace_name}
-                                                            checked={selectedInterfaceOptions.includes(interace_name)}
-                                                            onChange={() => handleInterfaceChange(interace_name)}
-                                                            className="mr-2"
-                                                        />
-                                                        {interace_name}
-                                                    </div>
-                                                </label>
-                                            ))
-                                        ) : (
-                                            <p>No interface available</p>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
                             {dnsCategoryOptions != null && (
                                 <div className="flex flex-col gap-3">
                                     <div className="flex flex-col gap-2">

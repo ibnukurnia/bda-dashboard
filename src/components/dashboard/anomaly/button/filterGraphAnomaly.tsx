@@ -1,6 +1,6 @@
 import { ClusterOptionResponse } from '@/modules/models/anomaly-predictions';
 import { ColumnOption } from '@/types/anomaly';
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import React, { ChangeEvent, Fragment, useEffect, useRef, useState } from 'react';
 
 interface FilterGraphAnomalyProps {
     scaleOptions: ColumnOption[];
@@ -8,8 +8,29 @@ interface FilterGraphAnomalyProps {
     clusterOptions: ClusterOptionResponse[] | null | undefined;
     currentSelectedCluster: ClusterOptionResponse[];
     servicesOptions: string[] | null | undefined;
+    networkOptions: string[] | null | undefined;
+    interfaceOptions: string[] | null | undefined;
+    nodeOptions: string[] | null | undefined;
+    categoryOptions: string[] | null | undefined;
+    domainOptions: string[] | null | undefined;
+    deviceOptions: string[] | null | undefined;
+    sensorOptions: string[] | null | undefined;
     currentSelectedService: string | null;
-    onApplyFilters: (selectedScales: ColumnOption[], selectedCluster: ClusterOptionResponse[], selectedService: string | null) => void; // Separate filters for anomalies and services
+    currentSelectedNetwork: string | null;
+    currentSelectedInterface: string | null;
+    currentSelectedNode: string | null;
+    currentSelectedCategory: string | null;
+    currentSelectedDomain: string | null;
+    onApplyFilters: (
+        selectedScales: ColumnOption[],
+        selectedCluster: ClusterOptionResponse[],
+        selectedService: string | null,
+        selectedNetwork: string | null,
+        selectedInterface: string | null,
+        selectedNode: string | null,
+        selectedCategory: string | null,
+        selectedDomain: string | null,
+    ) => void; // Separate filters for anomalies and services
 }
 
 const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
@@ -18,7 +39,19 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     clusterOptions,
     currentSelectedCluster,
     servicesOptions,
+    networkOptions,
+    interfaceOptions,
+    nodeOptions,
+    categoryOptions,
+    domainOptions,
+    deviceOptions,
+    sensorOptions,
     currentSelectedService,
+    currentSelectedNetwork,
+    currentSelectedInterface,
+    currentSelectedNode,
+    currentSelectedCategory,
+    currentSelectedDomain,
     onApplyFilters,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -26,7 +59,15 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     const [selectedClusterOptions, setSelectedClusterOptions] = useState<ClusterOptionResponse[]>(currentSelectedCluster);
     const [filteredServicesOptions, setFilteredServicesOptions] = useState(servicesOptions)
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string | null>(currentSelectedService);
-    const [searchValue, setSearchValue] = useState('')
+    const [selectedNetworkOptions, setSelectedNetworkOptions] = useState<string | null>(currentSelectedNetwork);
+    const [selectedInterfaceOptions, setSelectedInterfaceOptions] = useState<string | null>(currentSelectedInterface);
+    const [selectedNodeOptions, setSelectedNodeOptions] = useState<string | null>(currentSelectedNode);
+    const [selectedCategoryOptions, setSelectedCategoryOptions] = useState<string | null>(currentSelectedCategory);
+    const [selectedDomainOptions, setSelectedDomainOptions] = useState<string | null>(currentSelectedDomain);
+    const [searchServiceValue, setSearchServiceValue] = useState<string>('')
+    const [searchInterfaceValue, setSearchInterfaceValue] = useState<string>('')
+    const [searchNodeValue, setSearchNodeValue] = useState<string>('')
+    const [searchDomainValue, setSearchDomainValue] = useState<string>('')
     const panelRef = useRef<HTMLDivElement>(null);
 
     const togglePanel = () => {
@@ -52,12 +93,32 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     const handleServiceChange = (value: string) => {
         setSelectedServiceOptions(value);
     };
+    const handleNetworkChange = (value: string) => {
+        setSelectedNetworkOptions(value);
+    };
+    const handleInterfaceChange = (value: string) => {
+        setSelectedInterfaceOptions(value);
+    };
+    const handleNodeChange = (value: string) => {
+        setSelectedNodeOptions(value);
+    };
+    const handleCategoryChange = (value: string) => {
+        setSelectedCategoryOptions(value);
+    };
+    const handleDomainChange = (value: string) => {
+        setSelectedDomainOptions(value);
+    };
 
     const handleApply = () => {
         onApplyFilters(
             selectedScaleOptions,
             selectedClusterOptions,
             selectedServiceOptions,
+            selectedNetworkOptions,
+            selectedInterfaceOptions,
+            selectedNodeOptions,
+            selectedCategoryOptions,
+            selectedDomainOptions,
         );
         setIsOpen(false); // Close the panel after applying filters
     };
@@ -67,8 +128,17 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         setSelectedServiceOptions(null);
     };
 
-    const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-        setSearchValue(e.target.value)
+    const handleSearchService = (e: ChangeEvent<HTMLInputElement>) => {
+        setSearchServiceValue(e.target.value)
+    }
+    const handleSearchInterface = (e: ChangeEvent<HTMLInputElement>) => {
+        setSearchInterfaceValue(e.target.value)
+    }
+    const handleSearchNode = (e: ChangeEvent<HTMLInputElement>) => {
+        setSearchNodeValue(e.target.value)
+    }
+    const handleSearchDomain = (e: ChangeEvent<HTMLInputElement>) => {
+        setSearchDomainValue(e.target.value)
     }
 
     useEffect(() => {
@@ -92,9 +162,9 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     useEffect(() => {
         setFilteredServicesOptions(servicesOptions?.filter(
             (option) =>
-                option.toLowerCase().includes(searchValue.toLowerCase()) // Convert both to lowercase
+                option.toLowerCase().includes(searchServiceValue.toLowerCase()) // Convert both to lowercase
         ) ?? []);
-    }, [searchValue]);
+    }, [searchServiceValue]);
 
     useEffect(() => {
         setFilteredServicesOptions(servicesOptions)
@@ -112,7 +182,12 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         setSelectedServiceOptions(currentSelectedService)
     }, [currentSelectedService])
 
-    const gridCount = 1 + (clusterOptions ? 1 : 0) + (servicesOptions ? 1 : 0)
+    const gridCount = 1 +
+        (clusterOptions ? 1 : 0) +
+        (servicesOptions ? 1 : 0) +
+        (networkOptions && interfaceOptions && nodeOptions ? 3 : 0) +
+        (domainOptions && categoryOptions ? 2 : 0) +
+        (deviceOptions && sensorOptions ? 2 : 0)
 
     return (
         <div className="flex">
@@ -208,8 +283,8 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                             <input
                                                 className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
                                                 placeholder='Search service'
-                                                value={searchValue}
-                                                onChange={handleSearch}
+                                                value={searchServiceValue}
+                                                onChange={handleSearchService}
                                             />
                                             <div className="overflow-y-auto max-h-40">
                                                 {filteredServicesOptions && filteredServicesOptions.map((service, index) => (
@@ -233,6 +308,160 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                     )}
                                 </div>
                             )}
+
+                            {networkOptions && (
+                                <div className="flex flex-col">
+                                    <h3 className="font-semibold mb-3 text-lg">Network</h3>
+                                    {networkOptions && networkOptions.length > 0 ? (
+                                        <div className="overflow-y-auto max-h-40">
+                                            {networkOptions && networkOptions.map((network, index) => (
+                                                <label key={index} className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            value={network}
+                                                            checked={selectedNetworkOptions === network}
+                                                            onChange={() => handleNetworkChange(network)}
+                                                            className="mr-2"
+                                                        />
+                                                        {network}
+                                                    </div>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p>No network available</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {interfaceOptions && (
+                                <div className="flex flex-col">
+                                    <h3 className="font-semibold mb-3 text-lg">Interface</h3>
+                                    {interfaceOptions && interfaceOptions.length > 0 ? (
+                                        <Fragment>
+                                            <input
+                                                className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                                placeholder='Search interface'
+                                                value={searchInterfaceValue}
+                                                onChange={handleSearchInterface}
+                                            />
+                                            <div className="overflow-y-auto max-h-40">
+                                                {interfaceOptions && interfaceOptions.map((interface_name, index) => (
+                                                    <label key={index} className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type="radio"
+                                                                value={interface_name}
+                                                                checked={selectedInterfaceOptions === interface_name}
+                                                                onChange={() => handleInterfaceChange(interface_name)}
+                                                                className="mr-2"
+                                                            />
+                                                            {interface_name}
+                                                        </div>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </Fragment>
+                                    ) : (
+                                        <p>No interface available</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {nodeOptions && (
+                                <div className="flex flex-col">
+                                    <h3 className="font-semibold mb-3 text-lg">Node</h3>
+                                    {nodeOptions && nodeOptions.length > 0 ? (
+                                        <Fragment>
+                                            <input
+                                                className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                                placeholder='Search node'
+                                                value={searchNodeValue}
+                                                onChange={handleSearchNode}
+                                            />
+                                            <div className="overflow-y-auto max-h-40">
+                                                {nodeOptions && nodeOptions.map((node, index) => (
+                                                    <label key={index} className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type="radio"
+                                                                value={node}
+                                                                checked={selectedNodeOptions === node}
+                                                                onChange={() => handleNodeChange(node)}
+                                                                className="mr-2"
+                                                            />
+                                                            {node}
+                                                        </div>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </Fragment>
+                                    ) : (
+                                        <p>No node available</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {categoryOptions && (
+                                <div className="flex flex-col">
+                                    <h3 className="font-semibold mb-3 text-lg">Category</h3>
+                                    {categoryOptions && categoryOptions.length > 0 ? (
+                                        <div className="overflow-y-auto max-h-40">
+                                            {categoryOptions && categoryOptions.map((category, index) => (
+                                                <label key={index} className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            value={category}
+                                                            checked={selectedCategoryOptions === category}
+                                                            onChange={() => handleCategoryChange(category)}
+                                                            className="mr-2"
+                                                        />
+                                                        {category}
+                                                    </div>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p>No category available</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {domainOptions && (
+                                <div className="flex flex-col">
+                                    <h3 className="font-semibold mb-3 text-lg">Domain</h3>
+                                    {domainOptions && domainOptions.length > 0 ? (
+                                        <Fragment>
+                                            <input
+                                                className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                                placeholder='Search domain'
+                                                value={searchDomainValue}
+                                                onChange={handleSearchDomain}
+                                            />
+                                            <div className="overflow-y-auto max-h-40">
+                                                {domainOptions && domainOptions.map((domain, index) => (
+                                                    <label key={index} className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type="radio"
+                                                                value={domain}
+                                                                checked={selectedDomainOptions === domain}
+                                                                onChange={() => handleDomainChange(domain)}
+                                                                className="mr-2"
+                                                            />
+                                                            {domain}
+                                                        </div>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </Fragment>
+                                    ) : (
+                                        <p>No domain available</p>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <div className="flex justify-between mt-10 space-x-4">
                             <button className="bg-white text-blue-600 border border-primary-blue px-4 py-2 rounded-lg flex-1 text-center" onClick={handleReset}>
@@ -243,7 +472,12 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                 disabled={
                                     selectedScaleOptions.length === 0 ||
                                     (clusterOptions != null && selectedClusterOptions.length === 0) ||
-                                    (servicesOptions != null && selectedServiceOptions == null)
+                                    (servicesOptions != null && selectedServiceOptions == null) ||
+                                    (networkOptions != null && selectedNetworkOptions == null) ||
+                                    (interfaceOptions != null && selectedInterfaceOptions == null) ||
+                                    (nodeOptions != null && selectedNodeOptions == null) ||
+                                    (categoryOptions != null && selectedCategoryOptions == null) ||
+                                    (domainOptions != null && selectedDomainOptions == null)
                                 }
                                 onClick={handleApply}
                             >
