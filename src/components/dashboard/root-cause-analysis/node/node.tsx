@@ -93,7 +93,12 @@ const Node: React.FC<NodeProps> = ({
           </a>
         }
         {count == null && <div className='w-5 h-5 bg-orange-500 rounded-md' />}
-        <div className={`w-[calc(100%_-_(${tooltips != null ? "1rem_+_56px" : "0.5rem_+_44px"}))] flex flex-col`}>
+        <div
+          className={`flex flex-col`}
+          style={{
+            width: `calc(100% - (${tooltips != null ? "1rem + 56px" : "0.5rem + 44px"}))`,
+          }}
+        >
           <Typography
             title={title}
             color={'white'}
