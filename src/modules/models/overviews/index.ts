@@ -62,8 +62,10 @@ export interface TopFiveLatestCritical {
   anomaly: string
   anomaly_identifier: string
   total: number
-  cluster: string
-  fungsi: string
+}
+
+export interface AmountAbuseResponse {
+  is_abuse: boolean
 }
 
 export interface HealthScoreResponse {

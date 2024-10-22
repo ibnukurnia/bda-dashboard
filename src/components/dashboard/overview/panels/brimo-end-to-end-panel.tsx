@@ -6,7 +6,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'r
 import { HealthScoreResponse } from '@/modules/models/overviews'
 import { formatNumberWithCommas, handleStartEnd } from '@/helper'
 import Skeleton from '@/components/system/Skeleton/Skeleton'
-import { GetHealthScoreOverview } from '@/modules/usecases/overviews'
+import { GetAmountAbuseOverview, GetHealthScoreOverview } from '@/modules/usecases/overviews'
 import { HEALTHINESS_LEGEND, SECTIONS_CONFIG } from './constants/brimo-end-to-end-contstans'
 
 type Node = {
@@ -127,6 +127,16 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
   function fetchData(customTimeRange?: string) {
     const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange);
     const paramsTime = { start_time: startTime, end_time: endTime };
+
+    GetAmountAbuseOverview(paramsTime)
+      .then((res) => {
+        if (res.data == null) throw Error("Empty response data")
+        setDetectAbuseAnomaly(res.data.is_abuse)
+        setIsError(false)
+      })
+      .catch(_ => {
+        setIsError(true)
+      })
 
     GetHealthScoreOverview(paramsTime)
       .then((res) => {

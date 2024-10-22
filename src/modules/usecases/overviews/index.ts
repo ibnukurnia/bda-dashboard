@@ -1,6 +1,7 @@
 import { get } from '@/common/api'
 import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 import {
+  AmountAbuseResponse,
   AnomalyAmountResponse,
   DataSourceAnomalyOverviewResponse,
   HealthScoreResponse,
@@ -88,6 +89,15 @@ const GetTopServicesOverview = async (params?: {
   return response
 }
 
+const GetAmountAbuseOverview = async (params?: { start_time: string | Date; end_time: string | Date }) => {
+  const response: ApiResponse<AmountAbuseResponse> = await get('overview/amount-abuse', {
+    withAuth: true,
+    queries: params,
+  })
+
+  return response
+}
+
 const GetHealthScoreOverview = async (params?: { start_time: string | Date; end_time: string | Date }) => {
   const response: ApiResponse<HealthScoreResponse[]> = await get('overview/health-score', {
     withAuth: true,
@@ -155,6 +165,7 @@ export {
   GetServiceOverview,
   GetMetricsOverview,
   GetChartsOverview,
+  GetAmountAbuseOverview,
   GetHealthScoreOverview,
   GetDataSourceAnomalyOverview,
   GetPieChartsOverview,
