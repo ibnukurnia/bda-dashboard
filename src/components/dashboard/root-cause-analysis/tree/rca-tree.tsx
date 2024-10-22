@@ -175,6 +175,7 @@ const RCATree: React.FC<RCATreeProps> = ({
             return (
               <ScrollableNodeList
                 key={expNode.node.name}
+                dataSourceLabel={expandedNodes[0].node.name}
                 nodes={expNode.node.children}
                 handleOnClickNode={(index) => handleOnClickNode(i + 1, index, expNode.node.children![index])}
                 expandedIndex={expandedNodes[i + 1]?.nodeIndex}

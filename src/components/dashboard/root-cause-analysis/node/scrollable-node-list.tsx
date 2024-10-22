@@ -19,6 +19,7 @@ const otherElementHeight = (isFullScreen: boolean) =>
   !isFullScreen ? headerHeight + filterHeight + gapHeight * 6 + titleHeight + otherHeight : gapHeight * 6 + titleHeight
 
 interface ScrollableNodeListProps {
+  dataSourceLabel?: string;
   nodes: TreeNodeType[];
   handleOnClickNode: (index: number) => void;
   expandedIndex: number;
@@ -40,6 +41,7 @@ interface ScrollableNodeListProps {
 }
 
 const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
+  dataSourceLabel,
   nodes,
   handleOnClickNode,
   expandedIndex,
@@ -62,6 +64,28 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const checkForScrollbar = () => {
+      const body = document.body;
+      const html = document.documentElement;
+      const scrollHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
+      const clientHeight = window.innerHeight;
+
+      if(scrollHeight > clientHeight) {
+        handleSliderHeight()
+        handleContainerWidth()
+        handleContainerHeight()
+      }
+    };
+
+    const observer = new ResizeObserver(checkForScrollbar);
+
+    // Observe the entire document's body and html
+    observer.observe(document.body);
+    observer.observe(document.documentElement);
+
+    // Initial check for scrollbar
+    checkForScrollbar();
+
     window.addEventListener('resize', handleSliderHeight);
     window.addEventListener('resize', handleContainerWidth);
     window.addEventListener('resize', handleContainerHeight);
@@ -69,6 +93,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
       window.removeEventListener('resize', handleSliderHeight);
       window.removeEventListener('resize', handleContainerWidth);
       window.removeEventListener('resize', handleContainerHeight);
+      observer.disconnect();
     };
   }, [])
 
@@ -186,6 +211,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
           {nodes.map((node, index) => (
             <Node
               key={`${node.name}-${node.cluster}`}
+              dataSourceLabel={dataSourceLabel}
               title={node.name}
               fungsi={node.fungsi}
               percentage={getPercentageValue(node.anomalyCount)}

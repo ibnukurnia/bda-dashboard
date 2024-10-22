@@ -6,6 +6,7 @@ import { NLP } from '@/modules/models/root-cause-analysis';
 
 interface NodeProps {
   percentage: number; // Accepts a number between 0 and 100
+  dataSourceLabel?: string;
   title: string;
   fungsi?: string;
   count?: number;
@@ -32,6 +33,7 @@ interface NodeProps {
 
 const Node: React.FC<NodeProps> = ({
   percentage,
+  dataSourceLabel,
   title,
   fungsi,
   count,
@@ -68,7 +70,7 @@ const Node: React.FC<NodeProps> = ({
     if (nlp) {
       handleSelectNLP({
         ...nlp,
-        data_source: queryParams?.data_source ?? "",
+        data_source: dataSourceLabel ?? "",
         service: title,
     })
     } else {
