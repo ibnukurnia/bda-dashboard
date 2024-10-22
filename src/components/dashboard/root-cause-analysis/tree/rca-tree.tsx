@@ -19,7 +19,10 @@ interface RCATreeProps {
   data?: TreeNodeType[];
   timeRange: string;
   fullScreenHandle: FullScreenHandle; // From react-full-screen
-  handleSelectNLP: (value: NLP | null) => void;
+  handleSelectNLP: (value: {
+    data_source: string
+    service: string
+  } & NLP | null) => void;
 }
 const RCATree: React.FC<RCATreeProps> = ({
   isLoading,

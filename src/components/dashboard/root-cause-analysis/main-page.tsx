@@ -18,8 +18,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { DEFAULT_TIME_RANGE, PREDEFINED_TIME_RANGES } from '@/constants'
 import RCATreeWrapper from './wrapper/rca-tree-wrapper'
 import TooltipCollection from './collection/tooltip-collection'
-import TableNLP from './table/table'
 import { TreeNodeType } from './tree/types'
+import CollapsibleNLP from './collapsible/collapsible-nlp'
 
 const MainPageRootCauseAnalysis = () => {
   const [responseData, setResponseData] = useState<RootCauseAnalysisTreeResponse[] | null>(null)
@@ -42,7 +42,10 @@ const MainPageRootCauseAnalysis = () => {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
-  const [nlpData, setNlpData] = useState<NLP | null>(null)
+  const [nlpData, setNlpData] = useState<{
+    data_source: string
+    service: string
+  } & NLP | null>(null)
 
   const router = useRouter()
   const handle = useFullScreenHandle();
@@ -182,9 +185,18 @@ const MainPageRootCauseAnalysis = () => {
           </div>
         </div>
         {nlpData && (
-          <TableNLP
-            data={nlpData}
-          />
+          <div className="rounded-lg p-6 w-full flex flex-col gap-[15px] card-style">
+            <Typography
+              fontWeight={700}
+              fontSize={'18px'}
+              color={'white'}
+            >
+              Related Incident
+            </Typography>
+            <CollapsibleNLP
+              data={nlpData}
+            />
+          </div>
         )}
       </FullScreen>
     </div>

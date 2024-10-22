@@ -33,7 +33,10 @@ interface ScrollableNodeListProps {
   fullScreenHandle: FullScreenHandle; // From react-full-screen
   maxCount: number;
   isLoading: boolean;
-  handleSelectNLP: (value: NLP | null) => void;
+  handleSelectNLP: (value: {
+    data_source: string
+    service: string
+  } & NLP | null) => void;
 }
 
 const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({

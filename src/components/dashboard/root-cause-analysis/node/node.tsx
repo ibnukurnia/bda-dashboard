@@ -24,7 +24,10 @@ interface NodeProps {
     total: number;
   }[];
   nlp?: NLP;
-  handleSelectNLP: (value: NLP | null) => void;
+  handleSelectNLP: (value: {
+    data_source: string
+    service: string
+  } & NLP | null) => void;
 }
 
 const Node: React.FC<NodeProps> = ({
@@ -63,7 +66,11 @@ const Node: React.FC<NodeProps> = ({
   const handleClickNode = () => {
     handleOnClickNode()
     if (nlp) {
-      handleSelectNLP(nlp)
+      handleSelectNLP({
+        ...nlp,
+        data_source: queryParams?.data_source ?? "",
+        service: title,
+    })
     } else {
       handleSelectNLP(null)
     }
