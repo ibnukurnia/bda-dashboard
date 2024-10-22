@@ -98,6 +98,7 @@ const CollapsibleNLP = ({
             <tr className='border-b border-opacity-[0.07] border-white'>
               <td className={'py-[14px] px-[15px]'}>
                 <Typography
+                  className={`${styles.typography} whitespace-pre-wrap`}
                   fontWeight={500}
                   fontSize={'12px'}
                   lineHeight={'14.1px'}
@@ -109,7 +110,7 @@ const CollapsibleNLP = ({
               </td>
               <td className={'py-[14px] px-[15px]'}>
                 <Typography
-                  className={styles.typography}
+                  className={`${styles.typography} whitespace-pre-wrap`}
                   fontWeight={500}
                   fontSize={'12px'}
                   lineHeight={'14.1px'}
@@ -121,6 +122,7 @@ const CollapsibleNLP = ({
               </td>
               <td className={'py-[14px] px-[15px]'}>
                 <Typography
+                  className={`${styles.typography} whitespace-pre-wrap`}
                   fontWeight={500}
                   fontSize={'12px'}
                   lineHeight={'14.1px'}
@@ -132,6 +134,7 @@ const CollapsibleNLP = ({
               </td>
               <td className={'py-[14px] px-[15px]'}>
                 <Typography
+                  className={`${styles.typography} whitespace-pre-wrap`}
                   fontWeight={500}
                   fontSize={'12px'}
                   lineHeight={'14.1px'}
@@ -143,6 +146,7 @@ const CollapsibleNLP = ({
               </td>
               <td className={'py-[14px] px-[15px]'}>
                 <Typography
+                  className={`${styles.typography} whitespace-pre-wrap`}
                   fontWeight={500}
                   fontSize={'12px'}
                   lineHeight={'14.1px'}
