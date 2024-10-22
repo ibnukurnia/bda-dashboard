@@ -1,0 +1,18 @@
+.typography ol {
+  list-style: unset;
+  margin: 0;
+  padding: 0 16px;
+}
+.typography ul {
+  list-style: unset;
+  margin: 0;
+  padding: 0 16px;
+}
+.typography ol li {
+  padding: 0;
+  margin: 4px 0;
+}
+.typography ul li {
+  padding: 0;
+  margin: 4px 0;
+}

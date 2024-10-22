@@ -40,6 +40,7 @@
     "cross-env": "^7.0.3",
     "date-fns": "^3.6.0",
     "dayjs": "1.11.10",
+    "html-react-parser": "^5.1.18",
     "moment-timezone": "^0.5.45",
     "mui-styles": "^2.0.5",
     "next": "14.1.3",

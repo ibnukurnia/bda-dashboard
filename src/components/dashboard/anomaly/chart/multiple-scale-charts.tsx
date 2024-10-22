@@ -98,6 +98,14 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                         toggleZoomOutButton(false)
                     }
                 },
+                beforeResetZoom() {
+                  return {
+                    xaxis: {
+                        min: minXOnEmpty,
+                        max: maxXOnEmpty,
+                      },
+                  }
+                },
                 beforeZoom: (chartContext, { xaxis }) => {
                     // Zoomed out
                     if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {

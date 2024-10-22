@@ -177,9 +177,9 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                           >
                             {table.getHeaderGroups()[0].headers[j]?.id === "identifier_alias" ?
                               <div className='flex flex-col'>
-                                <span>{data[i].identifier}</span>
-                                <span>{data[i].fungsi}</span>
-                                <span>{data[i].cluster}</span>
+                                <span>Service: {data[i].identifier}</span>
+                                <span>Fungsi: {data[i].fungsi}</span>
+                                <span>Site: {data[i].cluster}</span>
                               </div> :
                               <CellValue
                                 cell={cell}
