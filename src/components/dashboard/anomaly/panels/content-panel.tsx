@@ -612,29 +612,6 @@ const TabContent: React.FC<TabContentProps> = ({
         params.append("operation", selectedOperation);
 
         router.replace(`/dashboard/anomaly-detection?${params.toString()}`);
-
-        const page = 1 // Reset to the first page when page size changes
-        setPagination((prev) => ({
-            ...prev,
-            pageIndex: page,
-        }));
-
-        // Invoke fetchHistoricalAnomalyRecords
-        fetchHistoricalAnomalyRecords({
-            logType: selectedDataSource,
-            page: page,
-            limit: pagination.pageSize, // Use the current page size
-            anomalies: selectedAnomalies,
-            operation: selectedOperation,
-            clusters: selectedClusters.map(cluster => cluster.name),
-            severities: selectedSeverities,
-            services: selectedServices,
-            network: selectedNetwork,
-            node: selectedNode,
-            interface: selectedInterface,
-            category: selectedCategory,
-            domain: selectedDomain,
-        });
     };
 
     useEffect(() => {
@@ -649,15 +626,37 @@ const TabContent: React.FC<TabContentProps> = ({
         setFilterPrtgTrafficSensorOptions(null)
         setFilterClusterOptions(null)
         setFilterServiceOptions(null)
+        const page = 1 // Reset to the first page when page size changes
+        setPagination((prev) => ({
+            ...prev,
+            pageIndex: page,
+        }));
 
         fetchHistoricalAnomalyRecords({
             logType: selectedDataSource,
-            page: pagination.pageIndex,
+            page: 1,
             limit: pagination.pageSize,
         });
 
         loadFiltersOptions()
     }, [selectedDataSource]);
+
+    useUpdateEffect(() => {
+        if (isTableHeaderLoading) return
+        const page = 1 // Reset to the first page when page size changes
+        setPagination((prev) => ({
+            ...prev,
+            pageIndex: page,
+        }));
+
+        fetchHistoricalAnomalyRecords({
+            logType: selectedDataSource,
+            page: 1,
+            limit: pagination.pageSize, // Use the current page size
+        });
+    }, [
+        searchParams
+    ]);
 
     useUpdateEffect(() => {
         loadFiltersOptions()
