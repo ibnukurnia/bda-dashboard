@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
 import './custom-chart-styles.css';
 import { MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions';
-import { formatDate } from 'date-fns';
+import { format, formatDate } from 'date-fns';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -196,7 +196,17 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
 
             seriesName: metric.title,
             tooltip: {
-                enabled: index === 0 || index === 1,
+                // enabled: index === 0 || index === 1,
+                enabled: true,
+                x: {
+                    formatter: (val: any) => {
+                        const timestamp = typeof val === 'number' && val < 1e12 ? val * 1000 : val;  // Handle seconds to milliseconds
+                        const date = new Date(timestamp);
+                        console.log(val, date);
+                        
+                        return format(date, 'yyyy-MM-dd HH:mm:ss');  // Correct format with date-fns
+                    }
+                },
             },
             axisBorder: {
                 show: true, // Show the Y-axis line
@@ -204,7 +214,14 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                 width: 2, // Adjust the width of the Y-axis line
             },
         })),
-
+        tooltip: {
+            x: {
+                formatter: (value) => {
+                    const date = new Date(value);
+                    return formatDate(date, "yyyy-MM-dd HH:mm:ss")
+                },
+            },
+        },
         stroke: {
             curve: 'smooth',
             width: 4,

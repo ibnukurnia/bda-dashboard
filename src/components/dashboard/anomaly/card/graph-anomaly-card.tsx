@@ -11,6 +11,7 @@ import { format, isAfter, isBefore } from "date-fns";
 import Toggle, { ToggleOption } from "../button/toggle";
 import useInterval from "@/hooks/use-interval";
 import { NAMESPACE_LABELS } from "@/constants";
+import Skeleton from "@/components/system/Skeleton/Skeleton";
 
 const initialFilter = {
     scale: [],
@@ -54,11 +55,15 @@ const toggleList: ToggleOption[] = [
 
 const GraphWrapper = ({
     children,
+    selectedGraphToggle = toggleList[0],
+    scaleCount,
     isLoading,
     isEmpty,
     isFieldRequired,
 }: {
     children: React.ReactNode;
+    selectedGraphToggle: ToggleOption;
+    scaleCount: number,
     isLoading?: boolean;
     isEmpty?: boolean;
     isFieldRequired?: boolean;
@@ -69,11 +74,21 @@ const GraphWrapper = ({
             Please select a filter to view the data.
         </Typography>
     )
-    if (isLoading) return (
-        <div className="flex justify-center items-center">
-            <div className="spinner"></div>
-        </div>
-    )
+    if (isLoading) {
+        if (toggleList.indexOf(selectedGraphToggle) === 0) {
+            return <Skeleton
+                height={600}
+            />
+        }
+        if (toggleList.indexOf(selectedGraphToggle) === 1) {
+            return Array.from(Array(scaleCount), (_, i) => (
+              <Skeleton
+                key={i}
+                width={300}
+              />
+            ))
+        }
+    }
     if (isEmpty) return (
         <div className="text-center py-4">
             <Typography variant="subtitle1" color="white" align="center">
@@ -451,6 +466,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 }
             </div>
             <GraphWrapper
+                selectedGraphToggle={selectedGraphToggle}
+                scaleCount={selectedFilter.scale.length}
                 isFieldRequired={
                     selectedFilter.scale.length === 0 ||
                     (clusterOptions != null && selectedFilter.cluster.length === 0) ||

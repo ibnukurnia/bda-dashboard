@@ -163,8 +163,13 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 
                                 return numberFormatter.format(value); // Format with commas and two decimal places
                             },
-                        }
-
+                        },
+                        x: {
+                            formatter: (value) => {
+                                const date = new Date(value);
+                                return formatDate(date, "yyyy-MM-dd HH:mm:ss")
+                            },
+                        },
                     },
                     title: {
                         text: metric.title,
