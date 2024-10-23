@@ -251,25 +251,24 @@ const MainPageOverview = () => {
               isFullscreen={handle.active}
             />}
 
-            <GraphWrapper isLoading={isLoadingGraphic}>
-              <div className='flex flex-col gap-6 z-0'>
-                <span className="font-bold text-white text-2xl">Graphic</span>
-                <div className="chart-section">
+            <div className='flex flex-col gap-6 z-0'>
+              <span className="font-bold text-white text-2xl">Graphic</span>
+              <div className="grid grid-cols-2 gap-6">
+                <GraphWrapper isLoading={isLoadingGraphic}>
                   {chartData.map((item, id) => (
-                    <div className={`chart-section-col chart-section-col-${id + 1}`} key={id}>
-                      <DynamicUpdatingChart
-                        title={handleLogicTitle(item.title)}
-                        series={item.data}
-                        spike={item.last_spike}
-                        id={id}
-                        startTime={lastTimeRange.startTime}
-                        endTime={lastTimeRange.endTime}
-                      />
-                    </div>
+                    <DynamicUpdatingChart
+                      key={item.title}
+                      title={handleLogicTitle(item.title)}
+                      series={item.data}
+                      spike={item.last_spike}
+                      id={id}
+                      startTime={lastTimeRange.startTime}
+                      endTime={lastTimeRange.endTime}
+                    />
                   ))}
-                </div>
+                </GraphWrapper>
               </div>
-            </GraphWrapper>
+            </div>
 
             <AnomalyAmountPanel
               ref={anomalyAmountRef}

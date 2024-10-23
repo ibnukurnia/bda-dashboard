@@ -11,29 +11,27 @@ const GraphWrapper: React.FC<GraphWrapperProps> = ({
   isLoading,
 }) => {
   if (isLoading) return (
-    <div className="chart-section">
-      {Array.from(Array(5), (_, i) => (
-        <div className={`chart-section-col chart-section-col-${i + 1} flex flex-col gap-2`} key={i}>
-          <Skeleton
-            height={12}
-            width={"75px"}
-          />
-          <Skeleton
-            height={12}
-            width={"75px"}
-          />
-          <Skeleton
-            variant="rounded"
-            width={"100%"}
-            height={230}
-          />
-          <Skeleton
-            height={20}
-            width={"125px"}
-          />
-        </div>
-      ))}
-    </div>
+    Array.from(Array(6), (_, i) => (
+      <div className={`flex flex-col gap-2`} key={i}>
+        <Skeleton
+          height={12}
+          width={"75px"}
+        />
+        <Skeleton
+          height={12}
+          width={"75px"}
+        />
+        <Skeleton
+          variant="rounded"
+          width={"100%"}
+          height={230}
+        />
+        <Skeleton
+          height={20}
+          width={"125px"}
+        />
+      </div>
+    ))
   )
   return children
 };
