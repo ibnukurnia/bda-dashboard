@@ -23,7 +23,7 @@ type ImpactedService = {
   impacted: string[]
   function: string
   tooltips: Tooltip[]
-  nlp?: NLP
+  nlp?: NLP[]
 }
 export interface RootCauseAnalysisTreeResponse {
   source: string

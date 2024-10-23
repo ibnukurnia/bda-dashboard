@@ -13,5 +13,5 @@ export interface TreeNodeType {
     anomalyCount?: number;
     children?: TreeNodeType[];
     tooltips?: Tooltip[]
-    nlp?: NLP;
+    nlps?: NLP[];
   }

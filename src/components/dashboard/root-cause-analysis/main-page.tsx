@@ -45,7 +45,8 @@ const MainPageRootCauseAnalysis = () => {
   const [nlpData, setNlpData] = useState<{
     data_source: string
     service: string
-  } & NLP | null>(null)
+    nlps: NLP[]
+  } | null>(null)
 
   const router = useRouter()
   const handle = useFullScreenHandle();
@@ -87,7 +88,7 @@ const MainPageRootCauseAnalysis = () => {
               fungsi: is.function,
               anomalyCount: is.total,
               tooltips: is.tooltips,
-              nlp: is.nlp,
+              nlps: is.nlp,
               children: is.impacted.map(i => ({
                 name: i,
               }))
@@ -193,9 +194,15 @@ const MainPageRootCauseAnalysis = () => {
             >
               Related Incident
             </Typography>
-            <CollapsibleNLP
-              data={nlpData}
-            />
+            {nlpData.nlps.map((data, idx) =>
+              <CollapsibleNLP
+                key={data.name}
+                title={`${nlpData.data_source} - ${nlpData.service}`}
+                data={data}
+                badge={idx === 0 ? "most_related": "optional"}
+                isOpen={idx === 0}
+              />
+            )}
           </div>
         )}
       </FullScreen>

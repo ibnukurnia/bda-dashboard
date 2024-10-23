@@ -24,11 +24,12 @@ interface NodeProps {
     status_code: string;
     total: number;
   }[];
-  nlp?: NLP;
+  nlps?: NLP[];
   handleSelectNLP: (value: {
     data_source: string
     service: string
-  } & NLP | null) => void;
+    nlps: NLP[]
+  } | null) => void;
 }
 
 const Node: React.FC<NodeProps> = ({
@@ -42,7 +43,7 @@ const Node: React.FC<NodeProps> = ({
   hasDetail,
   queryParams,
   tooltips,
-  nlp,
+  nlps,
   handleSelectNLP,
 }) => {
   const [containerWidth, setContainerWidth] = useState(0)
@@ -67,9 +68,9 @@ const Node: React.FC<NodeProps> = ({
 
   const handleClickNode = () => {
     handleOnClickNode()
-    if (nlp) {
+    if (nlps) {
       handleSelectNLP({
-        ...nlp,
+        nlps: nlps,
         data_source: dataSourceLabel ?? "",
         service: title,
     })

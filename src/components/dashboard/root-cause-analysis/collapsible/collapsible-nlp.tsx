@@ -5,16 +5,19 @@ import parse from 'html-react-parser';
 import { NLP } from '@/modules/models/root-cause-analysis';
 
 interface CollapsibleNLPProps {
-  data: {
-    data_source: string
-    service: string
-  } & NLP
+  title: string
+  data: NLP
+  badge?: "most_related" | "optional" | null
+  isOpen?: boolean
 }
 
 const CollapsibleNLP = ({
+  title,
   data,
+  badge,
+  isOpen = true,
 }: CollapsibleNLPProps) => {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(isOpen)
 
   return (
     <div className="min-w-full py-[15px] px-[23px] flex flex-col gap-[10px] bg-white bg-opacity-5 rounded-[10px] border border-opacity-[0.07] border-white">
@@ -35,8 +38,25 @@ const CollapsibleNLP = ({
           letterSpacing={'0.15px'}
           color={'white'}
         >
-          {data.data_source} - {data.service}
+          {title}
         </Typography>
+        {badge &&
+          <div
+            className="py-[3px] px-[13px] flex items-center justify-center border rounded-[23px]"
+            style={{
+              borderColor: badge === "most_related" ? '#08B96D' : '#FF802D',
+            }}
+          >
+            <Typography
+              fontWeight={600}
+              fontSize={'12px'}
+              lineHeight={'14.63px'}
+              color={badge === "most_related" ? '#08B96D' : '#FF802D'}
+            >
+              {badge === "most_related" ? "Most Related" : "Optional"}
+            </Typography>
+          </div>
+        }
       </div>
       <Collapse in={open} timeout="auto" unmountOnExit>
         <table className="table-auto w-full">
@@ -103,7 +123,7 @@ const CollapsibleNLP = ({
                   fontSize={'12px'}
                   lineHeight={'14.1px'}
                   color={'white'}
-                  align={data.name.length <= 0 ? 'center' : 'left'}
+                  align={data.name.length <= 0 || data.name === "-" ? 'center' : 'left'}
                 >
                   {data.name.length > 0 ? data.name : "-"}
                 </Typography>
@@ -115,7 +135,7 @@ const CollapsibleNLP = ({
                   fontSize={'12px'}
                   lineHeight={'14.1px'}
                   color={'white'}
-                  align={!data.description ? 'center' : 'left'}
+                  align={!data.description || data.description === "-" ? 'center' : 'left'}
                 >
                   {parse(data.description ?? "-")}
                 </Typography>
@@ -127,7 +147,7 @@ const CollapsibleNLP = ({
                   fontSize={'12px'}
                   lineHeight={'14.1px'}
                   color={'white'}
-                  align={data.resolution.length <= 0 ? 'center' : 'left'}
+                  align={data.resolution.length <= 0 || data.resolution === "-" ? 'center' : 'left'}
                 >
                   {parse(data.resolution.length > 0 ? data.resolution : "-")}
                 </Typography>
@@ -139,7 +159,7 @@ const CollapsibleNLP = ({
                   fontSize={'12px'}
                   lineHeight={'14.1px'}
                   color={'white'}
-                  align={data.action.length <= 0 ? 'center' : 'left'}
+                  align={data.action.length <= 0 || data.action === "-" ? 'center' : 'left'}
                 >
                   {parse(data.action.length > 0 ? data.action : "-")}
                 </Typography>
@@ -151,7 +171,7 @@ const CollapsibleNLP = ({
                   fontSize={'12px'}
                   lineHeight={'14.1px'}
                   color={'white'}
-                  align={!data.lesson_learned ? 'center' : 'left'}
+                  align={!data.lesson_learned || data.lesson_learned === "-" ? 'center' : 'left'}
                 >
                   {parse(data.lesson_learned ?? "-")}
                 </Typography>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import ScrollableNodeList from '../node/scrollable-node-list';
 import { TreeNodeType } from './types';
 import TopBar from '../bar/top-bar';
-import { NLP, RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis';
+import { NLP } from '@/modules/models/root-cause-analysis';
 import { Typography } from '@mui/material';
 import { FullScreenHandle } from 'react-full-screen';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -22,7 +22,8 @@ interface RCATreeProps {
   handleSelectNLP: (value: {
     data_source: string
     service: string
-  } & NLP | null) => void;
+    nlps: NLP[]
+  } | null) => void;
 }
 const RCATree: React.FC<RCATreeProps> = ({
   isLoading,

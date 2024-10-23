@@ -37,7 +37,8 @@ interface ScrollableNodeListProps {
   handleSelectNLP: (value: {
     data_source: string
     service: string
-  } & NLP | null) => void;
+    nlps: NLP[]
+  } | null) => void;
 }
 
 const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
@@ -225,7 +226,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
                 service: node.namespace ?? node.name,
               }}
               tooltips={node.tooltips}
-              nlp={node.nlp}
+              nlps={node.nlps}
               handleSelectNLP={handleSelectNLP}
             />
           ))}
