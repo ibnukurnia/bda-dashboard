@@ -1,11 +1,77 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { GetNotificationList } from '@/modules/usecases/notification';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, ColumnDef } from '@tanstack/react-table';
 import Pagination from '@/components/system/Pagination/Pagination';
 import './main-page.css'
 import Link from 'next/link';
+import { Typography } from '@mui/material';
+import Skeleton from '@/components/system/Skeleton/Skeleton';
+
+interface TableHeaderWrapperProps {
+    isLoading: boolean
+    children: JSX.Element
+}
+const TableHeaderWrapper: React.FC<TableHeaderWrapperProps> = ({
+    isLoading,
+    children,
+}) => {
+    if (isLoading) return (
+        <tr>
+            {Array.from(Array(5), (_, j) => (
+                <th key={j} className={`p-4 py-6`}>
+                    <Skeleton
+                        className='px-3 min-w-full'
+                        width={120}
+                        height={20}
+                    />
+                </th>
+            ))}
+        </tr>
+    )
+    return children
+}
+interface TableBodyWrapperProps {
+    isLoading: boolean
+    isEmpty: boolean,
+    pageSize: number
+    columnSize: number
+    children: JSX.Element
+}
+const TableBodyWrapper: React.FC<TableBodyWrapperProps> = ({
+    isLoading,
+    isEmpty,
+    pageSize,
+    columnSize,
+    children,
+}) => {
+    if (isLoading) return (
+        Array.from(Array(pageSize), (_, i) => (
+            <tr key={i}>
+                {Array.from(Array(columnSize), (_, j) => (
+                    <td key={j} className={`p-4`}>
+                        <Skeleton
+                            className='px-3 min-w-full'
+                            width={120}
+                            height={20}
+                        />
+                    </td>
+                ))}
+            </tr>
+        ))
+    )
+    if (isEmpty) return (
+        <tr>
+            <td className={`p-4`} colSpan={columnSize}>
+                <Typography variant="subtitle1" color="white" align="center">
+                    No data available.
+                </Typography>
+            </td>
+        </tr>
+    )
+    return children
+}
 
 interface Anomaly {
     source_identifier: string;
@@ -25,6 +91,7 @@ const AnomalyNotificationPage = () => {
     const [columns, setColumns] = useState<ColumnDef<Anomaly, any>[]>([]);
     const [data, setData] = useState<Anomaly[]>([]);
     const [totalRows, setTotalRows] = useState<number>(0);
+    const [isLoadingHeader, setIsLoadingHeader] = useState<boolean>(true);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isError, setIsError] = useState<boolean>(false);
     const [pagination, setPagination] = useState({
@@ -66,6 +133,7 @@ const AnomalyNotificationPage = () => {
             setIsError(true);
         } finally {
             setIsLoading(false);
+            setIsLoadingHeader(false)
         }
     };
 
@@ -81,10 +149,6 @@ const AnomalyNotificationPage = () => {
         },
     });
 
-    if (isLoading) {
-        return <div className="text-white p-8">Loading...</div>;
-    }
-
     if (isError) {
         return <div className="text-red-500 p-8">Failed to load notifications.</div>;
     }
@@ -96,51 +160,66 @@ const AnomalyNotificationPage = () => {
                     <div className="min-w-full">
                         <table className="table-auto divide-y divide-gray-200 w-full">
                             <thead className="border-b border-gray-700">
-                                {table.getHeaderGroups().map((headerGroup) => (
-                                    <tr key={headerGroup.id} className="text-left text-gray-300">
-                                        {headerGroup.headers.map((header) => (
-                                            <th key={header.id} className="px-6 py-3">
-                                                {typeof header.column.columnDef.header === 'function'
-                                                    ? header.column.columnDef.header({} as any)
-                                                    : header.column.columnDef.header}
-                                            </th>
+                                <TableHeaderWrapper
+                                    isLoading={isLoadingHeader}
+                                >
+                                    <Fragment>
+                                        {table.getHeaderGroups().map((headerGroup) => (
+                                            <tr key={headerGroup.id} className="text-left text-gray-300">
+                                                {headerGroup.headers.map((header) => (
+                                                    <th key={header.id} className="px-6 py-3">
+                                                        {typeof header.column.columnDef.header === 'function'
+                                                            ? header.column.columnDef.header({} as any)
+                                                            : header.column.columnDef.header}
+                                                    </th>
+                                                ))}
+                                            </tr>
                                         ))}
-                                    </tr>
-                                ))}
+                                    </Fragment>
+                                </TableHeaderWrapper>
                             </thead>
 
                             <tbody className="divide-y !divide-gray-200 text-gray-600">
-                                {table.getRowModel().rows.map((row) => (
-                                    <tr
-                                        key={row.id}
-                                        className={"hover:bg-white hover:bg-opacity-20 text-gray-100"}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <td key={cell.id} className="whitespace-nowrap">
-                                                <Link
-                                                    className='w-full h-full flex px-4 py-4 items-center rounded-full gap-x-2'
-                                                    href={{
-                                                        pathname: '/dashboard/anomaly-detection',
-                                                        query: {
-                                                            data_source: data[row.index].source_identifier,
-                                                            time_range: `${data[row.index].timestamp_identifier} - ${data[row.index].timestamp_identifier}`,
-                                                            anomaly: data[row.index].anomaly_identifier,
-                                                            ...((data[row.index].site_identifier != null && data[row.index].site_identifier.length > 0) && { cluster: data[row.index].site_identifier }), // Only include cluster if it's not null or undefined
-                                                            service: data[row.index].identifier,
-                                                        },
-                                                    }}
-                                                    passHref
-                                                >
-                                                    {typeof cell.getValue() === 'number' ? (
-                                                        <span>{new Intl.NumberFormat('en-US').format(cell.getValue() as number)}</span> // Format number with commas
-                                                    ) : (
-                                                        <span>{cell.getValue() as string}</span> // Display non-numeric values
-                                                    )}
-                                                </Link>
-                                            </td>
+                                <TableBodyWrapper
+                                    pageSize={10}
+                                    columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 5 : table.getHeaderGroups()?.[0].headers.length}
+                                    isLoading={isLoading}
+                                    isEmpty={data.length === 0}
+                                >
+                                    <Fragment>
+                                        {table.getRowModel().rows.map((row) => (
+                                            <tr
+                                                key={row.id}
+                                                className={"hover:bg-white hover:bg-opacity-20 text-gray-100"}
+                                            >
+                                                {row.getVisibleCells().map((cell) => (
+                                                    <td key={cell.id} className="whitespace-nowrap">
+                                                        <Link
+                                                            className='w-full h-full flex px-4 py-4 items-center rounded-full gap-x-2'
+                                                            href={{
+                                                                pathname: '/dashboard/anomaly-detection',
+                                                                query: {
+                                                                    data_source: data[row.index].source_identifier,
+                                                                    time_range: `${data[row.index].timestamp_identifier} - ${data[row.index].timestamp_identifier}`,
+                                                                    anomaly: data[row.index].anomaly_identifier,
+                                                                    ...((data[row.index].site_identifier != null && data[row.index].site_identifier.length > 0) && { cluster: data[row.index].site_identifier }), // Only include cluster if it's not null or undefined
+                                                                    service: data[row.index].identifier,
+                                                                },
+                                                            }}
+                                                            passHref
+                                                        >
+                                                            {typeof cell.getValue() === 'number' ? (
+                                                                <span>{new Intl.NumberFormat('en-US').format(cell.getValue() as number)}</span> // Format number with commas
+                                                            ) : (
+                                                                <span>{cell.getValue() as string}</span> // Display non-numeric values
+                                                            )}
+                                                        </Link>
+                                                    </td>
+                                                ))}
+                                            </tr>
                                         ))}
-                                    </tr>
-                                ))}
+                                    </Fragment>
+                                </TableBodyWrapper>
                             </tbody>
                         </table>
 
