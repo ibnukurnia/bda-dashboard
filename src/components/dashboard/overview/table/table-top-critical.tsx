@@ -147,7 +147,7 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-y divide-gray-200 text-gray-600">
+            <tbody className="divide-y divide-gray-200">
               <TableBodyWrapper
                 pageSize={10}
                 columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 4 : table.getHeaderGroups()?.[0].headers.length}
@@ -158,7 +158,7 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                   {table.getRowModel().rows.map((row, i) => (
                     <tr
                       key={row.id}
-                      className={`${styles.row_hover} hover:bg-slate-300 text-gray-100 hover:text-black`}
+                      className={`${styles.row_hover} hover:bg-[#383e54] text-gray-100`}
                     >
                       {row.getVisibleCells().map((cell, j) => (
                         <td key={cell.id} className={`${styles.first_child} whitespace-nowrap`}>

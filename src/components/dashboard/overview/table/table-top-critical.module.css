@@ -4,13 +4,13 @@ td:first-child.first_child {
   z-index: 15;
   left: 0;
   background-color: #060f2c;
-  --tw-divide-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-divide-opacity)) /* #e5e7eb */;
 }
 td:first-child.first_child {
   --tw-divide-y-reverse: 0;
+  --tw-divide-opacity: 1;
   border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
   border-bottom-width: calc(1px * var(--tw-divide-y-reverse));
+  border-color: rgb(229 231 235 / var(--tw-divide-opacity)) /* #e5e7eb */;
 }
 
 thead.table_header {
@@ -22,6 +22,5 @@ thead.table_header {
 
 tr:hover.row_hover td:first-child {
   --tw-bg-opacity: 1;
-  background-color: rgb(203 213 225 / var(--tw-bg-opacity)) /* #cbd5e1 */;
-  color: black;
+  background-color: rgb(56 62 84 / var(--tw-bg-opacity)) /* #383e54 */;
 }
