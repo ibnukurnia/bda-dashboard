@@ -73,15 +73,16 @@ const Node: React.FC<NodeProps> = ({
         nlps: nlps,
         data_source: dataSourceLabel ?? "",
         service: title,
-    })
+      })
     } else {
       handleSelectNLP(null)
     }
   }
 
-  // Ensure queryParams is always an object, and then filter out null/undefined values
   const filteredQueryParams = Object.fromEntries(
-    Object.entries(queryParams ?? {}).filter(([_, value]) => value != null)
+    Object.entries(queryParams ?? {})
+      .filter(([_, value]) => value != null)
+      .map(([key, value]) => [key, value.toString().toLowerCase()])
   );
 
   return (

@@ -82,8 +82,8 @@ const MainPageRootCauseAnalysis = () => {
             namespace: r.anomaly,
             anomalyCount: r.total,
             children: r.impacted_services.map(is => ({
-              name: is.service_alias,
-              cluster: is.cluster,
+              name: is.service_alias?.toUpperCase(),
+              cluster: is.cluster?.toUpperCase(),
               namespace: is.service,
               fungsi: is.function,
               anomalyCount: is.total,
@@ -98,7 +98,9 @@ const MainPageRootCauseAnalysis = () => {
         setLastRefreshTime(new Date())
         setIsError(false)
       })
-      .catch(() => {
+      .catch((e) => {
+        console.log(e);
+
         setIsError(true)
       })
       .finally(() => {
@@ -199,7 +201,7 @@ const MainPageRootCauseAnalysis = () => {
                 key={data.name}
                 title={`${nlpData.data_source} - ${nlpData.service}`}
                 data={data}
-                badge={idx === 0 ? "most_related": "optional"}
+                badge={idx === 0 ? "most_related" : "optional"}
                 isOpen={idx === 0}
               />
             )}
