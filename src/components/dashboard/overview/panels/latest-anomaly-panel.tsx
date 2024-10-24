@@ -1,6 +1,6 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import TableCriticalAnomaly, { TableCriticalAnomalyHandle } from '../table/table-critical-anomaly'
-import DropdownDataSourceLatestAnomaly from '../button/dropdown-datasource-latest-anomaly'
+import DropdownDataSourceLatestAnomaly, { DropdownDataSourceLatestAnomalyHandle } from '../button/dropdown-datasource-latest-anomaly'
 import DropdownSeverity from '../button/dropdown-severity'
 
 interface LatestAnomalyPanelProps {
@@ -19,11 +19,13 @@ const LatestAnomalyPanel = forwardRef<LatestAnomalyPanelHandle, LatestAnomalyPan
 }, ref) => {
   const [selectedDataSourceLatestAnomaly, setSelectedDataSourceLatestAnomaly] = useState<string | null | undefined>(null);
   const [selectedSeverity, setSelectedSeverity] = useState<{ value: any; id: number; label: string }[]>([])
+  const dropdownDataSourceRef = useRef<DropdownDataSourceLatestAnomalyHandle>(null)
   const tableRef = useRef<TableCriticalAnomalyHandle>(null)
 
   // Use useImperativeHandle to expose the custom method
   useImperativeHandle(ref, () => ({
     refresh(timeRange) {
+      dropdownDataSourceRef.current?.refresh(timeRange)
       tableRef.current?.refresh(timeRange)
     },
   }));
@@ -46,6 +48,8 @@ const LatestAnomalyPanel = forwardRef<LatestAnomalyPanelHandle, LatestAnomalyPan
         <span className="font-bold text-white text-2xl content-center">Latest Anomaly</span>
         <div className='flex gap-4'>
           {!isFullscreen && <DropdownDataSourceLatestAnomaly
+            ref={dropdownDataSourceRef}
+            timeRange={timeRange}
             onSelectData={(e) => handleSelectDataSourceLatestAnomaly(e)}
             handleReset={() => setSelectedDataSourceLatestAnomaly(undefined)}
             selectedData={selectedDataSourceLatestAnomaly}

@@ -24,8 +24,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
   });
 
   const activeTab = TAB_DATA_SOURCE.find(ds =>
-    ds.children && ds.children.find(child => child.namespace === selectedDataSource)
-  );
+    (ds.children.find(child => child.namespace === selectedDataSource)))
 
   const handleTabClick = (index: number) => {
     setShowDropdown(index === showDropdown ? -1 : index); // Toggle the dropdown visibility
@@ -79,9 +78,8 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
         {TAB_DATA_SOURCE.map((ds, i) => (
           <div className="container-button relative inline-block z-50" key={ds.textLabel}>
             <button
-              onClick={() => ds.children ? handleTabClick(i) : handleDropdownClick('')}
-              className={`flex items-center px-4 py-2 border rounded text-white ${activeTab?.textLabel === ds.textLabel ? 'active' : 'bg-transparent'
-                } transition duration-300 ease-in-out`}
+              onClick={() => handleTabClick(i)}
+              className={`flex items-center px-4 py-2 border rounded text-white ${activeTab?.textLabel === ds.textLabel ? 'active' : 'bg-transparent'} transition duration-300 ease-in-out`}
             >
               {ds.children && (
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -107,9 +107,10 @@ const GetHealthScoreOverview = async (params?: { start_time: string | Date; end_
   return response
 }
 
-const GetDataSourceLatestAnomaly   = async () => {
+const GetDataSourceLatestAnomaly  = async (params?: { start_time: string | Date; end_time: string | Date }) => {
   const response: ApiResponse<any> = await get('latest-critical/list-data-source', {
     withAuth: true,
+    queries: params,
   });
 
   return response;
