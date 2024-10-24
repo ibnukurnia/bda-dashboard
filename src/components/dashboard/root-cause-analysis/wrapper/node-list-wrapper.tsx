@@ -23,7 +23,7 @@ const NodeListWrapper: React.FC<NodeListWrapperProps> = ({
           <div className="flex justify-between">
             <Skeleton
               width={"60%"}
-              height={40}
+              height={20}
             />
             <Skeleton
               width={"75px"}
