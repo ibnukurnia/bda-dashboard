@@ -7,7 +7,7 @@ import { NLP } from '@/modules/models/root-cause-analysis';
 interface CollapsibleNLPProps {
   title: string
   data: NLP
-  badge?: "most_related" | "optional" | null
+  badge?: "most_related" | "additional" | null
   isOpen?: boolean
 }
 
