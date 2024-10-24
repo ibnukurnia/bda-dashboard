@@ -14,26 +14,29 @@ interface PageProps {
 
 export default function Page({ searchParams }: PageProps): React.JSX.Element {
     let correctedSearchParams = false
-    
+
     if (!searchParams.data_source || !validDataSource(searchParams.data_source)) {
         correctedSearchParams = true
         searchParams.data_source = DEFAULT_DATA_SOURCE_NAMESPACE
     }
-    
+
     if (!searchParams.time_range || !validTimeRange(searchParams.time_range)) {
         correctedSearchParams = true
         searchParams.time_range = DEFAULT_TIME_RANGE
     }
-    
+
     if (correctedSearchParams) {
+        // console.log(correctedSearchParams, "test")
         const filteredSearchParams = Object.fromEntries(
             Object.entries(searchParams)
-              .filter(([_, value]) => value !== undefined) // Filter out undefined values
-              .map(([key, value]) => [key, value as string]) // Cast value to string
+                .filter(([_, value]) => value !== undefined) // Filter out undefined values
+                .map(([key, value]) => [key, value as string]) // Cast value to string
         );
-          
+
         const searchParamString = new URLSearchParams(filteredSearchParams).toString();
+        // console.log(searchParamString, "test 2")
         redirect(`/dashboard/anomaly-detection?${searchParamString}`, RedirectType.replace);
+
     }
 
     return (

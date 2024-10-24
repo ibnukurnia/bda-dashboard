@@ -3,10 +3,13 @@ import { PREDEFINED_TIME_RANGES, TAB_DATA_SOURCE } from "./constants";
 
 export const validDataSource = (dataSource: string) => {
 	return TAB_DATA_SOURCE.some(ds =>
-		(ds.namespace && ds.namespace === dataSource) ||
-		(ds.children && ds.children.find(child => child.namespace === dataSource))
+	(ds.children && ds.children.some(child =>
+		(child.namespace && child.namespace === dataSource) || // First-level child
+		(child.children && child.children.some(subChild => subChild.namespace === dataSource)) // Second-level child
+	))
 	);
 };
+
 
 // Regular expression to match a custom time range like "YYYY-MM-DD HH:MM:SS - YYYY-MM-DD HH:MM:SS"
 const customTimeRangeRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} - \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
@@ -53,26 +56,26 @@ export const formatRupiah = (value: number) => {
 
 const toMiliseconds = 1000 * 60
 const defaultTimeRanges: Record<string, number> = {
-  'Last 5 minutes': 5,
-  'Last 10 minutes': 10,
-  'Last 15 minutes': 15,
-  'Last 30 minutes': 30,
-  'Last 1 hours': 60,
-  'Last 3 hours': 180,
+	'Last 5 minutes': 5,
+	'Last 10 minutes': 10,
+	'Last 15 minutes': 15,
+	'Last 30 minutes': 30,
+	'Last 1 hours': 60,
+	'Last 3 hours': 180,
 }
 export const handleStartEnd = (time: string) => {
-    const timeSplit = time.split(' - ')
+	const timeSplit = time.split(' - ')
 
-    let startTime: string | Date
-    let endTime: string | Date
+	let startTime: string | Date
+	let endTime: string | Date
 
-    if (timeSplit.length > 1) {
-      startTime = timeSplit?.[0]
-      endTime = timeSplit?.[1]
-    } else {
-      startTime = format(new Date(new Date().getTime() - toMiliseconds * defaultTimeRanges[time]), 'yyyy-MM-dd HH:mm:ss')
-      endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-    }
+	if (timeSplit.length > 1) {
+		startTime = timeSplit?.[0]
+		endTime = timeSplit?.[1]
+	} else {
+		startTime = format(new Date(new Date().getTime() - toMiliseconds * defaultTimeRanges[time]), 'yyyy-MM-dd HH:mm:ss')
+		endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+	}
 
-    return { startTime, endTime }
-  }
+	return { startTime, endTime }
+}

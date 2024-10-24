@@ -406,6 +406,7 @@ const TabContent: React.FC<TabContentProps> = ({
             setHasErrorFilterSolarWindsNetwork(true)
         }
     }
+
     const loadSolarWindsNodeFilterOptions = async () => {
         try {
             const { startTime, endTime } = getTimeRange()
@@ -422,6 +423,7 @@ const TabContent: React.FC<TabContentProps> = ({
             setHasErrorFilterSolarWindsNode(true)
         }
     }
+
     const loadSolarWindsInterfaceFilterOptions = async () => {
         try {
             const { startTime, endTime } = getTimeRange()
@@ -455,6 +457,7 @@ const TabContent: React.FC<TabContentProps> = ({
             setHasErrorFilterDnsDomain(true)
         }
     }
+
     const loadDnsCategoryFilterOptions = async () => {
         try {
             const { startTime, endTime } = getTimeRange()
@@ -488,6 +491,7 @@ const TabContent: React.FC<TabContentProps> = ({
             setHasErrorFilterPrtgTrafficDevice(true)
         }
     }
+
     const loadPrtgTrafficSensorFilterOptions = async () => {
         try {
             const { startTime, endTime } = getTimeRange()
@@ -527,8 +531,9 @@ const TabContent: React.FC<TabContentProps> = ({
         }
         loadClusterFilterOptions();
         loadServicesFilterOptions();
-    
+
     }
+
     const handleResetFilters = () => {
         // Clear the selected options
         const params = new URLSearchParams(searchParams.toString());
@@ -576,7 +581,7 @@ const TabContent: React.FC<TabContentProps> = ({
             selectedCategory,
             selectedDomain,
         } = filters;
-        
+
         // Update the state with the selected options
         const params = new URLSearchParams(searchParams.toString());
 
