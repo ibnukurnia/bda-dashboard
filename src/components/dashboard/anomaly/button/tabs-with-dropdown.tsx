@@ -35,7 +35,15 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
 
     // Clear the selected options
     params.delete("anomaly")
+    params.delete("severity")
+    params.delete("cluster")
+    params.delete("operation")
     params.delete("service")
+    params.delete("network")
+    params.delete("node")
+    params.delete("interface")
+    params.delete("category")
+    params.delete("domain")
 
     router.push(`/dashboard/anomaly-detection?${params.toString()}`);
     setShowDropdown(-1)
