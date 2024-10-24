@@ -60,7 +60,7 @@ const Node = forwardRef<HTMLDivElement, NodeProps>(({
   severity,
   handleOnClick,
 }, ref) => (
-  <div className={`${className} ${handleOnClick != null ? 'cursor-pointer hover:bg-white hover:bg-opacity-20 rounded' : ''} flex flex-col items-center`} onClick={handleOnClick}>
+  <div className={`${className} ${handleOnClick != null ? 'cursor-pointer hover:bg-white hover:bg-opacity-20 rounded' : ''} flex flex-col items-center z-[1]`} onClick={handleOnClick}>
     <ConditionalLink
       dataSource={dataSource}
     >
