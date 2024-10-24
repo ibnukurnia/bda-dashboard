@@ -32,16 +32,15 @@ interface TableServicesProps {
   tableHeader: string[];
   dataKeys: string[];
   data: TopServiceData[] | null | undefined;
-  maxHeight?: number | string;
   selectedDataSource?: string | null;
   queryParams?: {
     time_range?: string;
   };
 }
 
-const TableServices = ({ tableHeader, dataKeys, data, maxHeight, selectedDataSource, queryParams }: TableServicesProps) => {
+const TableServices = ({ tableHeader, dataKeys, data, selectedDataSource, queryParams }: TableServicesProps) => {
   return (
-    <div className={`relative overflow-auto min-h-48 2xl:h-[40dvh] ${styles.scrollbar}`} style={{ maxHeight }}>
+    <div className={`relative overflow-auto h-64 2xl:h-[40dvh] ${styles.scrollbar}`}>
       <div>
         <table className="w-full text-white">
           <thead>

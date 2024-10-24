@@ -17,7 +17,6 @@ const configDataKey = ['service_name', 'very_high', 'high', 'medium']
 
 interface AnomalyOverviewPanelProps {
   timeRange: string
-  tableServiceMaxHeight: number
   isFullscreen: boolean
 }
 
@@ -28,7 +27,6 @@ export interface AnomalyOverviewPanelHandle {
 
 const AnomalyOverviewPanel = forwardRef<AnomalyOverviewPanelHandle, AnomalyOverviewPanelProps>(({
   timeRange,
-  tableServiceMaxHeight,
   isFullscreen,
 }, ref) => {
   const [selectedDataSource, setSelectedDataSource] = useState<string | null | undefined>(null)
@@ -121,7 +119,6 @@ const AnomalyOverviewPanel = forwardRef<AnomalyOverviewPanelHandle, AnomalyOverv
               data={topServicesData?.data}
               tableHeader={topServicesData?.header ?? []}
               dataKeys={configDataKey}
-              maxHeight={tableServiceMaxHeight}
               selectedDataSource={selectedDataSource}
               queryParams={{
                 time_range: timeRange,

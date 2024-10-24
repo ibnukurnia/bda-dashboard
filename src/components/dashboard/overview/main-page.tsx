@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import './main-page.css'
 import { Maximize } from 'react-feather'
 import {
@@ -32,7 +32,6 @@ const defaultTimeRanges: Record<string, number> = {
 
 const MainPageOverview = () => {
   const [refreshSignal, setRefreshSignal] = useState<number>(0);
-  const [tableServiceMaxHeight, setTableServiceMaxHeight] = useState(192)
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
   const [lastTimeRange, setLastTimeRange] = useState(handleStartEnd(selectedRange))
@@ -60,11 +59,6 @@ const MainPageOverview = () => {
 
     startDateObj.setSeconds(0, 0);
     endDateObj.setSeconds(0, 0);
-
-    // Format startTime and endTime using the helper function (no need for UTC conversions)
-    const formatTimeToString = (date: Date) => {
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:00`;
-    };
 
     setSelectedRange(time);
     setIsLoadingGraphic(true)
@@ -173,35 +167,12 @@ const MainPageOverview = () => {
         setChartData([]);
         setIsLoadingGraphic(false);
       });
-
-    window.addEventListener('resize', handleTableServiceHeight);
-    return () => {
-      window.removeEventListener('resize', handleTableServiceHeight);
-    }
   }, [])
 
   useUpdateEffect(() => {
     const { startTime, endTime } = handleStartEnd(selectedRange)
     setLastTimeRange({ startTime: startTime, endTime: endTime })
   }, [selectedRange])
-
-  useLayoutEffect(() => {
-    handleTableServiceHeight()
-  }, [topCriticalRef])
-
-  function handleTableServiceHeight() {
-    const containerElement = topCriticalRef?.current?.getContainerElement?.();
-    if (containerElement) {
-      const calculatedTableHeight = containerElement.offsetHeight - 310
-      if (calculatedTableHeight > 192 && window.innerWidth >= 1440) {
-        setTableServiceMaxHeight(containerElement.offsetHeight - 310)
-      } else if (window.innerWidth < 1440) {
-        setTableServiceMaxHeight(260 - 16)
-      } else {
-        setTableServiceMaxHeight(192)
-      }
-    }
-  }
 
   return (
     <div className='flex flex-col gap-6'>
@@ -237,7 +208,6 @@ const MainPageOverview = () => {
                 ref={anomalyOverviewRef}
                 timeRange={autoRefresh ? selectedRange : `${lastTimeRange.startTime} - ${lastTimeRange.endTime}`}
                 isFullscreen={handle.active}
-                tableServiceMaxHeight={tableServiceMaxHeight}
               />
               <TopCriticalPanel
                 ref={topCriticalRef}

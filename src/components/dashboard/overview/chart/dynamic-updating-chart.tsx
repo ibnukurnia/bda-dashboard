@@ -132,9 +132,7 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
           colors: 'white', // White color for y-axis text
         },
         formatter(val) {
-          if (!val) return val
-          
-          return title?.toLowerCase()?.includes('apm') ? val.toFixed(4) : val.toFixed(0);
+          return title?.toLowerCase()?.includes('apm') ? val?.toFixed(4) : val?.toFixed(0);
         },
       },
       tickAmount: 5,
