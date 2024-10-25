@@ -223,7 +223,7 @@ const MainPageOverview = () => {
 
             <div className='flex flex-col gap-6 z-0'>
               <span className="font-bold text-white text-2xl">Graphic</span>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid lg:grid-cols-2 grid-cols-1 gap-6">
                 <GraphWrapper isLoading={isLoadingGraphic}>
                   {chartData.map((item, id) => (
                     <DynamicUpdatingChart

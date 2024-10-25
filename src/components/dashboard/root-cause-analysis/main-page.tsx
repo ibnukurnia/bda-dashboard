@@ -201,7 +201,7 @@ const MainPageRootCauseAnalysis = () => {
                 key={data.name}
                 title={`${nlpData.data_source} - ${nlpData.service}`}
                 data={data}
-                badge={idx === 0 ? "most_related" : "optional"}
+                badge={idx === 0 ? "most_related" : "additional"}
                 isOpen={idx === 0}
               />
             )}

@@ -1,24 +1,43 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
 
 import Button from '@/components/system/Button/Button'
 
 import './dropdown-ds.css'
 import { GetDataSourceLatestAnomaly } from '@/modules/usecases/overviews'
 import Skeleton from '@/components/system/Skeleton/Skeleton'
+import { handleStartEnd } from '@/helper'
 
 interface DropdownDataSourceLatestAnomalyProps {
+  timeRange: string
   onSelectData: (value?: string) => void
   handleReset?: () => void
   selectedData?: string | null
 }
 
-const DropdownDataSourceLatestAnomaly: React.FC<DropdownDataSourceLatestAnomalyProps> = ({ onSelectData, handleReset, selectedData }) => {
+export interface DropdownDataSourceLatestAnomalyHandle {
+  refresh: (timeRange: string) => void
+}
+
+const DropdownDataSourceLatestAnomaly = forwardRef<DropdownDataSourceLatestAnomalyHandle, DropdownDataSourceLatestAnomalyProps>(({
+  timeRange,
+  onSelectData,
+  handleReset,
+  selectedData,
+}, ref) => {
   const [data, setData] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
   const [position, setPosition] = useState<number>(0)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
   const dropdownContainerRef = useRef<HTMLDivElement | null>(null)
+
+  // Use useImperativeHandle to expose the custom method
+  useImperativeHandle(ref, () => ({
+    refresh(timeRange) {
+      setIsLoading(true)
+      fetchData(timeRange)
+    },
+  }));
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen)
@@ -36,15 +55,10 @@ const DropdownDataSourceLatestAnomaly: React.FC<DropdownDataSourceLatestAnomalyP
   }
 
   useEffect(() => {
-    GetDataSourceLatestAnomaly()
-      .then((res) => {
-        setData(res.data ?? []);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      })
-  }, [])
-  
+    setIsLoading(true)
+    fetchData()
+  }, [timeRange])
+
   useEffect(() => {
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside)
@@ -70,6 +84,22 @@ const DropdownDataSourceLatestAnomaly: React.FC<DropdownDataSourceLatestAnomalyP
       }
     }
   }, [isOpen])
+
+  function fetchData(
+    customTimeRange?: string
+  ) {
+    const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange)
+    GetDataSourceLatestAnomaly({
+      start_time: startTime,
+      end_time: endTime,
+    })
+      .then((res) => {
+        setData(res.data ?? []);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      })
+  }
 
   if (isLoading) return (
     <Skeleton width={175} height={48} />
@@ -102,11 +132,6 @@ const DropdownDataSourceLatestAnomaly: React.FC<DropdownDataSourceLatestAnomalyP
                 onClick={() => handleSelectData(undefined)}
                 className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
               >
-                {/* <input
-                    type="checkbox"
-                    checked={!selectedData}
-                    className="mr-2"
-                /> */}
                 All Data Source
               </div>
             </li>
@@ -116,11 +141,6 @@ const DropdownDataSourceLatestAnomaly: React.FC<DropdownDataSourceLatestAnomalyP
                   onClick={() => handleSelectData(d)}
                   className="cursor-pointer block px-4 py-3 hover:bg-gray-200 hover:rounded-lg"
                 >
-                  {/* <input
-                      type="checkbox"
-                      checked={selectedData === d}
-                      className="mr-2"
-                  /> */}
                   {d}
                 </div>
               </li>
@@ -130,6 +150,6 @@ const DropdownDataSourceLatestAnomaly: React.FC<DropdownDataSourceLatestAnomalyP
       )}
     </div>
   )
-}
+})
 
 export default DropdownDataSourceLatestAnomaly

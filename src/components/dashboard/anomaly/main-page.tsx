@@ -10,8 +10,6 @@ import { DEFAULT_DATA_SOURCE_NAMESPACE, DEFAULT_TIME_RANGE } from '@/constants';
 import TabContent from './panels/content-panel';
 
 const MainPageAnomaly = () => {
-
-
   const logs = ['Log APM', 'Log Brimo']; // Example logs
   const [selectedLog, setSelectedLog] = useState(logs[0]);
   const [activeTab, setActiveTab] = useState('');
@@ -25,7 +23,6 @@ const MainPageAnomaly = () => {
       setSelectedLog(logs[0]);
     }
   }, []);
-
 
 
   return (

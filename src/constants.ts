@@ -72,16 +72,21 @@ export const TAB_DATA_SOURCE = [
     textLabel: "Security",
     children: [
       {
-        textLabel: "PANW",
-        namespace: "panw",
-      },
-      {
-        textLabel: "FORTI",
-        namespace: "forti",
-      },
-      {
-        textLabel: "WAF",
-        namespace: "waf",
+        textLabel: "Log Security", // New group for PANW, FORTI, and WAF
+        children: [
+          {
+            namespace: "panw",
+            textLabel: "PANW",
+          },
+          {
+            namespace: "forti",
+            textLabel: "FORTI",
+          },
+          {
+            namespace: "waf",
+            textLabel: "WAF",
+          },
+        ],
       },
       {
         textLabel: "PRTG",
@@ -94,6 +99,7 @@ export const TAB_DATA_SOURCE = [
     ],
   },
 ]
+
 export const NAMESPACE_LABELS: Record<string, string> = {
   'apm': "Log APM Brimo",
   'brimo': "Log Transaksi Brimo",
