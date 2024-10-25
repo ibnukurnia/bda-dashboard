@@ -81,7 +81,7 @@ const AnomalyAmountChart = ({
       type: 'line',
       height: 400,
       toolbar: {
-        tools: { zoom: true, zoomin: true, zoomout: true, reset: true },
+        tools: { zoom: true, zoomin: true, zoomout: true, reset: false, download: false },
         autoSelected: 'zoom',
       },
       zoom: {

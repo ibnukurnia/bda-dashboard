@@ -23,8 +23,14 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
     setShowSecondLevelDropdown({});
   });
 
+  // Updated activeTab logic to check both levels of children
   const activeTab = TAB_DATA_SOURCE.find(ds =>
-    (ds.children.find(child => child.namespace === selectedDataSource)))
+    ds.children.some(child =>
+      child.namespace === selectedDataSource ||
+      (child.children && child.children.some(subChild => subChild.namespace === selectedDataSource))
+    )
+  );
+
 
   const handleTabClick = (index: number) => {
     setShowDropdown(index === showDropdown ? -1 : index); // Toggle the dropdown visibility
