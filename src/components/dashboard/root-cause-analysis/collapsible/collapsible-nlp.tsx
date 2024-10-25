@@ -53,13 +53,13 @@ const CollapsibleNLP = ({
               lineHeight={'14.63px'}
               color={badge === "most_related" ? '#08B96D' : '#FF802D'}
             >
-              {badge === "most_related" ? "Most Related" : "Optional"}
+              {badge === "most_related" ? "Most Related" : "Additional"}
             </Typography>
           </div>
         }
       </div>
       <Collapse in={open} timeout="auto" unmountOnExit>
-        <table className="table-auto w-full">
+        <table className={`${styles.table} table-auto w-full`}>
           <thead>
             <tr className='rounded-[7px] bg-white bg-opacity-5'>
               <th className={'py-[10px] px-[15px] whitespace-nowrap'}>
