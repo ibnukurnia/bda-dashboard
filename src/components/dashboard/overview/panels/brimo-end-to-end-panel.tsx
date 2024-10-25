@@ -249,6 +249,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
       >
         <HealthinessTree
           data={mappedData}
+          timeRange={timeRange}
         />
       </HealthinessTreeWrapper>
     </div>
