@@ -22,9 +22,14 @@ const getColor = (severity: number) => {
 
 interface ConditionalLinkProps {
   dataSource?: string;
+  timeRange: string
   children: React.ReactNode
 }
-const ConditionalLink: React.FC<ConditionalLinkProps> = ({ dataSource, children }) => {
+const ConditionalLink: React.FC<ConditionalLinkProps> = ({
+  dataSource,
+  timeRange,
+  children,
+}) => {
   return dataSource ? (
     <Link
       className='inline-block hover:bg-white hover:bg-opacity-20 rounded text-center'
@@ -32,6 +37,7 @@ const ConditionalLink: React.FC<ConditionalLinkProps> = ({ dataSource, children 
         pathname: '/dashboard/root-cause-analysis',
         query: {
           data_source: dataSource,
+          time_range: timeRange,
         },
       }}
     >
@@ -44,6 +50,7 @@ const ConditionalLink: React.FC<ConditionalLinkProps> = ({ dataSource, children 
 
 interface NodeProps {
   className?: string;
+  timeRange: string;
   title: string;
   dataSource?: string;
   iconName: string;
@@ -53,6 +60,7 @@ interface NodeProps {
 }
 const Node = forwardRef<HTMLDivElement, NodeProps>(({
   className,
+  timeRange,
   title,
   dataSource,
   iconName,
@@ -63,6 +71,7 @@ const Node = forwardRef<HTMLDivElement, NodeProps>(({
   <div className={`${className} ${handleOnClick != null ? 'cursor-pointer hover:bg-white hover:bg-opacity-20 rounded' : ''} flex flex-col items-center z-[1]`} onClick={handleOnClick}>
     <ConditionalLink
       dataSource={dataSource}
+      timeRange={timeRange}
     >
       <div
         ref={ref}
@@ -105,6 +114,7 @@ const Node = forwardRef<HTMLDivElement, NodeProps>(({
 interface GroupProps {
   children: React.ReactNode
   className?: string
+  timeRange: string
   title: string
   score: number
   severity: number
@@ -115,6 +125,7 @@ interface GroupProps {
 const GroupNode: React.FC<GroupProps> = ({
   children,
   className,
+  timeRange,
   title,
   score,
   severity,
@@ -126,6 +137,7 @@ const GroupNode: React.FC<GroupProps> = ({
     return (
       <Node
         className='mt-10'
+        timeRange={timeRange}
         title={title}
         iconName={iconName}
         score={score}
@@ -183,10 +195,12 @@ const GroupNode: React.FC<GroupProps> = ({
 
 interface HealthinessTreeProps {
   data: MappedHealthinessTree;
+  timeRange: string
 }
 
 const HealthinessTree: React.FC<HealthinessTreeProps> = ({
   data,
+  timeRange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null); // Ref for the wrapper div
 
@@ -237,6 +251,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     >
       <GroupNode
         className='w-full'
+        timeRange={timeRange}
         title={'Apps'}
         iconName={'node-icon-apps.svg'}
         score={data.apps.score}
@@ -269,6 +284,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
                   iconName={'node-icon-ocp.svg'}
                   score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.ocp)?.score ?? 100}
                   severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.ocp)?.severity ?? 0}
+                  timeRange={timeRange}
                 />
                 <svg
                   className='absolute top-0 left-14'
@@ -282,6 +298,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               </div>
             </div>
             <Node
+              timeRange={timeRange}
               title={'APM'}
               dataSource={SECTIONS_CONFIG.apps.apm}
               iconName={'node-icon-apm.svg'}
@@ -289,6 +306,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.apm)?.severity ?? 0}
             />
             <Node
+              timeRange={timeRange}
               title={'BRImo'}
               dataSource={SECTIONS_CONFIG.apps.brimo}
               iconName={'node-icon-brimo.svg'}
@@ -297,6 +315,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             />
             <div />
             <Node
+              timeRange={timeRange}
               title={'Database'}
               dataSource={SECTIONS_CONFIG.apps.database}
               iconName={'node-icon-database.svg'}
@@ -304,6 +323,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.severity ?? 0}
             />
             <Node
+              timeRange={timeRange}
               title={'Redis'}
               dataSource={SECTIONS_CONFIG.apps.redis}
               iconName={'node-icon-redis.svg'}
@@ -318,6 +338,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
       >
         <GroupNode
           className='w-auto'
+          timeRange={timeRange}
           title={'Security'}
           iconName={'node-icon-security.svg'}
           score={data.security.score}
@@ -328,6 +349,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
           <div className='pb-4 px-8 grid grid-cols-3 gap-4 justify-center'>
             <Node
               className='h-28'
+              timeRange={timeRange}
               title={'Firewall'}
               dataSource={SECTIONS_CONFIG.security.firewall}
               iconName={'node-icon-firewall.svg'}
@@ -336,6 +358,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             />
             <Node
               className='h-28'
+              timeRange={timeRange}
               title={'SSLO'}
               dataSource={SECTIONS_CONFIG.security.sslo}
               iconName={'node-icon-sslo.svg'}
@@ -344,6 +367,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             />
             <Node
               className='h-28'
+              timeRange={timeRange}
               title={'WAF'}
               dataSource={SECTIONS_CONFIG.security.waf}
               iconName={'node-icon-waf.svg'}
@@ -355,6 +379,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
         <div className='relative'>
           <GroupNode
             className='w-auto'
+            timeRange={timeRange}
             title={'Compute'}
             iconName={'node-icon-compute.svg'}
             score={data.compute.score}
@@ -365,6 +390,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             <div className='pb-4 px-8 grid grid-cols-3 gap-4 justify-center'>
               <Node
                 className='h-28'
+                timeRange={timeRange}
                 title={'Storage'}
                 dataSource={SECTIONS_CONFIG.compute.storage}
                 iconName={'node-icon-storage.svg'}
@@ -373,6 +399,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               />
               <Node
                 className='h-28'
+                timeRange={timeRange}
                 title={'Host'}
                 dataSource={SECTIONS_CONFIG.compute.host}
                 iconName={'node-icon-host.svg'}
@@ -381,6 +408,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               />
               <Node
                 className='h-28'
+                timeRange={timeRange}
                 title={'VM'}
                 dataSource={SECTIONS_CONFIG.compute.vm}
                 iconName={'node-icon-vm.svg'}
@@ -456,6 +484,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
         </div>
         <GroupNode
           className='w-auto'
+          timeRange={timeRange}
           title={'Network'}
           iconName={'node-icon-network.svg'}
           score={data.network.score}
@@ -466,6 +495,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
           <div className='pb-4 px-8 grid grid-cols-5 gap-4 justify-center'>
             <Node
               className='h-28'
+              timeRange={timeRange}
               title={'F5'}
               dataSource={SECTIONS_CONFIG.network.f5}
               iconName={'node-icon-f5.svg'}
@@ -474,6 +504,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             />
             <Node
               className='h-28'
+              timeRange={timeRange}
               title={'IVAT'}
               dataSource={SECTIONS_CONFIG.network.ivat}
               iconName={'node-icon-ivat.svg'}
@@ -482,6 +513,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             />
             <Node
               className='h-28'
+              timeRange={timeRange}
               title={'DWDM'}
               dataSource={SECTIONS_CONFIG.network.dwdm}
               iconName={'node-icon-dwdm.svg'}
@@ -490,6 +522,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             />
             <Node
               className='h-28'
+              timeRange={timeRange}
               title={'DNS'}
               dataSource={SECTIONS_CONFIG.network.dns}
               iconName={'node-icon-host.svg'}
@@ -498,6 +531,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             />
             <Node
               className='h-28'
+              timeRange={timeRange}
               title={'Perangkat\nInternal'}
               dataSource={SECTIONS_CONFIG.network.internal}
               iconName={'node-icon-host.svg'}

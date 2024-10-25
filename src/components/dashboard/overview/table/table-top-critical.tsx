@@ -74,12 +74,27 @@ const TableBodyWrapper: React.FC<TableBodyWrapperProps> = ({
     Array.from(Array(pageSize), (_, i) => (
       <tr key={i}>
         {Array.from(Array(columnSize), (_, j) => (
-          <td key={j} className={`p-4`}>
-            <Skeleton
-              className='m-auto px-3'
-              width={120}
-              height={20}
-            />
+          <td
+            key={j}
+            className={`${i !== pageSize-1 ? "border-b border-b-[#e5e7eb]" : ""} ${i === 0 ? "border-t border-t-[#e5e7eb]" : ""} p-4`}
+          >
+            {j === 1 ?
+              <div className='flex flex-col gap-3'>
+                {Array.from(Array(3), (_, k) =>
+                  <Skeleton
+                    key={k}
+                    className='m-auto px-3'
+                    width={120}
+                    height={20}
+                  />
+                )}
+              </div> :
+              <Skeleton
+                className='m-auto px-3'
+                width={120}
+                height={20}
+              />
+            }
           </td>
         ))}
       </tr>
@@ -117,14 +132,18 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
 
   return (
     <div className="rounded-lg w-full flex flex-col gap-3">
-      <div className={`w-full max-h-[75dvh] ${!isLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
+      <div className={`w-full max-h-[75dvh] overflow-auto`}>
         <div className="min-w-full h-full">
-          <table className="table-auto divide-y divide-gray-200 w-full">
+          <table
+            className="table-auto divide-y border-separate divide-gray-200 w-full"
+            cellPadding={0}
+            cellSpacing={0}
+          >
             <thead className={styles.table_header}>
               {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
+                <tr key={headerGroup.id} className='bg-[#060f2c]'>
+                  {headerGroup.headers.map((header, idx) => (
+                    <th key={header.id} colSpan={header.colSpan} className={`${idx === 0 ? styles.first_child : ""} p-2`}>
                       <button
                         className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100 `}
                         onClick={header.column.getToggleSortingHandler()}
@@ -158,10 +177,13 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                   {table.getRowModel().rows.map((row, i) => (
                     <tr
                       key={row.id}
-                      className={`${styles.row_hover} hover:bg-[#383e54] text-gray-100`}
+                      className={`${styles.row_hover} bg-[#060f2c] hover:bg-[#383e54] text-gray-100`}
                     >
                       {row.getVisibleCells().map((cell, j) => (
-                        <td key={cell.id} className={`${styles.first_child} whitespace-nowrap border-y`}>
+                        <td
+                          key={cell.id}
+                          className={`${j === 0 ? styles.first_child : ""} ${i !== table.getRowModel().rows.length-1 ? "border-b border-b-[#e5e7eb]" : ""} ${i === 0 ? "border-t border-t-[#e5e7eb]" : ""} whitespace-nowrap`}
+                        >
                           <Link
                             className='w-full h-full flex px-3 py-1 text-sm items-center rounded-full gap-x-2'
                             href={{
