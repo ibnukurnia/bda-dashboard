@@ -8,7 +8,7 @@ import AutoRefreshButton from './button/refreshButton'
 import { format } from 'date-fns'
 import { getTimeDifference } from './helper'
 import { GetRootCauseAnalysisTree } from '@/modules/usecases/root-cause-analysis'
-import { NLP, RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis'
+import { NLP } from '@/modules/models/root-cause-analysis'
 import useInterval from '@/hooks/use-interval'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import Button from '@/components/system/Button/Button'
@@ -17,12 +17,10 @@ import DropdownTime from './button/dropdown-time'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DEFAULT_TIME_RANGE, PREDEFINED_TIME_RANGES } from '@/constants'
 import RCATreeWrapper from './wrapper/rca-tree-wrapper'
-import TooltipCollection from './collection/tooltip-collection'
 import { TreeNodeType } from './tree/types'
 import CollapsibleNLP from './collapsible/collapsible-nlp'
 
 const MainPageRootCauseAnalysis = () => {
-  const [responseData, setResponseData] = useState<RootCauseAnalysisTreeResponse[] | null>(null)
   const [mappedData, setMappedData] = useState<TreeNodeType[]>([])
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | undefined>(undefined);
   const [lastUpdateString, setLastUpdateString] = useState("")
@@ -71,7 +69,6 @@ const MainPageRootCauseAnalysis = () => {
     setLastFetchTimeRange({ startTime, endTime })
     GetRootCauseAnalysisTree({ start_time: startTime, end_time: endTime })
       .then(result => {
-        setResponseData(result.data)
         if (!result.data) throw Error("Empty response data")
         setMappedData(result.data.map(s => ({
           name: s.source,
@@ -180,9 +177,6 @@ const MainPageRootCauseAnalysis = () => {
                 isLoading={isLoading}
                 timeRange={autoRefresh.enabled ? timeRange : `${lastFetchTimeRange.startTime} - ${lastFetchTimeRange.endTime}`}
                 handleSelectNLP={(value) => setNlpData(value)}
-              />
-              <TooltipCollection
-                data={responseData}
               />
             </RCATreeWrapper>
           </div>
