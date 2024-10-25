@@ -23,9 +23,9 @@ export const SECTIONS_CONFIG = {
     redis: 'redis',
   },
   security: {
-    firewall: 'firewall',
-    sslo: 'sslo',
-    waf: 'waf',
+    firewall: 'prtg_firewall',
+    sslo: 'prtg_sslo',
+    waf: 'prtg_waf',
   },
   compute: {
     storage: 'compute_storage',
