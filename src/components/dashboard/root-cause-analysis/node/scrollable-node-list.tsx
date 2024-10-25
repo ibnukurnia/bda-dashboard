@@ -26,6 +26,7 @@ interface ScrollableNodeListProps {
   expandedChildIndex: number;
   handleOnScroll: (scrollTop: number) => void;
   hasDetail?: boolean;
+  toUppercase?: boolean;
   queryParams?: {
     time_range: string;
     data_source: string;
@@ -49,6 +50,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   expandedChildIndex,
   handleOnScroll,
   hasDetail,
+  toUppercase,
   queryParams,
   fullScreenHandle, // Use handle from react-full-screen
   maxCount,
@@ -220,6 +222,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
               expanded={expandedIndex === index}
               handleOnClickNode={() => handleOnClickNode(index)}
               hasDetail={hasDetail}
+              toUppercase={toUppercase}
               queryParams={{
                 ...queryParams,
                 cluster: node.cluster,

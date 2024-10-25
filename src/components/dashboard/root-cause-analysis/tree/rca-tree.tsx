@@ -183,6 +183,7 @@ const RCATree: React.FC<RCATreeProps> = ({
                 expandedChildIndex={expandedNodes[i + 2]?.nodeIndex - scrollTopPositions[i + 2] / nodeHeight}
                 handleOnScroll={(scrollTop) => handleOnScroll(i + 1, scrollTop)}
                 hasDetail={i === 1}
+                toUppercase={i === 1}
                 queryParams={{
                   time_range: timeRange,
                   data_source: expandedNodes[0].node.namespace ?? expandedNodes[0].node.name,

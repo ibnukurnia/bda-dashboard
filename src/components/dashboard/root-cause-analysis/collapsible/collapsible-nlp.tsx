@@ -59,7 +59,7 @@ const CollapsibleNLP = ({
         }
       </div>
       <Collapse in={open} timeout="auto" unmountOnExit>
-        <table className="table-auto w-full">
+        <table className={`${styles.table} table-auto w-full`}>
           <thead>
             <tr className="rounded-[7px] bg-white bg-opacity-5">
               <th className={'py-[10px] px-[15px] whitespace-nowrap w-[150px]'}> {/* Set width */}
