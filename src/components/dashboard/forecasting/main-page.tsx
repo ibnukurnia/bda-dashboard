@@ -18,10 +18,16 @@ import Skeleton from '@/components/system/Skeleton/Skeleton'
 
 const MainPageForecasting = () => {
   const [graphData, setGraphData] = useState<any[]>([])
-  const [filter, setFilter] = useState({
+  const [filter, setFilter] = useState<{
+    sourceData: string | null
+    serviceName: string | null
+    selectedDate: string
+    selectedMethod: string
+  }>({
     sourceData: null as string | null,
     serviceName: null as string | null,
     selectedDate: '' as string,
+    selectedMethod: 'XGboost'
   })
   const [filterValue, setFilterValue] = useLocalStorage('filter', undefined)
   const [chartLoading, setChartLoading] = useState(false)
@@ -36,21 +42,23 @@ const MainPageForecasting = () => {
     selectedSource: string | null
     selectedService: string | null
     selectedDate: string
+    selectedMethod: string
   }) => {
-    const { selectedSource, selectedService, selectedDate } = filters
+    const { selectedSource, selectedService, selectedDate, selectedMethod } = filters
 
     setChartLoading(true)
     setFilter({
       ...filter,
       sourceData: selectedSource,
       serviceName: selectedService,
+      selectedMethod: selectedMethod,
       selectedDate,
     })
     GetForecastingData({
       data_source: selectedSource ?? '',
       service_name: selectedService ?? '',
       date: selectedDate,
-      method: 'XGBoost', // Hardcoded method value
+      method: selectedMethod, // Hardcoded method value
     })
       .then((res) => {
         setGraphData(res.data)
@@ -101,7 +109,7 @@ const MainPageForecasting = () => {
       data_source: filter.sourceData ?? '',
       service_name: filter.serviceName ?? '',
       date: filter.selectedDate,
-      method: 'XGBoost', // Hardcoded method value
+      method: filter.selectedMethod, // Hardcoded method value
     })
       .then((res) => {
         setGraphData(res.data)
