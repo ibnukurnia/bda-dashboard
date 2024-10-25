@@ -178,7 +178,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
                   <div className={`${detectAbuseAnomaly ? styles.blinking : ''} w-[10px] h-[10px] rounded-full`} style={{ backgroundColor: detectAbuseAnomaly ? "#D23636" : "#08B96D" }} />
                   <Typography
                     fontWeight={700}
-                    fontSize={'14px'}
+                    fontSize={'18px'}
                     lineHeight={'17.07px'}
                     color={detectAbuseAnomaly ? "#D23636" : "#08B96D"}
                   >
@@ -194,7 +194,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
                 <div className='px-[17px] py-[7.5px] flex gap-[10px] rounded-[28px] items-center border border-white border-opacity-20' >
                   <Typography
                     fontWeight={700}
-                    fontSize={'14px'}
+                    fontSize={'18px'}
                     lineHeight={'17.07px'}
                     color={'white'}
                   >
@@ -202,7 +202,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
                   </Typography>
                   <Typography
                     fontWeight={700}
-                    fontSize={'14px'}
+                    fontSize={'18px'}
                     lineHeight={'17.07px'}
                     color={'white'}
                   >

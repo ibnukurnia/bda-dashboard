@@ -53,7 +53,7 @@ const CollapsibleNLP = ({
               lineHeight={'14.63px'}
               color={badge === "most_related" ? '#08B96D' : '#FF802D'}
             >
-              {badge === "most_related" ? "Most Related" : "Optional"}
+              {badge === "most_related" ? "Most Related" : "Additional"}
             </Typography>
           </div>
         }
@@ -61,8 +61,8 @@ const CollapsibleNLP = ({
       <Collapse in={open} timeout="auto" unmountOnExit>
         <table className="table-auto w-full">
           <thead>
-            <tr className='rounded-[7px] bg-white bg-opacity-5'>
-              <th className={'py-[10px] px-[15px] whitespace-nowrap'}>
+            <tr className="rounded-[7px] bg-white bg-opacity-5">
+              <th className={'py-[10px] px-[15px] whitespace-nowrap w-[150px]'}> {/* Set width */}
                 <Typography
                   fontWeight={600}
                   fontSize={'12px'}
@@ -72,7 +72,7 @@ const CollapsibleNLP = ({
                   Nama Insiden
                 </Typography>
               </th>
-              <th className={'py-[10px] px-[15px] whitespace-nowrap'}>
+              <th className={'py-[10px] px-[15px] whitespace-nowrap w-[150px]'}> {/* Set width */}
                 <Typography
                   fontWeight={600}
                   fontSize={'12px'}
@@ -82,7 +82,7 @@ const CollapsibleNLP = ({
                   Deskripsi Insiden
                 </Typography>
               </th>
-              <th className={'py-[10px] px-[15px] whitespace-nowrap'}>
+              <th className={'py-[10px] px-[15px] whitespace-nowrap w-[150px]'}> {/* Set width */}
                 <Typography
                   fontWeight={600}
                   fontSize={'12px'}
@@ -92,7 +92,7 @@ const CollapsibleNLP = ({
                   Resolution
                 </Typography>
               </th>
-              <th className={'py-[10px] px-[15px] whitespace-nowrap'}>
+              <th className={'py-[10px] px-[15px] whitespace-nowrap w-[150px]'}> {/* Set width */}
                 <Typography
                   fontWeight={600}
                   fontSize={'12px'}
@@ -102,7 +102,7 @@ const CollapsibleNLP = ({
                   Action
                 </Typography>
               </th>
-              <th className={'py-[10px] px-[15px] whitespace-nowrap'}>
+              <th className={'py-[10px] px-[15px] whitespace-nowrap w-[150px]'}> {/* Set width */}
                 <Typography
                   fontWeight={600}
                   fontSize={'12px'}
@@ -115,8 +115,8 @@ const CollapsibleNLP = ({
             </tr>
           </thead>
           <tbody>
-            <tr className='border-b border-opacity-[0.07] border-white'>
-              <td className={'py-[14px] px-[15px]'}>
+            <tr className="border-b border-opacity-[0.07] border-white">
+              <td className={'py-[14px] px-[15px] w-[150px]'}> {/* Match width */}
                 <Typography
                   className={`${styles.typography} whitespace-pre-wrap`}
                   fontWeight={500}
@@ -128,7 +128,7 @@ const CollapsibleNLP = ({
                   {data.name.length > 0 ? data.name : "-"}
                 </Typography>
               </td>
-              <td className={'py-[14px] px-[15px]'}>
+              <td className={'py-[14px] px-[15px] w-[150px]'}> {/* Match width */}
                 <Typography
                   className={`${styles.typography} whitespace-pre-wrap`}
                   fontWeight={500}
@@ -140,7 +140,7 @@ const CollapsibleNLP = ({
                   {parse(data.description ?? "-")}
                 </Typography>
               </td>
-              <td className={'py-[14px] px-[15px]'}>
+              <td className={'py-[14px] px-[15px] w-[150px]'}> {/* Match width */}
                 <Typography
                   className={`${styles.typography} whitespace-pre-wrap`}
                   fontWeight={500}
@@ -152,7 +152,7 @@ const CollapsibleNLP = ({
                   {parse(data.resolution.length > 0 ? data.resolution : "-")}
                 </Typography>
               </td>
-              <td className={'py-[14px] px-[15px]'}>
+              <td className={'py-[14px] px-[15px] w-[150px]'}> {/* Match width */}
                 <Typography
                   className={`${styles.typography} whitespace-pre-wrap`}
                   fontWeight={500}
@@ -164,7 +164,7 @@ const CollapsibleNLP = ({
                   {parse(data.action.length > 0 ? data.action : "-")}
                 </Typography>
               </td>
-              <td className={'py-[14px] px-[15px]'}>
+              <td className={'py-[14px] px-[15px] w-[150px]'}> {/* Match width */}
                 <Typography
                   className={`${styles.typography} whitespace-pre-wrap`}
                   fontWeight={500}
@@ -180,6 +180,7 @@ const CollapsibleNLP = ({
           </tbody>
         </table>
       </Collapse>
+
     </div>
   )
 }

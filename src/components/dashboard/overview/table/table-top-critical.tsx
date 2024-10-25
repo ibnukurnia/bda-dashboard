@@ -161,9 +161,9 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                       className={`${styles.row_hover} hover:bg-[#383e54] text-gray-100`}
                     >
                       {row.getVisibleCells().map((cell, j) => (
-                        <td key={cell.id} className={`${styles.first_child} whitespace-nowrap`}>
+                        <td key={cell.id} className={`${styles.first_child} whitespace-nowrap border-y`}>
                           <Link
-                            className='w-full h-full flex px-4 py-4 items-center rounded-full gap-x-2'
+                            className='w-full h-full flex px-3 py-1 text-sm items-center rounded-full gap-x-2'
                             href={{
                               pathname: '/dashboard/anomaly-detection',
                               query: {
