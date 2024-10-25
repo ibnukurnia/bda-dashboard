@@ -14,6 +14,7 @@ interface NodeProps {
   expanded: boolean;
   handleOnClickNode: () => void;
   hasDetail?: boolean;
+  toUppercase?: boolean;
   queryParams?: {
     time_range?: string;
     data_source?: string;
@@ -42,6 +43,7 @@ const Node: React.FC<NodeProps> = ({
   expanded,
   handleOnClickNode,
   hasDetail,
+  toUppercase,
   queryParams,
   tooltips,
   nlps,
@@ -83,7 +85,6 @@ const Node: React.FC<NodeProps> = ({
   const filteredQueryParams = Object.fromEntries(
     Object.entries(queryParams ?? {})
       .filter(([_, value]) => value != null)
-      .map(([key, value]) => [key, value.toString().toLowerCase()])
   );
 
   return (
@@ -136,7 +137,7 @@ const Node: React.FC<NodeProps> = ({
               maxWidth: '100%', // Adjust as needed
             }}
           >
-            {title}
+            {toUppercase ? title?.toUpperCase() : title}
           </Typography>
           {fungsi &&
             <Typography
@@ -173,7 +174,7 @@ const Node: React.FC<NodeProps> = ({
                 maxWidth: '100%', // Adjust as needed
               }}
             >
-              {queryParams?.cluster}
+              {toUppercase ? queryParams?.cluster?.toUpperCase() : queryParams?.cluster}
             </Typography>
           }
         </div>

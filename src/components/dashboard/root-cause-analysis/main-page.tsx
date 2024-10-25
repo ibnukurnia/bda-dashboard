@@ -79,8 +79,8 @@ const MainPageRootCauseAnalysis = () => {
             namespace: r.anomaly,
             anomalyCount: r.total,
             children: r.impacted_services.map(is => ({
-              name: is.service_alias?.toUpperCase(),
-              cluster: is.cluster?.toUpperCase(),
+              name: is.service_alias,
+              cluster: is.cluster,
               namespace: is.service,
               fungsi: is.function,
               anomalyCount: is.total,

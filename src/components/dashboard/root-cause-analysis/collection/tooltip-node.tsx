@@ -32,7 +32,6 @@ const TooltipNode: React.FC<TooltipNodeProps> = ({
         zIndex: 20,
       }}
       opacity={1}
-      
     >
       <div
         className="flex flex-col gap-1"
@@ -53,6 +52,7 @@ const TooltipNode: React.FC<TooltipNodeProps> = ({
               fontWeight={600}
               fontSize={10}
               color={'white'}
+              align="left"
             >
               Response Code {tooltip.status_code}
             </Typography>
