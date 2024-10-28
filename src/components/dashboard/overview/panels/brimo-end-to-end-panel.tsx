@@ -2,7 +2,7 @@ import { Typography } from '@mui/material'
 import styles from './brimo-end-to-end-panel.module.css'
 import HealthinessTreeWrapper from '../wrapper/healthiness-tree-wrapper'
 import HealthinessTree from './healthiness-tree'
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { HealthScoreResponse } from '@/modules/models/overviews'
 import { formatNumberWithCommas, handleStartEnd } from '@/helper'
 import Skeleton from '@/components/system/Skeleton/Skeleton'
@@ -73,6 +73,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
   const [isError, setIsError] = useState(false)
   const [detectAbuseAnomaly, setDetectAbuseAnomaly] = useState(false)
   const [totalBrimoHealth, setTotalBrimoHealth] = useState(100)
+  const audioRef = useRef<HTMLAudioElement>(null)
 
   // Use useImperativeHandle to expose the custom method
   useImperativeHandle(ref, () => ({
@@ -132,6 +133,9 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
       .then((res) => {
         if (res.data == null) throw Error("Empty response data")
         setDetectAbuseAnomaly(res.data.is_abuse)
+        if (res.data.is_abuse) {
+          audioRef.current?.play()
+        }
         setIsError(false)
       })
       .catch(_ => {
@@ -186,6 +190,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
                   </Typography>
                 </div>
               }
+              <audio ref={audioRef} src='/assets/dashboard/overview/abuse-anomaly-alert.mp3' preload='auto' />
               {isLoading ?
                 <Skeleton
                   width={230}
