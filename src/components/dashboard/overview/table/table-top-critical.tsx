@@ -4,7 +4,7 @@ import { TopFiveLatestCritical } from '@/modules/models/overviews';
 import { Fragment } from 'react';
 import Link from 'next/link';
 import styles from './table-top-critical.module.css'
-import { formatNumberWithCommas } from '@/helper';
+import { formatWithDotsAndComma } from '@/helper';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
 
 const columns = [{
@@ -35,15 +35,12 @@ interface CellValueProps {
 const CellValue: React.FC<CellValueProps> = ({
   cell,
 }) => {
-  // console.log(cell);
-
-
   if (typeof cell.getValue() === 'number') {
     return (
       <span
         className={`ml-auto`}
       >
-        {formatNumberWithCommas(cell.getValue() as number)}
+        {formatWithDotsAndComma(cell.getValue() as number)}
       </span>
     )
   }
