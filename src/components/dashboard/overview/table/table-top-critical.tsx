@@ -20,6 +20,10 @@ const columns = [{
   header: "Anomaly",
   accessorKey: "anomaly",
 }, {
+  id: "value",
+  header: "Value",
+  accessorKey: "value",
+}, {
   id: "total",
   header: "Total",
   accessorKey: "total",
