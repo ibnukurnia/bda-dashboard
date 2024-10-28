@@ -14,6 +14,7 @@ import { logger } from '@/lib/default-logger';
 import { useEffect, useState } from 'react';
 import { MobileNav } from './mobile-nav';
 import useInterval from '@/hooks/use-interval';
+import { format } from 'date-fns';
 
 
 interface Notification {
@@ -162,8 +163,8 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
   const fetchNotifications = async () => {
     try {
       const response = await GetNotificationList({
-          page: 1,
-          limit: 3,
+        page: 1,
+        limit: 3,
       });
 
       if (response?.data) {
@@ -212,6 +213,12 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const plusAMinute = (datetime: string) => {
+    const date = new Date(datetime)
+    date.setMinutes(date.getMinutes() + 1)
+    return format(date, 'yyyy-MM-dd HH:mm:ss')
+  }
 
   return (
     <React.Fragment>
@@ -309,7 +316,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
                     pathname: '/dashboard/anomaly-detection',
                     query: {
                       data_source: notif.source_identifier,
-                      time_range: `${notif.timestamp_identifier} - ${notif.timestamp_identifier}`,
+                      time_range: `${notif.timestamp_identifier} - ${plusAMinute(notif.timestamp_identifier)}`,
                       anomaly: notif.anomaly_identifier,
                       ...((notif.site_identifier != null && notif.site_identifier.length > 0) && { cluster: notif.site_identifier }), // Only include cluster if it's not null or undefined
                       service: notif.identifier,

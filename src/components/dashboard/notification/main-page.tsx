@@ -8,6 +8,7 @@ import './main-page.css'
 import Link from 'next/link';
 import { Typography } from '@mui/material';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
+import { format } from 'date-fns';
 
 interface TableHeaderWrapperProps {
     isLoading: boolean
@@ -149,6 +150,12 @@ const AnomalyNotificationPage = () => {
         },
     });
 
+    const plusAMinute = (datetime: string) => {
+        const date = new Date(datetime)
+        date.setMinutes(date.getMinutes() + 1)
+        return format(date, 'yyyy-MM-dd HH:mm:ss')
+    }
+
     if (isError) {
         return <div className="text-red-500 p-8">Failed to load notifications.</div>;
     }
@@ -200,7 +207,7 @@ const AnomalyNotificationPage = () => {
                                                                 pathname: '/dashboard/anomaly-detection',
                                                                 query: {
                                                                     data_source: data[row.index].source_identifier,
-                                                                    time_range: `${data[row.index].timestamp_identifier} - ${data[row.index].timestamp_identifier}`,
+                                                                    time_range: `${data[row.index].timestamp_identifier} - ${plusAMinute(data[row.index].timestamp_identifier)}`,
                                                                     anomaly: data[row.index].anomaly_identifier,
                                                                     ...((data[row.index].site_identifier != null && data[row.index].site_identifier.length > 0) && { cluster: data[row.index].site_identifier }), // Only include cluster if it's not null or undefined
                                                                     service: data[row.index].identifier,
