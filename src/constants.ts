@@ -52,9 +52,35 @@ export const TAB_DATA_SOURCE = [
         textLabel: "Ivat",
         namespace: "ivat"
       },
+
       {
-        textLabel: "Solar Winds",
-        namespace: "solarwinds"
+        textLabel: "Solarwinds", // New group for PANW, FORTI, and WAF
+        children: [
+          {
+            namespace: "solarwinds_dwdm",
+            textLabel: "DWDM",
+          },
+          {
+            namespace: "solarwinds_internal",
+            textLabel: "Internal",
+          },
+
+        ],
+      },
+
+      {
+        textLabel: "SolarWinds Traffic", // New group for PANW, FORTI, and WAF
+        children: [
+          {
+            namespace: "solarwinds_traffic_dwdm",
+            textLabel: "DWDM",
+          },
+          {
+            namespace: "solarwinds_traffic_internal",
+            textLabel: "Internal",
+          },
+
+        ],
       },
       {
 

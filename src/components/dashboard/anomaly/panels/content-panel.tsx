@@ -312,229 +312,167 @@ const TabContent: React.FC<TabContentProps> = ({
         console.error('Error fetching data:', error)
     }
 
-    const loadAnomalyFilterOptions = async () => {
-        try {
-            const response = await fetchAnomalyOption(selectedDataSource); // Pass the correct utilization type to the API call
-            // console.log('API Response:', response); // Log the entire API response
+    const loadFiltersOptions = async () => {
+        const { startTime, endTime } = getTimeRange();
 
-            if (response.data && response.data.columns) {
-                const options = response.data.columns.map((column: Column) => ({
-                    id: column.name, // Maps the "name" to "id"
-                    label: column.comment, // Maps the "comment" to "label",
-                    type: column.type, // Maps the "type" to "type"
-                }));
+        // Map each filter to its respective loading function with error handling
+        const filtersMap: { [key: string]: () => Promise<void> } = {
+            anomaly: async () => {
+                try {
+                    const response = await fetchAnomalyOption(selectedDataSource);
+                    if (response.data?.columns) {
+                        const options = response.data.columns.map((column: Column) => ({
+                            id: column.name,
+                            label: column.comment,
+                            type: column.type,
+                        }));
+                        setFilterAnomalyOptions(options);
+                        setHasErrorFilterAnomaly(false);
+                    } else {
+                        throw new Error('Response data or columns are missing');
+                    }
+                } catch (error) {
+                    handleApiError(error);
+                    setHasErrorFilterAnomaly(true);
+                }
+            },
 
-                // console.log('Mapped Checkbox Options:', options); // Log the mapped options
+            severity: async () => {
+                setFilterSeverityOptions([
+                    { id: 1, label: 'Very High', type: 'severity' },
+                    { id: 2, label: 'High', type: 'severity' },
+                    { id: 3, label: 'Medium', type: 'severity' }
+                ]);
+            },
 
-                setFilterAnomalyOptions(options); // Update state with fetched options
-                setHasErrorFilterAnomaly(false); // Set error state on catch
-            } else {
-                console.error('Response data or columns are missing');
-                setHasErrorFilterAnomaly(true); // Set error state if response is invalid
-            }
-        } catch (error) {
-            handleApiError(error);
-            setHasErrorFilterAnomaly(true); // Set error state on catch
+            cluster: async () => {
+                try {
+                    const response = await GetClusterOption({ type: selectedDataSource, start_time: startTime, end_time: endTime });
+                    setFilterClusterOptions(response.data);
+                    setHasErrorFilterCluster(false);
+                } catch (error) {
+                    handleApiError(error);
+                    setHasErrorFilterCluster(true);
+                }
+            },
+
+            services: async () => {
+                try {
+                    const response = await fetchServicesOption({ type: selectedDataSource, start_time: startTime, end_time: endTime });
+                    setFilterServiceOptions(response.data?.services);
+                    setHasErrorFilterService(false);
+                } catch (error) {
+                    handleApiError(error);
+                    setHasErrorFilterService(true);
+                }
+            },
+
+            solarWindsNetwork: async () => {
+                try {
+                    const response = await fetchSolarWindsNetworkOption({ start_time: startTime, end_time: endTime });
+                    setFilterSolarWindsNetworkOptions(response.data);
+                    setHasErrorFilterSolarWindsNetwork(false);
+                } catch (error) {
+                    handleApiError(error);
+                    setHasErrorFilterSolarWindsNetwork(true);
+                }
+            },
+
+            solarWindsNode: async () => {
+                try {
+                    const response = await fetchSolarWindsNodeOption({ start_time: startTime, end_time: endTime });
+                    setFilterSolarWindsNodeOptions(response.data);
+                    setHasErrorFilterSolarWindsNode(false);
+                } catch (error) {
+                    handleApiError(error);
+                    setHasErrorFilterSolarWindsNode(true);
+                }
+            },
+
+            solarWindsInterface: async () => {
+                try {
+                    const response = await fetchSolarWindsInterfaceOption({ start_time: startTime, end_time: endTime });
+                    setFilterSolarWindsInterfaceOptions(response.data);
+                    setHasErrorFilterSolarWindsInterface(false);
+                } catch (error) {
+                    handleApiError(error);
+                    setHasErrorFilterSolarWindsInterface(true);
+                }
+            },
+
+            dnsDomain: async () => {
+                try {
+                    const response = await fetchDnsDomainOption({ start_time: startTime, end_time: endTime });
+                    setFilterDnsDomainOptions(response.data);
+                    setHasErrorFilterDnsDomain(false);
+                } catch (error) {
+                    handleApiError(error);
+                    setHasErrorFilterDnsDomain(true);
+                }
+            },
+
+            dnsCategory: async () => {
+                try {
+                    const response = await fetchDnsCategoryOption({ start_time: startTime, end_time: endTime });
+                    setFilterDnsCategoryOptions(response.data);
+                    setHasErrorFilterDnsCategory(false);
+                } catch (error) {
+                    handleApiError(error);
+                    setHasErrorFilterDnsCategory(true);
+                }
+            },
+
+            prtgTrafficDevice: async () => {
+                try {
+                    const response = await fetchPrtgTrafficDeviceOption({ start_time: startTime, end_time: endTime });
+                    setFilterPrtgTrafficDeviceOptions(response.data);
+                    setHasErrorFilterPrtgTrafficDevice(false);
+                } catch (error) {
+                    handleApiError(error);
+                    setHasErrorFilterPrtgTrafficDevice(true);
+                }
+            },
+
+            prtgTrafficSensor: async () => {
+                try {
+                    const response = await fetchPrtgTrafficSensorOption({ start_time: startTime, end_time: endTime });
+                    setFilterPrtgTrafficSensorOptions(response.data);
+                    setHasErrorFilterPrtgTrafficSensor(false);
+                } catch (error) {
+                    handleApiError(error);
+                    setHasErrorFilterPrtgTrafficSensor(true);
+                }
+            },
+        };
+
+        // Always load `anomaly` and `severity` filters
+        await filtersMap.anomaly();
+        await filtersMap.severity();
+
+        // Load specific filters based on `selectedDataSource`
+        switch (selectedDataSource) {
+            case 'solarwinds':
+                await filtersMap.solarWindsNetwork();
+                await filtersMap.solarWindsNode();
+                await filtersMap.solarWindsInterface();
+                break;
+
+            case 'dns_rt':
+                await filtersMap.cluster();
+                await filtersMap.dnsDomain();
+                await filtersMap.dnsCategory();
+                break;
+
+            case 'prtg_traffic':
+                await filtersMap.prtgTrafficDevice();
+                await filtersMap.prtgTrafficSensor();
+                break;
+
+            default:
+                await filtersMap.cluster();
+                await filtersMap.services();
         }
     };
-
-    const loadSeverityFilterOptions = async () => {
-        try {
-            // Hardcode the severity options
-            const severityOptions = [
-                { id: 1, label: 'Very High', type: 'severity' },
-                { id: 2, label: 'High', type: 'severity' },
-                { id: 3, label: 'Medium', type: 'severity' }
-            ];
-
-            setFilterSeverityOptions(severityOptions); // Set the severity options into state
-            // console.log(severityOptions)
-        } catch (error) {
-            console.error('Error loading severity options:', error);
-
-        }
-    };
-
-    const loadClusterFilterOptions = async () => {
-        try {
-            const { startTime, endTime } = getTimeRange()
-
-            const response = await GetClusterOption({
-                type: selectedDataSource,
-                start_time: startTime,
-                end_time: endTime
-            })
-
-            const cluster = response.data
-            setFilterClusterOptions(cluster)
-            setHasErrorFilterCluster(false)
-        } catch (error) {
-            console.error('Failed to load service options', error)
-            setHasErrorFilterCluster(true)
-        }
-    }
-
-    const loadServicesFilterOptions = async () => {
-        try {
-            const { startTime, endTime } = getTimeRange()
-
-            const response = await fetchServicesOption({
-                type: selectedDataSource,
-                start_time: startTime,
-                end_time: endTime
-            })
-
-            setFilterServiceOptions(response.data?.services) // Update state with fetched service options
-            setHasErrorFilterService(false)
-        } catch (error) {
-            console.error('Failed to load service options', error)
-            setHasErrorFilterService(true)
-        }
-    }
-
-    const loadSolarWindsNetworkFilterOptions = async () => {
-        try {
-            const { startTime, endTime } = getTimeRange()
-
-            const response = await fetchSolarWindsNetworkOption({
-                start_time: startTime,
-                end_time: endTime
-            })
-
-            setFilterSolarWindsNetworkOptions(response.data) // Update state with fetched service options
-            setHasErrorFilterSolarWindsNetwork(false)
-        } catch (error) {
-            console.error('Failed to load Solar Winds network options', error)
-            setHasErrorFilterSolarWindsNetwork(true)
-        }
-    }
-
-    const loadSolarWindsNodeFilterOptions = async () => {
-        try {
-            const { startTime, endTime } = getTimeRange()
-
-            const response = await fetchSolarWindsNodeOption({
-                start_time: startTime,
-                end_time: endTime
-            })
-
-            setFilterSolarWindsNodeOptions(response.data) // Update state with fetched service options
-            setHasErrorFilterSolarWindsNode(false)
-        } catch (error) {
-            console.error('Failed to load Solar Winds node options', error)
-            setHasErrorFilterSolarWindsNode(true)
-        }
-    }
-
-    const loadSolarWindsInterfaceFilterOptions = async () => {
-        try {
-            const { startTime, endTime } = getTimeRange()
-
-            const response = await fetchSolarWindsInterfaceOption({
-                start_time: startTime,
-                end_time: endTime
-            })
-
-            setFilterSolarWindsInterfaceOptions(response.data) // Update state with fetched service options
-            setHasErrorFilterSolarWindsInterface(false)
-        } catch (error) {
-            console.error('Failed to load Solar Winds interface options', error)
-            setHasErrorFilterSolarWindsInterface(true)
-        }
-    }
-
-    const loadDnsDomainFilterOptions = async () => {
-        try {
-            const { startTime, endTime } = getTimeRange()
-
-            const response = await fetchDnsDomainOption({
-                start_time: startTime,
-                end_time: endTime
-            })
-
-            setFilterDnsDomainOptions(response.data) // Update state with fetched service options
-            setHasErrorFilterDnsDomain(false)
-        } catch (error) {
-            console.error('Failed to load DNS interface options', error)
-            setHasErrorFilterDnsDomain(true)
-        }
-    }
-
-    const loadDnsCategoryFilterOptions = async () => {
-        try {
-            const { startTime, endTime } = getTimeRange()
-
-            const response = await fetchDnsCategoryOption({
-                start_time: startTime,
-                end_time: endTime
-            })
-
-            setFilterDnsCategoryOptions(response.data) // Update state with fetched service options
-            setHasErrorFilterDnsCategory(false)
-        } catch (error) {
-            console.error('Failed to load DNS interface options', error)
-            setHasErrorFilterDnsCategory(true)
-        }
-    }
-
-    const loadPrtgTrafficDeviceFilterOptions = async () => {
-        try {
-            const { startTime, endTime } = getTimeRange()
-
-            const response = await fetchPrtgTrafficDeviceOption({
-                start_time: startTime,
-                end_time: endTime
-            })
-
-            setFilterPrtgTrafficDeviceOptions(response.data) // Update state with fetched service options
-            setHasErrorFilterPrtgTrafficDevice(false)
-        } catch (error) {
-            console.error('Failed to load PRTG Traffic interface options', error)
-            setHasErrorFilterPrtgTrafficDevice(true)
-        }
-    }
-
-    const loadPrtgTrafficSensorFilterOptions = async () => {
-        try {
-            const { startTime, endTime } = getTimeRange()
-
-            const response = await fetchPrtgTrafficSensorOption({
-                start_time: startTime,
-                end_time: endTime
-            })
-
-            setFilterPrtgTrafficSensorOptions(response.data) // Update state with fetched service options
-            setHasErrorFilterPrtgTrafficSensor(false)
-        } catch (error) {
-            console.error('Failed to load PRTG Traffic interface options', error)
-            setHasErrorFilterPrtgTrafficSensor(true)
-        }
-    }
-
-    const loadFiltersOptions = () => {
-        loadAnomalyFilterOptions();
-        loadSeverityFilterOptions();
-        if (selectedDataSource === "solarwinds") {
-            loadSolarWindsNetworkFilterOptions();
-            loadSolarWindsNodeFilterOptions();
-            loadSolarWindsInterfaceFilterOptions();
-            return
-        }
-        if (selectedDataSource === "dns_rt") {
-            loadClusterFilterOptions();
-            loadDnsDomainFilterOptions();
-            loadDnsCategoryFilterOptions();
-            return
-        }
-        if (selectedDataSource === "prtg_traffic") {
-            loadPrtgTrafficDeviceFilterOptions();
-            loadPrtgTrafficSensorFilterOptions();
-            return
-        }
-        loadClusterFilterOptions();
-        loadServicesFilterOptions();
-
-    }
 
     const handleResetFilters = () => {
         // Clear the selected options
@@ -763,7 +701,6 @@ const TabContent: React.FC<TabContentProps> = ({
                                 )}
                                 <DownloadButton />
                             </div>
-
                             <div className="flex flex-row gap-2 self-end items-center">
                                 <Typography variant="body2" component="p" color="white">
                                     {timeDifference}
@@ -774,10 +711,7 @@ const TabContent: React.FC<TabContentProps> = ({
                                     selectedRange={selectedTimeRange} // Pass selectedRange as a prop
                                 />
                             </div>
-
                         </div>
-
-
                         <div className='flex flex-col gap-2'>
                             <Typography variant="h5" component="h5" color="white">
                                 {`Historical ${NAMESPACE_LABELS[selectedDataSource] === 'Zabbix'
@@ -804,7 +738,6 @@ const TabContent: React.FC<TabContentProps> = ({
                                 </Typography>
                             )}
                         </div>
-
                         <TableHistoricalAnomaly
                             columns={columns}
                             data={data}
@@ -816,7 +749,6 @@ const TabContent: React.FC<TabContentProps> = ({
                             pagination={pagination}
                             totalRows={totalRows}
                         />
-
                     </div>
                     <div className='card-style p-6'>
                         <GraphAnomalyCard
@@ -836,11 +768,9 @@ const TabContent: React.FC<TabContentProps> = ({
                             isFullScreen={handle.active}
                         />
                     </div>
-
                 </div>
             </FullScreen>
         </div>
-
     )
 }
 

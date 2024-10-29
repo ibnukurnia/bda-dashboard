@@ -7,7 +7,7 @@ interface DownloadButtonProps {
     disabled?: boolean;
 }
 
-const DownloadButton: React.FC<DownloadButtonProps> = ({ label = "Download", disabled = false }) => {
+const DownloadButton: React.FC<DownloadButtonProps> = ({ label = "Download CSV", disabled = false }) => {
     return (
         <button
             className={`font-medium rounded-lg text-sm py-3 px-4 text-white text-center bg-blue-700 hover:bg-blue-800 inline-flex items-center gap-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
