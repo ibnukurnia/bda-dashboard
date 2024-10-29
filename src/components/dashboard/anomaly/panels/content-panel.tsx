@@ -32,6 +32,7 @@ const TabContent: React.FC<TabContentProps> = ({
     const router = useRouter();
     const searchParams = useSearchParams();
     const timeRange = searchParams.get("time_range")
+    const timeRangeGraphic = searchParams.get("time_range")
     const selectedAnomalyOptions = searchParams.getAll("anomaly")
     const selectedClustersOptions = searchParams.getAll("cluster")
     const selectedServicesOptions = searchParams.getAll("service")
@@ -721,23 +722,18 @@ const TabContent: React.FC<TabContentProps> = ({
     return (
         <div className='flex flex-col gap-4'>
             <div className='flex flex-row gap-2 self-end items-center'>
-
                 <AutoRefreshButton onRefresh={handleRefreshNow} onAutoRefreshChange={handleAutoRefreshChange} />
                 <Button onClick={handle.enter} >
                     <Maximize className='w-6 h-5' />
                 </Button>
-
             </div>
             <FullScreen handle={handle}>
                 {/* Conditionally apply h-screen overflow-auto classes when fullscreen is active */}
-                <div className={`flex flex-col gap-10 p-12 card-style ${handle.active ? 'h-screen overflow-auto' : ''}`}>
-                    <div className="flex flex-col gap-10">
+                <div className={`flex flex-col gap-10  ${handle.active ? 'h-screen overflow-auto' : ''}`}>
+                    <div className="flex flex-col p-6 gap-10 card-style">
                         {/* Conditionally hide the FilterPanel when in fullscreen */}
-
                         <div className='flex justify-between'>
                             <div className='flex flex-row gap-3'>
-
-
                                 {!handle.active && (
 
                                     <FilterPanel
@@ -777,7 +773,6 @@ const TabContent: React.FC<TabContentProps> = ({
                                     onRangeChange={handleRangeChange}
                                     selectedRange={selectedTimeRange} // Pass selectedRange as a prop
                                 />
-
                             </div>
 
                         </div>
@@ -823,22 +818,25 @@ const TabContent: React.FC<TabContentProps> = ({
                         />
 
                     </div>
-                    <GraphAnomalyCard
-                        selectedDataSource={selectedDataSource}
-                        clusterOptions={filterClusterOptions}
-                        servicesOptions={filterServiceOptions}
-                        networkOptions={filterSolarWindsNetworkOptions}
-                        nodeOptions={filterSolarWindsNodeOptions}
-                        interfaceOptions={filterSolarWindsInterfaceOptions}
-                        categoryOptions={filterDnsCategoryOptions}
-                        domainOptions={filterDnsDomainOptions}
-                        deviceOptions={filterPrtgTrafficDeviceOptions}
-                        sensorOptions={filterPrtgTrafficSensorOptions}
-                        selectedTimeRangeKey={selectedTimeRange}
-                        timeRanges={PREDEFINED_TIME_RANGES}
-                        autoRefresh={graphAutoRefresh}
-                        isFullScreen={handle.active}
-                    />
+                    <div className='card-style p-6'>
+                        <GraphAnomalyCard
+                            selectedDataSource={selectedDataSource}
+                            clusterOptions={filterClusterOptions}
+                            servicesOptions={filterServiceOptions}
+                            networkOptions={filterSolarWindsNetworkOptions}
+                            nodeOptions={filterSolarWindsNodeOptions}
+                            interfaceOptions={filterSolarWindsInterfaceOptions}
+                            categoryOptions={filterDnsCategoryOptions}
+                            domainOptions={filterDnsDomainOptions}
+                            deviceOptions={filterPrtgTrafficDeviceOptions}
+                            sensorOptions={filterPrtgTrafficSensorOptions}
+                            selectedTimeRangeKey={selectedTimeRange}
+                            timeRanges={PREDEFINED_TIME_RANGES}
+                            autoRefresh={graphAutoRefresh}
+                            isFullScreen={handle.active}
+                        />
+                    </div>
+
                 </div>
             </FullScreen>
         </div>
