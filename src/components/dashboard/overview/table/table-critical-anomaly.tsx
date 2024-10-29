@@ -5,7 +5,7 @@ import { GetLatestCritical } from '@/modules/usecases/overviews';
 import { format } from 'date-fns';
 import { PREDEFINED_TIME_RANGES, ROWS_PER_PAGE_OPTIONS, SEVERITY_LABELS } from '@/constants';
 import useUpdateEffect from '@/hooks/use-update-effect';
-import { formatNumberWithCommas } from '../../../../helper';
+import { formatNumberWithCommas, formatWithDotsAndComma } from '../../../../helper';
 import useDebounce from '@/hooks/use-debounce';
 import Pagination from '@/components/system/Pagination/Pagination';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
@@ -301,7 +301,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
                     <tr key={row.id}>
                       {row.getVisibleCells().map((cell) => (
                         <td key={cell.id} className={`${styles.first_child} px-1 py-4 whitespace-nowrap`}>
-                          <div className="text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
+                          <div className="w-full text-gray-100 inline-flex items-center px-3 py-1 rounded-full gap-x-2">
                             {/* Severity Check */}
                             {cell.column.id === 'severity' &&
                               (cell.getValue() === 'Very High' ||
@@ -331,7 +331,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
 
                             {/* Format number with commas */}
                             {typeof cell.getValue() === 'number' ? (
-                              <span>{formatNumberWithCommas(cell.getValue() as number)}</span> // Apply the number formatting function
+                              <span className='ml-auto'>{formatWithDotsAndComma(cell.getValue() as number)}</span> // Apply the number formatting function
                             ) : (
                               <span>{cell.getValue() as string} {/* For non-numeric values */}</span>
                             )}

@@ -504,7 +504,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     </button>
                                 </div>
                                 <div className="overflow-y-auto max-h-40">
-                                    {hasErrorFilterAnomaly ? (
+                                    {hasErrorFilterSeverity ? (
                                         <p className="text-red-500 whitespace-break-spaces">An error occurred. Please try again later.</p>
                                     ) : severityOptions.length > 0 ? (
                                         severityOptions.map((option) => (
