@@ -82,7 +82,12 @@ export function SignInForm() {
               name="pernr"
               render={({ field }) => (
                 <FormControl error={Boolean(errors.pernr)} className="gap-[7px]">
-                  <Typography fontWeight={400} fontSize={14} lineHeight={'16.45px'} color={errors.pernr ? "#D23636" : "white"}>
+                  <Typography
+                    fontWeight={400}
+                    fontSize={14}
+                    lineHeight={"16.45px"}
+                    color={errors.pernr ? "#D23636" : "white"}
+                  >
                     Personal Number
                   </Typography>
                   <OutlinedInput
@@ -90,19 +95,22 @@ export function SignInForm() {
                     placeholder="Input your personal number..."
                     type="text"
                     sx={{
-                      height: '50px',
-                      color: 'white',
-                      '&.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
-                        borderColor: errors.pernr ? "#D23636" : '#848AB0',
+                      color: "white",
+                      backgroundColor: "transparent !important",
+                      "&.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                        borderColor: errors.pernr ? "#D23636" : "#848AB0",
                       },
-                      fontSize: '14px',
+                      fontSize: "14px",
                       fontWeight: 500,
-                      lineHeight: '16.45px',
                     }}
-                    startAdornment={<PersonIcon className="mr-2" color={errors.pernr ? "#D23636" : "white"} />}
+                    startAdornment={
+                      <PersonIcon className="mr-2" color={errors.pernr ? "#D23636" : "white"} />
+                    }
                   />
                   {errors.pernr && (
-                    <FormHelperText error sx={{ margin: 0 }} color='#D23636'>{errors.pernr.message || 'Personal number is required'}</FormHelperText>
+                    <FormHelperText error sx={{ margin: 0 }} color="#D23636">
+                      {errors.pernr.message || "Personal number is required"}
+                    </FormHelperText>
                   )}
                 </FormControl>
               )}
@@ -112,44 +120,53 @@ export function SignInForm() {
               name="password"
               render={({ field }) => (
                 <FormControl error={Boolean(errors.password)} className="gap-[7px]">
-                  <Typography fontWeight={400} fontSize={14} lineHeight={'16.45px'} color={errors.password ? "#D23636" : "white"}>
+                  <Typography
+                    fontWeight={400}
+                    fontSize={14}
+                    lineHeight={"16.45px"}
+                    color={errors.password ? "#D23636" : "white"}
+                  >
                     Password
                   </Typography>
                   <OutlinedInput
                     {...field}
                     sx={{
-                      height: '50px',
-                      color: 'white',
-                      '&.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
-                        borderColor: errors.password ? "#D23636" : '#848AB0',
+                      color: "white",
+                      backgroundColor: "transparent !important",
+                      "&.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                        borderColor: errors.password ? "#D23636" : "#848AB0",
                       },
-                      fontSize: '14px',
+                      fontSize: "14px",
                       fontWeight: 500,
-                      lineHeight: '16.45px',
                     }}
-                    startAdornment={<LockIcon className="mr-2" color={errors.password ? "#D23636" : "white"} />}
+                    startAdornment={
+                      <LockIcon className="mr-2" color={errors.password ? "#D23636" : "white"} />
+                    }
                     endAdornment={
                       <IconButton
                         onClick={() => setShowPassword(!showPassword)}
                         style={{
                           padding: 0,
-                          paddingLeft: '0.5rem',
+                          paddingLeft: "0.5rem",
                         }}
                       >
                         {showPassword ? <Eye color="white" size={15} /> : <EyeOff color="white" size={15} />}
                       </IconButton>
                     }
                     placeholder="Input your password..."
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                   />
                   {errors.password && (
-                    <FormHelperText error sx={{ margin: 0 }} color='#D23636'>{errors.password.message || 'Password is required'}</FormHelperText>
+                    <FormHelperText error sx={{ margin: 0 }} color="#D23636">
+                      {errors.password.message || "Password is required"}
+                    </FormHelperText>
                   )}
                 </FormControl>
               )}
             />
           </div>
         </Stack>
+
         <Button
           disabled={isPending}
           type="submit"

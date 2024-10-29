@@ -89,8 +89,38 @@ export const TAB_DATA_SOURCE = [
         ],
       },
       {
-        textLabel: "PRTG",
-        namespace: "prtg",
+        textLabel: "PRTG", // New group for PANW, FORTI, and WAF
+        children: [
+          {
+            namespace: "prtg_sslo",
+            textLabel: "SSLO",
+          },
+          {
+            namespace: "prtg_waf",
+            textLabel: "WAF",
+          },
+          {
+            namespace: "prtg_firewall",
+            textLabel: "Firewall",
+          },
+        ],
+      },
+      {
+        textLabel: "PRTG Traffic", // New group for PANW, FORTI, and WAF
+        children: [
+          {
+            namespace: "prtg_traffic_sslo",
+            textLabel: "SSLO",
+          },
+          {
+            namespace: "prtg_traffic_waf",
+            textLabel: "WAF",
+          },
+          {
+            namespace: "prtg_traffic_firewall",
+            textLabel: "Firewall",
+          },
+        ],
       },
       {
         textLabel: "Zabbix",
@@ -118,6 +148,12 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'forti': "FORTI",
   'waf': "WAF",
   'prtg': "PRTG",
+  'prtg_sslo': "PRTG SSLO",
+  'prtg_waf': 'PRTG WAF',
+  'prtg_firewall': 'PRTG Firewall',
+  'prtg_traffic_sslo': "PRTG Traffic SSLO",
+  'prtg_traffic_waf': 'PRTG Traffic WAF',
+  'prtg_traffic_firewall': 'PRTG Firewall',
   'zabbix': "Zabbix",
 }
 

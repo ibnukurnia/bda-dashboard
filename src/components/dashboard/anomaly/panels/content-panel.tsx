@@ -6,18 +6,19 @@ import {
     ColumnDef,
 } from '@tanstack/react-table'
 import { CheckboxOption, fetchAnomalyOption, fetchDnsCategoryOption, fetchDnsDomainOption, fetchPrtgTrafficDeviceOption, fetchPrtgTrafficSensorOption, fetchServicesOption, fetchSolarWindsInterfaceOption, fetchSolarWindsNetworkOption, fetchSolarWindsNodeOption } from '@/lib/api'
-import DropdownTime from '../button/dropdown-time'
-import FilterPanel from '../button/filterPanel'
-import GraphAnomalyCard from '../card/graph-anomaly-card'
-import { FullScreen, useFullScreenHandle } from "react-full-screen";
-import { format } from 'date-fns';
-import AutoRefreshButton from '../button/refreshButton'
 import { NAMESPACE_LABELS, PREDEFINED_TIME_RANGES } from '@/constants'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Maximize } from 'react-feather'
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
+import { format } from 'date-fns';
+import DropdownTime from '../button/dropdown-time'
+import FilterPanel from '../button/filterPanel'
+import GraphAnomalyCard from '../card/graph-anomaly-card'
+import AutoRefreshButton from '../button/refreshButton'
 import Button from '@/components/system/Button/Button'
 import TableHistoricalAnomaly from '../table/table-historical-anomaly'
 import useUpdateEffect from '@/hooks/use-update-effect'
+import DownloadButton from '../button/downloadButton'
 
 interface TabContentProps {
     selectedDataSource: string
@@ -720,17 +721,7 @@ const TabContent: React.FC<TabContentProps> = ({
     return (
         <div className='flex flex-col gap-4'>
             <div className='flex flex-row gap-2 self-end items-center'>
-                <div className="flex flex-row gap-2 self-end items-center">
-                    <Typography variant="body2" component="p" color="white">
-                        {timeDifference}
-                    </Typography>
-                    <DropdownTime
-                        timeRanges={PREDEFINED_TIME_RANGES}
-                        onRangeChange={handleRangeChange}
-                        selectedRange={selectedTimeRange} // Pass selectedRange as a prop
-                    />
 
-                </div>
                 <AutoRefreshButton onRefresh={handleRefreshNow} onAutoRefreshChange={handleAutoRefreshChange} />
                 <Button onClick={handle.enter} >
                     <Maximize className='w-6 h-5' />
@@ -742,32 +733,56 @@ const TabContent: React.FC<TabContentProps> = ({
                 <div className={`flex flex-col gap-10 p-12 card-style ${handle.active ? 'h-screen overflow-auto' : ''}`}>
                     <div className="flex flex-col gap-10">
                         {/* Conditionally hide the FilterPanel when in fullscreen */}
-                        {!handle.active && (
-                            <FilterPanel
-                                clusterOptions={filterClusterOptions}
-                                checkboxOptions={filterAnomalyOptions}
-                                servicesOptions={filterServiceOptions}
-                                solarWindsNetworkOptions={filterSolarWindsNetworkOptions}
-                                solarWindsNodeOptions={filterSolarWindsNodeOptions}
-                                solarWindsInterfaceOptions={filterSolarWindsInterfaceOptions}
-                                dnsCategoryOptions={filterDnsCategoryOptions}
-                                dnsDomainOptions={filterDnsDomainOptions}
-                                prtgTrafficDeviceOptions={filterPrtgTrafficDeviceOptions}
-                                prtgTrafficSensorOptions={filterPrtgTrafficSensorOptions}
-                                severityOptions={filterSeverityOptions}
-                                onApplyFilters={handleApplyFilters}
-                                onResetFilters={handleResetFilters}
-                                hasErrorFilterAnomaly={hasErrorFilterAnomaly}
-                                hasErrorFilterService={hasErrorFilterService}
-                                hasErrorFilterCluster={hasErrorFilterCluster}
-                                hasErrorFilterSeverity={hasErrorFilterSeverity}
-                                hasErrorFilterSolarWindsNetwork={hasErrorFilterSolarWindsNetwork}
-                                hasErrorFilterSolarWindsNode={hasErrorFilterSolarWindsNode}
-                                hasErrorFilterSolarWindsInterface={hasErrorFilterSolarWindsInterface}
-                                hasErrorFilterDnsCategory={hasErrorFilterDnsCategory}
-                                hasErrorFilterDnsDomain={hasErrorFilterDnsDomain}
-                            />
-                        )}
+
+                        <div className='flex justify-between'>
+                            <div className='flex flex-row gap-3'>
+
+
+                                {!handle.active && (
+
+                                    <FilterPanel
+                                        clusterOptions={filterClusterOptions}
+                                        checkboxOptions={filterAnomalyOptions}
+                                        servicesOptions={filterServiceOptions}
+                                        solarWindsNetworkOptions={filterSolarWindsNetworkOptions}
+                                        solarWindsNodeOptions={filterSolarWindsNodeOptions}
+                                        solarWindsInterfaceOptions={filterSolarWindsInterfaceOptions}
+                                        dnsCategoryOptions={filterDnsCategoryOptions}
+                                        dnsDomainOptions={filterDnsDomainOptions}
+                                        prtgTrafficDeviceOptions={filterPrtgTrafficDeviceOptions}
+                                        prtgTrafficSensorOptions={filterPrtgTrafficSensorOptions}
+                                        severityOptions={filterSeverityOptions}
+                                        onApplyFilters={handleApplyFilters}
+                                        onResetFilters={handleResetFilters}
+                                        hasErrorFilterAnomaly={hasErrorFilterAnomaly}
+                                        hasErrorFilterService={hasErrorFilterService}
+                                        hasErrorFilterCluster={hasErrorFilterCluster}
+                                        hasErrorFilterSeverity={hasErrorFilterSeverity}
+                                        hasErrorFilterSolarWindsNetwork={hasErrorFilterSolarWindsNetwork}
+                                        hasErrorFilterSolarWindsNode={hasErrorFilterSolarWindsNode}
+                                        hasErrorFilterSolarWindsInterface={hasErrorFilterSolarWindsInterface}
+                                        hasErrorFilterDnsCategory={hasErrorFilterDnsCategory}
+                                        hasErrorFilterDnsDomain={hasErrorFilterDnsDomain}
+                                    />
+                                )}
+                                <DownloadButton />
+                            </div>
+
+                            <div className="flex flex-row gap-2 self-end items-center">
+                                <Typography variant="body2" component="p" color="white">
+                                    {timeDifference}
+                                </Typography>
+                                <DropdownTime
+                                    timeRanges={PREDEFINED_TIME_RANGES}
+                                    onRangeChange={handleRangeChange}
+                                    selectedRange={selectedTimeRange} // Pass selectedRange as a prop
+                                />
+
+                            </div>
+
+                        </div>
+
+
                         <div className='flex flex-col gap-2'>
                             <Typography variant="h5" component="h5" color="white">
                                 {`Historical ${NAMESPACE_LABELS[selectedDataSource] === 'Zabbix'
