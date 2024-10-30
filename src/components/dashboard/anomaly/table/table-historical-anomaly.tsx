@@ -1,10 +1,10 @@
 import { Typography } from '@mui/material'
 import { Cell, ColumnDef, getCoreRowModel, getFilteredRowModel, getSortedRowModel, PaginationState, useReactTable } from '@tanstack/react-table';
 import { Fragment } from 'react';
-import styles from './table-historical-anomaly.module.css'
 import { formatNumberWithCommas } from '@/helper';
-import Pagination from '@/components/system/Pagination/Pagination';
 import { ROWS_PER_PAGE_OPTIONS } from '@/constants';
+import styles from './table-historical-anomaly.module.css'
+import Pagination from '@/components/system/Pagination/Pagination';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
 
 interface CellValueProps {

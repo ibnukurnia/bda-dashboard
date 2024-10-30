@@ -6,10 +6,12 @@ import Button from '@/components/system/Button/Button'
 interface DropdownTimeProps {
   timeRanges: Record<string, number>
   onRangeChange: (rangeKey: string) => void
-  selectedRange: string // Receive selectedRange as a prop
+  selectedRange: string
+  disableMaxRange?: boolean // New prop to disable 2-hour limitation
+  disabled?: boolean; // Add disabled prop
 }
 
-const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, selectedRange }) => {
+const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, selectedRange, disableMaxRange, disabled }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isCustomRange, setIsCustomRange] = useState(false)
   const [customRangeStart, setCustomRangeStart] = useState<string>(format(new Date(), "yyyy-MM-dd'T'HH:mm"))
@@ -53,6 +55,9 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
   }
 
   const logicValidationDateTime = () => {
+    if (disableMaxRange) return false; // Disable validation if max range is bypassed
+
+    // Regular validation logic for max 2-hour range
     if (
       new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60 * 2 ||
       new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() < 0 ||
@@ -64,7 +69,14 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
     }
   }
 
+
   useEffect(() => {
+    if (disableMaxRange) {
+      setValidationMessage('') // Clear validation if max range is disabled
+      return
+    }
+
+    // Existing validation checks
     if (new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60 * 2) {
       setValidationMessage('Maximum range of time that can be selected is 2 hours')
     } else if (new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() < 0) {
@@ -74,7 +86,8 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
     } else {
       setValidationMessage('')
     }
-  }, [customRangeStart, customRangeEnd])
+  }, [customRangeStart, customRangeEnd, disableMaxRange])
+
 
   useEffect(() => {
     if (isOpen) {
@@ -95,11 +108,11 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
     const emptySpaceDown = window.innerHeight + window.scrollY - (buttonHeight ?? 0)
 
     if (buttonPos &&
-        containerHeight &&
-        emptySpaceTop &&
-        (buttonPos + containerHeight > emptySpaceDown) &&
-        (buttonPos + containerHeight < emptySpaceTop)
-      ) {
+      containerHeight &&
+      emptySpaceTop &&
+      (buttonPos + containerHeight > emptySpaceDown) &&
+      (buttonPos + containerHeight < emptySpaceTop)
+    ) {
       setPosition(0 - containerHeight - 4)
     } else {
       if (buttonHeight) {
@@ -110,7 +123,7 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
 
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
-      <Button onClick={toggleDropdown}>
+      <Button onClick={toggleDropdown} disabled={disabled}>
         <span className='h-5 flex items-center'>
           {selectedRange?.split(' - ')?.length > 1 ? 'Custom' : selectedRange}
         </span>

@@ -2,16 +2,17 @@ import { AnomalyOptionResponse, ClusterOptionResponse, MetricLogAnomalyResponse 
 import { GetColumnOption, GetMetricLogAnomalies } from "@/modules/usecases/anomaly-predictions";
 import { useEffect, useRef, useState } from "react";
 import { Typography } from "@mui/material";
+import { format, isAfter, isBefore } from "date-fns";
+import { ColumnOption } from "@/types/anomaly";
+import { NAMESPACE_LABELS, PREDEFINED_TIME_RANGES } from '@/constants'
 import useUpdateEffect from "@/hooks/use-update-effect";
 import MultipleScaleChart from "../chart/multiple-scale-charts";
 import FilterGraphAnomaly from "../button/filterGraphAnomaly";
 import SynchronizedCharts from "../chart/synchronized-charts";
-import { ColumnOption } from "@/types/anomaly";
-import { format, isAfter, isBefore } from "date-fns";
 import Toggle, { ToggleOption } from "../button/toggle";
 import useInterval from "@/hooks/use-interval";
-import { NAMESPACE_LABELS } from "@/constants";
 import Skeleton from "@/components/system/Skeleton/Skeleton";
+import DropdownTime from "../button/dropdown-time";
 
 const initialFilter = {
     scale: [],
@@ -82,10 +83,10 @@ const GraphWrapper = ({
         }
         if (toggleList.indexOf(selectedGraphToggle) === 1) {
             return Array.from(Array(scaleCount), (_, i) => (
-              <Skeleton
-                key={i}
-                width={300}
-              />
+                <Skeleton
+                    key={i}
+                    width={300}
+                />
             ))
         }
     }
@@ -171,7 +172,6 @@ interface GraphicAnomalyCardProps {
 
 const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     selectedDataSource,
-    selectedTimeRangeKey,
     timeRanges,
     clusterOptions,
     servicesOptions,
@@ -187,143 +187,67 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         enabled: false,
         interval: null,
     },
-
 }) => {
-    const [dataColumn, setDataColumn] = useState<AnomalyOptionResponse>({ columns: [] })
-    const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([])
-    const [lastTimeRangeParam, setLastTimeRangeParam] = useState<{
-        startTime: string | null;
-        endTime: string | null;
-    }>({
+    // Create local state for selectedTimeRangeKey instead of receiving it as a prop
+    const [selectedTimeRangeKey, setSelectedTimeRangeKey] = useState<string>('Last 15 minutes');
+    const [dataColumn, setDataColumn] = useState<AnomalyOptionResponse>({ columns: [] });
+    const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([]);
+    const [lastTimeRangeParam, setLastTimeRangeParam] = useState<{ startTime: string | null; endTime: string | null }>({
         startTime: null,
         endTime: null,
-    })
-    const [currentZoomDateRange, setCurrentZoomDateRange] = useState<string>(selectedTimeRangeKey === '' ? 'Last 15 minutes' : selectedTimeRangeKey)
-    const [customTime, setCustomTime] = useState<{
-        startTime: string;
-        endTime: string;
-    }>({ startTime: new Date().toString(), endTime: new Date().toString() })
-    const [dateRangeMode, setDateRangeMode] = useState<"predefined" | "custom">("predefined")
+    });
+    const [currentZoomDateRange, setCurrentZoomDateRange] = useState<string>(selectedTimeRangeKey);
+    const [customTime, setCustomTime] = useState<{ startTime: string; endTime: string }>({
+        startTime: new Date().toString(),
+        endTime: new Date().toString(),
+    });
+    const [dateRangeMode, setDateRangeMode] = useState<"predefined" | "custom">("predefined");
     const [selectedFilter, setSelectedFilter] = useState<{
-        scale: ColumnOption[]
-        cluster: ClusterOptionResponse[]
-        service: string | null
-        network: string | null
-        interface: string | null
-        node: string | null
-        category: string | null
-        domain: string | null
-    }>(initialFilter)
-    const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0])
-    const [initialLoading, setInitialLoading] = useState(true)
+        scale: ColumnOption[];
+        cluster: ClusterOptionResponse[];
+        service: string | null;
+        network: string | null;
+        interface: string | null;
+        node: string | null;
+        category: string | null;
+        domain: string | null;
+    }>(initialFilter);
+    const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0]);
+    const [initialLoading, setInitialLoading] = useState(true);
+    const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+    const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
+    const abortControllerRef = useRef<AbortController | null>(null);
 
-    const abortControllerRef = useRef<AbortController | null>(null); // Ref to store the AbortController
+    // Determine the selected time range value in minutes
+    const selectedTimeRange = timeRanges[selectedTimeRangeKey] ?? 15;
 
-    const selectedTimeRange = timeRanges[currentZoomDateRange] ?? 15
-
-    // Calculate endDate as the current time, rounding down the seconds to 00
+    // Set up predefined start and end time calculations
     const endDateObj = new Date();
-    endDateObj.setSeconds(0, 0); // Set seconds and milliseconds to 00
+    endDateObj.setSeconds(0, 0);
 
-    // Calculate startDate by subtracting the selected time range (in minutes) from the endDate
-    const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000); // 60000 ms = 1 minute
-
-    // Convert startDate and endDate to strings
+    const startDateObj = new Date(endDateObj.getTime() - selectedTimeRange * 60000);
     const predefinedStartTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
     const predefinedEndTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
 
     const getMinX = () => {
         if (dateRangeMode === "predefined") {
-            return new Date().getTime() - timeRanges[currentZoomDateRange] * 60 * 1000
+            return new Date().getTime() - timeRanges[selectedTimeRangeKey] * 60 * 1000;
         }
         if (dateRangeMode === "custom") {
-            return new Date(customTime.startTime).getTime()
+            return new Date(customTime.startTime).getTime();
         }
-    }
+    };
+
     const getMaxX = () => {
         if (dateRangeMode === "predefined") {
-            return new Date().getTime()
+            return new Date().getTime();
         }
         if (dateRangeMode === "custom") {
-            return new Date(customTime.endTime).getTime()
+            return new Date(customTime.endTime).getTime();
         }
-    }
+    };
 
-    useEffect(() => {
-        // Cleanup function to abort fetch when the component unmounts
-        return () => {
-            if (abortControllerRef.current) {
-                abortControllerRef.current.abort();
-            }
-        };
-    }, [])
-
-    useEffect(() => {
-        setDataColumn({ columns: [] })
-        setSelectedFilter(initialFilter)
-        GetColumnOption(selectedDataSource)
-            .then((result) => {
-                if (result.data) {
-                    setDataColumn(result.data)
-                } else {
-                    console.warn('API response data is null or undefined for column option')
-                }
-            })
-            .catch((error) => {
-                console.error('Error fetching column option:', error)
-            })
-    }, [selectedDataSource]);
-
-    useUpdateEffect(() => {
-        // Use selectedDataSource to determine which type is currently active
-        fetchMetricLog(predefinedStartTime, predefinedEndTime);
-    }, [currentZoomDateRange])
-
-    useUpdateEffect(() => {
-        fetchMetricLog(customTime.startTime, customTime.endTime)
-    }, [customTime])
-
-    useUpdateEffect(() => {
-        if (dateRangeMode === "predefined") {
-            fetchMetricLog(predefinedStartTime, predefinedEndTime)
-            return
-        }
-        if (dateRangeMode === "custom") {
-            fetchMetricLog(customTime.startTime, customTime.endTime)
-        }
-    }, [selectedFilter])
-
-    useUpdateEffect(() => {
-        if (selectedTimeRangeKey.includes(' - ')) {
-            // Handle custom range
-            const [start, end] = selectedTimeRangeKey.split(' - ');
-            setDateRangeMode("custom")
-            setCustomTime({
-                startTime: start,
-                endTime: end,
-            })
-            return
-        }
-
-        setDateRangeMode("predefined")
-        setCurrentZoomDateRange(selectedTimeRangeKey)
-    }, [selectedTimeRangeKey])
-
-    useInterval(
-        () => fetchMetricLog(
-            lastTimeRangeParam.startTime ?
-                timeParamPlusInterval(lastTimeRangeParam.startTime) : predefinedStartTime,
-            predefinedEndTime,
-        ),
-        autoRefresh.interval,
-        autoRefresh.enabled
-    )
-
-    async function fetchMetricLog(
-        startTime: string,
-        endTime: string,
-    ) {
-        // Abort any ongoing fetch request before starting a new one
+    async function fetchMetricLog(startTime: string, endTime: string) {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort("Create new fetch request");
         }
@@ -337,25 +261,28 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             (nodeOptions != null && selectedFilter.node == null) ||
             (categoryOptions != null && selectedFilter.category == null) ||
             (domainOptions != null && selectedFilter.domain == null)
-        ) return
+        )
+            return;
 
-        // Create a new AbortController instance for the new fetch request
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
-        const metricResultPromise = GetMetricLogAnomalies({
-            type: selectedDataSource,
-            start_time: startTime,
-            end_time: endTime,
-            metric_name: selectedFilter.scale.map(scale => scale.name),
-            cluster: selectedFilter.cluster.map(cluster => cluster.name),
-            service_name: selectedFilter.service,
-            network: selectedFilter.network,
-            interface: selectedFilter.interface,
-            node: selectedFilter.node,
-            category: selectedFilter.category,
-            domain: selectedFilter.domain,
-        }, controller.signal)
+        const metricResultPromise = GetMetricLogAnomalies(
+            {
+                type: selectedDataSource,
+                start_time: startTime,
+                end_time: endTime,
+                metric_name: selectedFilter.scale.map((scale) => scale.name),
+                cluster: selectedFilter.cluster.map((cluster) => cluster.name),
+                service_name: selectedFilter.service,
+                network: selectedFilter.network,
+                interface: selectedFilter.interface,
+                node: selectedFilter.node,
+                category: selectedFilter.category,
+                domain: selectedFilter.domain,
+            },
+            controller.signal
+        );
 
         return metricResultPromise
             .then((metricResult) => {
@@ -363,36 +290,79 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                     setLastTimeRangeParam({
                         startTime: startTime,
                         endTime: endTime,
-                    })
-                    setDataMetric(metricResult.data)
+                    });
+                    setDataMetric(metricResult.data);
                 } else {
-                    console.warn('API response data is null or undefined for metrics')
-                    setDataMetric([])
+                    console.warn('API response data is null or undefined for metrics');
+                    setDataMetric([]);
                 }
             })
             .catch((error) => {
-                console.error('Error fetching metric anomalies:', error)
+                console.error('Error fetching metric anomalies:', error);
             })
             .finally(() => {
-                setInitialLoading(false)
-            })
+                setInitialLoading(false);
+            });
     }
+
+    const updateTimeDifference = () => {
+        // 1. Check if `lastRefreshTime` exists; if not, exit the function.
+        // - This prevents any further calculation if there's no recorded last refresh time.
+        if (!lastRefreshTime) return;
+
+        // 2. Get the current date and time.
+        const now = new Date();
+
+        // 3. Calculate the time difference in seconds between now and `lastRefreshTime`.
+        // - Subtracts `lastRefreshTime` from the current time in milliseconds, then converts it to seconds.
+        const diffInSeconds = Math.floor((now.getTime() - lastRefreshTime.getTime()) / 1000);
+
+        // 4. Determine the appropriate time format based on the difference.
+        if (diffInSeconds < 60) {
+            // a) If less than 60 seconds, display "Refreshed 2 sec ago."
+            setTimeDifference(`Refreshed 2 sec ago`);
+        } else if (diffInSeconds < 3600) {
+            // b) If less than an hour (60 minutes), display time in minutes.
+            // - Calculates the difference in minutes and displays "Refreshed X min(s) ago."
+            const minutes = Math.floor(diffInSeconds / 60);
+            setTimeDifference(`Refreshed ${minutes} min${minutes > 1 ? 's' : ''} ago`);
+        } else {
+            // c) If one hour or more, display time in hours.
+            // - Calculates the difference in hours and displays "Refreshed X hour(s) ago."
+            const hours = Math.floor(diffInSeconds / 3600);
+            setTimeDifference(`Refreshed ${hours} hour${hours > 1 ? 's' : ''} ago`);
+        }
+    };
 
     const timeParamPlusInterval = (time: string) => {
-        return format(new Date(time).setMilliseconds(autoRefresh.interval ?? 0), 'yyyy-MM-dd HH:mm:ss')
-    }
+        return format(new Date(time).setMilliseconds(autoRefresh.interval ?? 0), 'yyyy-MM-dd HH:mm:ss');
+    };
 
     const handleGraphZoomOut = async (minX: any, maxX: any) => {
-        if ((lastTimeRangeParam.startTime != null && lastTimeRangeParam.endTime != null) &&
-            (isBefore(lastTimeRangeParam.startTime, minX) || isAfter(lastTimeRangeParam.endTime, maxX))) {
-            return
+        if (
+            lastTimeRangeParam.startTime != null &&
+            lastTimeRangeParam.endTime != null &&
+            (isBefore(lastTimeRangeParam.startTime, minX) || isAfter(lastTimeRangeParam.endTime, maxX))
+        ) {
+            return;
         }
 
-        fetchMetricLog(
-            format(new Date(minX), 'yyyy-MM-dd HH:mm:ss'),
-            format(new Date(maxX), 'yyyy-MM-dd HH:mm:ss'),
-        )
-    }
+        fetchMetricLog(format(new Date(minX), 'yyyy-MM-dd HH:mm:ss'), format(new Date(maxX), 'yyyy-MM-dd HH:mm:ss'));
+    };
+
+    // Check if any filter option is selected
+    const isFilterApplied = !!(
+        selectedFilter.scale.length > 0 ||
+        selectedFilter.cluster.length > 0 ||
+        selectedFilter.service ||
+        selectedFilter.network ||
+        selectedFilter.interface ||
+        selectedFilter.node ||
+        selectedFilter.category ||
+        selectedFilter.domain
+    );
+
+
 
     const handleOnApplyFilter = (
         selectedScales: ColumnOption[],
@@ -420,29 +390,116 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         setSelectedGraphToggle(value)
     }
 
+    const handleRangeChange = async (rangeKey: string) => {
+        setSelectedTimeRangeKey(rangeKey); // Update local state instead of using a prop
+    };
+
+    useEffect(() => {
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        setDataColumn({ columns: [] });
+        setSelectedFilter(initialFilter);
+        GetColumnOption(selectedDataSource)
+            .then((result) => {
+                if (result.data) {
+                    setDataColumn(result.data);
+                } else {
+                    console.warn('API response data is null or undefined for column option');
+                }
+            })
+            .catch((error) => {
+                console.error('Error fetching column option:', error);
+            });
+    }, [selectedDataSource]);
+
+    useUpdateEffect(() => {
+        fetchMetricLog(predefinedStartTime, predefinedEndTime);
+    }, [currentZoomDateRange]);
+
+    useUpdateEffect(() => {
+        fetchMetricLog(customTime.startTime, customTime.endTime);
+    }, [customTime]);
+
+    useUpdateEffect(() => {
+        if (dateRangeMode === "predefined") {
+            fetchMetricLog(predefinedStartTime, predefinedEndTime);
+        } else if (dateRangeMode === "custom") {
+            fetchMetricLog(customTime.startTime, customTime.endTime);
+        }
+    }, [selectedFilter]);
+
+    useUpdateEffect(() => {
+        if (selectedTimeRangeKey.includes(' - ')) {
+            const [start, end] = selectedTimeRangeKey.split(' - ');
+            setDateRangeMode("custom");
+            setCustomTime({
+                startTime: start,
+                endTime: end,
+            });
+        } else {
+            setDateRangeMode("predefined");
+            setCurrentZoomDateRange(selectedTimeRangeKey);
+        }
+    }, [selectedTimeRangeKey]);
+
+    useInterval(
+        () =>
+            fetchMetricLog(
+                lastTimeRangeParam.startTime ? timeParamPlusInterval(lastTimeRangeParam.startTime) : predefinedStartTime,
+                predefinedEndTime,
+            ),
+        autoRefresh.interval,
+        autoRefresh.enabled
+    );
+
+
     return (
         <div className="flex flex-col gap-8">
-            {!isFullScreen && <FilterGraphAnomaly
-                currentSelectedScales={selectedFilter.scale}
-                currentSelectedCluster={selectedFilter.cluster}
-                currentSelectedService={selectedFilter.service}
-                currentSelectedNetwork={selectedFilter.network}
-                currentSelectedInterface={selectedFilter.interface}
-                currentSelectedNode={selectedFilter.node}
-                currentSelectedCategory={selectedFilter.category}
-                currentSelectedDomain={selectedFilter.domain}
-                scaleOptions={dataColumn.columns}
-                clusterOptions={clusterOptions}
-                servicesOptions={servicesOptions}
-                networkOptions={networkOptions}
-                nodeOptions={nodeOptions}
-                interfaceOptions={interfaceOptions}
-                categoryOptions={categoryOptions}
-                domainOptions={domainOptions}
-                deviceOptions={deviceOptions}
-                sensorOptions={sensorOptions}
-                onApplyFilters={handleOnApplyFilter}
-            />}
+            <div className="flex flex-row justify-between">
+                {!isFullScreen && (
+                    <FilterGraphAnomaly
+                        currentSelectedScales={selectedFilter.scale}
+                        currentSelectedCluster={selectedFilter.cluster}
+                        currentSelectedService={selectedFilter.service}
+                        currentSelectedNetwork={selectedFilter.network}
+                        currentSelectedInterface={selectedFilter.interface}
+                        currentSelectedNode={selectedFilter.node}
+                        currentSelectedCategory={selectedFilter.category}
+                        currentSelectedDomain={selectedFilter.domain}
+                        scaleOptions={dataColumn.columns}
+                        clusterOptions={clusterOptions}
+                        servicesOptions={servicesOptions}
+                        networkOptions={networkOptions}
+                        nodeOptions={nodeOptions}
+                        interfaceOptions={interfaceOptions}
+                        categoryOptions={categoryOptions}
+                        domainOptions={domainOptions}
+                        deviceOptions={deviceOptions}
+                        sensorOptions={sensorOptions}
+                        onApplyFilters={handleOnApplyFilter}
+                    />
+                )}
+
+                <div className="flex flex-row gap-2 self-end items-center">
+                    {isFilterApplied && <Typography variant="body2" component="p" color="white">
+                        {timeDifference}
+                    </Typography>}
+                    <DropdownTime
+                        timeRanges={PREDEFINED_TIME_RANGES}
+                        onRangeChange={handleRangeChange}
+                        selectedRange={selectedTimeRangeKey} // Updated to use state
+                        disabled={!isFilterApplied} // Disable if no filter is applied
+                    />
+                </div>
+
+            </div>
+
             <div className='flex flex-col gap-2'>
                 <Typography variant="h5" component="h5" color="white">
                     {`Graphic ${NAMESPACE_LABELS[selectedDataSource]} Anomaly Records`}
@@ -486,7 +543,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 />
             </GraphWrapper>
         </div>
-    )
-}
+    );
+};
+
 
 export default GraphAnomalyCard

@@ -180,6 +180,10 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'prtg_traffic_sslo': "PRTG Traffic SSLO",
   'prtg_traffic_waf': 'PRTG Traffic WAF',
   'prtg_traffic_firewall': 'PRTG Firewall',
+  'solarwinds_dwdm': 'Solarwinds DWDM',
+  'solarwinds_internal': 'Solarwinds Internal',
+  'solarwinds_traffic_dwdm': 'Solarwinds Traffic DWDM',
+  'solarwinds_traffic_internal': 'Solarwinds Traffic Internal',
   'zabbix': "Zabbix",
 }
 

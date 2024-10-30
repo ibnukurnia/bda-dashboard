@@ -121,23 +121,30 @@ const TabContent: React.FC<TabContentProps> = ({
 
     const handleRangeChange = async (rangeKey: string) => {
 
-        // Update the selected range state
+        // 1. Update the 'time_range' parameter in the URL to the new range key.
+        // - It converts the current search parameters to a URL string, updates the 'time_range' parameter with `rangeKey`, and pushes the new URL.
         const params = new URLSearchParams(searchParams.toString());
         params.set('time_range', rangeKey);
         router.push(`/dashboard/anomaly-detection?${params.toString()}`);
 
+        // 2. Define selected filters based on the current user-selected options.
+        // - If specific filter arrays are populated, use them; otherwise, use empty arrays. This allows the function to handle cases where filters may be empty.
         const filtersAnomaly = selectedAnomalyOptions.length > 0 ? selectedAnomalyOptions : [];
         const filterClusters = selectedClustersOptions.length > 0 ? selectedClustersOptions : [];
         const filterServices = selectedServicesOptions.length > 0 ? selectedServicesOptions : [];
         const filterSeverities = selectedSeverityOptions.length > 0 ? selectedSeverityOptions : []; // These are now numbers
 
-        const page = 1 // Reset to the first page when page size changes
+        // 3. Reset pagination to the first page.
+        // - It updates the `pageIndex` in the pagination state to `1` to ensure results are shown from the beginning of the list when the time range changes.
+        const page = 1; // Reset to the first page when page size changes
         setPagination((prev) => ({
             ...prev,
             pageIndex: page,
         }));
 
-        // Initiate both API calls concurrently and independently
+        // 4. Fetch historical anomaly records with the selected filters.
+        // - The function calls `fetchHistoricalAnomalyRecords` with all the relevant data, such as the selected data source, pagination, time range, and selected filters.
+        // - This ensures that the graph or data display reflects the selected `time_range` and other active filters.
         fetchHistoricalAnomalyRecords({
             logType: selectedDataSource,
             page: page,
@@ -150,23 +157,36 @@ const TabContent: React.FC<TabContentProps> = ({
         });
     };
 
+
     const updateTimeDifference = () => {
+        // 1. Check if `lastRefreshTime` exists; if not, exit the function.
+        // - This prevents any further calculation if there's no recorded last refresh time.
         if (!lastRefreshTime) return;
 
+        // 2. Get the current date and time.
         const now = new Date();
-        // console.log(now)
+
+        // 3. Calculate the time difference in seconds between now and `lastRefreshTime`.
+        // - Subtracts `lastRefreshTime` from the current time in milliseconds, then converts it to seconds.
         const diffInSeconds = Math.floor((now.getTime() - lastRefreshTime.getTime()) / 1000);
 
+        // 4. Determine the appropriate time format based on the difference.
         if (diffInSeconds < 60) {
+            // a) If less than 60 seconds, display "Refreshed 2 sec ago."
             setTimeDifference(`Refreshed 2 sec ago`);
         } else if (diffInSeconds < 3600) {
+            // b) If less than an hour (60 minutes), display time in minutes.
+            // - Calculates the difference in minutes and displays "Refreshed X min(s) ago."
             const minutes = Math.floor(diffInSeconds / 60);
             setTimeDifference(`Refreshed ${minutes} min${minutes > 1 ? 's' : ''} ago`);
         } else {
+            // c) If one hour or more, display time in hours.
+            // - Calculates the difference in hours and displays "Refreshed X hour(s) ago."
             const hours = Math.floor(diffInSeconds / 3600);
             setTimeDifference(`Refreshed ${hours} hour${hours > 1 ? 's' : ''} ago`);
         }
     };
+
 
     // Function to refresh data manually (on "Refresh Now" button click)
     const handleRefreshNow = async () => {
@@ -673,7 +693,6 @@ const TabContent: React.FC<TabContentProps> = ({
                         <div className='flex justify-between'>
                             <div className='flex flex-row gap-3'>
                                 {!handle.active && (
-
                                     <FilterPanel
                                         clusterOptions={filterClusterOptions}
                                         checkboxOptions={filterAnomalyOptions}
@@ -708,7 +727,8 @@ const TabContent: React.FC<TabContentProps> = ({
                                 <DropdownTime
                                     timeRanges={PREDEFINED_TIME_RANGES}
                                     onRangeChange={handleRangeChange}
-                                    selectedRange={selectedTimeRange} // Pass selectedRange as a prop
+                                    selectedRange={selectedTimeRange}
+                                    disableMaxRange={true} // Disable 2-hour limit for table
                                 />
                             </div>
                         </div>
