@@ -137,7 +137,7 @@ const Node: React.FC<NodeProps> = ({
               maxWidth: '100%', // Adjust as needed
             }}
           >
-            {toUppercase ? title?.toUpperCase() : title}
+            {hasDetail && "Service:"} {toUppercase ? title?.toUpperCase() : title}
           </Typography>
           {fungsi &&
             <Typography
@@ -155,7 +155,7 @@ const Node: React.FC<NodeProps> = ({
                 maxWidth: '100%', // Adjust as needed
               }}
             >
-              {fungsi}
+              {hasDetail && "Fungsi:"} {fungsi}
             </Typography>
           }
           {queryParams?.cluster &&
@@ -174,7 +174,7 @@ const Node: React.FC<NodeProps> = ({
                 maxWidth: '100%', // Adjust as needed
               }}
             >
-              {toUppercase ? queryParams?.cluster?.toUpperCase() : queryParams?.cluster}
+              {hasDetail && "Site:"} {toUppercase ? queryParams?.cluster?.toUpperCase() : queryParams?.cluster}
             </Typography>
           }
         </div>
