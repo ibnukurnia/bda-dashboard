@@ -45,8 +45,8 @@ const MainPageOverview = () => {
   const latestAnomalyRef = useRef<LatestAnomalyPanelHandle>(null)
   const anomalyAmountRef = useRef<AnomalyAmountPanelHandle>(null)
 
-  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
-  const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
+  // const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+  // const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
   const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
   const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
   const handle = useFullScreenHandle();

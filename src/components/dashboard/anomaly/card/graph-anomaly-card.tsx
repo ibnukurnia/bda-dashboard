@@ -229,6 +229,19 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const predefinedStartTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
     const predefinedEndTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
 
+
+    // Check if any filter option is selected
+    const isFilterApplied = !!(
+        selectedFilter.scale.length > 0 ||
+        selectedFilter.cluster.length > 0 ||
+        selectedFilter.service ||
+        selectedFilter.network ||
+        selectedFilter.interface ||
+        selectedFilter.node ||
+        selectedFilter.category ||
+        selectedFilter.domain
+    );
+
     const getMinX = () => {
         if (dateRangeMode === "predefined") {
             return new Date().getTime() - timeRanges[selectedTimeRangeKey] * 60 * 1000;
@@ -349,20 +362,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
         fetchMetricLog(format(new Date(minX), 'yyyy-MM-dd HH:mm:ss'), format(new Date(maxX), 'yyyy-MM-dd HH:mm:ss'));
     };
-
-    // Check if any filter option is selected
-    const isFilterApplied = !!(
-        selectedFilter.scale.length > 0 ||
-        selectedFilter.cluster.length > 0 ||
-        selectedFilter.service ||
-        selectedFilter.network ||
-        selectedFilter.interface ||
-        selectedFilter.node ||
-        selectedFilter.category ||
-        selectedFilter.domain
-    );
-
-
 
     const handleOnApplyFilter = (
         selectedScales: ColumnOption[],
