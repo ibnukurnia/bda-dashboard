@@ -115,7 +115,9 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
   return (
     <div className="relative inline-block text-left self-end" ref={dropdownRef}>
       <Button onClick={toggleDropdown}>
-        {selectedRange?.split(' - ')?.length > 1 ? 'Custom' : selectedRange}
+        <span className='h-5 flex items-center'>
+          {selectedRange?.split(' - ')?.length > 1 ? 'Custom' : selectedRange}
+        </span>
         <svg
           className="w-2.5 h-2.5 ml-2"
           aria-hidden="true"

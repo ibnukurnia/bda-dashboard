@@ -103,7 +103,7 @@ const TableBodyWrapper: React.FC<TableBodyWrapperProps> = ({
   )
   if (isEmpty) return (
     <tr>
-      <td className={`p-4`} colSpan={columnSize}>
+      <td className={`p-4 border-t border-t-[#e5e7eb]`} colSpan={columnSize}>
         <Typography variant="subtitle1" color="white" align="center">
           No data available.
         </Typography>

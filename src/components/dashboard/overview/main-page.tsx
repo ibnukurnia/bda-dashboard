@@ -192,7 +192,7 @@ const MainPageOverview = () => {
           <Button
             onClick={handle.enter}
           >
-            <Maximize className='w-6 h-6' />
+            <Maximize className='w-6 h-5' />
           </Button>
         </div>
       </div>

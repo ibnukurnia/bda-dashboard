@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Typography } from '@mui/material';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
 import { format } from 'date-fns';
+import { formatWithDotsAndComma } from '@/helper';
 
 interface TableHeaderWrapperProps {
     isLoading: boolean
@@ -163,10 +164,10 @@ const AnomalyNotificationPage = () => {
     return (
         <div className="bg-[#0816358F] text-white p-8">
             <div className="rounded-lg w-full flex flex-col gap-6">
-                <div className={`w-full max-h-[75dvh] ${!isLoading && data.length > 0 ? 'overflow-x-auto' : ''}`}>
+                <div className={`w-full max-h-[75dvh] overflow-x-auto`}>
                     <div className="min-w-full">
                         <table className="table-auto divide-y divide-gray-200 w-full">
-                            <thead className="border-b border-gray-700">
+                            <thead className="sticky top-0 border-b border-gray-700 bg-[#060F2C]">
                                 <TableHeaderWrapper
                                     isLoading={isLoadingHeader}
                                 >
@@ -174,7 +175,7 @@ const AnomalyNotificationPage = () => {
                                         {table.getHeaderGroups().map((headerGroup) => (
                                             <tr key={headerGroup.id} className="text-left text-gray-300">
                                                 {headerGroup.headers.map((header) => (
-                                                    <th key={header.id} className="px-6 py-3">
+                                                    <th key={header.id} className="px-6 py-3 text-center">
                                                         {typeof header.column.columnDef.header === 'function'
                                                             ? header.column.columnDef.header({} as any)
                                                             : header.column.columnDef.header}
@@ -216,7 +217,7 @@ const AnomalyNotificationPage = () => {
                                                             passHref
                                                         >
                                                             {typeof cell.getValue() === 'number' ? (
-                                                                <span>{new Intl.NumberFormat('en-US').format(cell.getValue() as number)}</span> // Format number with commas
+                                                                <span className='ml-auto'>{formatWithDotsAndComma(cell.getValue() as number)}</span> // Format number with commas
                                                             ) : (
                                                                 <span>{cell.getValue() as string}</span> // Display non-numeric values
                                                             )}
