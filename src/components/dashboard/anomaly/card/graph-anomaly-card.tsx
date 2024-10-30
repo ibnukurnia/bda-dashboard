@@ -25,6 +25,16 @@ const initialFilter = {
     domain: null,
 }
 
+const CUSTOM_TIME_RANGES: Record<string, number> = {
+    'Last 5 minutes': 5,
+    'Last 10 minutes': 10,
+    'Last 15 minutes': 15,
+    'Last 30 minutes': 30,
+    'Last 1 hours': 60,
+    'Last 3 hours': 180,
+    'Last 6 hours': 360,
+}
+
 const toggleList: ToggleOption[] = [
     {
         id: "multi-scale",
@@ -490,7 +500,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                         {timeDifference}
                     </Typography>}
                     <DropdownTime
-                        timeRanges={PREDEFINED_TIME_RANGES}
+                        timeRanges={CUSTOM_TIME_RANGES}
                         onRangeChange={handleRangeChange}
                         selectedRange={selectedTimeRangeKey} // Updated to use state
                         disabled={!isFilterApplied} // Disable if no filter is applied

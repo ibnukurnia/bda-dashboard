@@ -35,7 +35,7 @@ export const SECTIONS_CONFIG = {
   network: {
     f5: 'f5',
     ivat: 'ivat',
-    dwdm: 'dwdm',
+    dwdm: 'solarwinds_dwdm',
     dns: 'dns_rt',
     internal: 'internal',
   },
