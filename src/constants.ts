@@ -1,6 +1,6 @@
 export const DEFAULT_DATA_SOURCE_NAMESPACE = "apm"
 
-export const DATA_SOURCE_NAMESPACE_REDIS = "redis"
+// export const DATA_SOURCE_NAMESPACE_REDIS = "redis"
 
 export const TAB_DATA_SOURCE = [
   {
@@ -28,8 +28,19 @@ export const TAB_DATA_SOURCE = [
         textLabel: "Database",
       },
       {
-        namespace: DATA_SOURCE_NAMESPACE_REDIS,
         textLabel: "Redis",
+        children: [
+          {
+            namespace: "redis_node",
+            textLabel: "Redis Node",
+          },
+          {
+            namespace: "redis",
+            textLabel: "Redis Cluster",
+          },
+
+        ],
+
       },
       {
         namespace: "compute_vm",
@@ -161,7 +172,8 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'brimo': "Log Transaksi Brimo",
   'k8s_prometheus': "OCP",
   'k8s_db': "Database",
-  'redis': "Redis",
+  'redis': "Redis Cluster",
+  'redis_node': 'Redis Node',
   'compute_vm': "Compute VM",
   'compute_host': "Compute Host",
   'compute_storage': "Compute Storage",
