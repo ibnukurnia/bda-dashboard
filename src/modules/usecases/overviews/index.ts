@@ -7,6 +7,7 @@ import {
   HealthScoreResponse,
   InsightOverviewResponse,
   MetricsOverviewResponse,
+  MetricsResponse,
   ServiceOverviewResponse,
   TeamOverviewResponse,
   TopFiveLatestCritical,
@@ -46,7 +47,7 @@ const GetMetricsOverview = async () => {
 }
 
 const GetChartsOverview = async (params?: any) => {
-  const response: ApiResponse<any> = await get('overview/metrics', {
+  const response: ApiResponse<MetricsResponse[]> = await get('overview/metrics', {
     withAuth: true,
     queries: params,
   })

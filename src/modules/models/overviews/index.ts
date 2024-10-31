@@ -98,6 +98,13 @@ export interface TopServicesResponse {
   data?: TopServiceData[]
 }
 
+export interface MetricsResponse {
+  data: any[]
+  last_spike: string
+  sub: string
+  title: string
+}
+
 export interface AnomalyAmountResponse {
   service_name: string
   data: { service_name: string; data: [string, number][] | null }[]

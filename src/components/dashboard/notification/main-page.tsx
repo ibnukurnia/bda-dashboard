@@ -5,6 +5,7 @@ import { GetNotificationList } from '@/modules/usecases/notification';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, ColumnDef } from '@tanstack/react-table';
 import Pagination from '@/components/system/Pagination/Pagination';
 import './main-page.css'
+import styles from './table.module.css'
 import Link from 'next/link';
 import { Typography } from '@mui/material';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
@@ -167,15 +168,15 @@ const AnomalyNotificationPage = () => {
                 <div className={`w-full max-h-[75dvh] overflow-x-auto`}>
                     <div className="min-w-full">
                         <table className="table-auto divide-y divide-gray-200 w-full">
-                            <thead className="sticky top-0 border-b border-gray-700 bg-[#060F2C]">
+                            <thead className="sticky top-0 z-[16] border-b border-gray-700 bg-[#060F2C]">
                                 <TableHeaderWrapper
                                     isLoading={isLoadingHeader}
                                 >
                                     <Fragment>
                                         {table.getHeaderGroups().map((headerGroup) => (
                                             <tr key={headerGroup.id} className="text-left text-gray-300">
-                                                {headerGroup.headers.map((header) => (
-                                                    <th key={header.id} className="px-6 py-3 text-center">
+                                                {headerGroup.headers.map((header, idx) => (
+                                                    <th key={header.id} className={`px-6 py-3 text-center ${idx === 0 ? styles.first_child : ""}`}>
                                                         {typeof header.column.columnDef.header === 'function'
                                                             ? header.column.columnDef.header({} as any)
                                                             : header.column.columnDef.header}
@@ -198,10 +199,10 @@ const AnomalyNotificationPage = () => {
                                         {table.getRowModel().rows.map((row) => (
                                             <tr
                                                 key={row.id}
-                                                className={"hover:bg-white hover:bg-opacity-20 text-gray-100"}
+                                                className={`${styles.row_hover} hover:bg-white hover:bg-opacity-20 text-gray-100`}
                                             >
-                                                {row.getVisibleCells().map((cell) => (
-                                                    <td key={cell.id} className="whitespace-nowrap">
+                                                {row.getVisibleCells().map((cell, idx) => (
+                                                    <td key={cell.id} className={`whitespace-nowrap ${idx === 0 ? styles.first_child : ""}`}>
                                                         <Link
                                                             className='w-full h-full flex px-4 py-4 items-center rounded-full gap-x-2'
                                                             href={{

@@ -1,0 +1,19 @@
+th.first_child,
+td.first_child {
+  position: sticky;
+  z-index: 15;
+  left: 0;
+  background-color: #060f2c;
+}
+
+thead.table_header {
+  position: sticky;
+  top: 0;
+  z-index: 16;
+  background-color: #060f2c;
+}
+
+tr:hover.row_hover td:first-child {
+  --tw-bg-opacity: 1;
+  background-color: rgb(56 62 84 / var(--tw-bg-opacity)) /* #383e54 */;
+}

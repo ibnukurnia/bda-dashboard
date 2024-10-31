@@ -20,6 +20,7 @@ import TopCriticalPanel, { TopCriticalPanelHandle } from './panels/top-critical-
 import AnomalyOverviewPanel, { AnomalyOverviewPanelHandle } from './panels/anomaly-overview-panel'
 import { handleStartEnd } from '@/helper'
 import useUpdateEffect from '@/hooks/use-update-effect'
+import { MetricsResponse } from '@/modules/models/overviews'
 
 const defaultTimeRanges: Record<string, number> = {
   'Last 5 minutes': 5,
@@ -35,7 +36,7 @@ const MainPageOverview = () => {
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
   const [lastTimeRange, setLastTimeRange] = useState(handleStartEnd(selectedRange))
-  const [chartData, setChartData] = useState<any[]>([])
+  const [chartData, setChartData] = useState<MetricsResponse[] | null>([])
   const [isLoadingGraphic, setIsLoadingGraphic] = useState(true)
   const [isCustomRangeSelected, setIsCustomRangeSelected] = useState<boolean>(false);
 
@@ -76,22 +77,6 @@ const MainPageOverview = () => {
         setIsLoadingGraphic(false);
       });
   };
-
-  const handleLogicTitle = (title: string) => {
-    if (title.toLowerCase().includes('apm')) {
-      return 'error rate apm & brimo'
-    } else if (title.toLowerCase().includes('prometheus')) {
-      return 'ocp'
-    } else if (title.toLowerCase().includes('k8s_db')) {
-      return 'database'
-    } else if (title.toLowerCase().includes('ivat')) {
-      return 'network'
-    } else if (title.toLowerCase().includes('panw')) {
-      return 'security'
-    } else {
-      return title
-    }
-  }
 
   const handleRefreshNow = async () => {
     await refreshData();
@@ -225,10 +210,11 @@ const MainPageOverview = () => {
               <span className="font-bold text-white text-2xl">Graphic</span>
               <div className="grid lg:grid-cols-2 grid-cols-1 gap-6">
                 <GraphWrapper isLoading={isLoadingGraphic}>
-                  {chartData.map((item, id) => (
+                  {chartData?.map((item, id) => (
                     <DynamicUpdatingChart
                       key={item.title}
-                      title={handleLogicTitle(item.title)}
+                      title={item.title}
+                      subtitle={item.sub}
                       series={item.data}
                       spike={item.last_spike}
                       id={id}

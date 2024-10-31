@@ -8,13 +8,14 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 interface DynamicUpdatingChartProps {
   series: any[]
   title?: string
+  subtitle?: string
   spike: string
   id?: string | number
   startTime: string // Add startTime prop
   endTime: string // Add endTime prop
 }
 
-const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: DynamicUpdatingChartProps) => {
+const DynamicUpdatingChart = ({ series, title, subtitle, startTime, endTime, spike }: DynamicUpdatingChartProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const chartRef = useRef(null);
 
@@ -66,7 +67,7 @@ const DynamicUpdatingChart = ({ series, title, startTime, endTime, spike }: Dyna
       },
     },
     subtitle: {
-      text: title?.toLowerCase()?.includes('apm') ? 'error rate' : 'anomaly count',
+      text: subtitle,
       style: {
         color: 'white',
       },
