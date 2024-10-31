@@ -37,6 +37,6 @@ export const SECTIONS_CONFIG = {
     ivat: 'ivat',
     dwdm: 'solarwinds_dwdm',
     dns: 'dns_rt',
-    internal: 'internal',
+    internal: 'solarwinds_internal',
   },
 }
