@@ -202,7 +202,7 @@ const TabContent: React.FC<TabContentProps> = ({
                     page: pagination.pageIndex,     // Page number
                     limit: pagination.pageSize,      // Page size (limit)
                 });
-                console.log('Manual refresh triggered');
+                // console.log('Manual refresh triggered');
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -658,7 +658,7 @@ const TabContent: React.FC<TabContentProps> = ({
                             severities: selectedSeverityOptions,
                             operation: selectedOperationOptions
                         });
-                        console.log('Auto-refresh triggered');
+                        // console.log('Auto-refresh triggered');
                     } catch (error) {
                         console.error('Error fetching data during auto-refresh:', error);
                     }

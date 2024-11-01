@@ -44,7 +44,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
   };
 
   const handleDropdownClick = (dataSource: string) => {
-    console.log('Selected Data Source:', dataSource);
+    // console.log('Selected Data Source:', dataSource);
 
     // Get current query parameters
     const currentParams = new URLSearchParams(searchParams?.toString() || '');
@@ -67,7 +67,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
     // Force update the URL and disable reactivity
     const newUrl = `/dashboard/anomaly-detection?${currentParams.toString()}`;
 
-    console.log('Navigating to:', newUrl);
+    // console.log('Navigating to:', newUrl);
 
     // Replace the URL without triggering a re-render or unnecessary history push
     router.replace(newUrl);

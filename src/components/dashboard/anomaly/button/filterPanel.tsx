@@ -181,19 +181,19 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     };
 
     const handleApply = () => {
-        console.log({
-            selectedAnomalies: selectedAnomalyOptions,
-            selectedOperation: selectedOperation,
-            selectedSeverities: selectedSeverityOptions,
-            selectedClusters: selectedClusterOptions,
-            selectedServices: selectedServiceOptions,
-            selectedNetwork: selectedNetworkOptions,
-            selectedNode: selectedNodeOptions,
-            selectedInterface: selectedInterfaceOptions,
-            selectedCategory: selectedCategoryOptions,
-            selectedDomain: selectedDomainOptions,
-        });
-        
+        // console.log({
+        //     selectedAnomalies: selectedAnomalyOptions,
+        //     selectedOperation: selectedOperation,
+        //     selectedSeverities: selectedSeverityOptions,
+        //     selectedClusters: selectedClusterOptions,
+        //     selectedServices: selectedServiceOptions,
+        //     selectedNetwork: selectedNetworkOptions,
+        //     selectedNode: selectedNodeOptions,
+        //     selectedInterface: selectedInterfaceOptions,
+        //     selectedCategory: selectedCategoryOptions,
+        //     selectedDomain: selectedDomainOptions,
+        // });
+
         onApplyFilters({
             selectedAnomalies: selectedAnomalyOptions,
             selectedOperation: selectedOperation,

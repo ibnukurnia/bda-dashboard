@@ -46,7 +46,7 @@ export function SignInForm() {
 
       try {
         await LoginUsecase(values);
-        console.log(values);
+        // console.log(values);
         router.push('/dashboard');
       } catch (error) {
         const errString = handleError(error);

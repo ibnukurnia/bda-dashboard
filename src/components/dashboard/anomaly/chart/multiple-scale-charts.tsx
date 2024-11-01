@@ -209,7 +209,7 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                     formatter: (val: any) => {
                         const timestamp = typeof val === 'number' && val < 1e12 ? val * 1000 : val;  // Handle seconds to milliseconds
                         const date = new Date(timestamp);
-                        console.log(val, date);
+                        // console.log(val, date);
 
                         return format(date, 'yyyy-MM-dd HH:mm:ss');  // Correct format with date-fns
                     }
