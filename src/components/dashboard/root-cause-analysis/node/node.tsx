@@ -4,6 +4,7 @@ import { Typography } from '@mui/material';
 import Link from 'next/link';
 import { NLP } from '@/modules/models/root-cause-analysis';
 import TooltipNode from '../collection/tooltip-node';
+import { getUniqueCaseDatasourceNamespace } from '../helper';
 
 interface NodeProps {
   percentage: number; // Accepts a number between 0 and 100
@@ -51,6 +52,12 @@ const Node: React.FC<NodeProps> = ({
 }) => {
   const [containerWidth, setContainerWidth] = useState(0)
   const containerRef = useRef<HTMLButtonElement>(null)
+  queryParams = {
+    ...queryParams,
+    data_source: queryParams?.data_source && queryParams.anomaly ?
+      getUniqueCaseDatasourceNamespace(queryParams?.data_source, queryParams.anomaly) :
+      queryParams?.data_source,
+  }
 
   useEffect(() => {
     window.addEventListener('resize', handleContainerWidth);
@@ -86,6 +93,7 @@ const Node: React.FC<NodeProps> = ({
     Object.entries(queryParams ?? {})
       .filter(([_, value]) => value != null)
   );
+
 
   return (
     <button
