@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:dev": "env-cmd -f .env.development next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
@@ -40,6 +41,7 @@
     "cross-env": "^7.0.3",
     "date-fns": "^3.6.0",
     "dayjs": "1.11.10",
+    "env-cmd": "^10.1.0",
     "html-react-parser": "^5.1.18",
     "moment-timezone": "^0.5.45",
     "mui-styles": "^2.0.5",
