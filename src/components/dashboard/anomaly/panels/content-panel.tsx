@@ -773,15 +773,6 @@ const TabContent: React.FC<TabContentProps> = ({
                     <div className='card-style p-6'>
                         <GraphAnomalyCard
                             selectedDataSource={selectedDataSource}
-                            clusterOptions={filterClusterOptions}
-                            servicesOptions={filterServiceOptions}
-                            networkOptions={filterSolarWindsNetworkOptions}
-                            nodeOptions={filterSolarWindsNodeOptions}
-                            interfaceOptions={filterSolarWindsInterfaceOptions}
-                            categoryOptions={filterDnsCategoryOptions}
-                            domainOptions={filterDnsDomainOptions}
-                            deviceOptions={filterPrtgTrafficDeviceOptions}
-                            sensorOptions={filterPrtgTrafficSensorOptions}
                             selectedTimeRangeKey={selectedTimeRange}
                             timeRanges={PREDEFINED_TIME_RANGES}
                             autoRefresh={graphAutoRefresh}

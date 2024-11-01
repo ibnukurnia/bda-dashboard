@@ -1,20 +1,17 @@
+import { fetchDnsCategoryOption, fetchDnsDomainOption, fetchPrtgTrafficDeviceOption, fetchPrtgTrafficSensorOption, fetchServicesOption, fetchSolarWindsInterfaceOption, fetchSolarWindsNetworkOption, fetchSolarWindsNodeOption } from '@/lib/api';
 import { ClusterOptionResponse } from '@/modules/models/anomaly-predictions';
+import { GetClusterOption } from '@/modules/usecases/anomaly-predictions';
 import { ColumnOption } from '@/types/anomaly';
+import { format } from 'date-fns';
 import React, { ChangeEvent, Fragment, useEffect, useRef, useState } from 'react';
 
 interface FilterGraphAnomalyProps {
+    selectedDataSource: string;
+    timeRanges: Record<string, number>;
+    selectedTimeRange: string;
     scaleOptions: ColumnOption[];
     currentSelectedScales: ColumnOption[];
-    clusterOptions: ClusterOptionResponse[] | null | undefined;
     currentSelectedCluster: ClusterOptionResponse[];
-    servicesOptions: string[] | null | undefined;
-    networkOptions: string[] | null | undefined;
-    interfaceOptions: string[] | null | undefined;
-    nodeOptions: string[] | null | undefined;
-    categoryOptions: string[] | null | undefined;
-    domainOptions: string[] | null | undefined;
-    deviceOptions: string[] | null | undefined;
-    sensorOptions: string[] | null | undefined;
     currentSelectedService: string | null;
     currentSelectedNetwork: string | null;
     currentSelectedInterface: string | null;
@@ -34,18 +31,12 @@ interface FilterGraphAnomalyProps {
 }
 
 const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
+    selectedDataSource,
+    timeRanges,
+    selectedTimeRange,
     scaleOptions,
     currentSelectedScales,
-    clusterOptions,
     currentSelectedCluster,
-    servicesOptions,
-    networkOptions,
-    interfaceOptions,
-    nodeOptions,
-    categoryOptions,
-    domainOptions,
-    deviceOptions,
-    sensorOptions,
     currentSelectedService,
     currentSelectedNetwork,
     currentSelectedInterface,
@@ -55,6 +46,15 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     onApplyFilters,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [clusterOptions, setClusterOptions] = useState<ClusterOptionResponse[] | null | undefined>(null)
+    const [servicesOptions, setServicesOptions] = useState<string[] | null | undefined>(null)
+    const [networkOptions, setNetworkOptions] = useState<string[] | null | undefined>(null)
+    const [nodeOptions, setNodeOptions] = useState<string[] | null | undefined>(null)
+    const [interfaceOptions, setInterfaceOptions] = useState<string[] | null | undefined>(null)
+    const [domainOptions, setDomainOptions] = useState<string[] | null | undefined>(null)
+    const [categoryOptions, setCategoryOptions] = useState<string[] | null | undefined>(null)
+    const [deviceOptions, setDeviceOptions] = useState<string[] | null | undefined>(null)
+    const [sensorOptions, setSensorOptions] = useState<string[] | null | undefined>(null)
     const [selectedScaleOptions, setSelectedScaleOptions] = useState<ColumnOption[]>(currentSelectedScales);
     const [selectedClusterOptions, setSelectedClusterOptions] = useState<ClusterOptionResponse[]>(currentSelectedCluster);
     const [filteredServicesOptions, setFilteredServicesOptions] = useState(servicesOptions)
@@ -69,6 +69,112 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     const [searchNodeValue, setSearchNodeValue] = useState<string>('')
     const [searchDomainValue, setSearchDomainValue] = useState<string>('')
     const panelRef = useRef<HTMLDivElement>(null);
+
+    const getTimeRange = () => {
+        let startTime: string;
+        let endTime: string;
+
+        // Check if a custom range in the format 'start - end' is provided
+        if (selectedTimeRange.includes(' - ')) {
+            const [start, end] = selectedTimeRange.split(' - ');
+            if (!start || !end) {
+                throw new Error(`Invalid custom range: ${selectedTimeRange}`);
+            }
+            startTime = start;
+            endTime = end;
+        } else {
+            // Handle predefined time ranges
+            const predefinedRange = timeRanges[selectedTimeRange];
+            if (!predefinedRange) {
+                throw new Error(`Invalid time range: ${selectedTimeRange}`);
+            }
+
+            const endDate = new Date();
+            endDate.setSeconds(0, 0); // Round down to the nearest minute
+            const startDate = new Date(endDate.getTime() - predefinedRange * 60000); // Subtract the range in minutes
+
+            startTime = format(startDate, 'yyyy-MM-dd HH:mm:ss');
+            endTime = format(endDate, 'yyyy-MM-dd HH:mm:ss');
+        }
+
+        return { startTime, endTime };
+    };
+
+    const loadFiltersOptions = async () => {
+        const { startTime, endTime } = getTimeRange();
+
+        // Map each filter to its respective loading function with error handling
+        const filtersMap: { [key: string]: () => Promise<void> } = {
+            cluster: async () => {
+                const response = await GetClusterOption({ type: selectedDataSource, start_time: startTime, end_time: endTime });
+                setClusterOptions(response.data);
+            },
+
+            services: async () => {
+                const response = await fetchServicesOption({ type: selectedDataSource, start_time: startTime, end_time: endTime });
+                setServicesOptions(response.data?.services);
+            },
+
+            solarWindsNetwork: async () => {
+                const response = await fetchSolarWindsNetworkOption({ start_time: startTime, end_time: endTime });
+                setNetworkOptions(response.data);
+            },
+
+            solarWindsNode: async () => {
+                const response = await fetchSolarWindsNodeOption({ start_time: startTime, end_time: endTime });
+                setNodeOptions(response.data);
+            },
+
+            solarWindsInterface: async () => {
+                const response = await fetchSolarWindsInterfaceOption({ start_time: startTime, end_time: endTime });
+                setInterfaceOptions(response.data);
+            },
+
+            dnsDomain: async () => {
+                const response = await fetchDnsDomainOption({ start_time: startTime, end_time: endTime });
+                setDomainOptions(response.data);
+            },
+
+            dnsCategory: async () => {
+                const response = await fetchDnsCategoryOption({ start_time: startTime, end_time: endTime });
+                setCategoryOptions(response.data);
+            },
+
+            prtgTrafficDevice: async () => {
+                const response = await fetchPrtgTrafficDeviceOption({ start_time: startTime, end_time: endTime });
+                setDeviceOptions(response.data);
+            },
+
+            prtgTrafficSensor: async () => {
+                const response = await fetchPrtgTrafficSensorOption({ start_time: startTime, end_time: endTime });
+                setSensorOptions(response.data);
+            },
+        };
+
+        // Load specific filters based on `selectedDataSource`
+        switch (selectedDataSource) {
+            case 'solarwinds':
+                filtersMap.solarWindsNetwork();
+                filtersMap.solarWindsNode();
+                filtersMap.solarWindsInterface();
+                break;
+
+            case 'dns_rt':
+                filtersMap.cluster();
+                filtersMap.dnsDomain();
+                filtersMap.dnsCategory();
+                break;
+
+            case 'prtg_traffic':
+                filtersMap.prtgTrafficDevice();
+                filtersMap.prtgTrafficSensor();
+                break;
+
+            default:
+                filtersMap.cluster();
+                filtersMap.services();
+        }
+    };
 
     const togglePanel = () => {
         setIsOpen(!isOpen);
@@ -141,6 +247,10 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         setSearchDomainValue(e.target.value)
     }
 
+    useEffect(() => {
+        loadFiltersOptions()
+    }, [selectedDataSource, selectedTimeRange])
+    
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (panelRef.current && !panelRef.current.contains(event.target as Node)) {

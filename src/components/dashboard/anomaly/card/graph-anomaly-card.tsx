@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Typography } from "@mui/material";
 import { format, isAfter, isBefore } from "date-fns";
 import { ColumnOption } from "@/types/anomaly";
-import { NAMESPACE_LABELS, PREDEFINED_TIME_RANGES } from '@/constants'
+import { NAMESPACE_LABELS } from '@/constants'
 import useUpdateEffect from "@/hooks/use-update-effect";
 import MultipleScaleChart from "../chart/multiple-scale-charts";
 import FilterGraphAnomaly from "../button/filterGraphAnomaly";
@@ -116,6 +116,8 @@ const Graph = ({
     onZoomOut,
     minXOnEmpty,
     maxXOnEmpty,
+    minX,
+    maxX,
     animations,
 }: {
     data: MetricLogAnomalyResponse[];
@@ -123,11 +125,10 @@ const Graph = ({
     onZoomOut: (minX: any, maxX: any) => void;
     minXOnEmpty?: number;
     maxXOnEmpty?: number;
+    minX?: number;
+    maxX?: number;
     animations?: boolean;
 }) => {
-    const minX = new Date()
-    minX.setHours(minX.getHours() - 24)
-    const maxX = new Date()
 
     if (toggleList.indexOf(selectedGraphToggle) === 0) {
         return (
@@ -138,8 +139,8 @@ const Graph = ({
                 onZoomOut={onZoomOut}
                 minXOnEmpty={minXOnEmpty}
                 maxXOnEmpty={maxXOnEmpty}
-                minX={minX.getTime()}
-                maxX={maxX.getTime()}
+                minX={minX}
+                maxX={maxX}
                 animations={animations}
             />
         )
@@ -153,8 +154,8 @@ const Graph = ({
                 onZoomOut={onZoomOut}
                 minXOnEmpty={minXOnEmpty}
                 maxXOnEmpty={maxXOnEmpty}
-                minX={minX.getTime()}
-                maxX={maxX.getTime()}
+                minX={minX}
+                maxX={maxX}
                 animations={animations}
             />
         )
@@ -164,15 +165,6 @@ interface GraphicAnomalyCardProps {
     selectedDataSource: string;
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
-    clusterOptions: ClusterOptionResponse[] | null | undefined;
-    servicesOptions: string[] | null | undefined;
-    networkOptions: string[] | null | undefined;
-    nodeOptions: string[] | null | undefined;
-    interfaceOptions: string[] | null | undefined;
-    categoryOptions: string[] | null | undefined;
-    domainOptions: string[] | null | undefined;
-    deviceOptions: string[] | null | undefined;
-    sensorOptions: string[] | null | undefined;
     isFullScreen: boolean;
     autoRefresh?: {
         enabled: boolean;
@@ -183,15 +175,6 @@ interface GraphicAnomalyCardProps {
 const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     selectedDataSource,
     timeRanges,
-    clusterOptions,
-    servicesOptions,
-    networkOptions,
-    nodeOptions,
-    interfaceOptions,
-    categoryOptions,
-    domainOptions,
-    deviceOptions,
-    sensorOptions,
     isFullScreen,
     autoRefresh = {
         enabled: false,
@@ -225,7 +208,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0]);
     const [initialLoading, setInitialLoading] = useState(true);
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
-    const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
+    const [timeDifference, setTimeDifference] = useState<string | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
 
     // Determine the selected time range value in minutes
@@ -239,20 +222,15 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const predefinedStartTime = format(startDateObj, 'yyyy-MM-dd HH:mm:ss');
     const predefinedEndTime = format(endDateObj, 'yyyy-MM-dd HH:mm:ss');
 
+    const minX = dateRangeMode === "predefined" ?
+        (() => {
+            const x = new Date()
+            x.setHours(x.getHours() - 6)
+            return x.getTime()
+        })() : new Date(customTime.startTime).getTime()
+    const maxX = dateRangeMode === "predefined" ? new Date().getTime() : new Date(customTime.endTime).getTime()
 
-    // Check if any filter option is selected
-    const isFilterApplied = !!(
-        selectedFilter.scale.length > 0 ||
-        selectedFilter.cluster.length > 0 ||
-        selectedFilter.service ||
-        selectedFilter.network ||
-        selectedFilter.interface ||
-        selectedFilter.node ||
-        selectedFilter.category ||
-        selectedFilter.domain
-    );
-
-    const getMinX = () => {
+    const getMinXOnEmpty = () => {
         if (dateRangeMode === "predefined") {
             return new Date().getTime() - timeRanges[selectedTimeRangeKey] * 60 * 1000;
         }
@@ -261,7 +239,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         }
     };
 
-    const getMaxX = () => {
+    const getMaxXOnEmpty = () => {
         if (dateRangeMode === "predefined") {
             return new Date().getTime();
         }
@@ -274,18 +252,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         if (abortControllerRef.current) {
             abortControllerRef.current.abort("Create new fetch request");
         }
-
-        if (
-            selectedFilter.scale.length === 0 ||
-            (clusterOptions != null && selectedFilter.cluster.length === 0) ||
-            (servicesOptions != null && selectedFilter.service == null) ||
-            (networkOptions != null && selectedFilter.network == null) ||
-            (interfaceOptions != null && selectedFilter.interface == null) ||
-            (nodeOptions != null && selectedFilter.node == null) ||
-            (categoryOptions != null && selectedFilter.category == null) ||
-            (domainOptions != null && selectedFilter.domain == null)
-        )
-            return;
 
         const controller = new AbortController();
         abortControllerRef.current = controller;
@@ -342,8 +308,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
         // 4. Determine the appropriate time format based on the difference.
         if (diffInSeconds < 60) {
-            // a) If less than 60 seconds, display "Refreshed 2 sec ago."
-            setTimeDifference(`Refreshed 2 sec ago`);
+            // a) If less than 60 seconds, display "Refreshed just now."
+            setTimeDifference(`Refreshed just now`);
         } else if (diffInSeconds < 3600) {
             // b) If less than an hour (60 minutes), display time in minutes.
             // - Calculates the difference in minutes and displays "Refreshed X min(s) ago."
@@ -363,6 +329,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
     const handleGraphZoomOut = async (minX: any, maxX: any) => {
         if (
+            dateRangeMode === "custom" &&
             lastTimeRangeParam.startTime != null &&
             lastTimeRangeParam.endTime != null &&
             (isBefore(lastTimeRangeParam.startTime, minX) || isAfter(lastTimeRangeParam.endTime, maxX))
@@ -473,6 +440,9 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             <div className="flex flex-row justify-between">
                 {!isFullScreen && (
                     <FilterGraphAnomaly
+                        selectedDataSource={selectedDataSource}
+                        selectedTimeRange={selectedTimeRangeKey}
+                        timeRanges={CUSTOM_TIME_RANGES}
                         currentSelectedScales={selectedFilter.scale}
                         currentSelectedCluster={selectedFilter.cluster}
                         currentSelectedService={selectedFilter.service}
@@ -482,28 +452,18 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                         currentSelectedCategory={selectedFilter.category}
                         currentSelectedDomain={selectedFilter.domain}
                         scaleOptions={dataColumn.columns}
-                        clusterOptions={clusterOptions}
-                        servicesOptions={servicesOptions}
-                        networkOptions={networkOptions}
-                        nodeOptions={nodeOptions}
-                        interfaceOptions={interfaceOptions}
-                        categoryOptions={categoryOptions}
-                        domainOptions={domainOptions}
-                        deviceOptions={deviceOptions}
-                        sensorOptions={sensorOptions}
                         onApplyFilters={handleOnApplyFilter}
                     />
                 )}
 
                 <div className="flex flex-row gap-2 self-end items-center">
-                    {isFilterApplied && <Typography variant="body2" component="p" color="white">
+                    {timeDifference && <Typography variant="body2" component="p" color="white">
                         {timeDifference}
                     </Typography>}
                     <DropdownTime
                         timeRanges={CUSTOM_TIME_RANGES}
                         onRangeChange={handleRangeChange}
                         selectedRange={selectedTimeRangeKey} // Updated to use state
-                        disabled={!isFilterApplied} // Disable if no filter is applied
                     />
                 </div>
 
@@ -535,9 +495,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 selectedGraphToggle={selectedGraphToggle}
                 scaleCount={selectedFilter.scale.length}
                 isFieldRequired={
-                    selectedFilter.scale.length === 0 ||
-                    (clusterOptions != null && selectedFilter.cluster.length === 0) ||
-                    (servicesOptions != null && selectedFilter.service == null)
+                    selectedFilter.scale.length === 0
                 }
                 isLoading={initialLoading}
                 isEmpty={dataMetric.length === 0}
@@ -546,8 +504,10 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                     data={dataMetric}
                     selectedGraphToggle={selectedGraphToggle}
                     onZoomOut={handleGraphZoomOut}
-                    minXOnEmpty={getMinX()}
-                    maxXOnEmpty={getMaxX()}
+                    minXOnEmpty={getMinXOnEmpty()}
+                    maxXOnEmpty={getMaxXOnEmpty()}
+                    minX={minX}
+                    maxX={maxX}
                     animations={!!!autoRefresh.enabled}
                 />
             </GraphWrapper>

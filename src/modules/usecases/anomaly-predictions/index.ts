@@ -3,9 +3,6 @@ import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 import {
   AnomalyOptionResponse,
   ClusterOptionResponse,
-  HistoricalAnomalyNetworkResponse,
-  HistoricalAnomalySecurityResponse,
-  HistoricalAnomalyUtilizationResponse,
   MetricLogAnomalyResponse,
   ServiceOptionByClusterResponse,
 } from '@/modules/models/anomaly-predictions'
