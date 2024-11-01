@@ -207,13 +207,9 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     }>(initialFilter);
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0]);
     const [initialLoading, setInitialLoading] = useState(true);
-    const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
-    const [timeDifference, setTimeDifference] = useState<string | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
-
     // Determine the selected time range value in minutes
     const selectedTimeRange = timeRanges[selectedTimeRangeKey] ?? 15;
-
     // Set up predefined start and end time calculations
     const endDateObj = new Date();
     endDateObj.setSeconds(0, 0);
@@ -293,35 +289,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 setInitialLoading(false);
             });
     }
-
-    const updateTimeDifference = () => {
-        // 1. Check if `lastRefreshTime` exists; if not, exit the function.
-        // - This prevents any further calculation if there's no recorded last refresh time.
-        if (!lastRefreshTime) return;
-
-        // 2. Get the current date and time.
-        const now = new Date();
-
-        // 3. Calculate the time difference in seconds between now and `lastRefreshTime`.
-        // - Subtracts `lastRefreshTime` from the current time in milliseconds, then converts it to seconds.
-        const diffInSeconds = Math.floor((now.getTime() - lastRefreshTime.getTime()) / 1000);
-
-        // 4. Determine the appropriate time format based on the difference.
-        if (diffInSeconds < 60) {
-            // a) If less than 60 seconds, display "Refreshed just now."
-            setTimeDifference(`Refreshed just now`);
-        } else if (diffInSeconds < 3600) {
-            // b) If less than an hour (60 minutes), display time in minutes.
-            // - Calculates the difference in minutes and displays "Refreshed X min(s) ago."
-            const minutes = Math.floor(diffInSeconds / 60);
-            setTimeDifference(`Refreshed ${minutes} min${minutes > 1 ? 's' : ''} ago`);
-        } else {
-            // c) If one hour or more, display time in hours.
-            // - Calculates the difference in hours and displays "Refreshed X hour(s) ago."
-            const hours = Math.floor(diffInSeconds / 3600);
-            setTimeDifference(`Refreshed ${hours} hour${hours > 1 ? 's' : ''} ago`);
-        }
-    };
 
     const timeParamPlusInterval = (time: string) => {
         return format(new Date(time).setMilliseconds(autoRefresh.interval ?? 0), 'yyyy-MM-dd HH:mm:ss');
@@ -457,9 +424,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 )}
 
                 <div className="flex flex-row gap-2 self-end items-center">
-                    {timeDifference && <Typography variant="body2" component="p" color="white">
-                        {timeDifference}
-                    </Typography>}
                     <DropdownTime
                         timeRanges={CUSTOM_TIME_RANGES}
                         onRangeChange={handleRangeChange}
@@ -468,7 +432,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 </div>
 
             </div>
-
             <div className='flex flex-col gap-2'>
                 <Typography variant="h5" component="h5" color="white">
                     {`Graphic ${NAMESPACE_LABELS[selectedDataSource]} Anomaly Records`}

@@ -56,6 +56,8 @@ const AnomalyAmountPanel = forwardRef<AnomalyAmountPanelHandle, AnomalyAmountPan
       fetchData();
     }, [refreshSignal]);
 
+
+
     // Function to fetch data with a hardcoded time range from midnight to the current time
     function fetchData() {
       if (selectedAnomalyAmountService.length === 0) return;
@@ -85,14 +87,8 @@ const AnomalyAmountPanel = forwardRef<AnomalyAmountPanelHandle, AnomalyAmountPan
         })
         .finally(() => {
           setIsLoadingAnomalyAmount(false);
-          console.log(anomalyAmountData, "ini")
         });
     }
-
-    useEffect(() => {
-      console.log(anomalyAmountData, "UseEffect")
-    }, [anomalyAmountData])
-
 
     // Handle Zoom Out (show newer data)
     const handleZoomOut = () => {

@@ -40,7 +40,7 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
       setIsCustomRange(true)
     } else {
       onRangeChange(rangeKey)
-      console.log(rangeKey)
+      // console.log(rangeKey)
       setIsCustomRange(false)
       setIsOpen(false)
     }

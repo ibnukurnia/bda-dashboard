@@ -53,7 +53,7 @@ export const SeviceOverviewPanel = () => {
 
     const handleOptionSelection = (option: string) => {
         setSelectedOption(option); // Set the selected option state
-        console.log('Selected option:', option);
+        // console.log('Selected option:', option);
         getServiceOverview();
     };
 

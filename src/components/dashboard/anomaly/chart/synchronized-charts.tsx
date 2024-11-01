@@ -11,7 +11,7 @@ const colors = [
     '#4E88FF', '#00D8FF', '#FF4EC7', '#00E396', '#F9C80E', '#8C54FF',
     '#FF4560', '#FF7D00', '#7DFF6B', '#FF6EC7', '#1B998B', '#B28DFF',
     '#FF6666', '#3DDC97', '#F4A261', '#89CFF0'
-]
+];
 
 interface SynchronizedChartsProps {
     dataCharts: MetricLogAnomalyResponse[];
@@ -36,7 +36,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     maxXOnEmpty,
     animations,
 }) => {
-    const [zoomOutDisabled, setZoomOutDisabled] = useState(false)
+    const [zoomOutDisabled, setZoomOutDisabled] = useState(false);
 
     const toggleZoomOutButton = (disabled: boolean) => {
         const zoomOutButtons = document.querySelectorAll('.apexcharts-zoomout-icon');
@@ -48,24 +48,22 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                 button.classList.remove('zoom-disabled');
             }
         });
-    }
+    };
 
     useEffect(() => {
-        toggleZoomOutButton(zoomOutDisabled)
+        toggleZoomOutButton(zoomOutDisabled);
     }, [zoomOutDisabled]);
 
-    console.log(dataCharts)
-
     useEffect(() => {
-        setZoomOutDisabled(false)
-    }, [dataCharts])
+        setZoomOutDisabled(false);
+    }, [dataCharts]);
 
     if (!dataCharts || dataCharts.length === 0) {
         return (
             <div className="text-center text-2xl font-semibold text-white">
                 DATA IS NOT AVAILABLE
             </div>
-        )
+        );
     }
 
     return (
@@ -84,90 +82,95 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             tools: {
                                 pan: false,
                                 download: false,
-                            }
+                            },
                         },
                         events: {
                             updated(_, options) {
                                 if (minX >= options.globals.minX && maxX <= options.globals.maxX) {
-                                    setZoomOutDisabled(true)
-                                    toggleZoomOutButton(true)
+                                    setZoomOutDisabled(true);
+                                    toggleZoomOutButton(true);
                                 } else {
-                                    setZoomOutDisabled(false)
-                                    toggleZoomOutButton(false)
+                                    setZoomOutDisabled(false);
+                                    toggleZoomOutButton(false);
                                 }
                             },
                             beforeResetZoom() {
-                              return {
-                                xaxis: {
-                                    min: minXOnEmpty,
-                                    max: maxXOnEmpty,
-                                  },
-                              }
+                                return {
+                                    xaxis: {
+                                        min: minXOnEmpty,
+                                        max: maxXOnEmpty,
+                                    },
+                                };
                             },
                             beforeZoom: (chartContext, { xaxis }) => {
+                                console.log("Zoom selected range:", { min: xaxis.min, max: xaxis.max });
+
                                 if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {
                                     if (!zoomOutDisabled) {
                                         onZoomOut && onZoomOut(
                                             minX >= xaxis.min ? minX : xaxis.min,
                                             maxX <= xaxis.max ? maxX : xaxis.max,
-                                        )
+                                        );
                                     }
 
                                     if (minX >= xaxis.min && maxX <= xaxis.max) {
-                                        setZoomOutDisabled(true)
+                                        setZoomOutDisabled(true);
                                         return {
                                             xaxis: {
                                                 min: minX,
                                                 max: maxX,
-                                            }
-                                        }
+                                            },
+                                        };
                                     } else {
-                                        setZoomOutDisabled(false)
+                                        setZoomOutDisabled(false);
                                     }
                                     return {
                                         xaxis: {
                                             min: minX >= xaxis.min ? minX : xaxis.min,
                                             max: maxX <= xaxis.max ? maxX : xaxis.max,
-                                        }
-                                    }
+                                        },
+                                    };
                                 }
                             },
                         },
                     },
                     tooltip: {
-                        enabled: true, // Enable tooltips
-                        shared: true, // Display the tooltip for all series at once
-                        intersect: false, // Tooltip will appear for the closest point on hover, not just when you directly hover over the point
+                        enabled: true,
+                        shared: true,
+                        intersect: false,
                         y: {
                             formatter: (value) => {
-                                // Check if the Y-axis is for 'amount' and format as Rupiah
+                                if (metric.title === "Error Rate DC || Error Rate ODC") {
+                                    const errorRateFormatter = new Intl.NumberFormat('en-US', {
+                                        minimumFractionDigits: 6,
+                                        maximumFractionDigits: 6,
+                                    });
+                                    return errorRateFormatter.format(value);
+                                }
                                 if (metric.title === "Amount (Rp) DC") {
                                     const rupiahFormatter = new Intl.NumberFormat('id-ID', {
                                         style: 'currency',
                                         currency: 'IDR',
-                                        minimumFractionDigits: 2, // Always show at least 2 decimal places
+                                        minimumFractionDigits: 2,
                                     });
-                                    return rupiahFormatter.format(value).replace("Rp", "Rp."); // Format as Rupiah and add dot after "Rp."
+                                    return rupiahFormatter.format(value).replace("Rp", "Rp.");
                                 }
-
-                                // If the value is less than 1, display the full decimal value without trimming it
                                 if (value < 1 && value > 0) {
-                                    return value.toString(); // Show the full precision of small decimal values
+                                    return value.toString();
                                 }
-
-                                // For values 1000 or greater, format with thousands separators and 2 decimal places
                                 const numberFormatter = new Intl.NumberFormat('en-US', {
-                                    minimumFractionDigits: 2, // Ensure two decimal places
-                                    maximumFractionDigits: 2, // Limit to two decimal places
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
                                 });
 
-                                return numberFormatter.format(value); // Format with commas and two decimal places
+                                return numberFormatter.format(value);
                             },
                         },
+
                         x: {
                             formatter: (value) => {
                                 const date = new Date(value);
-                                return formatDate(date, "yyyy-MM-dd HH:mm:ss")
+                                return formatDate(date, "yyyy-MM-dd HH:mm:ss");
                             },
                         },
                     },
@@ -182,7 +185,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         labels: {
                             formatter(value) {
                                 const date = new Date(value);
-                                return formatDate(date, "yyyy-MM-dd HH:mm").split(" ")
+                                return formatDate(date, "yyyy-MM-dd HH:mm").split(" ");
                             },
                             style: {
                                 colors: 'white',
@@ -200,29 +203,30 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                 colors: 'white',
                             },
                             formatter: (value) => {
-                                // Check if the Y-axis is for 'amount' and format as Rupiah
+                                if (metric.title === "Error Rate DC || Error Rate ODC") {
+                                    const errorRateFormatter = new Intl.NumberFormat('en-US', {
+                                        minimumFractionDigits: 6,
+                                        maximumFractionDigits: 6,
+                                    });
+                                    return errorRateFormatter.format(value);
+                                }
                                 if (metric.title === "Amount (Rp) DC") {
-                                    // Format as Rupiah
                                     const rupiahFormatter = new Intl.NumberFormat('id-ID', {
                                         style: 'currency',
                                         currency: 'IDR',
-                                        minimumFractionDigits: 0, // Removes decimal places
+                                        minimumFractionDigits: 0,
                                     });
-                                    return rupiahFormatter.format(value).replace("Rp", "Rp."); // Adding dot after "Rp."
+                                    return rupiahFormatter.format(value).replace("Rp", "Rp.");
                                 }
-
-                                // Handle small decimal numbers (less than 1 but greater than 0)
                                 if (value < 1 && value > 0) {
-                                    return value.toString(); // Show full precision for small decimal values
+                                    return value.toString();
                                 }
-
-                                // Format larger numbers with thousands separators and two decimal places
                                 const numberFormatter = new Intl.NumberFormat('en-US', {
-                                    minimumFractionDigits: 2, // Show 2 decimal places
-                                    maximumFractionDigits: 2, // Limit to 2 decimal places
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
                                 });
 
-                                return numberFormatter.format(value); // Format with thousands separators
+                                return numberFormatter.format(value);
                             },
                         },
                         axisBorder: {
@@ -231,6 +235,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             width: 2,
                         },
                     },
+
                     stroke: {
                         curve: 'smooth',
                         width: 4,

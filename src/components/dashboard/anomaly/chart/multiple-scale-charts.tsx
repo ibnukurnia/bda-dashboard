@@ -99,12 +99,12 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                     }
                 },
                 beforeResetZoom() {
-                  return {
-                    xaxis: {
-                        min: minXOnEmpty,
-                        max: maxXOnEmpty,
-                      },
-                  }
+                    return {
+                        xaxis: {
+                            min: minXOnEmpty,
+                            max: maxXOnEmpty,
+                        },
+                    }
                 },
                 beforeZoom: (chartContext, { xaxis }) => {
                     // Zoomed out
@@ -164,13 +164,21 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
             opposite: index !== 0 && index >= Math.ceil((dataCharts.length - 1) / 2),
             labels: {
                 formatter: (value: number) => {
+                    // Check if the metric title or scale indicates it's "error rate"
+                    if (metric.title === "Error Rate DC || Error Rate ODC") {
+                        const errorRateFormatter = new Intl.NumberFormat('en-US', {
+                            minimumFractionDigits: 6, // Show 6 decimal places for error rate
+                            maximumFractionDigits: 6,
+                        });
+                        return errorRateFormatter.format(value); // Format with five decimal places
+                    }
+
                     // Check if the metric title or scale indicates it's "amount"
                     if (metric.title === "Amount (Rp) DC") {
-                        // Format as Rupiah with two decimal places
                         const rupiahFormatter = new Intl.NumberFormat('id-ID', {
                             style: 'currency',
                             currency: 'IDR',
-                            minimumFractionDigits: 2, // Always show at least 2 decimal places
+                            minimumFractionDigits: 2, // Show 2 decimal places
                             maximumFractionDigits: 2, // Limit to 2 decimal places
                         });
                         return rupiahFormatter.format(value).replace("Rp", "Rp."); // Add dot after "Rp."
@@ -193,7 +201,6 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                     colors: 'white', // White color for axis text
                 },
             },
-
             seriesName: metric.title,
             tooltip: {
                 // enabled: index === 0 || index === 1,
@@ -203,7 +210,7 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                         const timestamp = typeof val === 'number' && val < 1e12 ? val * 1000 : val;  // Handle seconds to milliseconds
                         const date = new Date(timestamp);
                         console.log(val, date);
-                        
+
                         return format(date, 'yyyy-MM-dd HH:mm:ss');  // Correct format with date-fns
                     }
                 },

@@ -168,7 +168,7 @@ const AnomalyProvider = ({ children }: { children: ReactNode }) => {
 
         fetchData().catch(handleError)
 
-        console.log(filterColumn);
+        // console.log(filterColumn);
 
     }, [])
 
