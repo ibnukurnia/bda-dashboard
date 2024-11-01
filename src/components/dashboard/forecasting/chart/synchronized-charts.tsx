@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Typography } from '@mui/material'
 import { ApexOptions } from 'apexcharts'
@@ -32,12 +32,20 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   const today = new Date(selectedDate)
   const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
   const todayMaxTime = todayZero + 1000 * 60 * 60 * 24
-  console.log(dataCharts)
 
   const [zoomX, setZoomX] = useState({
     min: minZoom ?? today.getTime() - 1000 * 60 * 60 * 2,
     max: maxZoom ?? today.getTime() + 1000 * 60 * 60 * 2,
   })
+
+  const [xaxisRange, setXaxisRange] = useState<{ min: number; max?: number }>({
+    min: zoomX.min,
+    max: zoomX.max,
+  });
+  const [yaxisRange, setYaxisRange] = useState<{ min: number; max?: number }>({
+    min: 0,
+    max: undefined,
+  });
 
   // Format numbers to include commas, e.g., 1000 -> 1,000
   const formatNumber = (val: number) => {
@@ -76,6 +84,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
             min: today.getTime() - 1000 * 60 * 60 * 2,
             max: today.getTime() + 1000 * 60 * 60 * 2,
           }
+          updateAxisRanges(resResetZoom.min, resResetZoom.max);
 
           return {
             xaxis: resResetZoom,
@@ -87,7 +96,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
             min: xaxis.min < todayZero ? todayZero : xaxis.min,
             max: xaxis.max > todayMaxTime ? todayMaxTime : xaxis.max,
           }
-
+          
+          updateAxisRanges(res.min, res.max);
           setZoom && setZoom({ minZoom: res.min, maxZoom: res.max })
 
           return {
@@ -100,8 +110,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
       enabled: true,
     },
     xaxis: {
-      min: zoomX.min,
-      max: zoomX.max,
+      min: xaxisRange.min,
+      max: xaxisRange.max,
       tooltip: {
         enabled: false,
       },
@@ -129,6 +139,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
       axisBorder: { show: false },
     },
     yaxis: {
+      min: yaxisRange.min,
+      max: yaxisRange.max,
       labels: {
         style: {
           colors: 'white', // White color for y-axis text
@@ -191,6 +203,22 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 
     return []
   }, [dataCharts])
+  const chartSeries = resDataChart.map((item) => ({ name: item.title, data: item.data }))
+
+  const updateAxisRanges = useCallback((zoomedMin: number, zoomedMax: number) => {
+    
+    const selectedData = chartSeries.flatMap(s =>
+      s.data.filter(([timestamp]) => new Date(timestamp).getTime() >= zoomedMin && new Date(timestamp).getTime() <= zoomedMax)
+    );
+    
+    if (selectedData.length) {
+      const selectedYValues = selectedData.map(([_, value]) => value);
+      const maxY = Math.max(...selectedYValues) * 1.1;
+
+      setYaxisRange(prev => ({ ...prev, max: maxY }));
+    }
+    setXaxisRange(({ min: zoomedMin, max: zoomedMax }))
+  }, [chartSeries]);
 
   useLayoutEffect(() => {
     if (minZoom !== undefined && maxZoom !== undefined) {
@@ -215,7 +243,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
         </div>
         : <Chart
           options={chartOptions}
-          series={resDataChart.map((item) => ({ name: item.title, data: item.data })) as ApexAxisChartSeries}
+          series={chartSeries}
           type="line"
           height={height}
           width={width}
