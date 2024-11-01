@@ -57,7 +57,6 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     const [sensorOptions, setSensorOptions] = useState<string[] | null | undefined>(null)
     const [selectedScaleOptions, setSelectedScaleOptions] = useState<ColumnOption[]>(currentSelectedScales);
     const [selectedClusterOptions, setSelectedClusterOptions] = useState<ClusterOptionResponse[]>(currentSelectedCluster);
-    const [filteredServicesOptions, setFilteredServicesOptions] = useState(servicesOptions)
     const [selectedServiceOptions, setSelectedServiceOptions] = useState<string | null>(currentSelectedService);
     const [selectedNetworkOptions, setSelectedNetworkOptions] = useState<string | null>(currentSelectedNetwork);
     const [selectedInterfaceOptions, setSelectedInterfaceOptions] = useState<string | null>(currentSelectedInterface);
@@ -176,6 +175,22 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         }
     };
 
+    // Filter services based on the search input
+    const filteredServicesOptions = servicesOptions?.filter(service =>
+        service.toLowerCase().includes(searchServiceValue.toLowerCase())
+    ) ?? [];
+
+    const filteredNodeOptions = nodeOptions?.filter(service =>
+        service.toLowerCase().includes(searchNodeValue.toLowerCase())
+    ) ?? [];
+    const filteredInterfaceOptions = interfaceOptions?.filter(service =>
+        service.toLowerCase().includes(searchInterfaceValue.toLowerCase())
+    ) ?? [];
+
+    const filteredDomainOptions = domainOptions?.filter(service =>
+        service.toLowerCase().includes(searchDomainValue.toLowerCase())
+    ) ?? [];
+
     const togglePanel = () => {
         setIsOpen(!isOpen);
     };
@@ -248,6 +263,15 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     }
 
     useEffect(() => {
+        setNetworkOptions(null)
+        setNodeOptions(null)
+        setInterfaceOptions(null)
+        setCategoryOptions(null)
+        setDomainOptions(null)
+        setDeviceOptions(null)
+        setSensorOptions(null)
+        setClusterOptions(null)
+        setServicesOptions(null)
         loadFiltersOptions()
     }, [selectedDataSource, selectedTimeRange])
     
@@ -268,17 +292,6 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isOpen]);
-
-    useEffect(() => {
-        setFilteredServicesOptions(servicesOptions?.filter(
-            (option) =>
-                option.toLowerCase().includes(searchServiceValue.toLowerCase()) // Convert both to lowercase
-        ) ?? []);
-    }, [searchServiceValue]);
-
-    useEffect(() => {
-        setFilteredServicesOptions(servicesOptions)
-    }, [servicesOptions])
 
     useEffect(() => {
         setSelectedScaleOptions(currentSelectedScales)
@@ -457,7 +470,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                                 onChange={handleSearchInterface}
                                             />
                                             <div className="overflow-y-auto max-h-40">
-                                                {interfaceOptions && interfaceOptions.map((interface_name, index) => (
+                                                {filteredInterfaceOptions && filteredInterfaceOptions.map((interface_name, index) => (
                                                     <label key={index} className="flex items-center justify-between mb-2">
                                                         <div className="flex items-center">
                                                             <input
@@ -491,7 +504,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                                 onChange={handleSearchNode}
                                             />
                                             <div className="overflow-y-auto max-h-40">
-                                                {nodeOptions && nodeOptions.map((node, index) => (
+                                                {filteredNodeOptions && filteredNodeOptions.map((node, index) => (
                                                     <label key={index} className="flex items-center justify-between mb-2">
                                                         <div className="flex items-center">
                                                             <input
@@ -551,7 +564,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                                 onChange={handleSearchDomain}
                                             />
                                             <div className="overflow-y-auto max-h-40">
-                                                {domainOptions && domainOptions.map((domain, index) => (
+                                                {filteredDomainOptions && filteredDomainOptions.map((domain, index) => (
                                                     <label key={index} className="flex items-center justify-between mb-2">
                                                         <div className="flex items-center">
                                                             <input
