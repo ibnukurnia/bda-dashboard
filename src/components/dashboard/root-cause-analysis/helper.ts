@@ -1,4 +1,4 @@
-import { PRTG_DATASOURCE_PREFIX, PRTG_TRAFFIC_METRIC_SUBSTRING, SOLARWINDS_DATASOURCE_PREFIX, SOLARWINDS_TRAFFIC_METRIC_SUBSTRING, TRAFFIC_SUFFIX } from "./constant/constant";
+import { PRTG_DATASOURCE_PREFIX, PRTG_TRAFFIC_METRICS, SOLARWINDS_DATASOURCE_PREFIX, SOLARWINDS_TRAFFIC_METRICS, TRAFFIC_SUFFIX } from "./constant/constant";
 
 export const getTimeDifference = (date?: Date) => {
   if (!date) return ''
@@ -17,11 +17,11 @@ export const getTimeDifference = (date?: Date) => {
 };
 
 export const getUniqueCaseDatasourceNamespace = (datasource: string, metric: string) => {
-  if (datasource.includes(PRTG_DATASOURCE_PREFIX) && metric.includes(PRTG_TRAFFIC_METRIC_SUBSTRING)) {
+  if (datasource.includes(PRTG_DATASOURCE_PREFIX) && PRTG_TRAFFIC_METRICS.some(METRIC => METRIC === metric)) {
     return datasource.replace(PRTG_DATASOURCE_PREFIX, `${PRTG_DATASOURCE_PREFIX}_${TRAFFIC_SUFFIX}`)
   }
   
-  if (datasource.includes(SOLARWINDS_DATASOURCE_PREFIX) && metric.includes(SOLARWINDS_TRAFFIC_METRIC_SUBSTRING)) {
+  if (datasource.includes(SOLARWINDS_DATASOURCE_PREFIX) && SOLARWINDS_TRAFFIC_METRICS.some(METRIC => METRIC === metric)) {
     return datasource.replace(SOLARWINDS_DATASOURCE_PREFIX, `${SOLARWINDS_DATASOURCE_PREFIX}_${TRAFFIC_SUFFIX}`)
   }
 
