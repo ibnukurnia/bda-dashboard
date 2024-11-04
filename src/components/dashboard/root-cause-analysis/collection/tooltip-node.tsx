@@ -43,28 +43,47 @@ const TooltipNode: React.FC<TooltipNodeProps> = ({
         >
           {service_alias}
         </Typography>
-        {tooltips.map(tooltip => (
-          <div
-            key={tooltip.status_code}
-            className="grid grid-cols-[110px,_auto] gap-2"
-          >
-            <Typography
-              fontWeight={600}
-              fontSize={10}
-              color={'white'}
-              align="left"
+        <table>
+          {tooltips.map(tooltip => (
+            <tr
+              key={tooltip.status_code}
             >
-              Response Code {tooltip.status_code}
-            </Typography>
-            <Typography
-              fontWeight={600}
-              fontSize={10}
-              color={'white'}
-            >
-              : {tooltip.total}
-            </Typography>
-          </div>
-        ))}
+              <td
+                className="w-[1%] whitespace-nowrap"
+              >
+                <Typography
+                  fontWeight={600}
+                  fontSize={10}
+                  color={'white'}
+                  align="left"
+                >
+                  Response Code {tooltip.status_code}
+                </Typography>
+              </td>
+              <td>
+                <Typography
+                  fontWeight={600}
+                  fontSize={10}
+                  color={'white'}
+                  align="left"
+                >
+                  :
+                </Typography>
+              </td>
+              <td>
+                <Typography
+                  fontWeight={600}
+                  fontSize={10}
+                  color={'white'}
+                  align="right"
+                >
+                  {tooltip.total}
+                </Typography>
+              </td>
+            </tr>
+          ))}
+
+        </table>
       </div>
     </Tooltip>
   )
