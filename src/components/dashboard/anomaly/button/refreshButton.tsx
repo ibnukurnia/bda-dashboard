@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 
 // Define the available intervals
 const intervals = [
-    { label: '5 seconds', value: 5000 },
-    { label: '10 seconds', value: 10000 },
-    { label: '30 seconds', value: 30000 },
     { label: '1 minute', value: 60000 },
     { label: '5 minutes', value: 300000 },
     { label: '10 minutes', value: 600000 },
