@@ -22,7 +22,6 @@ interface SynchronizedChartsProps {
     maxX?: any;
     minXOnEmpty?: any;
     maxXOnEmpty?: any;
-    animations?: boolean;
 }
 
 const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
@@ -34,7 +33,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     maxX,
     minXOnEmpty,
     maxXOnEmpty,
-    animations,
 }) => {
     const [zoomOutDisabled, setZoomOutDisabled] = useState(false);
 
@@ -76,12 +74,21 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         type: 'line',
                         height: 160,
                         animations: {
-                            enabled: animations,
+                            enabled: false,
                         },
                         toolbar: {
                             tools: {
                                 pan: false,
                                 download: false,
+                            },
+                        },
+                        zoom: {
+                            enabled: true,
+                            type: 'x',
+                            autoScaleYaxis: true,
+                            zoomedArea: {
+                                fill: { color: '#90CAF9', opacity: 0.4 },
+                                stroke: { color: '#0D47A1', opacity: 0.4, width: 1 },
                             },
                         },
                         events: {
@@ -198,6 +205,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         max: dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : undefined,
                     },
                     yaxis: {
+                        min: 0,
                         labels: {
                             style: {
                                 colors: 'white',
