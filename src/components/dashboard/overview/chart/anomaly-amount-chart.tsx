@@ -80,10 +80,12 @@ const AnomalyAmountChart = ({
     chart: {
       type: 'line',
       height: 400,
+      animations: { enabled: false },
       toolbar: {
         tools: { zoom: true, zoomin: true, zoomout: true, reset: false, download: false },
         autoSelected: 'zoom',
       },
+
       zoom: {
         enabled: true,
         type: 'x',
