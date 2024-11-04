@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
 import { format } from 'date-fns';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnomalyAmountResponse } from '@/modules/models/overviews';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
 
@@ -9,16 +9,10 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 interface AnomalyAmountChartProps {
   data: AnomalyAmountResponse[] | null;
-  startTime: string;
-  endTime: string;
-  onZoomOut: (newStartTime: string, newEndTime: string) => void;
-  onZoomIn?: (newStartTime: string, newEndTime: string) => void;
 }
 
 const AnomalyAmountChart = ({
   data = [],
-  onZoomOut,
-  onZoomIn,
 }: AnomalyAmountChartProps) => {
   const validSeries = Array.isArray(data) ? data : [];
   const chartSeries = validSeries
@@ -33,37 +27,8 @@ const AnomalyAmountChart = ({
   const minTimestamp = Math.min(...allTimestamps);
   const maxTimestamp = Math.max(...allTimestamps);
 
-  const maxYValue = Math.max(...chartSeries.flatMap(s => s.data.map(d => d[1])));
-
-  const [xaxisRange, setXaxisRange] = useState({
-    min: minTimestamp,
-    max: maxTimestamp,
-  });
-  const [yaxisRange, setYaxisRange] = useState<{ min: number; max: number }>({
-    min: 0,
-    max: maxYValue * 1.1,
-  });
   const [isVisible, setIsVisible] = useState(false);
   const chartRef = useRef(null);
-
-  const updateAxisRanges = useCallback((zoomedMin: number, zoomedMax: number) => {
-    const selectedData = chartSeries.flatMap(s =>
-      s.data.filter(([timestamp]) => timestamp >= zoomedMin && timestamp <= zoomedMax)
-    );
-
-    if (selectedData.length) {
-      const selectedYValues = selectedData.map(([_, value]) => value);
-      const minY = Math.min(...selectedYValues);
-      const maxY = Math.max(...selectedYValues) * 1.1;
-
-      const selectedXValues = selectedData.map(([timestamp]) => timestamp);
-      const minX = Math.min(...selectedXValues);
-      const maxX = Math.max(...selectedXValues);
-
-      setYaxisRange({ min: minY, max: maxY });
-      setXaxisRange({ min: minX, max: maxX });
-    }
-  }, [chartSeries]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
@@ -80,45 +45,35 @@ const AnomalyAmountChart = ({
     chart: {
       type: 'line',
       height: 400,
-      animations: { enabled: false },
+      animations: {
+        enabled: false,
+      },
       toolbar: {
-        tools: { zoom: true, zoomin: true, zoomout: true, reset: false, download: false },
+        tools: { pan: false, download: false },
         autoSelected: 'zoom',
       },
 
       zoom: {
         enabled: true,
         type: 'x',
+        autoScaleYaxis: true,
         zoomedArea: {
           fill: { color: '#90CAF9', opacity: 0.4 },
           stroke: { color: '#0D47A1', opacity: 0.4, width: 1 },
         },
       },
       events: {
-        updated(_, options) {
-          const currentMin = options.globals.minX;
-          const currentMax = options.globals.maxX;
-          setXaxisRange({ min: Math.max(minTimestamp, currentMin), max: Math.min(maxTimestamp, currentMax) });
-        },
-        beforeZoom: (chartContext, { xaxis }) => {
+        beforeZoom: (_, { xaxis }) => {
           const zoomedMin = Math.max(minTimestamp, xaxis.min);
           const zoomedMax = Math.min(maxTimestamp, xaxis.max);
 
-          updateAxisRanges(zoomedMin, zoomedMax);
-
-          if (onZoomIn) {
-            onZoomIn(
-              format(new Date(zoomedMin), 'yyyy-MM-dd HH:mm:ss'),
-              format(new Date(zoomedMax), 'yyyy-MM-dd HH:mm:ss')
-            );
-          }
           return { xaxis: { min: zoomedMin, max: zoomedMax } };
         },
       },
     },
     xaxis: {
-      min: xaxisRange.min,
-      max: xaxisRange.max,
+      min: minTimestamp,
+      max: maxTimestamp,
       type: 'datetime',
       labels: {
         formatter(value) {
@@ -128,8 +83,7 @@ const AnomalyAmountChart = ({
       },
     },
     yaxis: {
-      min: yaxisRange.min,
-      max: yaxisRange.max,
+      min: 0,
       labels: {
         style: { colors: 'white' },
         formatter: (value) => {

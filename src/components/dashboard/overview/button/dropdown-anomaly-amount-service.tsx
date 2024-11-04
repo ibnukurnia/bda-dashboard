@@ -3,6 +3,7 @@ import Button from '@/components/system/Button/Button';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
 import { GetAmountServiceList } from '@/modules/usecases/overviews';
 import useDebounce from '@/hooks/use-debounce';
+import useUpdateEffect from '@/hooks/use-update-effect';
 
 interface DropdownAnomalyAmountServiceProps {
   onSelectData: (value: string[]) => void;
@@ -43,7 +44,7 @@ const DropdownAnomalyAmountService: React.FC<DropdownAnomalyAmountServiceProps> 
       })
   }, [])
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     // If 'mylta-brimo' is available in the list, select it by default
     if (data.includes('mylta-brimo')) {
       setCurrentSelectedData(['mylta-brimo']);

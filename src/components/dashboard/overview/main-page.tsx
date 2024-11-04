@@ -32,7 +32,6 @@ const defaultTimeRanges: Record<string, number> = {
 }
 
 const MainPageOverview = () => {
-  const [refreshSignal, setRefreshSignal] = useState<number>(0);
   const [timeRanges, setTimeRanges] = useState<Record<string, number>>(defaultTimeRanges)
   const [selectedRange, setSelectedRange] = useState<string>('Last 15 minutes')
   const [lastTimeRange, setLastTimeRange] = useState(handleStartEnd(selectedRange))
@@ -88,7 +87,7 @@ const MainPageOverview = () => {
     anomalyOverviewRef.current?.refresh(selectedRange)
     topCriticalRef.current?.refresh(selectedRange)
     latestAnomalyRef.current?.refresh(selectedRange)
-    anomalyAmountRef.current?.refresh(selectedRange)
+    anomalyAmountRef.current?.refresh()
     setIsLoadingGraphic(true); // Add loading state for the chart
 
     const paramsTime = { start_time: startTime, end_time: endTime };
@@ -99,7 +98,6 @@ const MainPageOverview = () => {
       ] = await Promise.all([
         GetChartsOverview(paramsTime), // Fetch chart data
       ]);
-      setRefreshSignal((prevSignal) => prevSignal + 1);
 
     } catch (error) {
       console.error('Error occurred:', error);
@@ -228,8 +226,6 @@ const MainPageOverview = () => {
 
             <AnomalyAmountPanel
               ref={anomalyAmountRef}
-              refreshSignal={refreshSignal}
-              // timeRange={autoRefresh ? selectedRange : `${lastTimeRange.startTime} - ${lastTimeRange.endTime}`}
               isFullscreen={handle.active}
             />
           </div>
