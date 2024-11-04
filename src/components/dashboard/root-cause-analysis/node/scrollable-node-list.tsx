@@ -73,7 +73,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
       const scrollHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
       const clientHeight = window.innerHeight;
 
-      if(scrollHeight > clientHeight) {
+      if (scrollHeight > clientHeight) {
         handleSliderHeight()
         handleContainerWidth()
         handleContainerHeight()
@@ -235,12 +235,14 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
           ))}
         </NodeListWrapper>
       </div>
-      <Path
-        sourceIndex={expandedIndex - scrollTopPositions / nodeHeight}
-        expandedIndex={expandedChildIndex}
-        childCount={getPathCount()}
-        nodeWidth={containerWidth}
-      />
+      {!isLoading &&
+        <Path
+          sourceIndex={expandedIndex - scrollTopPositions / nodeHeight}
+          expandedIndex={expandedChildIndex}
+          childCount={getPathCount()}
+          nodeWidth={containerWidth}
+        />
+      }
       {!isLoading && !hideButtonDown &&
         <div
           className='absolute -bottom-4 w-full flex justify-center'
