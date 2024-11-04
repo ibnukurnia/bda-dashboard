@@ -271,7 +271,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               <div className='relative' >
                 <svg
                   className='absolute top-0 right-14'
-                  width={dimensions.width / 2.5 - 30}
+                  width={Math.max(0, dimensions.width / 2.5 - 30)}
                   height={dimensions.height / 2}
                   xmlns="http://www.w3.org/2000/svg"
                 >

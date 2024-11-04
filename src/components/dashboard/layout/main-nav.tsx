@@ -353,7 +353,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
           </div>
           <div className="border-t border-gray-600">
             <Link href="/dashboard/anomaly-notification" passHref onClick={() => setIsNotifDetailsOpen(false)}>
-              <Button component="a" className="w-full text-center py-3 text-blue-500 hover:bg-gray-800">
+              <Button className="w-full text-center py-3 text-blue-500 hover:bg-gray-800">
                 View All Anomaly
               </Button>
             </Link>
