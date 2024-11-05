@@ -91,6 +91,47 @@ const post = async <T extends object, K>(endpoint: string, body: T): Promise<Api
   }
 }
 
+const downloadFile = async (endpoint: string, mimeType: string, option?: RequestOption): Promise<void> => {
+  const headers: Record<string, string> = {
+    Accept: mimeType,
+  };
+
+  if (option?.queries !== undefined) {
+    endpoint += buildQueryParam(option?.queries as Record<string, any>);
+  }
+
+  if (option?.withAuth) {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      throw new Error('Unauthorized: No token found');
+    }
+
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response: Response = await fetch(`${!option?.isLocal ? API_URL : ''}${endpoint}`, {
+    method: 'GET',
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to download CSV: ${response.statusText}`);
+  }
+
+  // Create a blob from the response data
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = url;
+  a.download = 'ops-vision_anomaly-history.csv'; // You can set the filename here
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+};
+
 const buildQueryParam = (queries: Record<string, any>): string => {
   let param = ''
   const keys = Object.keys(queries)
@@ -120,4 +161,4 @@ const interceptor = (status: number) => {
   }
 }
 
-export { get, post }
+export { get, post, downloadFile }

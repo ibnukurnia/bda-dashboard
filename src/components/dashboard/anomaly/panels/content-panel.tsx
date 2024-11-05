@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { ClusterOptionResponse, Column } from '@/modules/models/anomaly-predictions'
-import { GetClusterOption, GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { DownloadCsvHistoricalLogAnomalies, GetClusterOption, GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
 import { Typography } from '@mui/material'
 import {
     ColumnDef,
@@ -76,6 +76,7 @@ const TabContent: React.FC<TabContentProps> = ({
     const [hasErrorFilterPrtgTrafficDevice, setHasErrorFilterPrtgTrafficDevice] = useState<boolean>(false)
     const [hasErrorFilterPrtgTrafficSensor, setHasErrorFilterPrtgTrafficSensor] = useState<boolean>(false)
     const [hasErrorFilterSeverity, setHasErrorFilterSeverity] = useState<boolean>(false)
+    const [isDownloadingCsv, setIsDownloadingCsv] = useState(false)
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
     const [highlights, setHighlights] = useState<string[][] | null | undefined>([])
     const [data, setData] = useState<any[]>([])
@@ -579,6 +580,27 @@ const TabContent: React.FC<TabContentProps> = ({
         router.replace(`/dashboard/anomaly-detection?${params.toString()}`);
     };
 
+    const handleDownload = () => {
+        if (isDownloadingCsv) return
+        setIsDownloadingCsv(true)
+        const { startTime, endTime } = getTimeRange();
+        DownloadCsvHistoricalLogAnomalies({
+            type: selectedDataSource,
+            filters: selectedAnomalyOptions,
+            cluster: selectedClustersOptions,
+            service_name: selectedServicesOptions,
+            severity: selectedSeverityOptions,
+            start_time: startTime,
+            end_time: endTime,
+            operation: selectedOperationOptions,// Default to OR if undefined
+            network: selectedNetworkOptions,
+            node: selectedNodeOptions,
+            interface: selectedInterfaceOptions,
+            category: selectedCategoryOptions,
+            domain: selectedDomainOptions,
+        }).finally(() => setIsDownloadingCsv(false))
+    }
+
     useEffect(() => {
         setIsTableHeaderLoading(true);
         setIsTableLoading(true);
@@ -718,7 +740,10 @@ const TabContent: React.FC<TabContentProps> = ({
                                         hasErrorFilterDnsDomain={hasErrorFilterDnsDomain}
                                     />
                                 )}
-                                <DownloadButton />
+                                <DownloadButton
+                                    onClick={handleDownload}
+                                    isDownloading={isDownloadingCsv}
+                                />
                             </div>
                             <div className="flex flex-row gap-2 self-end items-center">
                                 <Typography variant="body2" component="p" color="white">

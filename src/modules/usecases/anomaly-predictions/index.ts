@@ -1,4 +1,4 @@
-import { get } from '@/common/api'
+import { downloadFile, get } from '@/common/api'
 import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 import {
   AnomalyOptionResponse,
@@ -25,6 +25,29 @@ const GetHistoricalLogAnomalies = async (payload: {
   domain: string[]
 }) => {
   const response: ApiResponse<PaginatedResponse> = await get('anomaly-predictions', {
+    withAuth: true,
+    queries: payload,
+  })
+
+  return response
+}
+
+const DownloadCsvHistoricalLogAnomalies = async (payload: {
+  type: string
+  start_time: string
+  end_time: string
+  filters: string[]
+  cluster: string[]
+  service_name: string[]
+  severity: number[]
+  operation: string // Ensure this is correctly passed
+  network: string[]
+  node: string[]
+  interface: string[]
+  category: string[]
+  domain: string[]
+}) => {
+  const response: void = await downloadFile('anomaly-predictions/csv', 'text/csv', {
     withAuth: true,
     queries: payload,
   })
@@ -138,6 +161,7 @@ const GetServicesOptionByCluster = async (
 
 export {
   GetHistoricalLogAnomalies,
+  DownloadCsvHistoricalLogAnomalies,
   GetMetricLogAnomalies,
   GetHistoricalNetworkAnomalies,
   GetHistoricalSecurityAnomalies,
