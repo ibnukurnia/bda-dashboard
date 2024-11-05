@@ -143,7 +143,7 @@ const RCATree: React.FC<RCATreeProps> = ({
         }
         {expandedNodes[1] &&
           <TopBar
-            title={"Service"}
+            title={expandedNodes[1].node.children_fieldname ?? "Service"}
             subtitle={expandedNodes[2]?.node?.name}
             isLoading={isLoading}
           />
@@ -183,6 +183,7 @@ const RCATree: React.FC<RCATreeProps> = ({
                 expandedChildIndex={expandedNodes[i + 2]?.nodeIndex - scrollTopPositions[i + 2] / nodeHeight}
                 handleOnScroll={(scrollTop) => handleOnScroll(i + 1, scrollTop)}
                 hasDetail={i === 1}
+                fieldname={expNode.node.children_fieldname}
                 toUppercase={i === 1}
                 queryParams={{
                   time_range: timeRange,

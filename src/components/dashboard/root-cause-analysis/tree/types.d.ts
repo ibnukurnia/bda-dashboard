@@ -11,6 +11,7 @@ export interface TreeNodeType {
     namespace?: string;
     fungsi?: string;
     anomalyCount?: number;
+    children_fieldname?: string;
     children?: TreeNodeType[];
     tooltips?: Tooltip[]
     nlps?: NLP[];

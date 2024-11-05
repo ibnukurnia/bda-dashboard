@@ -78,6 +78,7 @@ const MainPageRootCauseAnalysis = () => {
             name: r.name,
             namespace: r.anomaly,
             anomalyCount: r.total,
+            children_fieldname: s.type === "redis" ? "Database" : "Service",
             children: r.impacted_services.map(is => ({
               name: is.service_alias,
               cluster: is.cluster,

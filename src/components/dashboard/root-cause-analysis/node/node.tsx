@@ -15,6 +15,7 @@ interface NodeProps {
   expanded: boolean;
   handleOnClickNode: () => void;
   hasDetail?: boolean;
+  fieldname?: string;
   toUppercase?: boolean;
   queryParams?: {
     time_range?: string;
@@ -44,6 +45,7 @@ const Node: React.FC<NodeProps> = ({
   expanded,
   handleOnClickNode,
   hasDetail,
+  fieldname,
   toUppercase,
   queryParams,
   tooltips,
@@ -145,7 +147,7 @@ const Node: React.FC<NodeProps> = ({
               maxWidth: '100%', // Adjust as needed
             }}
           >
-            {hasDetail && "Service:"} {toUppercase ? title?.toUpperCase() : title}
+            {hasDetail && (`${fieldname ?? "Service"}:`)} {toUppercase ? title?.toUpperCase() : title}
           </Typography>
           {fungsi &&
             <Typography
