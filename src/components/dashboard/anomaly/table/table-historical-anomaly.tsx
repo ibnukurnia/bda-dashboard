@@ -179,7 +179,7 @@ const TableHistoricalAnomaly = ({
             <tbody className="divide-y divide-gray-200 text-gray-600">
               <TableBodyWrapper
                 pageSize={pagination.pageSize}
-                columnSize={table.getHeaderGroups()?.[0].headers.length === 0 ? 10 : table.getHeaderGroups()?.[0].headers.length}
+                columnSize={isLoadingHeader || table.getHeaderGroups()?.[0].headers.length === 0 ? 10 : table.getHeaderGroups()?.[0].headers.length}
                 isLoading={isLoading}
                 isEmpty={data.length === 0}
               >

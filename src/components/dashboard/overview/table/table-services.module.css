@@ -18,3 +18,9 @@
   background-color: #060f2c;
   z-index: 1;
 }
+
+.header {
+  font-family: "Inter", sans-serif;
+  font-weight: bold;
+  font-size: 1rem;
+}

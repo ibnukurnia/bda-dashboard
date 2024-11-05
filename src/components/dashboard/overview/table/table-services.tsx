@@ -46,7 +46,10 @@ const TableServices = ({ tableHeader, dataKeys, data, selectedDataSource, queryP
           <thead>
             <tr>
               {tableHeader?.map((ths, thsid) => (
-                <th key={thsid} className={`${thsid === 0 ? 'text-left' : ''} py-2 px-1 sticky top-0 th`}>
+                <th
+                  key={thsid}
+                  className={`${styles.header} ${thsid === 0 ? 'text-left' : 'text-center'} py-2 px-1 sticky top-0`}
+                >
                   {ths}
                 </th>
               ))}
