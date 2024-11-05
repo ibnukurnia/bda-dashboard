@@ -91,7 +91,7 @@ const post = async <T extends object, K>(endpoint: string, body: T): Promise<Api
   }
 }
 
-const downloadFile = async (endpoint: string, mimeType: string, option?: RequestOption): Promise<void> => {
+const downloadFile = async (endpoint: string, mimeType: string, filename: string, option?: RequestOption): Promise<void> => {
   const headers: Record<string, string> = {
     Accept: mimeType,
   };
@@ -125,7 +125,7 @@ const downloadFile = async (endpoint: string, mimeType: string, option?: Request
   const a = document.createElement('a');
   a.style.display = 'none';
   a.href = url;
-  a.download = 'ops-vision_anomaly-history.csv'; // You can set the filename here
+  a.download = filename; // You can set the filename here
   document.body.appendChild(a);
   a.click();
   window.URL.revokeObjectURL(url);
