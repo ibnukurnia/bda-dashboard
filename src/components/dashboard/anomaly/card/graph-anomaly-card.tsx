@@ -141,7 +141,6 @@ const Graph = ({
                 maxXOnEmpty={maxXOnEmpty}
                 minX={minX}
                 maxX={maxX}
-                animations={animations}
             />
         )
     }
@@ -156,7 +155,7 @@ const Graph = ({
                 maxXOnEmpty={maxXOnEmpty}
                 minX={minX}
                 maxX={maxX}
-                animations={animations}
+
             />
         )
     }

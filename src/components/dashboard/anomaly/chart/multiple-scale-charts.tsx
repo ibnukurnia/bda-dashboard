@@ -22,7 +22,6 @@ interface MultipleScaleChartProps {
     maxX?: any;
     minXOnEmpty?: any;
     maxXOnEmpty?: any;
-    animations?: boolean;
 }
 
 const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
@@ -34,7 +33,6 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
     maxX,
     minXOnEmpty,
     maxXOnEmpty,
-    animations,
 }) => {
     const [zoomOutDisabled, setZoomOutDisabled] = useState(false)
 
@@ -80,7 +78,16 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
             type: 'line',
             height: 160,
             animations: {
-                enabled: animations,
+                enabled: false,
+            },
+            zoom: {
+                enabled: true,
+                type: 'x',
+                autoScaleYaxis: true,
+                zoomedArea: {
+                    fill: { color: '#90CAF9', opacity: 0.4 },
+                    stroke: { color: '#0D47A1', opacity: 0.4, width: 1 },
+                },
             },
             toolbar: {
                 tools: {

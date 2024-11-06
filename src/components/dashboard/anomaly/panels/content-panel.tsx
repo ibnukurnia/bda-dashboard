@@ -158,7 +158,6 @@ const TabContent: React.FC<TabContentProps> = ({
         });
     };
 
-
     const updateTimeDifference = () => {
         // 1. Check if `lastRefreshTime` exists; if not, exit the function.
         // - This prevents any further calculation if there's no recorded last refresh time.
@@ -187,7 +186,6 @@ const TabContent: React.FC<TabContentProps> = ({
             setTimeDifference(`Refreshed ${hours} hour${hours > 1 ? 's' : ''} ago`);
         }
     };
-
 
     // Function to refresh data manually (on "Refresh Now" button click)
     const handleRefreshNow = async () => {
@@ -743,7 +741,9 @@ const TabContent: React.FC<TabContentProps> = ({
                                 <DownloadButton
                                     onClick={handleDownload}
                                     isDownloading={isDownloadingCsv}
+                                    disabled={isDownloadingCsv || data.length === 0}
                                 />
+
                             </div>
                             <div className="flex flex-row gap-2 self-end items-center">
                                 <Typography variant="body2" component="p" color="white">
