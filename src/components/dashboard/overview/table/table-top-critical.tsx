@@ -133,7 +133,7 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
 
   return (
     <div className="rounded-lg w-full flex flex-col gap-3">
-      <div className={`w-full max-h-[85dvh] overflow-auto`}>
+      <div className={`w-full max-h-[85dvh] overflow-auto ${styles.scrollbar}`}>
         <div className="min-w-full h-full">
           <table
             className="table-auto divide-y border-separate divide-gray-200 w-full"
