@@ -20,7 +20,7 @@ const CellValue: React.FC<CellValueProps> = ({
   if (typeof cell.getValue() === 'number') {
     return (
       <span
-        className={`${highlights?.[rowIndex].includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''} ml-auto`}
+        className={`${highlights?.[rowIndex]?.includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''} ml-auto`}
       >
         {cell.column.id === "error_rate" ?
           (cell.getValue() as number).toString().replace('.', ',') :
@@ -31,7 +31,7 @@ const CellValue: React.FC<CellValueProps> = ({
 
   return (
     <span
-      className={highlights?.[rowIndex].includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''}
+      className={highlights?.[rowIndex]?.includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''}
     >
       {cell.getValue() as string}
     </span>
