@@ -343,14 +343,18 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             }
         };
     }, []);
-
     useEffect(() => {
         setDataColumn({ columns: [] });
         setSelectedFilter(initialFilter);
         GetColumnOption(selectedDataSource)
             .then((result) => {
                 if (result.data) {
-                    setDataColumn(result.data);
+                    // Filter out 'heartbeat' only if selectedDataSource is 'compute_vm'
+                    const filteredColumns = selectedDataSource === 'compute_vm'
+                        ? result.data.columns.filter((col) => col.name !== 'heartbeat')
+                        : result.data.columns;
+
+                    setDataColumn({ columns: filteredColumns });
                 } else {
                     console.warn('API response data is null or undefined for column option');
                 }
@@ -359,6 +363,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 console.error('Error fetching column option:', error);
             });
     }, [selectedDataSource]);
+
 
     useUpdateEffect(() => {
         fetchMetricLog(predefinedStartTime, predefinedEndTime);
