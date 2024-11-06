@@ -109,7 +109,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
 
             {/* First Level Dropdown */}
             {showDropdown === i && (
-              <div className="absolute mt-2 w-full bg-white border border-gray-200 rounded shadow-lg z-10">
+              <div className="absolute mt-4 w-full bg-[#05061e] border-2 border-[#004889] rounded shadow-lg z-10">
                 {ds.children &&
                   ds.children.map((child, childIndex) => (
                     <div key={child.textLabel} className="relative">
@@ -118,7 +118,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
                         <div>
                           <button
                             onClick={() => handleSecondLevelClick(i, childIndex)}
-                            className="text-black block w-full text-left px-5 py-4 text-sm hover:bg-blue-100 transition duration-300 ease-in-out flex justify-between items-center"
+                            className="text-white block w-full text-left px-5 py-4 text-sm transition duration-300 ease-in-out flex justify-between items-center"
                           >
                             {child.textLabel}
 
@@ -131,15 +131,15 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
 
                           {/* Second Level Dropdown */}
                           {showSecondLevelDropdown[i] === childIndex && (
-                            <div className="absolute left-full top-0 mt-0 ml-2 bg-white border border-gray-200 rounded shadow-lg z-10 w-48">
+                            <div className="absolute left-full top-0 mt-0 ml-2 bg-[#05061e] border-2 border-[#004889] rounded shadow-lg z-10 w-48">
                               {child.children.map((subChild) => (
                                 <button
                                   key={subChild.namespace}
                                   onClick={() => handleDropdownClick(subChild.namespace)}
-                                  className={`text-black block w-full text-left px-5 py-4 text-sm ${subChild.namespace === selectedDataSource
-                                    ? 'text-blue-600'
-                                    : 'text-black'
-                                    } transition duration-300 ease-in-out hover:bg-blue-100`}
+                                  className={`block w-full text-left px-5 py-4 text-sm ${subChild.namespace === selectedDataSource
+                                    ? 'text-blue-400'
+                                    : 'text-[#fff]'
+                                    } transition duration-300 ease-in-out`}
                                 >
                                   {subChild.textLabel}
                                 </button>
@@ -150,8 +150,8 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
                       ) : (
                         <button
                           onClick={() => handleDropdownClick(child.namespace)}
-                          className={`text-black block w-full text-left px-5 py-4 text-sm ${child.namespace === selectedDataSource ? 'text-blue-600' : 'text-black'
-                            } transition duration-300 ease-in-out hover:bg-blue-100`}
+                          className={`text-black block w-full text-left px-5 py-4 text-sm ${child.namespace === selectedDataSource ? 'text-blue-400' : 'text-white'
+                            } transition duration-300 ease-in-out`}
                         >
                           {child.textLabel}
                         </button>
