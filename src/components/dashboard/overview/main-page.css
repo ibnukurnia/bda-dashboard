@@ -43,7 +43,7 @@
   background: #0816358F;
   /* backdrop-filter: blur(77.9000015258789px); */
   border-radius: 16px;
-  padding: 32px;
+  padding: 28px;
 }
 
 .wrapper {
@@ -155,15 +155,15 @@
 
 @keyframes blinking {
   0% {
-      opacity: 1;
+    opacity: 1;
   }
 
   50% {
-      opacity: .75;
+    opacity: .75;
   }
 
   100% {
-      opacity: .5;
+    opacity: .5;
   }
 }
 

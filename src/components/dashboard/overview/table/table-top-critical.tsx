@@ -77,7 +77,7 @@ const TableBodyWrapper: React.FC<TableBodyWrapperProps> = ({
         {Array.from(Array(columnSize), (_, j) => (
           <td
             key={j}
-            className={`${i !== pageSize-1 ? "border-b border-b-[#e5e7eb]" : ""} ${i === 0 ? "border-t border-t-[#e5e7eb]" : ""} p-4`}
+            className={`${i !== pageSize - 1 ? "border-b border-b-[#e5e7eb]" : ""} ${i === 0 ? "border-t border-t-[#e5e7eb]" : ""} p-4`}
           >
             {j === 1 ?
               <div className='flex flex-col gap-3'>
@@ -133,7 +133,7 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
 
   return (
     <div className="rounded-lg w-full flex flex-col gap-3">
-      <div className={`w-full max-h-[75dvh] overflow-auto`}>
+      <div className={`w-full max-h-[85dvh] overflow-auto`}>
         <div className="min-w-full h-full">
           <table
             className="table-auto divide-y border-separate divide-gray-200 w-full"
@@ -183,7 +183,7 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                       {row.getVisibleCells().map((cell, j) => (
                         <td
                           key={cell.id}
-                          className={`${j === 0 ? styles.first_child : ""} ${i !== table.getRowModel().rows.length-1 ? "border-b border-b-[#e5e7eb]" : ""} ${i === 0 ? "border-t border-t-[#e5e7eb]" : ""} whitespace-nowrap`}
+                          className={`${j === 0 ? styles.first_child : ""} ${i !== table.getRowModel().rows.length - 1 ? "border-b border-b-[#e5e7eb]" : ""} ${i === 0 ? "border-t border-t-[#e5e7eb]" : ""} whitespace-nowrap`}
                         >
                           <Link
                             className='w-full h-full flex px-3 py-1 text-sm items-center rounded-full gap-x-2'

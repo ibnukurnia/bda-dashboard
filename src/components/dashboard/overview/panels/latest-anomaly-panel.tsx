@@ -43,7 +43,7 @@ const LatestAnomalyPanel = forwardRef<LatestAnomalyPanelHandle, LatestAnomalyPan
   }
 
   return (
-    <div className='card flex flex-col gap-6'>
+    <div className='card flex flex-col gap-8'>
       <div className='flex justify-between'>
         <span className="font-bold text-white text-2xl content-center">Latest Anomaly</span>
         <div className='flex gap-4'>
