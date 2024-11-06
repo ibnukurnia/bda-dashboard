@@ -280,19 +280,22 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
             gap: '14px',
             top: '96px',
             right: '16px',
-            backgroundColor: 'white',
+            backgroundColor: '#1f2a48',
             padding: '16px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            border: '1px solid', // Border width
+            borderColor: '#4B5563', // Tailwind's gray-600 color equivalent
+            borderRadius: '8px', // Rounded corners
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', // Shadow effect
             zIndex: 9999,
             marginTop: '4px'
           }}
+
         >
           <Stack direction="column" gap={1} p={1}>
-            <Typography variant="h6" component="h2" color="black">
+            <Typography variant="h6" component="h2" color="white">
               {userInfo.name}
             </Typography>
-            <Typography variant="body2" component="p" color="black">
+            <Typography variant="body2" component="p" color="#E5E7EB">
               {formattedDate}
             </Typography>
           </Stack>
@@ -300,66 +303,69 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
             Log Out
           </Button>
         </Box>
-      )}
+      )
+      }
 
-      {isNotifDetailsOpen && (
-        <div ref={notifRef} className="flex flex-col fixed w-fit right-4 self-end top-24 mt-2 bg-[#081635] border border-gray-600 rounded-lg shadow-lg z-20">
-          <div className="flex flex-col gap-4 p-4">
-            {isLoading ? (
-              <div className="text-white">Loading...</div>
-            ) : (
-              notifications.slice(0, 5).map((notif, index) => (
-                <Link
-                  key={index}
-                  className="bg-[#1f2a48] hover:bg-opacity-50 p-4 rounded-lg flex flex-col gap-5"
-                  href={{
-                    pathname: '/dashboard/anomaly-detection',
-                    query: {
-                      data_source: notif.source_identifier,
-                      time_range: `${notif.timestamp_identifier} - ${plusAMinute(notif.timestamp_identifier)}`,
-                      anomaly: notif.anomaly_identifier,
-                      ...((notif.site_identifier != null && notif.site_identifier.length > 0) && { cluster: notif.site_identifier }), // Only include cluster if it's not null or undefined
-                      service: notif.identifier,
-                    },
-                  }}
-                  passHref
-                  onClick={() => setIsNotifDetailsOpen(false)}
-                >
-                  <div className="flex flex-row items-center justify-between gap-6">
-                    <div>
-                      <p className="text-white font-semibold">Anomaly Detected!</p>
-                      <p className="text-gray-200 text-sm">{notif.timestamp}</p>
+      {
+        isNotifDetailsOpen && (
+          <div ref={notifRef} className="flex flex-col fixed w-fit right-4 self-end top-24 mt-2 bg-[#081635] border border-gray-600 rounded-lg shadow-lg z-20">
+            <div className="flex flex-col gap-4 p-4">
+              {isLoading ? (
+                <div className="text-white">Loading...</div>
+              ) : (
+                notifications.slice(0, 5).map((notif, index) => (
+                  <Link
+                    key={index}
+                    className="bg-[#1f2a48] hover:bg-opacity-50 p-4 rounded-lg flex flex-col gap-5"
+                    href={{
+                      pathname: '/dashboard/anomaly-detection',
+                      query: {
+                        data_source: notif.source_identifier,
+                        time_range: `${notif.timestamp_identifier} - ${plusAMinute(notif.timestamp_identifier)}`,
+                        anomaly: notif.anomaly_identifier,
+                        ...((notif.site_identifier != null && notif.site_identifier.length > 0) && { cluster: notif.site_identifier }), // Only include cluster if it's not null or undefined
+                        service: notif.identifier,
+                      },
+                    }}
+                    passHref
+                    onClick={() => setIsNotifDetailsOpen(false)}
+                  >
+                    <div className="flex flex-row items-center justify-between gap-6">
+                      <div>
+                        <p className="text-white font-semibold">Anomaly Detected!</p>
+                        <p className="text-gray-200 text-sm">{notif.timestamp}</p>
+                      </div>
+                      <span className="bg-red-600 text-white text-xs py-1 px-2 rounded-full">{notif.source}</span>
                     </div>
-                    <span className="bg-red-600 text-white text-xs py-1 px-2 rounded-full">{notif.source}</span>
-                  </div>
-                  <div>
-                    <p className="text-gray-300 text-sm">
-                      <span className="text-yellow-500">
-                        <span className="inline-block mr-1">⚠</span> Anomaly:
-                      </span> {notif.anomaly_description}
-                    </p>
-                    <p className="text-gray-300 text-sm">
-                      <span className="text-gray-200">
-                        <svg className="w-4 h-4 inline-block mr-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 1 0-14 0 7 7 0 0 0 14 0z" />
-                        </svg>
-                        Identifier:
-                      </span> {notif.identifier}
-                    </p>
-                  </div>
-                </Link>
-              ))
-            )}
+                    <div>
+                      <p className="text-gray-300 text-sm">
+                        <span className="text-yellow-500">
+                          <span className="inline-block mr-1">⚠</span> Anomaly:
+                        </span> {notif.anomaly_description}
+                      </p>
+                      <p className="text-gray-300 text-sm">
+                        <span className="text-gray-200">
+                          <svg className="w-4 h-4 inline-block mr-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 1 0-14 0 7 7 0 0 0 14 0z" />
+                          </svg>
+                          Identifier:
+                        </span> {notif.identifier}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+            <div className="border-t border-gray-600">
+              <Link href="/dashboard/anomaly-notification" passHref onClick={() => setIsNotifDetailsOpen(false)}>
+                <Button className="w-full text-center py-3 text-blue-500 hover:bg-gray-800">
+                  View All Anomaly
+                </Button>
+              </Link>
+            </div>
           </div>
-          <div className="border-t border-gray-600">
-            <Link href="/dashboard/anomaly-notification" passHref onClick={() => setIsNotifDetailsOpen(false)}>
-              <Button className="w-full text-center py-3 text-blue-500 hover:bg-gray-800">
-                View All Anomaly
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
+        )
+      }
 
 
       <MobileNav
@@ -368,6 +374,6 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
         }}
         open={openNav}
       />
-    </React.Fragment>
+    </React.Fragment >
   );
 }
