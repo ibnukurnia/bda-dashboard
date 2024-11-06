@@ -118,6 +118,7 @@ interface GroupProps {
   title: string
   score: number
   severity: number
+  enableCollapse?: boolean
   expanded: boolean
   iconName: string
   handleOnClick: () => void
@@ -129,11 +130,12 @@ const GroupNode: React.FC<GroupProps> = ({
   title,
   score,
   severity,
+  enableCollapse = true,
   expanded,
   iconName,
   handleOnClick,
 }) => {
-  if (!expanded) {
+  if (enableCollapse && !expanded) {
     return (
       <Node
         className='mt-10'
@@ -173,20 +175,22 @@ const GroupNode: React.FC<GroupProps> = ({
             {formatNumberWithCommas(score)}%
           </Typography>
         </div>
-        <button
-          className=' py-1 px-3 flex gap-[5px] items-center rounded-md bg-white bg-opacity-10 hover:bg-opacity-20'
-          onClick={handleOnClick}
-        >
-          <CollapseIcon />
-          <Typography
-            fontWeight={700}
-            fontSize={12}
-            color={'white'}
-            lineHeight={'14.63px'}
+        {enableCollapse &&
+          <button
+            className=' py-1 px-3 flex gap-[5px] items-center rounded-md bg-white bg-opacity-10 hover:bg-opacity-20'
+            onClick={handleOnClick}
           >
-            Collapse
-          </Typography>
-        </button>
+            <CollapseIcon />
+            <Typography
+              fontWeight={700}
+              fontSize={12}
+              color={'white'}
+              lineHeight={'14.63px'}
+            >
+              Collapse
+            </Typography>
+          </button>
+        }
       </div>
       {children}
     </div>
@@ -207,9 +211,11 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   const [appsExpanded, setAppsExpanded] = useState(true)
+  const [redisExpanded, setRedisExpanded] = useState(true)
   const [computeExpanded, setComputeExpanded] = useState(true)
   const [securityExpanded, setSecurityExpanded] = useState(true)
   const [networkExpanded, setNetworkExpanded] = useState(true)
+  const [dnsExpanded, setDnsExpanded] = useState(true)
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -233,9 +239,17 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     if (computeExpanded) return 46
     return 55
   }
+  const getVerticalLinkTopPosition = () => {
+    if (networkExpanded && computeExpanded) return '-94px'
+    if (networkExpanded) return '-133px'
+    if (securityExpanded && !computeExpanded) return '-86px'
+    return '-47px'
+  }
   const getVerticalLinkHeight = () => {
+    if (networkExpanded && computeExpanded) return 94
+    if (networkExpanded) return 173
+    if (securityExpanded && !computeExpanded) return 126
     if (computeExpanded) return 47
-    if (securityExpanded || networkExpanded) return 126
     return 87
   }
   const getNetworkLinkWidth = () => {
@@ -270,13 +284,13 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             <div className='col-span-5 flex justify-center' >
               <div className='relative' >
                 <svg
-                  className='absolute top-0 right-14'
-                  width={Math.max(0, dimensions.width / 2.5 - 30)}
+                  className='absolute top-0 right-[52px]'
+                  width={Math.max(0, dimensions.width / 2.5 - 26)}
                   height={dimensions.height / 2}
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path d={`M ${dimensions.width / 2.5} 26 C 0 26 0 26 0 84`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
-                  <path d={`M ${dimensions.width / 2.5 - 30} 26 C ${dimensions.width / 5} 26 ${dimensions.width / 5} 26 ${dimensions.width / 5} 84`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M ${dimensions.width / 2.5} 26 C 0 26 0 26 0 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M ${dimensions.width / 2.5 - 26} 26 C ${dimensions.width / 5} 26 ${dimensions.width / 5} 26 ${dimensions.width / 5} 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
                 </svg>
                 <Node
                   title={'OCP'}
@@ -287,13 +301,13 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
                   timeRange={timeRange}
                 />
                 <svg
-                  className='absolute top-0 left-14'
+                  className='absolute top-0 left-[52px]'
                   width={dimensions.width / 2.5}
                   height={dimensions.height / 2}
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path d={`M 0 26 C ${dimensions.width / 5 - 30} 26 ${dimensions.width / 5 - 30} 26 ${dimensions.width / 5 - 30} 84`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
-                  <path d={`M 0 26 C ${dimensions.width / 2.5 - 30} 26 ${dimensions.width / 2.5 - 30} 26 ${dimensions.width / 2.5 - 30} 84`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M 0 26 C ${dimensions.width / 5 - 26} 26 ${dimensions.width / 5 - 26} 26 ${dimensions.width / 5 - 26} 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M 0 26 C ${dimensions.width / 2.5 - 26} 26 ${dimensions.width / 2.5 - 26} 26 ${dimensions.width / 2.5 - 26} 89`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
                 </svg>
               </div>
             </div>
@@ -322,14 +336,36 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.score ?? 100}
               severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.severity ?? 0}
             />
-            <Node
+            <GroupNode
+              className='w-auto'
               timeRange={timeRange}
               title={'Redis'}
-              dataSource={SECTIONS_CONFIG.apps.redis}
-              iconName={'node-icon-redis.svg'}
-              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis)?.score ?? 100}
-              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis)?.severity ?? 0}
-            />
+              iconName={'node-icon-security.svg'}
+              score={data.redis.score}
+              severity={data.redis.severity}
+              enableCollapse={false}
+              expanded={redisExpanded}
+              handleOnClick={() => setRedisExpanded(prev => !prev)}
+            >
+              <div className='pb-4 px-8 grid grid-cols-2 gap-4 justify-center'>
+                <Node
+                  timeRange={timeRange}
+                  title={'Redis Node'}
+                  dataSource={SECTIONS_CONFIG.redis.redis}
+                  iconName={'node-icon-redis-node.svg'}
+                  score={data.redis.nodes.find(node => node.dataSource === SECTIONS_CONFIG.redis.redis)?.score ?? 100}
+                  severity={data.redis.nodes.find(node => node.dataSource === SECTIONS_CONFIG.redis.redis)?.severity ?? 0}
+                />
+                <Node
+                  timeRange={timeRange}
+                  title={'Redis Cluster'}
+                  dataSource={SECTIONS_CONFIG.redis.redis_node}
+                  iconName={'node-icon-redis-cluster.svg'}
+                  score={data.redis.nodes.find(node => node.dataSource === SECTIONS_CONFIG.redis.redis_node)?.score ?? 100}
+                  severity={data.redis.nodes.find(node => node.dataSource === SECTIONS_CONFIG.redis.redis_node)?.severity ?? 0}
+                />
+              </div>
+            </GroupNode>
           </div>
         </div>
       </GroupNode>
@@ -451,7 +487,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             width={2}
             xmlns="http://www.w3.org/2000/svg"
             style={{
-              top: !computeExpanded && (securityExpanded || networkExpanded) ? '-86px' : '-47px',
+              top: getVerticalLinkTopPosition(),
               left: `50%`,
             }}
           >
@@ -492,7 +528,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
           expanded={networkExpanded}
           handleOnClick={() => setNetworkExpanded(prev => !prev)}
         >
-          <div className='pb-4 px-8 grid grid-cols-5 gap-4 justify-center'>
+          <div className='pb-4 px-8 flex gap-4 justify-center'>
             <Node
               className='h-28'
               timeRange={timeRange}
@@ -520,15 +556,38 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dwdm)?.score ?? 100}
               severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dwdm)?.severity ?? 0}
             />
-            <Node
-              className='h-28'
+            <GroupNode
+              className='w-auto m-0'
               timeRange={timeRange}
               title={'DNS'}
-              dataSource={SECTIONS_CONFIG.network.dns}
-              iconName={'node-icon-host.svg'}
-              score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dns)?.score ?? 100}
-              severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dns)?.severity ?? 0}
-            />
+              iconName={'node-icon-dns.svg'}
+              score={data.dns.score}
+              severity={data.dns.severity}
+              expanded={dnsExpanded}
+              enableCollapse={false}
+              handleOnClick={() => setDnsExpanded(prev => !prev)}
+            >
+              <div className='pb-4 px-8 grid grid-cols-2 gap-4 justify-center'>
+                <Node
+                  className='h-28'
+                  timeRange={timeRange}
+                  title={'Domain'}
+                  dataSource={SECTIONS_CONFIG.dns.dns_domain}
+                  iconName={'node-icon-domain.svg'}
+                  score={data.dns.nodes.find(node => node.dataSource === SECTIONS_CONFIG.dns.dns_domain)?.score ?? 100}
+                  severity={data.dns.nodes.find(node => node.dataSource === SECTIONS_CONFIG.dns.dns_domain)?.severity ?? 0}
+                />
+                <Node
+                  className='h-28'
+                  timeRange={timeRange}
+                  title={'DNS Infobox'}
+                  dataSource={SECTIONS_CONFIG.dns.dns_infobox}
+                  iconName={'node-icon-dns-infobox.svg'}
+                  score={data.dns.nodes.find(node => node.dataSource === SECTIONS_CONFIG.dns.dns_infobox)?.score ?? 100}
+                  severity={data.dns.nodes.find(node => node.dataSource === SECTIONS_CONFIG.dns.dns_infobox)?.severity ?? 0}
+                />
+              </div>
+            </GroupNode>
             <Node
               className='h-28'
               timeRange={timeRange}
