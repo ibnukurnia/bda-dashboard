@@ -21,7 +21,6 @@ export const SECTIONS_CONFIG = {
     ocp: 'k8s_prometheus',
     database: 'k8s_db',
     redis: 'redis',
-    redis_node: 'redis_node',
   },
   security: {
     firewall: 'prtg_firewall',

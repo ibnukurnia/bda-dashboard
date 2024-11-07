@@ -211,11 +211,9 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   const [appsExpanded, setAppsExpanded] = useState(true)
-  const [redisExpanded, setRedisExpanded] = useState(true)
   const [computeExpanded, setComputeExpanded] = useState(true)
   const [securityExpanded, setSecurityExpanded] = useState(true)
   const [networkExpanded, setNetworkExpanded] = useState(true)
-  const [dnsExpanded, setDnsExpanded] = useState(true)
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -278,19 +276,19 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             ref={containerRef}
             className='w-full grid justify-between items-center'
             style={{
-              gridTemplateColumns: "repeat(3, 1fr)",
+              gridTemplateColumns: "repeat(5, 1fr)",
             }}
           >
             <div className='col-span-5 flex justify-center' >
               <div className='relative' >
                 <svg
                   className='absolute top-0 right-[52px]'
-                  width={Math.max(0, dimensions.width / 2.39 - 26)}
+                  width={Math.max(0, dimensions.width / 2.5 - 26)}
                   height={dimensions.height / 2}
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path d={`M ${dimensions.width / 2.39} 26 C 0 26 0 26 0 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
-                  <path d={`M ${dimensions.width / 2.39 - 26} 26 C ${dimensions.width / 6} 26 ${dimensions.width / 6} 26 ${dimensions.width / 6} 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M ${dimensions.width / 2.5 - 26} 26 C 1 26 1 26 1 89`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M ${dimensions.width / 2.5 - 26} 26 C ${dimensions.width / 5} 26 ${dimensions.width / 5} 26 ${dimensions.width / 5} 89`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
                 </svg>
                 <Node
                   title={'OCP'}
@@ -302,61 +300,48 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
                 />
                 <svg
                   className='absolute top-0 left-[52px]'
-                  width={dimensions.width / 2}
+                  width={dimensions.width / 2.5}
                   height={dimensions.height / 2}
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path d={`M 0 26 C ${dimensions.width / 4.45 - 26} 26 ${dimensions.width / 4.45 - 26} 26 ${dimensions.width / 4.45 - 26} 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
-                  <path d={`M 0 26 C ${dimensions.width / 3 - 26} 26 ${dimensions.width / 3 - 26} 26 ${dimensions.width / 3 - 26} 89`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
-                  <path d={`M 0 26 C ${dimensions.width / 2.25 - 26} 26 ${dimensions.width / 2.25 - 26} 26 ${dimensions.width / 2.25 - 26} 89`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M 0 26 C ${dimensions.width / 5 - 26} 26 ${dimensions.width / 5 - 26} 26 ${dimensions.width / 5 - 26} 89`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M 0 26 C ${dimensions.width / 2.5 - 26} 26 ${dimensions.width / 2.5 - 26} 26 ${dimensions.width / 2.5 - 26} 89`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
                 </svg>
               </div>
             </div>
-            <div className='grid grid-cols-2'>
-              <Node
-                timeRange={timeRange}
-                title={'APM'}
-                dataSource={SECTIONS_CONFIG.apps.apm}
-                iconName={'node-icon-apm.svg'}
-                score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.apm)?.score ?? 100}
-                severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.apm)?.severity ?? 0}
-              />
-              <Node
-                timeRange={timeRange}
-                title={'BRImo'}
-                dataSource={SECTIONS_CONFIG.apps.brimo}
-                iconName={'node-icon-brimo.svg'}
-                score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.brimo)?.score ?? 100}
-                severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.brimo)?.severity ?? 0}
-              />
-            </div>
+            <Node
+              timeRange={timeRange}
+              title={'APM'}
+              dataSource={SECTIONS_CONFIG.apps.apm}
+              iconName={'node-icon-apm.svg'}
+              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.apm)?.score ?? 100}
+              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.apm)?.severity ?? 0}
+            />
+            <Node
+              timeRange={timeRange}
+              title={'BRImo'}
+              dataSource={SECTIONS_CONFIG.apps.brimo}
+              iconName={'node-icon-brimo.svg'}
+              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.brimo)?.score ?? 100}
+              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.brimo)?.severity ?? 0}
+            />
             <div />
-            <div className='grid grid-cols-3'>
-              <Node
-                timeRange={timeRange}
-                title={'Database'}
-                dataSource={SECTIONS_CONFIG.apps.database}
-                iconName={'node-icon-database.svg'}
-                score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.score ?? 100}
-                severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.severity ?? 0}
-              />
-              <Node
-                timeRange={timeRange}
-                title={'Redis Node'}
-                dataSource={SECTIONS_CONFIG.apps.redis_node}
-                iconName={'node-icon-redis-node.svg'}
-                score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis_node)?.score ?? 100}
-                severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis_node)?.severity ?? 0}
-              />
-              <Node
-                timeRange={timeRange}
-                title={'Redis Cluster'}
-                dataSource={SECTIONS_CONFIG.apps.redis}
-                iconName={'node-icon-redis-cluster.svg'}
-                score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis)?.score ?? 100}
-                severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis)?.severity ?? 0}
-              />
-            </div>
+            <Node
+              timeRange={timeRange}
+              title={'Database'}
+              dataSource={SECTIONS_CONFIG.apps.database}
+              iconName={'node-icon-database.svg'}
+              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.score ?? 100}
+              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.severity ?? 0}
+            />
+            <Node
+              timeRange={timeRange}
+              title={'Redis'}
+              dataSource={SECTIONS_CONFIG.apps.redis}
+              iconName={'node-icon-redis.svg'}
+              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis)?.score ?? 100}
+              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis)?.severity ?? 0}
+            />
           </div>
         </div>
       </GroupNode>
