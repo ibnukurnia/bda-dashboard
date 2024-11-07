@@ -51,7 +51,7 @@ export const TAB_DATA_SOURCE = [
         textLabel: "Compute Host",
       },
       {
-        namespace: "compute_datastore",
+        namespace: "compute_store",
         textLabel: "Compute Datastore",
       },
     ],
@@ -177,7 +177,7 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'compute_vm': "Compute VM",
   'compute_host': "Compute Host",
   'compute_storage': "Compute Storage",
-  'compute_datastore': "Compute Datastore",
+  'compute_store': "Compute Datastore",
   'ivat': "IVAT",
   'solarwinds': "Solar Winds",
   'dns_rt': "DNS",

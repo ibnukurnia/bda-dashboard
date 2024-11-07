@@ -624,6 +624,7 @@ const TabContent: React.FC<TabContentProps> = ({
         });
 
         loadFiltersOptions()
+        console.log(selectedDataSource)
     }, [selectedDataSource]);
 
     useUpdateEffect(() => {
@@ -795,15 +796,18 @@ const TabContent: React.FC<TabContentProps> = ({
                             totalRows={totalRows}
                         />
                     </div>
-                    <div className='card-style p-6'>
-                        <GraphAnomalyCard
-                            selectedDataSource={selectedDataSource}
-                            selectedTimeRangeKey={selectedTimeRange}
-                            timeRanges={PREDEFINED_TIME_RANGES}
-                            autoRefresh={graphAutoRefresh}
-                            isFullScreen={handle.active}
-                        />
-                    </div>
+                    {(selectedDataSource !== 'panw' && selectedDataSource !== 'forti' && selectedDataSource !== 'waf') && (
+                        <div className='card-style p-6'>
+                            <GraphAnomalyCard
+                                selectedDataSource={selectedDataSource}
+                                selectedTimeRangeKey={selectedTimeRange}
+                                timeRanges={PREDEFINED_TIME_RANGES}
+                                autoRefresh={graphAutoRefresh}
+                                isFullScreen={handle.active}
+                            />
+                        </div>
+                    )}
+
                 </div>
             </FullScreen>
         </div>

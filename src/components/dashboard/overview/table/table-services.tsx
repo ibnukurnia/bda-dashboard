@@ -10,7 +10,7 @@ const LABELS_TO_NAMESPACE: Record<string, string> = {
   "Redis": 'redis',
   "Compute Vm": 'compute_vm',
   "Compute Host": 'compute_host',
-  "Compute Datastore": 'compute_datastore',
+  "Compute Datastore": 'compute_store',
   "Compute Store": 'compute_store',
   "Compute Storage": 'compute_storage',
   "IVAT": 'ivat',
