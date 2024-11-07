@@ -24,11 +24,9 @@ type Section = {
 // Define the type for the entire result
 export type MappedHealthinessTree = {
   apps: Section;
-  redis: Section;
   security: Section;
   compute: Section;
   network: Section;
-  dns: Section;
 };
 
 // Helper function to get node data
@@ -92,22 +90,15 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
 
   const mappedData: MappedHealthinessTree = useMemo(() => {
     const appsNodes = generateNodes(responseData, SECTIONS_CONFIG.apps);
-    const redisNodes = generateNodes(responseData, SECTIONS_CONFIG.redis);
     const securityNodes = generateNodes(responseData, SECTIONS_CONFIG.security);
     const computeNodes = generateNodes(responseData, SECTIONS_CONFIG.compute);
     const networkNodes = generateNodes(responseData, SECTIONS_CONFIG.network);
-    const dnsNodes = generateNodes(responseData, SECTIONS_CONFIG.dns);
 
     const mapData = {
       apps: {
         nodes: appsNodes,
         score: calculateAverageScore(appsNodes),
         severity: calculateSeverity(appsNodes),
-      },
-      redis: {
-        nodes: redisNodes,
-        score: calculateAverageScore(redisNodes),
-        severity: calculateSeverity(redisNodes),
       },
       security: {
         nodes: securityNodes,
@@ -123,11 +114,6 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
         nodes: networkNodes,
         score: calculateAverageScore(networkNodes),
         severity: calculateSeverity(networkNodes),
-      },
-      dns: {
-        nodes: dnsNodes,
-        score: calculateAverageScore(dnsNodes),
-        severity: calculateSeverity(dnsNodes),
       },
     }
 
