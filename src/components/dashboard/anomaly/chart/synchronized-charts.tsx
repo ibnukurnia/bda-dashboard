@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { ApexOptions } from 'apexcharts';
 import './custom-chart-styles.css';
@@ -36,20 +36,14 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 }) => {
     const [zoomOutDisabled, setZoomOutDisabled] = useState(false);
 
-    // Log dataCharts to see its structure
     useEffect(() => {
         console.log("Data Charts:", dataCharts);
     }, [dataCharts]);
 
     const toggleZoomOutButton = (disabled: boolean) => {
         const zoomOutButtons = document.querySelectorAll('.apexcharts-zoomout-icon');
-
         zoomOutButtons.forEach(button => {
-            if (disabled) {
-                button.classList.add('zoom-disabled');
-            } else {
-                button.classList.remove('zoom-disabled');
-            }
+            button.classList.toggle('zoom-disabled', disabled);
         });
     };
 
@@ -72,9 +66,10 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     return (
         <div className="flex flex-col gap-4">
             {dataCharts.map((metric, index) => {
-                console.log(`Metric ${index}:`, metric); // Log each metric data for inspection
+                console.log(`Metric ${index}: Title: ${metric.title}, Color: ${colors[index % colors.length]}`);
 
-                const chartOptions: ApexOptions = {
+                // Use useMemo to memorize the options and series per chart
+                const chartOptions: ApexOptions = useMemo(() => ({
                     chart: {
                         id: `sync-${index}`,
                         group: 'log-anomaly',
@@ -93,10 +88,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             enabled: true,
                             type: 'x',
                             autoScaleYaxis: true,
-                            zoomedArea: {
-                                fill: { color: '#90CAF9', opacity: 0.4 },
-                                stroke: { color: '#0D47A1', opacity: 0.4, width: 1 },
-                            },
                         },
                         events: {
                             updated(_, options) {
@@ -118,7 +109,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                             },
                             beforeZoom: (chartContext, { xaxis }) => {
                                 console.log("Zoom selected range:", { min: xaxis.min, max: xaxis.max });
-
                                 if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {
                                     if (!zoomOutDisabled) {
                                         onZoomOut && onZoomOut(
@@ -129,12 +119,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 
                                     if (minX >= xaxis.min && maxX <= xaxis.max) {
                                         setZoomOutDisabled(true);
-                                        return {
-                                            xaxis: {
-                                                min: minX,
-                                                max: maxX,
-                                            },
-                                        };
+                                        return { xaxis: { min: minX, max: maxX } };
                                     } else {
                                         setZoomOutDisabled(false);
                                     }
@@ -154,56 +139,25 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         intersect: false,
                         y: {
                             formatter: (value) => {
-                                if (metric.title === "Error Rate DC || Error Rate ODC") {
-                                    const errorRateFormatter = new Intl.NumberFormat('en-US', {
-                                        minimumFractionDigits: 6,
-                                        maximumFractionDigits: 6,
-                                    });
-                                    return errorRateFormatter.format(value);
-                                }
-                                if (metric.title === "Amount (Rp) DC") {
-                                    const rupiahFormatter = new Intl.NumberFormat('id-ID', {
-                                        style: 'currency',
-                                        currency: 'IDR',
-                                        minimumFractionDigits: 2,
-                                    });
-                                    return rupiahFormatter.format(value).replace("Rp", "Rp.");
-                                }
-                                if (value < 1 && value > 0) {
-                                    return value.toString();
-                                }
-                                const numberFormatter = new Intl.NumberFormat('en-US', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
+                                const formatter = new Intl.NumberFormat('en-US', {
+                                    minimumFractionDigits: metric.title.includes("Error Rate") ? 6 : 2,
+                                    maximumFractionDigits: metric.title.includes("Error Rate") ? 6 : 2,
                                 });
-
-                                return numberFormatter.format(value);
+                                return formatter.format(value);
                             },
                         },
-
                         x: {
-                            formatter: (value) => {
-                                const date = new Date(value);
-                                return formatDate(date, "yyyy-MM-dd HH:mm:ss");
-                            },
+                            formatter: (value) => formatDate(new Date(value), "yyyy-MM-dd HH:mm:ss"),
                         },
                     },
                     title: {
                         text: metric.title,
-                        style: {
-                            color: 'white',
-                        },
+                        style: { color: 'white' },
                     },
                     xaxis: {
                         type: 'datetime',
                         labels: {
-                            formatter(value) {
-                                const date = new Date(value);
-                                return formatDate(date, "yyyy-MM-dd HH:mm").split(" ");
-                            },
-                            style: {
-                                colors: 'white',
-                            },
+                            style: { colors: 'white' },
                             rotate: 0,
                             hideOverlappingLabels: true,
                             trim: true,
@@ -214,35 +168,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                     yaxis: {
                         min: 0,
                         labels: {
-                            style: {
-                                colors: 'white',
-                            },
-                            formatter: (value) => {
-                                if (metric.title === "Error Rate DC || Error Rate ODC") {
-                                    const errorRateFormatter = new Intl.NumberFormat('en-US', {
-                                        minimumFractionDigits: 6,
-                                        maximumFractionDigits: 6,
-                                    });
-                                    return errorRateFormatter.format(value);
-                                }
-                                if (metric.title === "Amount (Rp) DC") {
-                                    const rupiahFormatter = new Intl.NumberFormat('id-ID', {
-                                        style: 'currency',
-                                        currency: 'IDR',
-                                        minimumFractionDigits: 0,
-                                    });
-                                    return rupiahFormatter.format(value).replace("Rp", "Rp.");
-                                }
-                                if (value < 1 && value > 0) {
-                                    return value.toString();
-                                }
-                                const numberFormatter = new Intl.NumberFormat('en-US', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                });
-
-                                return numberFormatter.format(value);
-                            },
+                            style: { colors: 'white' },
                         },
                         axisBorder: {
                             show: true,
@@ -256,45 +182,30 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                     },
                     markers: {
                         size: 0.0000001,
-                        hover: {
-                            size: 6,
-                        },
-                        discrete: metric.anomalies.map(a => ({
-                            seriesIndex: 0,
-                            dataPointIndex: metric.data.findIndex(d => d[0] === a[0]),
-                            fillColor: '#FF0000',
-                            strokeColor: '#FF0000',
-                            size: 4,
-                        }))
+                        hover: { size: 6 },
                     },
                     grid: {
                         row: {
                             colors: ['transparent', 'transparent'],
                             opacity: 1.5,
                         },
-                        padding: {
-                            top: -20
-                        }
+                        padding: { top: -20 },
                     },
-                    legend: {
-                        labels: {
-                            colors: 'white'
-                        }
-                    },
-                    colors: [colors[index % (colors.length)]],
-                };
+                    legend: { labels: { colors: 'white' } },
+                    colors: [colors[index % colors.length]], // Ensure unique color per chart
+                }), [index, metric.title]); // Depend on index and title to avoid repeated color
+
+                // Use unique key for series to ensure ApexCharts recognizes unique series data
+                const series = useMemo(() => [{
+                    name: metric.title,
+                    data: metric.data.map(([date, number]) => ({ x: date, y: number })),
+                }], [metric.title, metric.data]);
 
                 return (
                     <Chart
-                        key={Math.random()}
+                        key={`chart-${index}`} // Unique key per chart
                         options={chartOptions}
-                        series={[{
-                            name: metric.title,
-                            data: metric.data.map(([date, number]) => ({
-                                x: date,
-                                y: number
-                            })),
-                        }]}
+                        series={series}
                         type="line"
                         height={height}
                         width={width}
