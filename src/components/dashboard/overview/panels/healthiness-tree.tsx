@@ -233,6 +233,10 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     };
   }, [])
 
+  const getTopLeftCurvedLinkWidth = () => {
+    if (!securityExpanded) return 212
+    return 106
+  }
   const getSecurityLinkWidth = () => {
     if (securityExpanded && computeExpanded) return 40
     if (securityExpanded) return 49
@@ -240,15 +244,11 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     return 55
   }
   const getVerticalLinkTopPosition = () => {
-    if (networkExpanded && computeExpanded) return '-94px'
-    if (networkExpanded) return '-133px'
-    if (securityExpanded && !computeExpanded) return '-86px'
+    if ((securityExpanded || networkExpanded) && !computeExpanded) return '-86px'
     return '-47px'
   }
   const getVerticalLinkHeight = () => {
-    if (networkExpanded && computeExpanded) return 94
-    if (networkExpanded) return 173
-    if (securityExpanded && !computeExpanded) return 126
+    if ((securityExpanded || networkExpanded) && !computeExpanded) return 126
     if (computeExpanded) return 47
     return 87
   }
@@ -278,19 +278,19 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             ref={containerRef}
             className='w-full grid justify-between items-center'
             style={{
-              gridTemplateColumns: "repeat(5, 1fr)",
+              gridTemplateColumns: "repeat(3, 1fr)",
             }}
           >
             <div className='col-span-5 flex justify-center' >
               <div className='relative' >
                 <svg
                   className='absolute top-0 right-[52px]'
-                  width={Math.max(0, dimensions.width / 2.5 - 26)}
+                  width={Math.max(0, dimensions.width / 2.39 - 26)}
                   height={dimensions.height / 2}
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path d={`M ${dimensions.width / 2.5} 26 C 0 26 0 26 0 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
-                  <path d={`M ${dimensions.width / 2.5 - 26} 26 C ${dimensions.width / 5} 26 ${dimensions.width / 5} 26 ${dimensions.width / 5} 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M ${dimensions.width / 2.39} 26 C 0 26 0 26 0 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M ${dimensions.width / 2.39 - 26} 26 C ${dimensions.width / 6} 26 ${dimensions.width / 6} 26 ${dimensions.width / 6} 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
                 </svg>
                 <Node
                   title={'OCP'}
@@ -302,70 +302,61 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
                 />
                 <svg
                   className='absolute top-0 left-[52px]'
-                  width={dimensions.width / 2.5}
+                  width={dimensions.width / 2}
                   height={dimensions.height / 2}
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path d={`M 0 26 C ${dimensions.width / 5 - 26} 26 ${dimensions.width / 5 - 26} 26 ${dimensions.width / 5 - 26} 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
-                  <path d={`M 0 26 C ${dimensions.width / 2.5 - 26} 26 ${dimensions.width / 2.5 - 26} 26 ${dimensions.width / 2.5 - 26} 89`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M 0 26 C ${dimensions.width / 4.45 - 26} 26 ${dimensions.width / 4.45 - 26} 26 ${dimensions.width / 4.45 - 26} 146`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M 0 26 C ${dimensions.width / 3 - 26} 26 ${dimensions.width / 3 - 26} 26 ${dimensions.width / 3 - 26} 89`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+                  <path d={`M 0 26 C ${dimensions.width / 2.25 - 26} 26 ${dimensions.width / 2.25 - 26} 26 ${dimensions.width / 2.25 - 26} 89`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
                 </svg>
               </div>
             </div>
-            <Node
-              timeRange={timeRange}
-              title={'APM'}
-              dataSource={SECTIONS_CONFIG.apps.apm}
-              iconName={'node-icon-apm.svg'}
-              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.apm)?.score ?? 100}
-              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.apm)?.severity ?? 0}
-            />
-            <Node
-              timeRange={timeRange}
-              title={'BRImo'}
-              dataSource={SECTIONS_CONFIG.apps.brimo}
-              iconName={'node-icon-brimo.svg'}
-              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.brimo)?.score ?? 100}
-              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.brimo)?.severity ?? 0}
-            />
+            <div className='grid grid-cols-2'>
+              <Node
+                timeRange={timeRange}
+                title={'APM'}
+                dataSource={SECTIONS_CONFIG.apps.apm}
+                iconName={'node-icon-apm.svg'}
+                score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.apm)?.score ?? 100}
+                severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.apm)?.severity ?? 0}
+              />
+              <Node
+                timeRange={timeRange}
+                title={'BRImo'}
+                dataSource={SECTIONS_CONFIG.apps.brimo}
+                iconName={'node-icon-brimo.svg'}
+                score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.brimo)?.score ?? 100}
+                severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.brimo)?.severity ?? 0}
+              />
+            </div>
             <div />
-            <Node
-              timeRange={timeRange}
-              title={'Database'}
-              dataSource={SECTIONS_CONFIG.apps.database}
-              iconName={'node-icon-database.svg'}
-              score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.score ?? 100}
-              severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.severity ?? 0}
-            />
-            <GroupNode
-              className='w-auto'
-              timeRange={timeRange}
-              title={'Redis'}
-              iconName={'node-icon-security.svg'}
-              score={data.redis.score}
-              severity={data.redis.severity}
-              enableCollapse={false}
-              expanded={redisExpanded}
-              handleOnClick={() => setRedisExpanded(prev => !prev)}
-            >
-              <div className='pb-4 px-8 grid grid-cols-2 gap-4 justify-center'>
-                <Node
-                  timeRange={timeRange}
-                  title={'Redis Node'}
-                  dataSource={SECTIONS_CONFIG.redis.redis}
-                  iconName={'node-icon-redis-node.svg'}
-                  score={data.redis.nodes.find(node => node.dataSource === SECTIONS_CONFIG.redis.redis)?.score ?? 100}
-                  severity={data.redis.nodes.find(node => node.dataSource === SECTIONS_CONFIG.redis.redis)?.severity ?? 0}
-                />
-                <Node
-                  timeRange={timeRange}
-                  title={'Redis Cluster'}
-                  dataSource={SECTIONS_CONFIG.redis.redis_node}
-                  iconName={'node-icon-redis-cluster.svg'}
-                  score={data.redis.nodes.find(node => node.dataSource === SECTIONS_CONFIG.redis.redis_node)?.score ?? 100}
-                  severity={data.redis.nodes.find(node => node.dataSource === SECTIONS_CONFIG.redis.redis_node)?.severity ?? 0}
-                />
-              </div>
-            </GroupNode>
+            <div className='grid grid-cols-3'>
+              <Node
+                timeRange={timeRange}
+                title={'Database'}
+                dataSource={SECTIONS_CONFIG.apps.database}
+                iconName={'node-icon-database.svg'}
+                score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.score ?? 100}
+                severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.database)?.severity ?? 0}
+              />
+              <Node
+                timeRange={timeRange}
+                title={'Redis Node'}
+                dataSource={SECTIONS_CONFIG.apps.redis_node}
+                iconName={'node-icon-redis-node.svg'}
+                score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis_node)?.score ?? 100}
+                severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis_node)?.severity ?? 0}
+              />
+              <Node
+                timeRange={timeRange}
+                title={'Redis Cluster'}
+                dataSource={SECTIONS_CONFIG.apps.redis}
+                iconName={'node-icon-redis-cluster.svg'}
+                score={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis)?.score ?? 100}
+                severity={data.apps.nodes.find(node => node.dataSource === SECTIONS_CONFIG.apps.redis)?.severity ?? 0}
+              />
+            </div>
           </div>
         </div>
       </GroupNode>
@@ -471,14 +462,14 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             <svg
               className={`absolute`}
               height={66}
-              width={!securityExpanded ? 205 : 99}
+              width={getTopLeftCurvedLinkWidth()}
               xmlns="http://www.w3.org/2000/svg"
               style={{
                 top: computeExpanded ? '-112px' : '-151px',
                 left: `50%`,
               }}
             >
-              <path d={`M ${!securityExpanded ? 205 : 99} 1 C 1 1 1 1 1 65.1`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+              <path d={`M ${getTopLeftCurvedLinkWidth()} 1 C 1 1 1 1 1 65.1`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
             </svg>
           }
           <svg
@@ -556,46 +547,41 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
               score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dwdm)?.score ?? 100}
               severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dwdm)?.severity ?? 0}
             />
-            <GroupNode
-              className='w-auto m-0'
+            <Node
+              className='h-28'
               timeRange={timeRange}
-              title={'DNS'}
-              iconName={'node-icon-dns.svg'}
-              score={data.dns.score}
-              severity={data.dns.severity}
-              expanded={dnsExpanded}
-              enableCollapse={false}
-              handleOnClick={() => setDnsExpanded(prev => !prev)}
-            >
-              <div className='pb-4 px-8 grid grid-cols-2 gap-4 justify-center'>
-                <Node
-                  className='h-28'
-                  timeRange={timeRange}
-                  title={'Domain'}
-                  dataSource={SECTIONS_CONFIG.dns.dns_domain}
-                  iconName={'node-icon-domain.svg'}
-                  score={data.dns.nodes.find(node => node.dataSource === SECTIONS_CONFIG.dns.dns_domain)?.score ?? 100}
-                  severity={data.dns.nodes.find(node => node.dataSource === SECTIONS_CONFIG.dns.dns_domain)?.severity ?? 0}
-                />
-                <Node
-                  className='h-28'
-                  timeRange={timeRange}
-                  title={'DNS Infobox'}
-                  dataSource={SECTIONS_CONFIG.dns.dns_infobox}
-                  iconName={'node-icon-dns-infobox.svg'}
-                  score={data.dns.nodes.find(node => node.dataSource === SECTIONS_CONFIG.dns.dns_infobox)?.score ?? 100}
-                  severity={data.dns.nodes.find(node => node.dataSource === SECTIONS_CONFIG.dns.dns_infobox)?.severity ?? 0}
-                />
-              </div>
-            </GroupNode>
+              title={'Domain'}
+              dataSource={SECTIONS_CONFIG.network.dns_domain}
+              iconName={'node-icon-domain.svg'}
+              score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dns_domain)?.score ?? 100}
+              severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dns_domain)?.severity ?? 0}
+            />
+            <Node
+              className='h-28'
+              timeRange={timeRange}
+              title={'DNS Infoblox'}
+              dataSource={SECTIONS_CONFIG.network.dns_infobox}
+              iconName={'node-icon-dns-infobox.svg'}
+              score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dns_infobox)?.score ?? 100}
+              severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.dns_infobox)?.severity ?? 0}
+            />
             <Node
               className='h-28'
               timeRange={timeRange}
               title={'Perangkat\nInternal'}
               dataSource={SECTIONS_CONFIG.network.internal}
-              iconName={'node-icon-host.svg'}
+              iconName={'node-icon-perangkat-internal.svg'}
               score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.internal)?.score ?? 100}
               severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.internal)?.severity ?? 0}
+            />
+            <Node
+              className='h-28'
+              timeRange={timeRange}
+              title={'ISP'}
+              dataSource={SECTIONS_CONFIG.network.isp}
+              iconName={'node-icon-isp.svg'}
+              score={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.isp)?.score ?? 100}
+              severity={data.network.nodes.find(node => node.dataSource === SECTIONS_CONFIG.network.isp)?.severity ?? 0}
             />
           </div>
         </GroupNode>
