@@ -53,17 +53,11 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
     currentParams.set('data_source', dataSource);
 
     // Clear the selected options
-    currentParams.delete("anomaly");
-    currentParams.delete("severity");
-    currentParams.delete("cluster");
-    currentParams.delete("operation");
-    currentParams.delete("service");
-    currentParams.delete("network");
-    currentParams.delete("node");
-    currentParams.delete("interface");
-    currentParams.delete("category");
-    currentParams.delete("domain");
-
+    const currentParamKeys = searchParams.keys()
+    currentParamKeys.forEach(key => {
+      if (!["data_source", "time_range"].includes(key)) currentParams.delete(key)
+    })
+  
     // Force update the URL and disable reactivity
     const newUrl = `/dashboard/anomaly-detection?${currentParams.toString()}`;
 

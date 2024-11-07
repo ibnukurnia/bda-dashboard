@@ -1,4 +1,3 @@
-import { ClusterOptionResponse } from '@/modules/models/anomaly-predictions';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState, ChangeEvent } from 'react';
 
@@ -17,79 +16,40 @@ interface SeverityOption {
 interface FilterPanelProps {
     checkboxOptions: CheckboxOption[];
     severityOptions: SeverityOption[];
-    clusterOptions: ClusterOptionResponse[] | null | undefined;
-    servicesOptions: string[] | null | undefined;
-    solarWindsNetworkOptions: string[] | null | undefined;
-    solarWindsNodeOptions: string[] | null | undefined;
-    solarWindsInterfaceOptions: string[] | null | undefined;
-    dnsDomainOptions: string[] | null | undefined;
-    dnsCategoryOptions: string[] | null | undefined;
-    prtgTrafficDeviceOptions: string[] | null | undefined;
-    prtgTrafficSensorOptions: string[] | null | undefined;
+    datasourceIdentifiers: {
+        title: string;
+        key: string;
+    }[];
+    listIdentifiers: string[][];
+    hasErrorListIdentifier: boolean[];
     onApplyFilters: (
         filters: {
             selectedAnomalies: string[],
             selectedOperation: string
             selectedSeverities: number[],
-            selectedClusters: ClusterOptionResponse[],
-            selectedServices: string[],
-            selectedNetwork: string[],
-            selectedNode: string[],
-            selectedInterface: string[],
-            selectedCategory: string[],
-            selectedDomain: string[],
+            selectedListIdentifiers: string[][],
         }
     ) => void;
     onResetFilters: () => void;
     hasErrorFilterAnomaly: boolean;
-    hasErrorFilterCluster: boolean;
-    hasErrorFilterService: boolean;
-    hasErrorFilterSeverity: boolean;
-    hasErrorFilterSolarWindsNetwork: boolean;
-    hasErrorFilterSolarWindsNode: boolean;
-    hasErrorFilterSolarWindsInterface: boolean;
-    hasErrorFilterDnsCategory: boolean;
-    hasErrorFilterDnsDomain: boolean;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
     checkboxOptions,
     severityOptions,
-    clusterOptions,
-    servicesOptions,
-    solarWindsNetworkOptions,
-    solarWindsNodeOptions,
-    solarWindsInterfaceOptions,
-    dnsDomainOptions,
-    dnsCategoryOptions,
-    prtgTrafficDeviceOptions,
-    prtgTrafficSensorOptions,
+    datasourceIdentifiers,
+    listIdentifiers,
+    hasErrorListIdentifier,
     onApplyFilters,
     onResetFilters,
     hasErrorFilterAnomaly,
-    hasErrorFilterCluster,
-    hasErrorFilterService,
-    hasErrorFilterSeverity,
-    hasErrorFilterSolarWindsNetwork,
-    hasErrorFilterSolarWindsNode,
-    hasErrorFilterSolarWindsInterface,
-    hasErrorFilterDnsCategory,
-    hasErrorFilterDnsDomain,
 }) => {
     const searchParams = useSearchParams();
     const [selectedOperation, setSelectedOperation] = useState<string>(''); // default to 'OR'
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedSeverityOptions, setSelectedSeverityOptions] = useState<number[]>([]);
-    const [selectedClusterOptions, setSelectedClusterOptions] = useState<ClusterOptionResponse[]>([]);
-    const [selectedServiceOptions, setSelectedServiceOptions] = useState<string[]>([]);
-    const [selectedNetworkOptions, setSelectedNetworkOptions] = useState<string[]>([]);
-    const [selectedInterfaceOptions, setSelectedInterfaceOptions] = useState<string[]>([]);
-    const [selectedNodeOptions, setSelectedNodeOptions] = useState<string[]>([]);
-    const [selectedCategoryOptions, setSelectedCategoryOptions] = useState<string[]>([]);
-    const [selectedDomainOptions, setSelectedDomainOptions] = useState<string[]>([]);
-    const [selectedDeviceOptions, setSelectedDeviceOptions] = useState<string[]>([]);
-    const [selectedSensorOptions, setSelectedSensorOptions] = useState<string[]>([]);
+    const [selectedListIdentifiers, setSelectedListIdentifiers] = useState<string[][]>(datasourceIdentifiers.map(identifier => searchParams.getAll(identifier.key)))
     const [searchServiceValue, setSearchServiceValue] = useState<string>(''); // For search input
     const [searchNodeValue, setSearchNodeValue] = useState<string>(''); // For search input
     const [searchInterfaceValue, setSearchInterfaceValue] = useState<string>(''); // For search input
@@ -97,21 +57,21 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     const [resetMessage, setResetMessage] = useState<boolean>(false); // State for temporary reset message
     const panelRef = useRef<HTMLDivElement>(null);
 
-    // Filter services based on the search input
-    const filteredServicesOptions = servicesOptions?.filter(service =>
-        service.toLowerCase().includes(searchServiceValue.toLowerCase())
-    ) ?? [];
+    // // Filter services based on the search input
+    // const filteredServicesOptions = servicesOptions?.filter(service =>
+    //     service.toLowerCase().includes(searchServiceValue.toLowerCase())
+    // ) ?? [];
 
-    const filteredSolarWindsNodeOptions = solarWindsNodeOptions?.filter(service =>
-        service.toLowerCase().includes(searchNodeValue.toLowerCase())
-    ) ?? [];
-    const filteredSolarWindsInterfaceOptions = solarWindsInterfaceOptions?.filter(service =>
-        service.toLowerCase().includes(searchInterfaceValue.toLowerCase())
-    ) ?? [];
+    // const filteredSolarWindsNodeOptions = solarWindsNodeOptions?.filter(service =>
+    //     service.toLowerCase().includes(searchNodeValue.toLowerCase())
+    // ) ?? [];
+    // const filteredSolarWindsInterfaceOptions = solarWindsInterfaceOptions?.filter(service =>
+    //     service.toLowerCase().includes(searchInterfaceValue.toLowerCase())
+    // ) ?? [];
 
-    const filteredDnsDomainOptions = dnsDomainOptions?.filter(service =>
-        service.toLowerCase().includes(searchDomainValue.toLowerCase())
-    ) ?? [];
+    // const filteredDnsDomainOptions = dnsDomainOptions?.filter(service =>
+    //     service.toLowerCase().includes(searchDomainValue.toLowerCase())
+    // ) ?? [];
 
     const togglePanel = () => {
         setIsOpen(!isOpen);
@@ -141,70 +101,27 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         setSelectedOperation(operation);
     };
 
-    const handleClusterChange = (value: ClusterOptionResponse) => {
-        setSelectedClusterOptions((prev) =>
-            prev.includes(value) ? prev.filter((option) => option.name !== value.name) : [...prev, value]
-        );
-    };
+    const handleSelectedChange = (identifierIndex: number, value: string) => {
+        setSelectedListIdentifiers(prev => {
+            const newNestedArr = [...prev]
+            let newArr = [...newNestedArr[identifierIndex]]
+            if (newArr.includes(value)) {
+                newArr = newArr.filter((option) => option !== value)
+            } else {
+                newArr = [...newArr, value]
+            }
+            newNestedArr[identifierIndex] = newArr
 
-    const handleServiceChange = (value: string) => {
-        setSelectedServiceOptions((prev) =>
-            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
-        );
-    };
-
-    const handleNetworkChange = (value: string) => {
-        setSelectedNetworkOptions((prev) =>
-            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
-        );
-    };
-    const handleNodeChange = (value: string) => {
-        setSelectedNodeOptions((prev) =>
-            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
-        );
-    };
-    const handleInterfaceChange = (value: string) => {
-        setSelectedInterfaceOptions((prev) =>
-            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
-        );
-    };
-
-    const handleCategoryChange = (value: string) => {
-        setSelectedCategoryOptions((prev) =>
-            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
-        );
-    };
-    const handleDomainChange = (value: string) => {
-        setSelectedDomainOptions((prev) =>
-            prev.includes(value) ? prev.filter((option) => option !== value) : [...prev, value]
-        );
+            return newNestedArr
+        })
     };
 
     const handleApply = () => {
-        // console.log({
-        //     selectedAnomalies: selectedAnomalyOptions,
-        //     selectedOperation: selectedOperation,
-        //     selectedSeverities: selectedSeverityOptions,
-        //     selectedClusters: selectedClusterOptions,
-        //     selectedServices: selectedServiceOptions,
-        //     selectedNetwork: selectedNetworkOptions,
-        //     selectedNode: selectedNodeOptions,
-        //     selectedInterface: selectedInterfaceOptions,
-        //     selectedCategory: selectedCategoryOptions,
-        //     selectedDomain: selectedDomainOptions,
-        // });
-
         onApplyFilters({
             selectedAnomalies: selectedAnomalyOptions,
             selectedOperation: selectedOperation,
             selectedSeverities: selectedSeverityOptions,
-            selectedClusters: selectedClusterOptions,
-            selectedServices: selectedServiceOptions,
-            selectedNetwork: selectedNetworkOptions,
-            selectedNode: selectedNodeOptions,
-            selectedInterface: selectedInterfaceOptions,
-            selectedCategory: selectedCategoryOptions,
-            selectedDomain: selectedDomainOptions,
+            selectedListIdentifiers: selectedListIdentifiers,
         });
         setIsOpen(false); // Close the panel after applying filters
     };
@@ -213,12 +130,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         setSelectedAnomalyOptions([]);
         setSelectedOperation('');
         setSelectedSeverityOptions([]);
-        setSelectedServiceOptions([]);
-        setSelectedNetworkOptions([]);
-        setSelectedNodeOptions([]);
-        setSelectedInterfaceOptions([]);
-        setSelectedCategoryOptions([]);
-        setSelectedDomainOptions([]);
         setSearchServiceValue('');
         setSearchNodeValue('');
         setSearchInterfaceValue('');
@@ -259,77 +170,36 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         }
     };
 
-    const handleSelectAllCluster = () => {
-        if (clusterOptions == null) return;
-        if (selectedClusterOptions.length === clusterOptions.length) {
-            setSelectedClusterOptions([]); // Unselect all
+    const handleSelectAll = (identifierIndex: number) => {
+        if (selectedListIdentifiers[identifierIndex].length === listIdentifiers[identifierIndex].length) {
+            // Unselect all
+            setSelectedListIdentifiers(prev => {
+                const newArr = [...prev]
+                newArr[identifierIndex] = []
+                return newArr
+            });
         } else {
-            setSelectedClusterOptions(clusterOptions); // Select all
-        }
-    };
-
-    const handleSelectAllServices = () => {
-        if (servicesOptions == null) return;
-        if (selectedServiceOptions.length === servicesOptions.length) {
-            setSelectedServiceOptions([]); // Unselect all
-        } else {
-            setSelectedServiceOptions(servicesOptions); // Select all
-        }
-    };
-
-    const handleSelectAllSolarWindsNetwork = () => {
-        if (solarWindsNetworkOptions == null) return;
-        if (selectedServiceOptions.length === solarWindsNetworkOptions.length) {
-            setSelectedServiceOptions([]); // Unselect all
-        } else {
-            setSelectedServiceOptions(solarWindsNetworkOptions); // Select all
-        }
-    };
-    const handleSelectAllSolarWindsNode = () => {
-        if (solarWindsNodeOptions == null) return;
-        if (selectedServiceOptions.length === solarWindsNodeOptions.length) {
-            setSelectedServiceOptions([]); // Unselect all
-        } else {
-            setSelectedServiceOptions(solarWindsNodeOptions); // Select all
-        }
-    };
-    const handleSelectAllSolarWindsInterface = () => {
-        if (solarWindsInterfaceOptions == null) return;
-        if (selectedServiceOptions.length === solarWindsInterfaceOptions.length) {
-            setSelectedServiceOptions([]); // Unselect all
-        } else {
-            setSelectedServiceOptions(solarWindsInterfaceOptions); // Select all
-        }
-    };
-
-    const handleSelectAllDnsCategory = () => {
-        if (dnsCategoryOptions == null) return;
-        if (selectedServiceOptions.length === dnsCategoryOptions.length) {
-            setSelectedServiceOptions([]); // Unselect all
-        } else {
-            setSelectedServiceOptions(dnsCategoryOptions); // Select all
-        }
-    };
-    const handleSelectAllDnsDomain = () => {
-        if (dnsDomainOptions == null) return;
-        if (selectedServiceOptions.length === dnsDomainOptions.length) {
-            setSelectedServiceOptions([]); // Unselect all
-        } else {
-            setSelectedServiceOptions(dnsDomainOptions); // Select all
+            // Select all
+            setSelectedListIdentifiers(prev => {
+                const newArr = [...prev]
+                newArr[identifierIndex] = listIdentifiers[identifierIndex]
+                return newArr
+            });
         }
     };
 
     useEffect(() => {
         const anomalies = searchParams.getAll("anomaly");
-        const severities = searchParams.getAll("severity");
-        const services = searchParams.getAll("service");
-        const clusters = searchParams.getAll("cluster");
 
         setSelectedAnomalyOptions(
             anomalies.filter((anomaly) =>
                 checkboxOptions.some((option) => option.id === anomaly)
             )
         );
+    }, [searchParams, checkboxOptions]);
+
+    useEffect(() => {
+        const severities = searchParams.getAll("severity");
 
         setSelectedSeverityOptions(
             severities
@@ -338,17 +208,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                     severityOptions.some((option) => option.id === severityId)
                 )
         );
+    }, [searchParams, severityOptions]);
 
-        setSelectedClusterOptions(
-            clusterOptions?.filter(option => clusters.includes(option.name)) ?? []
-        );
-
-        setSelectedServiceOptions(
-            services.filter((service) =>
-                servicesOptions?.some((option) => option === service)
-            )
-        );
-    }, [searchParams, checkboxOptions, servicesOptions, severityOptions]);
+    useEffect(() => {
+        setSelectedListIdentifiers(datasourceIdentifiers.map(identifier => searchParams.getAll(identifier.key)))
+    }, [searchParams, datasourceIdentifiers]);
 
     // Close the filter panel when clicking outside
     useEffect(() => {
@@ -368,13 +232,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isOpen]);
-
-    const gridCount = 2 +
-        (clusterOptions ? 1 : 0) +
-        (servicesOptions ? 1 : 0) +
-        (solarWindsNetworkOptions && solarWindsInterfaceOptions && solarWindsNodeOptions ? 3 : 0) +
-        (dnsDomainOptions && dnsCategoryOptions ? 2 : 0) +
-        (prtgTrafficDeviceOptions && prtgTrafficSensorOptions ? 2 : 0)
 
     return (
         <div className="flex self-start z-99999">
@@ -408,7 +265,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                         <h2 className="text-xl font-semibold text-center mb-2">Multiple Filter</h2>
 
                         {/* Responsive Grid Section */}
-                        <div className={`grid gap-4 w-full`} style={{ gridTemplateColumns: `repeat(${gridCount}, 1fr)` }}>
+                        <div className={`grid gap-4 w-full`} style={{ gridTemplateColumns: `repeat(${2 + listIdentifiers.length}, 1fr)` }}>
 
                             <div className='flex flex-col gap-3'> {/* Anomaly Section */}
                                 <div className="flex flex-col gap-3">
@@ -504,9 +361,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     </button>
                                 </div>
                                 <div className="overflow-y-auto max-h-40">
-                                    {hasErrorFilterSeverity ? (
-                                        <p className="text-red-500 whitespace-break-spaces">An error occurred. Please try again later.</p>
-                                    ) : severityOptions.length > 0 ? (
+                                    {severityOptions.length > 0 ? (
                                         severityOptions.map((option) => (
                                             <label key={option.id} className="flex items-center justify-between mb-1">
                                                 <div className="flex items-center">
@@ -528,315 +383,56 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                 </div>
                             </div>
 
-                            {/* Cluster Section */}
-                            {clusterOptions != null && (
+                            {datasourceIdentifiers.map((identifier, identifierIdx) =>
                                 <div className="flex flex-col gap-3">
                                     <div className="flex flex-col gap-2">
-                                        <h3 className="font-semibold text-lg">Cluster</h3>
+                                        <h3 className="font-semibold text-lg">{identifier.title}</h3>
                                         <p className="text-sm text-gray-600">
-                                            Selected Cluster: <span className="text-blue-600">{selectedClusterOptions.length}</span>
-                                        </p>
-                                        <button onClick={handleSelectAllCluster} className="text-blue-500 text-sm text-left">
-                                            {selectedClusterOptions.length === clusterOptions.length ? 'Unselect All' : 'Select All'}
-                                        </button>
-                                    </div>
-
-                                    <div className='flex flex-col gap-2'>
-                                        <div className="overflow-y-auto max-h-40">
-                                            {hasErrorFilterCluster ? (
-                                                <p className="text-red-500">
-                                                    An error occurred while fetching cluster. Please try again later.
-                                                </p>
-                                            ) : clusterOptions.length > 0 ? (
-                                                clusterOptions.map((cluster, index) => (
-                                                    <label
-                                                        key={index}
-                                                        className="flex items-center justify-between mb-1"
-                                                    >
-                                                        <div className="flex items-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                value={cluster.name}
-                                                                checked={selectedClusterOptions.includes(cluster)}
-                                                                onChange={() => handleClusterChange(cluster)}
-                                                                className="mr-2"
-                                                            />
-                                                            {cluster.label}
-                                                        </div>
-                                                    </label>
-                                                ))
-                                            ) : (
-                                                <p>No cluster available</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Services Section */}
-                            {servicesOptions != null && (
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-col gap-2">
-                                        <h3 className="font-semibold text-lg">Services</h3>
-                                        <p className="text-sm text-gray-600">
-                                            Selected Services: <span className="text-blue-600">{selectedServiceOptions.length}</span>
+                                            Selected {identifier.title}: <span className="text-blue-600">{selectedListIdentifiers[identifierIdx]?.length}</span>
                                         </p>
 
 
                                         {/* Select All Services button */}
-                                        <button onClick={handleSelectAllServices} className="text-blue-500 text-sm text-left">
-                                            {selectedServiceOptions.length === servicesOptions.length ? 'Unselect All' : 'Select All'}
+                                        <button onClick={() => handleSelectAll(identifierIdx)} className="text-blue-500 text-sm text-left">
+                                            {selectedListIdentifiers[identifierIdx]?.length === listIdentifiers[identifierIdx]?.length ? 'Unselect All' : 'Select All'}
                                         </button>
                                     </div>
 
                                     {/* Search input for services */}
-                                    <input
+                                    {/* <input
                                         className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
                                         placeholder="Search service"
                                         value={searchServiceValue}
                                         onChange={handleSearch}
-                                    />
+                                    /> */}
 
                                     {/* Services with filtered results */}
                                     <div className="overflow-y-auto max-h-40">
-                                        {hasErrorFilterService ? (
+                                        {hasErrorListIdentifier[identifierIdx] ? (
                                             <p className="text-red-500 whitespace-nowrap">An error occurred while fetching services. Please try again later.</p>
-                                        ) : filteredServicesOptions.length > 0 ? (
-                                            filteredServicesOptions.map((service, index) => (
-                                                <label key={index} className="flex items-center justify-between mb-1">
+                                        ) : listIdentifiers[identifierIdx]?.length > 0 ? (
+                                            listIdentifiers[identifierIdx].map((item, itemIdx) => (
+                                                <label key={itemIdx} className="flex items-center justify-between mb-1">
                                                     <div className="flex items-center">
                                                         <input
                                                             type="checkbox"
-                                                            value={service}
-                                                            checked={selectedServiceOptions.includes(service)}
-                                                            onChange={() => handleServiceChange(service)}
+                                                            value={item}
+                                                            checked={selectedListIdentifiers[identifierIdx]?.includes(item)}
+                                                            onChange={() => handleSelectedChange(identifierIdx, item)}
                                                             className="mr-2"
                                                         />
-                                                        {service}
+                                                        {item}
                                                     </div>
                                                 </label>
                                             ))
                                         ) : (
-                                            <p>No services available</p>
+                                            <p>No {identifier.title} Available</p>
                                         )}
                                     </div>
 
                                 </div>
                             )}
 
-                            {/* Others Section */}
-                            {solarWindsNetworkOptions != null && (
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-col gap-2">
-                                        <h3 className="font-semibold text-lg">Network</h3>
-                                        <p className="text-sm text-gray-600">
-                                            Selected Network: <span className="text-blue-600">{selectedNetworkOptions.length}</span>
-                                        </p>
-
-                                        {/* Select All Network button */}
-                                        <button onClick={handleSelectAllSolarWindsNetwork} className="text-blue-500 text-sm text-left">
-                                            {selectedNetworkOptions.length === solarWindsNetworkOptions.length ? 'Unselect All' : 'Select All'}
-                                        </button>
-                                    </div>
-
-                                    <div className="overflow-y-auto max-h-40">
-                                        {hasErrorFilterSolarWindsNetwork ? (
-                                            <p className="text-red-500 whitespace-nowrap">An error occurred while fetching network. Please try again later.</p>
-                                        ) : solarWindsNetworkOptions.length > 0 ? (
-                                            solarWindsNetworkOptions.map((network, index) => (
-                                                <label key={index} className="flex items-center justify-between mb-1">
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={network}
-                                                            checked={selectedNetworkOptions.includes(network)}
-                                                            onChange={() => handleNetworkChange(network)}
-                                                            className="mr-2"
-                                                        />
-                                                        {network}
-                                                    </div>
-                                                </label>
-                                            ))
-                                        ) : (
-                                            <p>No network available</p>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                            {solarWindsInterfaceOptions != null && (
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-col gap-2">
-                                        <h3 className="font-semibold text-lg">Interface</h3>
-                                        <p className="text-sm text-gray-600">
-                                            Selected Interface: <span className="text-blue-600">{selectedInterfaceOptions.length}</span>
-                                        </p>
-
-                                        {/* Select All Interface button */}
-                                        <button onClick={handleSelectAllSolarWindsInterface} className="text-blue-500 text-sm text-left">
-                                            {selectedInterfaceOptions.length === solarWindsInterfaceOptions.length ? 'Unselect All' : 'Select All'}
-                                        </button>
-                                    </div>
-
-                                    <input
-                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                        placeholder="Search interface"
-                                        value={searchInterfaceValue}
-                                        onChange={handleSearchSolarWindsInterface}
-                                    />
-
-                                    <div className="overflow-y-auto max-h-40">
-                                        {hasErrorFilterSolarWindsInterface ? (
-                                            <p className="text-red-500 whitespace-nowrap">An error occurred while fetching interface. Please try again later.</p>
-                                        ) : filteredSolarWindsInterfaceOptions.length > 0 ? (
-                                            filteredSolarWindsInterfaceOptions.map((interace_name, index) => (
-                                                <label key={index} className="flex items-center justify-between mb-1">
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={interace_name}
-                                                            checked={selectedInterfaceOptions.includes(interace_name)}
-                                                            onChange={() => handleInterfaceChange(interace_name)}
-                                                            className="mr-2"
-                                                        />
-                                                        {interace_name}
-                                                    </div>
-                                                </label>
-                                            ))
-                                        ) : (
-                                            <p>No interface available</p>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                            {solarWindsNodeOptions != null && (
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-col gap-2">
-                                        <h3 className="font-semibold text-lg">Node</h3>
-                                        <p className="text-sm text-gray-600">
-                                            Selected Node: <span className="text-blue-600">{selectedNodeOptions.length}</span>
-                                        </p>
-
-                                        {/* Select All Node button */}
-                                        <button onClick={handleSelectAllSolarWindsNode} className="text-blue-500 text-sm text-left">
-                                            {selectedNodeOptions.length === solarWindsNodeOptions.length ? 'Unselect All' : 'Select All'}
-                                        </button>
-                                    </div>
-
-                                    {/* Search input for nodes */}
-                                    <input
-                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                        placeholder="Search node"
-                                        value={searchNodeValue}
-                                        onChange={handleSearchSolarWindsNode}
-                                    />
-
-                                    <div className="overflow-y-auto max-h-40">
-                                        {hasErrorFilterSolarWindsNode ? (
-                                            <p className="text-red-500 whitespace-nowrap">An error occurred while fetching node. Please try again later.</p>
-                                        ) : filteredSolarWindsNodeOptions.length > 0 ? (
-                                            filteredSolarWindsNodeOptions.map((node, index) => (
-                                                <label key={index} className="flex items-center justify-between mb-1">
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={node}
-                                                            checked={selectedNodeOptions.includes(node)}
-                                                            onChange={() => handleNodeChange(node)}
-                                                            className="mr-2"
-                                                        />
-                                                        {node}
-                                                    </div>
-                                                </label>
-                                            ))
-                                        ) : (
-                                            <p>No node available</p>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                            {dnsCategoryOptions != null && (
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-col gap-2">
-                                        <h3 className="font-semibold text-lg">Category</h3>
-                                        <p className="text-sm text-gray-600">
-                                            Selected Category: <span className="text-blue-600">{selectedCategoryOptions.length}</span>
-                                        </p>
-
-                                        {/* Select All Category button */}
-                                        <button onClick={handleSelectAllDnsCategory} className="text-blue-500 text-sm text-left">
-                                            {selectedCategoryOptions.length === dnsCategoryOptions.length ? 'Unselect All' : 'Select All'}
-                                        </button>
-                                    </div>
-
-                                    <div className="overflow-y-auto max-h-40">
-                                        {hasErrorFilterDnsCategory ? (
-                                            <p className="text-red-500 whitespace-nowrap">An error occurred while fetching category. Please try again later.</p>
-                                        ) : dnsCategoryOptions.length > 0 ? (
-                                            dnsCategoryOptions.map((category, index) => (
-                                                <label key={index} className="flex items-center justify-between mb-1">
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={category}
-                                                            checked={selectedCategoryOptions.includes(category)}
-                                                            onChange={() => handleCategoryChange(category)}
-                                                            className="mr-2"
-                                                        />
-                                                        {category}
-                                                    </div>
-                                                </label>
-                                            ))
-                                        ) : (
-                                            <p>No category available</p>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                            {dnsDomainOptions != null && (
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-col gap-2">
-                                        <h3 className="font-semibold text-lg">Domain</h3>
-                                        <p className="text-sm text-gray-600">
-                                            Selected Domain: <span className="text-blue-600">{selectedDomainOptions.length}</span>
-                                        </p>
-
-                                        {/* Select All Domain button */}
-                                        <button onClick={handleSelectAllDnsDomain} className="text-blue-500 text-sm text-left">
-                                            {selectedDomainOptions.length === dnsDomainOptions.length ? 'Unselect All' : 'Select All'}
-                                        </button>
-                                    </div>
-
-                                    <input
-                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                        placeholder="Search interface"
-                                        value={searchDomainValue}
-                                        onChange={handleSearchDnsDomain}
-                                    />
-
-                                    <div className="overflow-y-auto max-h-40">
-                                        {hasErrorFilterDnsDomain ? (
-                                            <p className="text-red-500 whitespace-nowrap">An error occurred while fetching domain. Please try again later.</p>
-                                        ) : filteredDnsDomainOptions.length > 0 ? (
-                                            filteredDnsDomainOptions.map((domain, index) => (
-                                                <label key={index} className="flex items-center justify-between mb-1">
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={domain}
-                                                            checked={selectedDomainOptions.includes(domain)}
-                                                            onChange={() => handleDomainChange(domain)}
-                                                            className="mr-2"
-                                                        />
-                                                        {domain}
-                                                    </div>
-                                                </label>
-                                            ))
-                                        ) : (
-                                            <p>No domain available</p>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
                         {/* Reset and Apply Buttons */}

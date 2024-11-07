@@ -31,6 +31,13 @@ export interface Column {
   comment: string;
 }
 
+export interface DatasourceIdentifiers {
+  identifiers: {
+    key: string;
+    title: string;
+  }[];
+}
+
 export interface AnomalyOptionResponse {
   columns: Column[];  // This represents the array of columns in the response
 }

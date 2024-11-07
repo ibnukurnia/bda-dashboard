@@ -3,6 +3,7 @@ import { ApiResponse, PaginatedResponse } from '@/common/api/type'
 import {
   AnomalyOptionResponse,
   ClusterOptionResponse,
+  DatasourceIdentifiers,
   MetricLogAnomalyResponse,
   ServiceOptionByClusterResponse,
 } from '@/modules/models/anomaly-predictions'
@@ -14,15 +15,8 @@ const GetHistoricalLogAnomalies = async (payload: {
   start_time: string
   end_time: string
   filters: string[]
-  cluster: string[]
-  service_name: string[]
-  severity: number[]
   operation: string // Ensure this is correctly passed
-  network: string[]
-  node: string[]
-  interface: string[]
-  category: string[]
-  domain: string[]
+  severity: number[]
 }) => {
   const response: ApiResponse<PaginatedResponse> = await get('anomaly-predictions', {
     withAuth: true,
@@ -37,15 +31,8 @@ const DownloadCsvHistoricalLogAnomalies = async (payload: {
   start_time: string
   end_time: string
   filters: string[]
-  cluster: string[]
-  service_name: string[]
-  severity: number[]
   operation: string // Ensure this is correctly passed
-  network: string[]
-  node: string[]
-  interface: string[]
-  category: string[]
-  domain: string[]
+  severity: number[]
 }) => {
   const response: void = await downloadFile('anomaly-predictions/csv', 'text/csv', 'ops-vision_anomaly-history.csv', {
     withAuth: true,
@@ -101,6 +88,26 @@ const GetHistoricalNetworkAnomalies = async () => {
 const GetHistoricalSecurityAnomalies = async () => {
   const response: ApiResponse<PaginatedResponse> = await get('anomaly-predictions', {
     withAuth: true,
+  })
+
+  return response
+}
+
+const GetDatasourceIdentifiers = async (datasource: string): Promise<ApiResponse<DatasourceIdentifiers>> => {
+  const response: ApiResponse<DatasourceIdentifiers> = await get(`identifiers/${datasource}`, {
+    withAuth: true,
+  })
+
+  return response
+}
+
+const GetListIdentifier = async (datasource: string, key: string, payload: {
+  start_time: string
+  end_time: string
+}): Promise<ApiResponse<string[]>> => {
+  const response: ApiResponse<string[]> = await get(`list-identifier/${datasource}/${key}`, {
+    withAuth: true,
+    queries: payload,
   })
 
   return response
@@ -166,6 +173,8 @@ export {
   GetHistoricalNetworkAnomalies,
   GetHistoricalSecurityAnomalies,
   GetHistoricalUtilizationAnomalies,
+  GetDatasourceIdentifiers,
+  GetListIdentifier,
   GetColumnOption,
   GetClusterOption,
   GetServicesOptionByCluster,

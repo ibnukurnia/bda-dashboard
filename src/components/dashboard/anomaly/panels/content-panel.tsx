@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { ClusterOptionResponse, Column } from '@/modules/models/anomaly-predictions'
-import { DownloadCsvHistoricalLogAnomalies, GetClusterOption, GetHistoricalLogAnomalies } from '@/modules/usecases/anomaly-predictions'
+import { Column } from '@/modules/models/anomaly-predictions'
+import { DownloadCsvHistoricalLogAnomalies, GetClusterOption, GetDatasourceIdentifiers, GetHistoricalLogAnomalies, GetListIdentifier } from '@/modules/usecases/anomaly-predictions'
 import { Typography } from '@mui/material'
 import {
     ColumnDef,
@@ -34,15 +34,10 @@ const TabContent: React.FC<TabContentProps> = ({
     const timeRange = searchParams.get("time_range")
     const timeRangeGraphic = searchParams.get("time_range")
     const selectedAnomalyOptions = searchParams.getAll("anomaly")
-    const selectedClustersOptions = searchParams.getAll("cluster")
-    const selectedServicesOptions = searchParams.getAll("service")
-    const selectedSeverityOptions = searchParams.getAll("severity").map(Number);
     const selectedOperationOptions = searchParams.get("operation") as string;
-    const selectedNetworkOptions = searchParams.getAll("network")
-    const selectedNodeOptions = searchParams.getAll("node")
-    const selectedInterfaceOptions = searchParams.getAll("interface")
-    const selectedCategoryOptions = searchParams.getAll("category")
-    const selectedDomainOptions = searchParams.getAll("domain")
+    const selectedSeverityOptions = searchParams.getAll("severity").map(Number);
+    const [pauseEffectSearchParam, setPauseEffectSearchParam] = useState(false)
+
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
@@ -54,28 +49,16 @@ const TabContent: React.FC<TabContentProps> = ({
         enabled: false,
         interval: null,
     })
+    const [datasourceIdentifiers, setDatasourceIdentifiers] = useState<{
+        title: string;
+        key: string;
+    }[]>([])
+    const [listIdentifiers, setListIdentifiers] = useState<string[][]>([])
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
-    const [filterClusterOptions, setFilterClusterOptions] = useState<ClusterOptionResponse[] | null | undefined>(null)
-    const [filterServiceOptions, setFilterServiceOptions] = useState<string[] | null | undefined>(null)
-    const [filterSolarWindsNetworkOptions, setFilterSolarWindsNetworkOptions] = useState<string[] | null | undefined>(null)
-    const [filterSolarWindsNodeOptions, setFilterSolarWindsNodeOptions] = useState<string[] | null | undefined>(null)
-    const [filterSolarWindsInterfaceOptions, setFilterSolarWindsInterfaceOptions] = useState<string[] | null | undefined>(null)
-    const [filterDnsDomainOptions, setFilterDnsDomainOptions] = useState<string[] | null | undefined>(null)
-    const [filterDnsCategoryOptions, setFilterDnsCategoryOptions] = useState<string[] | null | undefined>(null)
-    const [filterPrtgTrafficDeviceOptions, setFilterPrtgTrafficDeviceOptions] = useState<string[] | null | undefined>(null)
-    const [filterPrtgTrafficSensorOptions, setFilterPrtgTrafficSensorOptions] = useState<string[] | null | undefined>(null)
     const [filterSeverityOptions, setFilterSeverityOptions] = useState<{ id: number; label: string; type: string }[]>([]);
+    const [hasErrorDatasourceIdentifier, setHasErrorDatasourceIdentifier] = useState<boolean>(false)
+    const [hasErrorListIdentifier, setHasErrorListIdentifier] = useState<boolean[]>([])
     const [hasErrorFilterAnomaly, setHasErrorFilterAnomaly] = useState<boolean>(false)
-    const [hasErrorFilterCluster, setHasErrorFilterCluster] = useState<boolean>(false)
-    const [hasErrorFilterService, setHasErrorFilterService] = useState<boolean>(false)
-    const [hasErrorFilterSolarWindsNetwork, setHasErrorFilterSolarWindsNetwork] = useState<boolean>(false)
-    const [hasErrorFilterSolarWindsNode, setHasErrorFilterSolarWindsNode] = useState<boolean>(false)
-    const [hasErrorFilterSolarWindsInterface, setHasErrorFilterSolarWindsInterface] = useState<boolean>(false)
-    const [hasErrorFilterDnsDomain, setHasErrorFilterDnsDomain] = useState<boolean>(false)
-    const [hasErrorFilterDnsCategory, setHasErrorFilterDnsCategory] = useState<boolean>(false)
-    const [hasErrorFilterPrtgTrafficDevice, setHasErrorFilterPrtgTrafficDevice] = useState<boolean>(false)
-    const [hasErrorFilterPrtgTrafficSensor, setHasErrorFilterPrtgTrafficSensor] = useState<boolean>(false)
-    const [hasErrorFilterSeverity, setHasErrorFilterSeverity] = useState<boolean>(false)
     const [isDownloadingCsv, setIsDownloadingCsv] = useState(false)
     const [columns, setColumns] = useState<ColumnDef<any, any>[]>([])
     const [highlights, setHighlights] = useState<string[][] | null | undefined>([])
@@ -131,8 +114,6 @@ const TabContent: React.FC<TabContentProps> = ({
         // 2. Define selected filters based on the current user-selected options.
         // - If specific filter arrays are populated, use them; otherwise, use empty arrays. This allows the function to handle cases where filters may be empty.
         const filtersAnomaly = selectedAnomalyOptions.length > 0 ? selectedAnomalyOptions : [];
-        const filterClusters = selectedClustersOptions.length > 0 ? selectedClustersOptions : [];
-        const filterServices = selectedServicesOptions.length > 0 ? selectedServicesOptions : [];
         const filterSeverities = selectedSeverityOptions.length > 0 ? selectedSeverityOptions : []; // These are now numbers
 
         // 3. Reset pagination to the first page.
@@ -152,8 +133,6 @@ const TabContent: React.FC<TabContentProps> = ({
             limit: pagination.pageSize,
             timeRange: rangeKey,
             anomalies: filtersAnomaly,
-            clusters: filterClusters,
-            services: filterServices,
             severities: filterSeverities,
         });
     };
@@ -234,10 +213,8 @@ const TabContent: React.FC<TabContentProps> = ({
             page: page, // Reset to the first page
             limit: newPageSize, // Set limit as the new page size
             anomalies: selectedAnomalyOptions,
-            clusters: selectedClustersOptions,
-            services: selectedServicesOptions,
-            severities: selectedSeverityOptions,
             operation: selectedOperationOptions,
+            severities: selectedSeverityOptions,
         });
 
     };
@@ -250,36 +227,27 @@ const TabContent: React.FC<TabContentProps> = ({
         anomalies?: string[],
         operation?: string, // Add the selectedOperation parameter here
         severities?: number[],
-        clusters?: string[],
-        services?: string[],
-        network?: string[],
-        node?: string[],
-        interface?: string[],
-        category?: string[],
-        domain?: string[],
     }) => {
         setIsTableLoading(true);
 
         // Now pass the validTimeRange to getTimeRange
         const { startTime, endTime } = getTimeRange(payload.timeRange);
 
-        // Pass the selectedOperation to the API call
+        const payloadSelectedListIdentifier = datasourceIdentifiers.reduce<Record<string, string[]>>((acc, identifier, idx) => {
+            acc[identifier.key] = searchParams.getAll(identifier.key)
+            return acc
+        }, {})
+
         const logAnomaliesPromise = GetHistoricalLogAnomalies({
             type: payload.logType,
             limit: payload.limit,
             page: payload.page,
             filters: payload.anomalies ?? selectedAnomalyOptions,
-            cluster: payload.clusters ?? selectedClustersOptions,
-            service_name: payload.services ?? selectedServicesOptions,
             severity: payload.severities ?? selectedSeverityOptions,
+            operation: payload.operation ?? selectedOperationOptions,// Default to OR if undefined
             start_time: startTime,
             end_time: endTime,
-            operation: payload.operation ?? selectedOperationOptions,// Default to OR if undefined
-            network: payload.network ?? selectedNetworkOptions,
-            node: payload.node ?? selectedNodeOptions,
-            interface: payload.interface ?? selectedInterfaceOptions,
-            category: payload.category ?? selectedCategoryOptions,
-            domain: payload.domain ?? selectedDomainOptions,
+            ...payloadSelectedListIdentifier
         });
 
         // Handle the result of the API call
@@ -334,163 +302,25 @@ const TabContent: React.FC<TabContentProps> = ({
     const loadFiltersOptions = async () => {
         const { startTime, endTime } = getTimeRange();
 
-        // Map each filter to its respective loading function with error handling
-        const filtersMap: { [key: string]: () => Promise<void> } = {
-            anomaly: async () => {
-                try {
-                    const response = await fetchAnomalyOption(selectedDataSource);
-                    if (response.data?.columns) {
-                        const options = response.data.columns.map((column: Column) => ({
-                            id: column.name,
-                            label: column.comment,
-                            type: column.type,
-                        }));
-                        setFilterAnomalyOptions(options);
-                        setHasErrorFilterAnomaly(false);
-                    } else {
-                        throw new Error('Response data or columns are missing');
-                    }
-                } catch (error) {
-                    handleApiError(error);
-                    setHasErrorFilterAnomaly(true);
+        const listIdentifiers: string[][] = []
+        const errorListIdentifiers: boolean[] = []
+        datasourceIdentifiers.forEach(identifier => {
+            GetListIdentifier(
+                selectedDataSource,
+                identifier.key, {
+                start_time: startTime,
+                end_time: endTime,
+            }).then(res => {
+                if (res.data) {
+                    listIdentifiers.push(res.data)
+                    errorListIdentifiers.push(false)
+                } else {
+                    errorListIdentifiers.push(true)
                 }
-            },
-
-            severity: async () => {
-                setFilterSeverityOptions([
-                    { id: 1, label: 'Very High', type: 'severity' },
-                    { id: 2, label: 'High', type: 'severity' },
-                    { id: 3, label: 'Medium', type: 'severity' }
-                ]);
-            },
-
-            cluster: async () => {
-                try {
-                    const response = await GetClusterOption({ type: selectedDataSource, start_time: startTime, end_time: endTime });
-                    setFilterClusterOptions(response.data);
-                    setHasErrorFilterCluster(false);
-                } catch (error) {
-                    handleApiError(error);
-                    setHasErrorFilterCluster(true);
-                }
-            },
-
-            services: async () => {
-                try {
-                    const response = await fetchServicesOption({ type: selectedDataSource, start_time: startTime, end_time: endTime });
-                    setFilterServiceOptions(response.data?.services);
-                    setHasErrorFilterService(false);
-                } catch (error) {
-                    handleApiError(error);
-                    setHasErrorFilterService(true);
-                }
-            },
-
-            solarWindsNetwork: async () => {
-                try {
-                    const response = await fetchSolarWindsNetworkOption({ start_time: startTime, end_time: endTime });
-                    setFilterSolarWindsNetworkOptions(response.data);
-                    setHasErrorFilterSolarWindsNetwork(false);
-                } catch (error) {
-                    handleApiError(error);
-                    setHasErrorFilterSolarWindsNetwork(true);
-                }
-            },
-
-            solarWindsNode: async () => {
-                try {
-                    const response = await fetchSolarWindsNodeOption({ start_time: startTime, end_time: endTime });
-                    setFilterSolarWindsNodeOptions(response.data);
-                    setHasErrorFilterSolarWindsNode(false);
-                } catch (error) {
-                    handleApiError(error);
-                    setHasErrorFilterSolarWindsNode(true);
-                }
-            },
-
-            solarWindsInterface: async () => {
-                try {
-                    const response = await fetchSolarWindsInterfaceOption({ start_time: startTime, end_time: endTime });
-                    setFilterSolarWindsInterfaceOptions(response.data);
-                    setHasErrorFilterSolarWindsInterface(false);
-                } catch (error) {
-                    handleApiError(error);
-                    setHasErrorFilterSolarWindsInterface(true);
-                }
-            },
-
-            dnsDomain: async () => {
-                try {
-                    const response = await fetchDnsDomainOption({ start_time: startTime, end_time: endTime });
-                    setFilterDnsDomainOptions(response.data);
-                    setHasErrorFilterDnsDomain(false);
-                } catch (error) {
-                    handleApiError(error);
-                    setHasErrorFilterDnsDomain(true);
-                }
-            },
-
-            dnsCategory: async () => {
-                try {
-                    const response = await fetchDnsCategoryOption({ start_time: startTime, end_time: endTime });
-                    setFilterDnsCategoryOptions(response.data);
-                    setHasErrorFilterDnsCategory(false);
-                } catch (error) {
-                    handleApiError(error);
-                    setHasErrorFilterDnsCategory(true);
-                }
-            },
-
-            prtgTrafficDevice: async () => {
-                try {
-                    const response = await fetchPrtgTrafficDeviceOption({ start_time: startTime, end_time: endTime });
-                    setFilterPrtgTrafficDeviceOptions(response.data);
-                    setHasErrorFilterPrtgTrafficDevice(false);
-                } catch (error) {
-                    handleApiError(error);
-                    setHasErrorFilterPrtgTrafficDevice(true);
-                }
-            },
-
-            prtgTrafficSensor: async () => {
-                try {
-                    const response = await fetchPrtgTrafficSensorOption({ start_time: startTime, end_time: endTime });
-                    setFilterPrtgTrafficSensorOptions(response.data);
-                    setHasErrorFilterPrtgTrafficSensor(false);
-                } catch (error) {
-                    handleApiError(error);
-                    setHasErrorFilterPrtgTrafficSensor(true);
-                }
-            },
-        };
-
-        // Always load `anomaly` and `severity` filters
-        await filtersMap.anomaly();
-        await filtersMap.severity();
-
-        // Load specific filters based on `selectedDataSource`
-        switch (selectedDataSource) {
-            case 'solarwinds':
-                await filtersMap.solarWindsNetwork();
-                await filtersMap.solarWindsNode();
-                await filtersMap.solarWindsInterface();
-                break;
-
-            case 'dns_rt':
-                await filtersMap.cluster();
-                await filtersMap.dnsDomain();
-                await filtersMap.dnsCategory();
-                break;
-
-            case 'prtg_traffic':
-                await filtersMap.prtgTrafficDevice();
-                await filtersMap.prtgTrafficSensor();
-                break;
-
-            default:
-                await filtersMap.cluster();
-                await filtersMap.services();
-        }
+            })
+        })
+        setListIdentifiers(listIdentifiers)
+        setHasErrorListIdentifier(errorListIdentifiers)
     };
 
     const handleResetFilters = () => {
@@ -520,27 +350,14 @@ const TabContent: React.FC<TabContentProps> = ({
             selectedAnomalies: string[];
             selectedOperation: string
             selectedSeverities: number[]
-            selectedClusters: ClusterOptionResponse[];
-            selectedServices: string[];
-            selectedNetwork: string[];
-            selectedNode: string[];
-            selectedInterface: string[];
-            selectedCategory: string[];
-            selectedDomain: string[];
+            selectedListIdentifiers: string[][]
         }) => {
         const {
             selectedAnomalies,
-            selectedServices,
-            selectedSeverities,
-            selectedClusters,
             selectedOperation,
-            selectedNetwork,
-            selectedNode,
-            selectedInterface,
-            selectedCategory,
-            selectedDomain,
+            selectedSeverities,
+            selectedListIdentifiers,
         } = filters;
-
         // Update the state with the selected options
         const params = new URLSearchParams(searchParams.toString());
 
@@ -550,26 +367,10 @@ const TabContent: React.FC<TabContentProps> = ({
         params.delete("severity");
         selectedSeverities.forEach(severity => params.append("severity", severity.toString()));  // Add severities to URL
 
-        params.delete("cluster")
-        selectedClusters.forEach(cluster => params.append("cluster", cluster.name))
-
-        params.delete("service")
-        selectedServices.forEach(service => params.append("service", service))
-
-        params.delete("network")
-        selectedNetwork.forEach(network => params.append("network", network))
-
-        params.delete("node")
-        selectedNode.forEach(node => params.append("node", node))
-
-        params.delete("interface")
-        selectedInterface.forEach(i => params.append("interface", i))
-
-        params.delete("category")
-        selectedCategory.forEach(category => params.append("category", category))
-
-        params.delete("domain")
-        selectedDomain.forEach(domain => params.append("domain", domain))
+        datasourceIdentifiers.forEach((identifier, idx) => {
+            params.delete(identifier.key)
+            selectedListIdentifiers[idx].forEach(selectedItem => params.append(identifier.key, selectedItem))
+        })
 
         // Add selected operation (OR/AND) to the URL or use it in logic as needed
         params.delete("operation");
@@ -582,35 +383,27 @@ const TabContent: React.FC<TabContentProps> = ({
         if (isDownloadingCsv) return
         setIsDownloadingCsv(true)
         const { startTime, endTime } = getTimeRange();
+
+        const payloadSelectedListIdentifier = datasourceIdentifiers.reduce<Record<string, string[]>>((acc, identifier, idx) => {
+            acc[identifier.key] = searchParams.getAll(identifier.key)
+            return acc
+        }, {})
+
         DownloadCsvHistoricalLogAnomalies({
             type: selectedDataSource,
             filters: selectedAnomalyOptions,
-            cluster: selectedClustersOptions,
-            service_name: selectedServicesOptions,
             severity: selectedSeverityOptions,
             start_time: startTime,
             end_time: endTime,
             operation: selectedOperationOptions,// Default to OR if undefined
-            network: selectedNetworkOptions,
-            node: selectedNodeOptions,
-            interface: selectedInterfaceOptions,
-            category: selectedCategoryOptions,
-            domain: selectedDomainOptions,
+            ...payloadSelectedListIdentifier,
         }).finally(() => setIsDownloadingCsv(false))
     }
 
     useEffect(() => {
         setIsTableHeaderLoading(true);
         setIsTableLoading(true);
-        setFilterSolarWindsNetworkOptions(null)
-        setFilterSolarWindsNodeOptions(null)
-        setFilterSolarWindsInterfaceOptions(null)
-        setFilterDnsCategoryOptions(null)
-        setFilterDnsDomainOptions(null)
-        setFilterPrtgTrafficDeviceOptions(null)
-        setFilterPrtgTrafficSensorOptions(null)
-        setFilterClusterOptions(null)
-        setFilterServiceOptions(null)
+        setListIdentifiers([])
         const page = 1 // Reset to the first page when page size changes
         setPagination((prev) => ({
             ...prev,
@@ -623,12 +416,27 @@ const TabContent: React.FC<TabContentProps> = ({
             limit: pagination.pageSize,
         });
 
-        loadFiltersOptions()
-        console.log(selectedDataSource)
+        GetDatasourceIdentifiers(selectedDataSource)
+            .then(res => {
+                if (res.data?.identifiers && res.data?.identifiers.length > 0) {
+                    setDatasourceIdentifiers(res.data?.identifiers)
+                    setHasErrorDatasourceIdentifier(false)
+                } else {
+                    setHasErrorDatasourceIdentifier(true)
+                }
+            })
     }, [selectedDataSource]);
 
     useUpdateEffect(() => {
-        if (isTableHeaderLoading) return
+        loadFiltersOptions()
+    }, [datasourceIdentifiers])
+
+    useUpdateEffect(() => {
+        if (isTableHeaderLoading || pauseEffectSearchParam) {
+            setPauseEffectSearchParam(false)
+            return
+        }
+
         const page = 1 // Reset to the first page when page size changes
         setPagination((prev) => ({
             ...prev,
@@ -641,7 +449,7 @@ const TabContent: React.FC<TabContentProps> = ({
             limit: pagination.pageSize, // Use the current page size
         });
     }, [
-        searchParams
+        searchParams, datasourceIdentifiers
     ]);
 
     useUpdateEffect(() => {
@@ -673,11 +481,6 @@ const TabContent: React.FC<TabContentProps> = ({
                             logType: selectedDataSource,
                             page: pagination.pageIndex,     // Page number
                             limit: pagination.pageSize,      // Page size (limit)
-                            anomalies: selectedAnomalyOptions,    // Anomaly filter options
-                            clusters: selectedClustersOptions,   // Cluster filter options
-                            services: selectedServicesOptions,   // Service filter options
-                            severities: selectedSeverityOptions,
-                            operation: selectedOperationOptions
                         });
                         // console.log('Auto-refresh triggered');
                     } catch (error) {
@@ -696,7 +499,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 clearInterval(intervalId);
             }
         };
-    }, [autoRefresh, refreshInterval, selectedDataSource, pagination.pageIndex, pagination.pageSize, selectedAnomalyOptions, selectedServicesOptions, selectedSeverityOptions, selectedTimeRange]);
+    }, [autoRefresh, refreshInterval]);
 
     return (
         <div className='flex flex-col gap-4'>
@@ -715,28 +518,14 @@ const TabContent: React.FC<TabContentProps> = ({
                             <div className='flex flex-row gap-3'>
                                 {!handle.active && (
                                     <FilterPanel
-                                        clusterOptions={filterClusterOptions}
                                         checkboxOptions={filterAnomalyOptions}
-                                        servicesOptions={filterServiceOptions}
-                                        solarWindsNetworkOptions={filterSolarWindsNetworkOptions}
-                                        solarWindsNodeOptions={filterSolarWindsNodeOptions}
-                                        solarWindsInterfaceOptions={filterSolarWindsInterfaceOptions}
-                                        dnsCategoryOptions={filterDnsCategoryOptions}
-                                        dnsDomainOptions={filterDnsDomainOptions}
-                                        prtgTrafficDeviceOptions={filterPrtgTrafficDeviceOptions}
-                                        prtgTrafficSensorOptions={filterPrtgTrafficSensorOptions}
                                         severityOptions={filterSeverityOptions}
+                                        datasourceIdentifiers={datasourceIdentifiers}
+                                        listIdentifiers={listIdentifiers}
+                                        hasErrorListIdentifier={hasErrorListIdentifier}
                                         onApplyFilters={handleApplyFilters}
                                         onResetFilters={handleResetFilters}
                                         hasErrorFilterAnomaly={hasErrorFilterAnomaly}
-                                        hasErrorFilterService={hasErrorFilterService}
-                                        hasErrorFilterCluster={hasErrorFilterCluster}
-                                        hasErrorFilterSeverity={hasErrorFilterSeverity}
-                                        hasErrorFilterSolarWindsNetwork={hasErrorFilterSolarWindsNetwork}
-                                        hasErrorFilterSolarWindsNode={hasErrorFilterSolarWindsNode}
-                                        hasErrorFilterSolarWindsInterface={hasErrorFilterSolarWindsInterface}
-                                        hasErrorFilterDnsCategory={hasErrorFilterDnsCategory}
-                                        hasErrorFilterDnsDomain={hasErrorFilterDnsDomain}
                                     />
                                 )}
                                 <DownloadButton
