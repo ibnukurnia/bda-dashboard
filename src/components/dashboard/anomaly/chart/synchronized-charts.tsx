@@ -36,6 +36,11 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 }) => {
     const [zoomOutDisabled, setZoomOutDisabled] = useState(false);
 
+    // Log dataCharts to see its structure
+    useEffect(() => {
+        console.log("Data Charts:", dataCharts);
+    }, [dataCharts]);
+
     const toggleZoomOutButton = (disabled: boolean) => {
         const zoomOutButtons = document.querySelectorAll('.apexcharts-zoomout-icon');
 
@@ -67,6 +72,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     return (
         <div className="flex flex-col gap-4">
             {dataCharts.map((metric, index) => {
+                console.log(`Metric ${index}:`, metric); // Log each metric data for inspection
+
                 const chartOptions: ApexOptions = {
                     chart: {
                         id: `sync-${index}`,
