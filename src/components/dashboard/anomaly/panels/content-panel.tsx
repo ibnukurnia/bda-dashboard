@@ -301,6 +301,30 @@ const TabContent: React.FC<TabContentProps> = ({
 
     const loadFiltersOptions = async () => {
         const { startTime, endTime } = getTimeRange();
+        
+        try {
+            const response = await fetchAnomalyOption(selectedDataSource);
+            if (response.data?.columns) {
+                const options = response.data.columns.map((column: Column) => ({
+                    id: column.name,
+                    label: column.comment,
+                    type: column.type,
+                }));
+                setFilterAnomalyOptions(options);
+                setHasErrorFilterAnomaly(false);
+            } else {
+                throw new Error('Response data or columns are missing');
+            }
+        } catch (error) {
+            handleApiError(error);
+            setHasErrorFilterAnomaly(true);
+        }
+
+        setFilterSeverityOptions([
+            { id: 1, label: 'Very High', type: 'severity' },
+            { id: 2, label: 'High', type: 'severity' },
+            { id: 3, label: 'Medium', type: 'severity' }
+        ]);
 
         const listIdentifiers: string[][] = []
         const errorListIdentifiers: boolean[] = []
