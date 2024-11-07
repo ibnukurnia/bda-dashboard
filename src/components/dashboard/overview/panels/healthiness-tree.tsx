@@ -233,6 +233,11 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
     };
   }, [])
 
+  const getTopLeftCurvedLinkWidth = () => {
+    if (!securityExpanded) return 262
+    if (securityExpanded && computeExpanded) return 148
+    return 156
+  }
   const getSecurityLinkWidth = () => {
     if (securityExpanded && computeExpanded) return 40
     if (securityExpanded) return 49
@@ -471,14 +476,14 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
             <svg
               className={`absolute`}
               height={66}
-              width={!securityExpanded ? 205 : 99}
+              width={getTopLeftCurvedLinkWidth()}
               xmlns="http://www.w3.org/2000/svg"
               style={{
-                top: computeExpanded ? '-112px' : '-151px',
+                top: computeExpanded ? '-159px' : '-198px',
                 left: `50%`,
               }}
             >
-              <path d={`M ${!securityExpanded ? 205 : 99} 1 C 1 1 1 1 1 65.1`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
+              <path d={`M ${getTopLeftCurvedLinkWidth()} 1 C 1 1 1 1 1 65.1`} stroke="white" strokeWidth={2} opacity={0.3} fill="transparent" />
             </svg>
           }
           <svg
