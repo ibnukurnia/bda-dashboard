@@ -5,7 +5,6 @@ const config = {
   },
   swcMinify: true, // Enable SWC minification
   output: 'standalone',
-  reactStrictMode: false,
 }
 
 export default config
