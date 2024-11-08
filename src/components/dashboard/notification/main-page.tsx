@@ -165,7 +165,7 @@ const AnomalyNotificationPage = () => {
     return (
         <div className="bg-[#0816358F] text-white p-8">
             <div className="rounded-lg w-full flex flex-col gap-6">
-                <div className={`w-full max-h-[75dvh] overflow-x-auto`}>
+                <div className={`w-full max-h-[65dvh] overflow-x-auto ${styles.scrollbar}`}>
                     <div className="min-w-full">
                         <table className="table-auto divide-y divide-gray-200 w-full">
                             <thead className="sticky top-0 z-[16] border-b border-gray-700 bg-[#060F2C]">

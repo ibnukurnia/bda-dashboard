@@ -86,7 +86,7 @@ export function SignInForm() {
                     fontWeight={400}
                     fontSize={14}
                     lineHeight={"16.45px"}
-                    color={errors.pernr ? "#D23636" : "white"}
+                    color={"white"}
                   >
                     Personal Number
                   </Typography>
@@ -124,7 +124,7 @@ export function SignInForm() {
                     fontWeight={400}
                     fontSize={14}
                     lineHeight={"16.45px"}
-                    color={errors.password ? "#D23636" : "white"}
+                    color={"white"}
                   >
                     Password
                   </Typography>

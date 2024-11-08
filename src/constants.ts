@@ -75,7 +75,10 @@ export const TAB_DATA_SOURCE = [
             namespace: "solarwinds_internal",
             textLabel: "Internal",
           },
-
+          {
+            namespace: "dns_infoblox",
+            textLabel: "DNS Infloblox",
+          },
         ],
       },
 
@@ -89,6 +92,14 @@ export const TAB_DATA_SOURCE = [
           {
             namespace: "solarwinds_traffic_internal",
             textLabel: "Internal",
+          },
+          {
+            namespace: "isp_traffic",
+            textLabel: "ISP Traffic",
+          },
+          {
+            namespace: "isp_node",
+            textLabel: "ISP Node",
           },
 
         ],
@@ -197,6 +208,9 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'solarwinds_traffic_dwdm': 'Solarwinds Traffic DWDM',
   'solarwinds_traffic_internal': 'Solarwinds Traffic Internal',
   'zabbix': "Zabbix",
+  'dns_infoblox': 'DNS Infoblox',
+  'isp_traffic': 'ISP Traffic',
+  'isp_node': 'ISP Node'
 }
 
 export const SEVERITY_LABELS: Record<string, string> = {

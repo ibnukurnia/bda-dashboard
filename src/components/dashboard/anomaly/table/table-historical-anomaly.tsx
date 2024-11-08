@@ -140,7 +140,7 @@ const TableHistoricalAnomaly = ({
 
   return (
     <div className='flex flex-col gap-4'>
-      <div className={`w-full overflow-auto ${pagination.pageSize > 10 ? 'max-h-[75dvh]' : ''}`}>
+      <div className={`w-full overflow-auto ${styles.scrollbar} ${pagination.pageSize > 10 ? 'max-h-[75dvh]' : ''}`}>
         <div className="min-w-full">
           <table className={`${styles.table} table-auto divide-y divide-gray-200 w-full`}>
             <thead className={styles.table_header}>

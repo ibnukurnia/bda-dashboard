@@ -31,3 +31,19 @@ thead.table_header {
   z-index: 16;
   background-color: #060f2c;
 }
+
+.scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  background-color: #ededed;
+  z-index: 2;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  background-color: #bdbdbd;
+  z-index: 2;
+}
