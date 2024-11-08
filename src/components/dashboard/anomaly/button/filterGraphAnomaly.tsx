@@ -1,3 +1,4 @@
+import useUpdateEffect from '@/hooks/use-update-effect';
 import { GetListIdentifier } from '@/modules/usecases/anomaly-predictions';
 import { ColumnOption } from '@/types/anomaly';
 import { format } from 'date-fns';
@@ -34,10 +35,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     const [listIdentifiers, setListIdentifiers] = useState<string[][]>([])
     const [selectedIdentifiers, setSelectedIdentifiers] = useState<string[]>(currentSelectedIdentifiers)
     const [selectedScaleOptions, setSelectedScaleOptions] = useState<ColumnOption[]>(currentSelectedScales);
-    const [searchServiceValue, setSearchServiceValue] = useState<string>('')
-    const [searchInterfaceValue, setSearchInterfaceValue] = useState<string>('')
-    const [searchNodeValue, setSearchNodeValue] = useState<string>('')
-    const [searchDomainValue, setSearchDomainValue] = useState<string>('')
+    const [searchValues, setSearchValues] = useState<string[]>(Array.from({ length: datasourceIdentifiers.length }, () => ""))
     const panelRef = useRef<HTMLDivElement>(null);
 
     const getTimeRange = () => {
@@ -93,21 +91,10 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         setListIdentifiers(listIdentifiers)
     };
 
-    // Filter services based on the search input
-    // const filteredServicesOptions = servicesOptions?.filter(service =>
-    //     service.toLowerCase().includes(searchServiceValue.toLowerCase())
-    // ) ?? [];
-
-    // const filteredNodeOptions = nodeOptions?.filter(service =>
-    //     service.toLowerCase().includes(searchNodeValue.toLowerCase())
-    // ) ?? [];
-    // const filteredInterfaceOptions = interfaceOptions?.filter(service =>
-    //     service.toLowerCase().includes(searchInterfaceValue.toLowerCase())
-    // ) ?? [];
-
-    // const filteredDomainOptions = domainOptions?.filter(service =>
-    //     service.toLowerCase().includes(searchDomainValue.toLowerCase())
-    // ) ?? [];
+    // // Filter services based on the search input
+    const filteredListIdentifiers = listIdentifiers.map((list, listIdx) => list?.filter(item =>
+        item.toLowerCase().includes(searchValues[listIdx].toLowerCase())
+    ) ?? []);
 
     const togglePanel = () => {
         setIsOpen(!isOpen);
@@ -141,20 +128,16 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     const handleReset = () => {
         setSelectedScaleOptions([]);
         setSelectedIdentifiers([])
+        setSearchValues(Array.from({ length: datasourceIdentifiers.length }, () => ""))
     };
 
-    const handleSearchService = (e: ChangeEvent<HTMLInputElement>) => {
-        setSearchServiceValue(e.target.value)
-    }
-    const handleSearchInterface = (e: ChangeEvent<HTMLInputElement>) => {
-        setSearchInterfaceValue(e.target.value)
-    }
-    const handleSearchNode = (e: ChangeEvent<HTMLInputElement>) => {
-        setSearchNodeValue(e.target.value)
-    }
-    const handleSearchDomain = (e: ChangeEvent<HTMLInputElement>) => {
-        setSearchDomainValue(e.target.value)
-    }
+    const handleSearch = (identifierIndex: number, value: string) => {
+        setSearchValues(prev => {
+            const newArr = [...prev]
+            newArr[identifierIndex] = value
+            return newArr
+        });
+    };
 
     useEffect(() => {
         loadFiltersOptions()
@@ -178,13 +161,17 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         };
     }, [isOpen]);
 
-    useEffect(() => {
+    useUpdateEffect(() => {
         setSelectedScaleOptions(currentSelectedScales)
     }, [currentSelectedScales])
 
-    useEffect(() => {
+    useUpdateEffect(() => {
         setSelectedIdentifiers(currentSelectedIdentifiers)
     }, [currentSelectedIdentifiers])
+
+    useUpdateEffect(() => {
+        setSearchValues(Array.from({ length: datasourceIdentifiers.length }, () => ""))
+    }, [listIdentifiers])
 
     return (
         <div className="flex">
@@ -251,14 +238,16 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                     <h3 className="font-semibold mb-3 text-lg">{identifier.title}</h3>
                                     {listIdentifiers[identifierIdx].length > 0 ?
                                         <>
-                                            {/* <input
-                                                className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                                placeholder='Search service'
-                                                value={searchServiceValue}
-                                                onChange={handleSearchService}
-                                            /> */}
+                                            {listIdentifiers[identifierIdx]?.length > 10 &&
+                                                <input
+                                                    className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                                    placeholder={`Search ${identifier.title}`}
+                                                    value={searchValues[identifierIdx]}
+                                                    onChange={(e) => handleSearch(identifierIdx, e.target.value)}
+                                                />
+                                            }
                                             <div className="overflow-y-auto max-h-40">
-                                                {listIdentifiers[identifierIdx].map(item => (
+                                                {filteredListIdentifiers[identifierIdx].map(item => (
                                                     <label key={item} className="flex items-center justify-between mb-2">
                                                         <div className="flex items-center">
                                                             <input

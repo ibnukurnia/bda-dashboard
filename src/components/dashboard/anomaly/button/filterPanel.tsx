@@ -1,3 +1,4 @@
+import useUpdateEffect from '@/hooks/use-update-effect';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState, ChangeEvent } from 'react';
 
@@ -30,7 +31,6 @@ interface FilterPanelProps {
             selectedListIdentifiers: string[][],
         }
     ) => void;
-    onResetFilters: () => void;
     hasErrorFilterAnomaly: boolean;
 }
 
@@ -41,7 +41,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     listIdentifiers,
     hasErrorListIdentifier,
     onApplyFilters,
-    onResetFilters,
     hasErrorFilterAnomaly,
 }) => {
     const searchParams = useSearchParams();
@@ -50,28 +49,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     const [selectedAnomalyOptions, setSelectedAnomalyOptions] = useState<string[]>([]);
     const [selectedSeverityOptions, setSelectedSeverityOptions] = useState<number[]>([]);
     const [selectedListIdentifiers, setSelectedListIdentifiers] = useState<string[][]>(datasourceIdentifiers.map(identifier => searchParams.getAll(identifier.key)))
-    const [searchServiceValue, setSearchServiceValue] = useState<string>(''); // For search input
-    const [searchNodeValue, setSearchNodeValue] = useState<string>(''); // For search input
-    const [searchInterfaceValue, setSearchInterfaceValue] = useState<string>(''); // For search input
-    const [searchDomainValue, setSearchDomainValue] = useState<string>(''); // For search input
+    const [searchValues, setSearchValues] = useState<string[]>(Array.from({ length: datasourceIdentifiers.length }, () => ""))
     const [resetMessage, setResetMessage] = useState<boolean>(false); // State for temporary reset message
     const panelRef = useRef<HTMLDivElement>(null);
 
     // // Filter services based on the search input
-    // const filteredServicesOptions = servicesOptions?.filter(service =>
-    //     service.toLowerCase().includes(searchServiceValue.toLowerCase())
-    // ) ?? [];
-
-    // const filteredSolarWindsNodeOptions = solarWindsNodeOptions?.filter(service =>
-    //     service.toLowerCase().includes(searchNodeValue.toLowerCase())
-    // ) ?? [];
-    // const filteredSolarWindsInterfaceOptions = solarWindsInterfaceOptions?.filter(service =>
-    //     service.toLowerCase().includes(searchInterfaceValue.toLowerCase())
-    // ) ?? [];
-
-    // const filteredDnsDomainOptions = dnsDomainOptions?.filter(service =>
-    //     service.toLowerCase().includes(searchDomainValue.toLowerCase())
-    // ) ?? [];
+    const filteredListIdentifiers = listIdentifiers.map((list, listIdx) => list?.filter(item =>
+        item.toLowerCase().includes(searchValues[listIdx].toLowerCase())
+    ) ?? []);
 
     const togglePanel = () => {
         setIsOpen(!isOpen);
@@ -131,27 +116,19 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         setSelectedOperation('');
         setSelectedSeverityOptions([]);
         setSelectedListIdentifiers(Array.from({ length: datasourceIdentifiers.length }, () => []))
-        setSearchServiceValue('');
-        setSearchNodeValue('');
-        setSearchInterfaceValue('');
-        setSearchDomainValue('');
+        setSearchValues(Array.from({ length: datasourceIdentifiers.length }, () => ""))
 
         // Show reset confirmation message
         setResetMessage(true);
         setTimeout(() => setResetMessage(false), 2000);
     };
 
-    const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-        setSearchServiceValue(e.target.value);
-    };
-    const handleSearchSolarWindsNode = (e: ChangeEvent<HTMLInputElement>) => {
-        setSearchNodeValue(e.target.value);
-    };
-    const handleSearchSolarWindsInterface = (e: ChangeEvent<HTMLInputElement>) => {
-        setSearchInterfaceValue(e.target.value);
-    };
-    const handleSearchDnsDomain = (e: ChangeEvent<HTMLInputElement>) => {
-        setSearchDomainValue(e.target.value);
+    const handleSearch = (identifierIndex: number, value: string) => {
+        setSearchValues(prev => {
+            const newArr = [ ...prev ]
+            newArr[identifierIndex] = value
+            return newArr
+        });
     };
 
     const handleSelectAllAnomalies = () => {
@@ -233,6 +210,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         };
     }, [isOpen]);
 
+    useUpdateEffect(() => {
+        setSearchValues(Array.from({ length: datasourceIdentifiers.length }, () => ""))
+    }, [listIdentifiers])
+    
     return (
         <div className="flex self-start z-99999">
             <button
@@ -399,19 +380,21 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     </div>
 
                                     {/* Search input for services */}
-                                    {/* <input
-                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                        placeholder="Search service"
-                                        value={searchServiceValue}
-                                        onChange={handleSearch}
-                                    /> */}
+                                    {listIdentifiers[identifierIdx]?.length > 10 &&
+                                        <input
+                                            className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                            placeholder={`Search ${identifier.title}`}
+                                            value={searchValues[identifierIdx]}
+                                            onChange={(e) => handleSearch(identifierIdx, e.target.value)}
+                                        />
+                                    }
 
                                     {/* Services with filtered results */}
                                     <div className="overflow-y-auto max-h-40">
                                         {hasErrorListIdentifier[identifierIdx] ? (
                                             <p className="text-red-500 whitespace-nowrap">An error occurred while fetching services. Please try again later.</p>
-                                        ) : listIdentifiers[identifierIdx]?.length > 0 ? (
-                                            listIdentifiers[identifierIdx].map((item, itemIdx) => (
+                                        ) : filteredListIdentifiers[identifierIdx]?.length > 0 ? (
+                                            filteredListIdentifiers[identifierIdx].map((item, itemIdx) => (
                                                 <label key={itemIdx} className="flex items-center justify-between mb-1">
                                                     <div className="flex items-center">
                                                         <input
