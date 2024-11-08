@@ -130,11 +130,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         setSelectedAnomalyOptions([]);
         setSelectedOperation('');
         setSelectedSeverityOptions([]);
+        setSelectedListIdentifiers(Array.from({ length: datasourceIdentifiers.length }, () => []))
         setSearchServiceValue('');
         setSearchNodeValue('');
         setSearchInterfaceValue('');
         setSearchDomainValue('');
-        onResetFilters();
 
         // Show reset confirmation message
         setResetMessage(true);

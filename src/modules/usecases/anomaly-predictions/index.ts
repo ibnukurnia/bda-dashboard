@@ -48,13 +48,13 @@ const GetMetricLogAnomalies = async (
     start_time: string
     end_time: string
     metric_name: string[]
-    cluster: string[]
-    service_name: string | null
-    network: string | null
-    interface: string | null
-    node: string | null
-    category: string | null
-    domain: string | null
+    // cluster: string[]
+    // service_name: string | null
+    // network: string | null
+    // interface: string | null
+    // node: string | null
+    // category: string | null
+    // domain: string | null
   },
   signal?: AbortSignal
 ) => {

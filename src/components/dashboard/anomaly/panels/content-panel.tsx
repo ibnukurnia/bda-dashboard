@@ -301,7 +301,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
     const loadFiltersOptions = async () => {
         const { startTime, endTime } = getTimeRange();
-        
+
         try {
             const response = await fetchAnomalyOption(selectedDataSource);
             if (response.data?.columns) {
@@ -613,6 +613,7 @@ const TabContent: React.FC<TabContentProps> = ({
                         <div className='card-style p-6'>
                             <GraphAnomalyCard
                                 selectedDataSource={selectedDataSource}
+                                datasourceIdentifiers={datasourceIdentifiers}
                                 selectedTimeRangeKey={selectedTimeRange}
                                 timeRanges={PREDEFINED_TIME_RANGES}
                                 autoRefresh={graphAutoRefresh}

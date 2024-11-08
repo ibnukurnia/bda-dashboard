@@ -16,13 +16,7 @@ import DropdownTime from "../button/dropdown-time";
 
 const initialFilter = {
     scale: [],
-    cluster: [],
-    service: null,
-    network: null,
-    interface: null,
-    node: null,
-    category: null,
-    domain: null,
+    identifiers: [],
 }
 
 const CUSTOM_TIME_RANGES: Record<string, number> = {
@@ -162,6 +156,10 @@ const Graph = ({
 }
 interface GraphicAnomalyCardProps {
     selectedDataSource: string;
+    datasourceIdentifiers: {
+        title: string;
+        key: string;
+    }[];
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
     isFullScreen: boolean;
@@ -173,6 +171,7 @@ interface GraphicAnomalyCardProps {
 
 const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     selectedDataSource,
+    datasourceIdentifiers,
     timeRanges,
     isFullScreen,
     autoRefresh = {
@@ -196,13 +195,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const [dateRangeMode, setDateRangeMode] = useState<"predefined" | "custom">("predefined");
     const [selectedFilter, setSelectedFilter] = useState<{
         scale: ColumnOption[];
-        cluster: ClusterOptionResponse[];
-        service: string | null;
-        network: string | null;
-        interface: string | null;
-        node: string | null;
-        category: string | null;
-        domain: string | null;
+        identifiers: string[];
     }>(initialFilter);
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0]);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -244,6 +237,11 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     };
 
     async function fetchMetricLog(startTime: string, endTime: string) {
+        if (
+            selectedFilter.scale.length === 0 ||
+            datasourceIdentifiers.length !== selectedFilter.identifiers.length
+        ) return
+        
         if (abortControllerRef.current) {
             abortControllerRef.current.abort("Create new fetch request");
         }
@@ -251,19 +249,18 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
+        const payloadSelectedIdentifier = datasourceIdentifiers.reduce<Record<string, string>>((acc, identifier, idx) => {
+            acc[identifier.key] = selectedFilter.identifiers[idx]
+            return acc
+        }, {})
+
         const metricResultPromise = GetMetricLogAnomalies(
             {
                 type: selectedDataSource,
                 start_time: startTime,
                 end_time: endTime,
                 metric_name: selectedFilter.scale.map((scale) => scale.name),
-                cluster: selectedFilter.cluster.map((cluster) => cluster.name),
-                service_name: selectedFilter.service,
-                network: selectedFilter.network,
-                interface: selectedFilter.interface,
-                node: selectedFilter.node,
-                category: selectedFilter.category,
-                domain: selectedFilter.domain,
+                ...payloadSelectedIdentifier,
             },
             controller.signal
         );
@@ -308,23 +305,11 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
     const handleOnApplyFilter = (
         selectedScales: ColumnOption[],
-        selectedCluster: ClusterOptionResponse[],
-        selectedService: string | null,
-        selectedNetwork: string | null,
-        selectedInterface: string | null,
-        selectedNode: string | null,
-        selectedCategory: string | null,
-        selectedDomain: string | null,
+        selectedIdentifiers: string[],
     ) => {
         setSelectedFilter({
             scale: selectedScales,
-            cluster: selectedCluster,
-            service: selectedService,
-            network: selectedNetwork,
-            interface: selectedInterface,
-            node: selectedNode,
-            category: selectedCategory,
-            domain: selectedDomain,
+            identifiers: selectedIdentifiers,
         })
     }
 
@@ -409,16 +394,11 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 {!isFullScreen && (
                     <FilterGraphAnomaly
                         selectedDataSource={selectedDataSource}
+                        datasourceIdentifiers={datasourceIdentifiers}
                         selectedTimeRange={selectedTimeRangeKey}
                         timeRanges={CUSTOM_TIME_RANGES}
                         currentSelectedScales={selectedFilter.scale}
-                        currentSelectedCluster={selectedFilter.cluster}
-                        currentSelectedService={selectedFilter.service}
-                        currentSelectedNetwork={selectedFilter.network}
-                        currentSelectedInterface={selectedFilter.interface}
-                        currentSelectedNode={selectedFilter.node}
-                        currentSelectedCategory={selectedFilter.category}
-                        currentSelectedDomain={selectedFilter.domain}
+                        currentSelectedIdentifiers={selectedFilter.identifiers}
                         scaleOptions={dataColumn.columns}
                         onApplyFilters={handleOnApplyFilter}
                     />
@@ -439,9 +419,9 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 </Typography>
             </div>
             <div className="flex gap-2 items-center">
-                {selectedFilter.service &&
+                {selectedFilter.identifiers[datasourceIdentifiers.length-1] &&
                     <Typography variant="subtitle1" color="white">
-                        Service name: {selectedFilter.service}
+                        {datasourceIdentifiers[datasourceIdentifiers.length-1].title}: {selectedFilter.identifiers[datasourceIdentifiers.length-1]}
                     </Typography>
                 }
 
