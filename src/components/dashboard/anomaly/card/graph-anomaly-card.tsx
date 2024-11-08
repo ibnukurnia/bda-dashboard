@@ -159,6 +159,7 @@ interface GraphicAnomalyCardProps {
     datasourceIdentifiers: {
         title: string;
         key: string;
+        is_multiple: boolean;
     }[];
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
@@ -195,7 +196,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const [dateRangeMode, setDateRangeMode] = useState<"predefined" | "custom">("predefined");
     const [selectedFilter, setSelectedFilter] = useState<{
         scale: ColumnOption[];
-        identifiers: string[];
+        identifiers: (string | string[])[];
     }>(initialFilter);
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0]);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -241,7 +242,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             selectedFilter.scale.length === 0 ||
             datasourceIdentifiers.length !== selectedFilter.identifiers.length
         ) return
-        
+
         if (abortControllerRef.current) {
             abortControllerRef.current.abort("Create new fetch request");
         }
@@ -249,7 +250,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
-        const payloadSelectedIdentifier = datasourceIdentifiers.reduce<Record<string, string>>((acc, identifier, idx) => {
+        const payloadSelectedIdentifier = datasourceIdentifiers.reduce<Record<string, string | string[]>>((acc, identifier, idx) => {
             acc[identifier.key] = selectedFilter.identifiers[idx]
             return acc
         }, {})
@@ -305,7 +306,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
     const handleOnApplyFilter = (
         selectedScales: ColumnOption[],
-        selectedIdentifiers: string[],
+        selectedIdentifiers: (string | string[])[],
     ) => {
         setSelectedFilter({
             scale: selectedScales,

@@ -328,7 +328,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
         const listIdentifiers: string[][] = []
         const errorListIdentifiers: boolean[] = []
-        datasourceIdentifiers.forEach(identifier => {
+        datasourceIdentifiers.forEach((identifier, identifierIdx) => {
             GetListIdentifier(
                 selectedDataSource,
                 identifier.key, {
@@ -336,25 +336,16 @@ const TabContent: React.FC<TabContentProps> = ({
                 end_time: endTime,
             }).then(res => {
                 if (res.data) {
-                    listIdentifiers.push(res.data)
-                    errorListIdentifiers.push(false)
+                    listIdentifiers[identifierIdx] = res.data
+                    errorListIdentifiers[identifierIdx] = false
                 } else {
-                    errorListIdentifiers.push(true)
+                    errorListIdentifiers[identifierIdx] = true
                 }
             })
         })
         setListIdentifiers(listIdentifiers)
         setHasErrorListIdentifier(errorListIdentifiers)
     };
-
-    const handleResetFilters = () => {
-        // Clear the selected options
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete("anomaly")
-        params.delete("service")
-        params.delete("cluster")
-        router.push(`/dashboard/anomaly-detection?${params.toString()}`);
-    }
 
     const handleChangePage = (page: number) => {
         setIsTableLoading(true); // Set loading to true before making the API call
@@ -548,7 +539,6 @@ const TabContent: React.FC<TabContentProps> = ({
                                         listIdentifiers={listIdentifiers}
                                         hasErrorListIdentifier={hasErrorListIdentifier}
                                         onApplyFilters={handleApplyFilters}
-                                        onResetFilters={handleResetFilters}
                                         hasErrorFilterAnomaly={hasErrorFilterAnomaly}
                                     />
                                 )}
