@@ -52,6 +52,7 @@ const TabContent: React.FC<TabContentProps> = ({
     const [datasourceIdentifiers, setDatasourceIdentifiers] = useState<{
         title: string;
         key: string;
+        is_multiple: boolean;
     }[]>([])
     const [listIdentifiers, setListIdentifiers] = useState<string[][]>([])
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])

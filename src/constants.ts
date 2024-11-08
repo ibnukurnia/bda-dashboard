@@ -79,6 +79,10 @@ export const TAB_DATA_SOURCE = [
             namespace: "dns_infoblox",
             textLabel: "DNS Infloblox",
           },
+          {
+            namespace: "isp_node",
+            textLabel: "ISP Node",
+          },
         ],
       },
 
@@ -96,17 +100,12 @@ export const TAB_DATA_SOURCE = [
           {
             namespace: "isp_traffic",
             textLabel: "ISP Traffic",
-          },
-          {
-            namespace: "isp_node",
-            textLabel: "ISP Node",
-          },
-
+          }
         ],
       },
       {
 
-        textLabel: "DNS",
+        textLabel: "Domain",
         namespace: "dns_rt"
       },
       {
