@@ -33,6 +33,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [listIdentifiers, setListIdentifiers] = useState<string[][]>([])
+    const [hasErrorListIdentifier, setHasErrorListIdentifier] = useState<boolean[]>([])
     const [selectedIdentifiers, setSelectedIdentifiers] = useState<string[]>(currentSelectedIdentifiers)
     const [selectedScaleOptions, setSelectedScaleOptions] = useState<ColumnOption[]>(currentSelectedScales);
     const [searchValues, setSearchValues] = useState<string[]>(Array.from({ length: datasourceIdentifiers.length }, () => ""))
@@ -73,7 +74,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
 
         const listIdentifiers: string[][] = []
         const errorListIdentifiers: boolean[] = []
-        datasourceIdentifiers.forEach(identifier => {
+        datasourceIdentifiers.forEach((identifier, identifierIdx) => {
             GetListIdentifier(
                 selectedDataSource,
                 identifier.key, {
@@ -81,14 +82,15 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                 end_time: endTime,
             }).then(res => {
                 if (res.data) {
-                    listIdentifiers.push(res.data)
-                    errorListIdentifiers.push(false)
+                    listIdentifiers[identifierIdx] = res.data
+                    errorListIdentifiers[identifierIdx] = false
                 } else {
-                    errorListIdentifiers.push(true)
+                    errorListIdentifiers[identifierIdx] = true
                 }
             })
         })
         setListIdentifiers(listIdentifiers)
+        setHasErrorListIdentifier(errorListIdentifiers)
     };
 
     // // Filter services based on the search input

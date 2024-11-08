@@ -328,7 +328,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
         const listIdentifiers: string[][] = []
         const errorListIdentifiers: boolean[] = []
-        datasourceIdentifiers.forEach(identifier => {
+        datasourceIdentifiers.forEach((identifier, identifierIdx) => {
             GetListIdentifier(
                 selectedDataSource,
                 identifier.key, {
@@ -336,10 +336,10 @@ const TabContent: React.FC<TabContentProps> = ({
                 end_time: endTime,
             }).then(res => {
                 if (res.data) {
-                    listIdentifiers.push(res.data)
-                    errorListIdentifiers.push(false)
+                    listIdentifiers[identifierIdx] = res.data
+                    errorListIdentifiers[identifierIdx] = false
                 } else {
-                    errorListIdentifiers.push(true)
+                    errorListIdentifiers[identifierIdx] = true
                 }
             })
         })

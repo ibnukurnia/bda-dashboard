@@ -57,6 +57,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     const filteredListIdentifiers = listIdentifiers.map((list, listIdx) => list?.filter(item =>
         item.toLowerCase().includes(searchValues[listIdx].toLowerCase())
     ) ?? []);
+    console.log(datasourceIdentifiers, listIdentifiers, filteredListIdentifiers);
+    
 
     const togglePanel = () => {
         setIsOpen(!isOpen);
@@ -365,7 +367,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                             </div>
 
                             {datasourceIdentifiers.map((identifier, identifierIdx) =>
-                                <div className="flex flex-col gap-3">
+                                <div key={identifier.key} className="flex flex-col gap-3">
                                     <div className="flex flex-col gap-2">
                                         <h3 className="font-semibold text-lg">{identifier.title}</h3>
                                         <p className="text-sm text-gray-600">
