@@ -35,6 +35,7 @@ export interface DatasourceIdentifiers {
   identifiers: {
     key: string;
     title: string;
+    is_multiple: boolean;
   }[];
 }
 

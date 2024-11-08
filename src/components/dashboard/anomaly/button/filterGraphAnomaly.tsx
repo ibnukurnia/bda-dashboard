@@ -9,15 +9,16 @@ interface FilterGraphAnomalyProps {
     datasourceIdentifiers: {
         title: string;
         key: string;
+        is_multiple: boolean;
     }[];
     timeRanges: Record<string, number>;
     selectedTimeRange: string;
     scaleOptions: ColumnOption[];
-    currentSelectedIdentifiers: string[];
+    currentSelectedIdentifiers: (string | string[])[];
     currentSelectedScales: ColumnOption[];
     onApplyFilters: (
         selectedScales: ColumnOption[],
-        selectedIdentifiers: string[],
+        selectedIdentifiers: (string | string[])[],
     ) => void; // Separate filters for anomalies and services
 }
 
@@ -34,7 +35,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     const [isOpen, setIsOpen] = useState(false);
     const [listIdentifiers, setListIdentifiers] = useState<string[][]>([])
     const [hasErrorListIdentifier, setHasErrorListIdentifier] = useState<boolean[]>([])
-    const [selectedIdentifiers, setSelectedIdentifiers] = useState<string[]>(currentSelectedIdentifiers)
+    const [selectedIdentifiers, setSelectedIdentifiers] = useState<(string | string[])[]>(currentSelectedIdentifiers)
     const [selectedScaleOptions, setSelectedScaleOptions] = useState<ColumnOption[]>(currentSelectedScales);
     const [searchValues, setSearchValues] = useState<string[]>(Array.from({ length: datasourceIdentifiers.length }, () => ""))
     const panelRef = useRef<HTMLDivElement>(null);
@@ -102,10 +103,21 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         setIsOpen(!isOpen);
     };
 
-    const handleSelectedChange = (identifierIndex: number, value: string) => {
+    const handleSelectedChange = (identifierIndex: number, isMultiple: boolean, value: string) => {
         setSelectedIdentifiers(prev => {
             const newArr = [...prev]
-            newArr[identifierIndex] = value
+
+            if (!isMultiple) {
+                newArr[identifierIndex] = value
+            } else {
+                let newValue = newArr[identifierIndex] ? [...newArr[identifierIndex]] : []
+                if (newValue.includes(value)) {
+                    newValue = newValue.filter((option) => option !== value)
+                } else {
+                    newValue = [...newValue, value]
+                }
+                newArr[identifierIndex] = newValue
+            }
 
             return newArr
         })
@@ -253,10 +265,14 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                                     <label key={item} className="flex items-center justify-between mb-2">
                                                         <div className="flex items-center">
                                                             <input
-                                                                type="radio"
+                                                                type={identifier.is_multiple ? "checkbox" : "radio"}
                                                                 value={item}
-                                                                checked={selectedIdentifiers[identifierIdx] === item}
-                                                                onChange={() => handleSelectedChange(identifierIdx, item)}
+                                                                checked={
+                                                                    selectedIdentifiers[identifierIdx] != null && (typeof selectedIdentifiers[identifierIdx] === "string" ?
+                                                                    selectedIdentifiers[identifierIdx] === item :
+                                                                    selectedIdentifiers[identifierIdx].includes(item))
+                                                                }
+                                                                onChange={() => handleSelectedChange(identifierIdx, identifier.is_multiple, item)}
                                                                 className="mr-2"
                                                             />
                                                             {item}
@@ -279,7 +295,8 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                 className="bg-blue-600 hover:bg-blue-800 disabled:bg-gray-200 disabled:text-gray-400 text-white px-4 py-2 rounded-lg flex-1 text-center"
                                 disabled={
                                     selectedScaleOptions.length === 0 ||
-                                    datasourceIdentifiers.length !== selectedIdentifiers.length
+                                    datasourceIdentifiers.length !== selectedIdentifiers.length ||
+                                    datasourceIdentifiers.some((identifier, identifierIdx) => identifier.is_multiple && selectedIdentifiers[identifierIdx].length === 0)
                                 }
                                 onClick={handleApply}
                             >

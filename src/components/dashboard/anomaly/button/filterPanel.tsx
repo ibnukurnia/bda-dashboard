@@ -57,8 +57,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     const filteredListIdentifiers = listIdentifiers.map((list, listIdx) => list?.filter(item =>
         item.toLowerCase().includes(searchValues[listIdx].toLowerCase())
     ) ?? []);
-    console.log(datasourceIdentifiers, listIdentifiers, filteredListIdentifiers);
-    
 
     const togglePanel = () => {
         setIsOpen(!isOpen);
