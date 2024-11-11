@@ -11,11 +11,11 @@ interface FilterGraphAnomalyProps {
     timeRanges: Record<string, number>;
     selectedTimeRange: string;
     scaleOptions: ColumnOption[];
-    currentSelectedIdentifiers: (string | string[])[];
+    currentSelectedIdentifiers: (null | string | string[])[];
     currentSelectedScales: ColumnOption[];
     onApplyFilters: (
         selectedScales: ColumnOption[],
-        selectedIdentifiers: (string | string[])[],
+        selectedIdentifiers: (null | string | string[])[],
     ) => void; // Separate filters for anomalies and services
 }
 
@@ -32,7 +32,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     const [isOpen, setIsOpen] = useState(false);
     const [listIdentifiers, setListIdentifiers] = useState<string[][]>([])
     const [hasErrorListIdentifier, setHasErrorListIdentifier] = useState<boolean[]>([])
-    const [selectedIdentifiers, setSelectedIdentifiers] = useState<(string | string[])[]>(currentSelectedIdentifiers)
+    const [selectedIdentifiers, setSelectedIdentifiers] = useState<(null | string | string[])[]>(currentSelectedIdentifiers)
     const [selectedScaleOptions, setSelectedScaleOptions] = useState<ColumnOption[]>(currentSelectedScales);
     const [searchValues, setSearchValues] = useState<string[]>(Array.from({ length: datasourceIdentifiers.length }, () => ""))
     const panelRef = useRef<HTMLDivElement>(null);

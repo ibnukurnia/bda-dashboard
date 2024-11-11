@@ -13,6 +13,7 @@ import Toggle, { ToggleOption } from "../button/toggle";
 import useInterval from "@/hooks/use-interval";
 import Skeleton from "@/components/system/Skeleton/Skeleton";
 import DropdownTime from "../button/dropdown-time";
+import { useSearchParams } from "next/navigation";
 
 const initialFilter = {
     scale: [],
@@ -175,7 +176,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         interval: null,
     },
 }) => {
-    // Create local state for selectedTimeRangeKey instead of receiving it as a prop
+    const searchParams = useSearchParams();
+    const [calledEffectOnParam, setCalledEffectOnParam] = useState(false)
     const [selectedTimeRangeKey, setSelectedTimeRangeKey] = useState<string>('Last 15 minutes');
     const [dataColumn, setDataColumn] = useState<AnomalyOptionResponse>({ columns: [] });
     const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([]);
@@ -191,7 +193,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     const [dateRangeMode, setDateRangeMode] = useState<"predefined" | "custom">("predefined");
     const [selectedFilter, setSelectedFilter] = useState<{
         scale: ColumnOption[];
-        identifiers: (string | string[])[];
+        identifiers: (null | string | string[])[];
     }>(initialFilter);
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0]);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -248,7 +250,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
-        const payloadSelectedIdentifier = datasourceIdentifiers.reduce<Record<string, string | string[]>>((acc, identifier, idx) => {
+        const payloadSelectedIdentifier = datasourceIdentifiers.reduce<Record<string, null | string | string[]>>((acc, identifier, idx) => {
             acc[identifier.key] = selectedFilter.identifiers[idx]
             return acc
         }, {})
@@ -304,7 +306,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
     const handleOnApplyFilter = (
         selectedScales: ColumnOption[],
-        selectedIdentifiers: (string | string[])[],
+        selectedIdentifiers: (null | string | string[])[],
     ) => {
         setSelectedFilter({
             scale: selectedScales,
@@ -343,6 +345,31 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 console.error('Error fetching column option:', error);
             });
     }, [selectedDataSource]);
+
+    useEffect(() => {
+        if (
+            calledEffectOnParam ||
+            datasourceIdentifiers == null ||
+            dataColumn?.columns == null || dataColumn?.columns?.length === 0
+        ) return
+        
+        const scale = dataColumn.columns.filter(dc => searchParams.getAll("anomaly").includes(dc.name))
+        const identifiers = datasourceIdentifiers.map(identifier =>
+            identifier.is_multiple ? searchParams.getAll(identifier.key) : searchParams.get(identifier.key))
+
+        if (
+            scale.length !== 0 &&
+            identifiers.every(identifier => identifier && identifier?.length > 0)
+        ) {
+            setSelectedFilter({
+                scale: dataColumn.columns.filter(dc => searchParams.getAll("anomaly").includes(dc.name)),
+                identifiers: datasourceIdentifiers.map(identifier =>
+                    identifier.is_multiple ? searchParams.getAll(identifier.key) : searchParams.get(identifier.key))
+            })
+        }
+        
+        setCalledEffectOnParam(true)
+    }, [searchParams, datasourceIdentifiers, dataColumn])
 
     useUpdateEffect(() => {
         fetchMetricLog(predefinedStartTime, predefinedEndTime);
