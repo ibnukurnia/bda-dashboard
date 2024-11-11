@@ -178,6 +178,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     // Create local state for selectedTimeRangeKey instead of receiving it as a prop
     const [selectedTimeRangeKey, setSelectedTimeRangeKey] = useState<string>('Last 15 minutes');
     const [dataColumn, setDataColumn] = useState<AnomalyOptionResponse>({ columns: [] });
+    const [isDataColumnLoading, setIsDataColumnLoading] = useState(true); // Loading state
     const [dataMetric, setDataMetric] = useState<MetricLogAnomalyResponse[]>([]);
     const [lastTimeRangeParam, setLastTimeRangeParam] = useState<{ startTime: string | null; endTime: string | null }>({
         startTime: null,
@@ -327,13 +328,15 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             }
         };
     }, []);
+
     useEffect(() => {
         setDataColumn({ columns: [] });
         setSelectedFilter(initialFilter);
+        // setIsDataColumnLoading(true); // Start loading before fetch
+
         GetColumnOption(selectedDataSource)
             .then((result) => {
                 if (result.data) {
-                    // Directly set the columns without filtering
                     setDataColumn({ columns: result.data.columns });
                 } else {
                     console.warn('API response data is null or undefined for column option');
@@ -341,8 +344,17 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             })
             .catch((error) => {
                 console.error('Error fetching column option:', error);
+            })
+            .finally(() => {
+                setIsDataColumnLoading(false); // End loading after fetch completes
             });
     }, [selectedDataSource]);
+
+    // Log `dataColumn` after it updates
+    useEffect(() => {
+        console.log('Updated dataColumn:', dataColumn);
+    }, [dataColumn]);
+
 
     useUpdateEffect(() => {
         fetchMetricLog(predefinedStartTime, predefinedEndTime);
@@ -397,8 +409,10 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                         currentSelectedIdentifiers={selectedFilter.identifiers}
                         scaleOptions={dataColumn.columns}
                         onApplyFilters={handleOnApplyFilter}
+                        disabled={isDataColumnLoading} // Pass the disabled prop based on loading state
                     />
                 )}
+
 
                 <div className="flex flex-row gap-2 self-end items-center">
                     <DropdownTime

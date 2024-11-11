@@ -36,16 +36,16 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 }) => {
     const [zoomOutDisabled, setZoomOutDisabled] = useState(false);
 
-    useEffect(() => {
-        console.log("Data Charts:", dataCharts);
-    }, [dataCharts]);
-
     const toggleZoomOutButton = (disabled: boolean) => {
         const zoomOutButtons = document.querySelectorAll('.apexcharts-zoomout-icon');
         zoomOutButtons.forEach(button => {
             button.classList.toggle('zoom-disabled', disabled);
         });
     };
+
+    useEffect(() => {
+        console.log("Data Charts:", dataCharts);
+    }, [dataCharts]);
 
     useEffect(() => {
         toggleZoomOutButton(zoomOutDisabled);
@@ -55,7 +55,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
         setZoomOutDisabled(false);
     }, [dataCharts]);
 
-    if (!dataCharts || dataCharts.length === 0 || dataCharts.some(chart => !chart.data || chart.data.length === 0)) {
+    if (!dataCharts || dataCharts.length === 0) {
         return (
             <div className="text-center text-2xl font-semibold text-white">
                 DATA IS NOT AVAILABLE
@@ -63,11 +63,27 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
         );
     }
 
+    const discreteMarkers = dataCharts.flatMap((metric, index) => {
+        return metric.anomalies.map((anomaly) => {
+            const dataPointIndex = metric.data.findIndex(d => d[0] === anomaly[0]);
+
+            // Log to verify marker configuration
+            console.log(`Marker config: title: ${metric.title}, seriesIndex: ${index}, anomaly time: ${anomaly[0]}, dataPointIndex: ${dataPointIndex}, visible: ${dataPointIndex !== -1}`);
+
+            return {
+                seriesIndex: index,
+                dataPointIndex,
+                fillColor: '#FF0000',
+                strokeColor: '#FF0000',
+                size: 6,
+            };
+        }).filter(marker => marker.dataPointIndex !== -1);
+    }
+    );
+
     return (
         <div className="flex flex-col gap-4">
             {dataCharts.map((metric, index) => {
-                console.log(`Metric ${index}: Title: ${metric.title}, Color: ${colors[index % colors.length]}`);
-
                 const seriesData = metric.data.map(([date, number]) => ({
                     x: date || new Date().getTime(),
                     y: number !== null && number !== undefined ? number : 0,
@@ -75,8 +91,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
 
                 const chartOptions: ApexOptions = {
                     chart: {
-                        id: `sync-${Math.random()}-${index}`,
-                        group: `log-anomaly-${Math.random()}`, // unique group per chart
+                        id: `sync-${index}`, // Using static IDs for testing
+                        // group: `log-anomaly`, // Temporarily removed to test marker rendering
                         type: 'line',
                         height: 160,
                         animations: { enabled: false },
@@ -146,7 +162,18 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                     title: { text: metric.title, style: { color: 'white' } },
                     xaxis: {
                         type: 'datetime',
-                        labels: { style: { colors: 'white' }, rotate: 0 },
+                        labels: {
+                            formatter(value, _, __) {
+                                const date = new Date(value);
+                                return formatDate(date, "yyyy-MM-dd HH:mm").split(" ")
+                            },
+                            style: {
+                                colors: 'white', // White color for x-axis text
+                            },
+                            rotate: 0,
+                            hideOverlappingLabels: true,
+                            trim: true,
+                        },
                         min: dataCharts.every(series => series.data.length <= 0) ? minXOnEmpty : undefined,
                         max: dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : undefined,
                     },
@@ -156,11 +183,21 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         axisBorder: { show: true, color: 'white', width: 2 },
                     },
                     stroke: { curve: 'smooth', width: 4 },
-                    markers: { size: 0.0000001, hover: { size: 6 } },
+                    markers: {
+                        size: 0.0000001, // Minimal size when not hovered
+                        hover: {
+                            size: 6, // Size of the marker when hovered
+                        },
+                        discrete: discreteMarkers,
+                    },
                     grid: { row: { colors: ['transparent', 'transparent'], opacity: 1.5 }, padding: { top: -20 } },
                     legend: { labels: { colors: 'white' } },
                     colors: [colors[index % colors.length]],
                 };
+
+                // Log min and max values for x-axis
+                console.log(`X-axis min for ${metric.title}:`, dataCharts.every(series => series.data.length <= 0) ? minXOnEmpty : minX);
+                console.log(`X-axis max for ${metric.title}:`, dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : maxX);
 
                 const series = [{ name: metric.title, data: seriesData }];
 
