@@ -1,3 +1,4 @@
+import Skeleton from '@/components/system/Skeleton/Skeleton';
 import useUpdateEffect from '@/hooks/use-update-effect';
 import { Identifier } from '@/modules/models/anomaly-predictions';
 import { GetListIdentifier } from '@/modules/usecases/anomaly-predictions';
@@ -31,6 +32,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [listIdentifiers, setListIdentifiers] = useState<string[][]>([])
+    const [isLoadingListIdentifier, setIsLoadingListIdentifier] = useState(true)
     const [hasErrorListIdentifier, setHasErrorListIdentifier] = useState<boolean[]>([])
     const [selectedIdentifiers, setSelectedIdentifiers] = useState<(null | string | string[])[]>(currentSelectedIdentifiers)
     const [selectedScaleOptions, setSelectedScaleOptions] = useState<ColumnOption[]>(currentSelectedScales);
@@ -72,22 +74,24 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
 
         const listIdentifiers: string[][] = []
         const errorListIdentifiers: boolean[] = []
-        datasourceIdentifiers.forEach((identifier, identifierIdx) => {
-            GetListIdentifier(
-                selectedDataSource,
-                identifier.key, {
+        const promiseListIdentifier = datasourceIdentifiers.map((identifier, identifierIdx) => {
+            return GetListIdentifier(selectedDataSource, identifier.key, {
                 start_time: startTime,
                 end_time: endTime,
             }).then(res => {
                 if (res.data) {
-                    listIdentifiers[identifierIdx] = res.data
-                    errorListIdentifiers[identifierIdx] = false
+                    listIdentifiers[identifierIdx] = res.data;
+                    errorListIdentifiers[identifierIdx] = false;
                 } else {
-                    errorListIdentifiers[identifierIdx] = true
+                    errorListIdentifiers[identifierIdx] = true;
                 }
-            })
-        })
-        setListIdentifiers(listIdentifiers)
+            });
+        });
+
+        // Wait for all requests to finish before setting state
+        await Promise.all(promiseListIdentifier);
+        setListIdentifiers(listIdentifiers);
+        setIsLoadingListIdentifier(false);  // Set loading to false after all requests are done
         setHasErrorListIdentifier(errorListIdentifiers)
     };
 
@@ -151,6 +155,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     };
 
     useEffect(() => {
+        setIsLoadingListIdentifier(true)
         loadFiltersOptions()
     }, [datasourceIdentifiers, selectedTimeRange])
 
@@ -183,6 +188,15 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     useUpdateEffect(() => {
         setSearchValues(Array.from({ length: datasourceIdentifiers.length }, () => ""))
     }, [listIdentifiers])
+
+    if (isLoadingListIdentifier) {
+        return (
+            <Skeleton
+                width={110}
+                height={44}
+            />
+        )
+    }
 
     return (
         <div className="flex">
@@ -266,8 +280,8 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                                                 value={item}
                                                                 checked={
                                                                     selectedIdentifiers[identifierIdx] != null && (typeof selectedIdentifiers[identifierIdx] === "string" ?
-                                                                    selectedIdentifiers[identifierIdx] === item :
-                                                                    selectedIdentifiers[identifierIdx].includes(item))
+                                                                        selectedIdentifiers[identifierIdx] === item :
+                                                                        selectedIdentifiers[identifierIdx].includes(item))
                                                                 }
                                                                 onChange={() => handleSelectedChange(identifierIdx, identifier.is_multiple, item)}
                                                                 className="mr-2"
@@ -292,7 +306,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                 className="bg-blue-600 hover:bg-blue-800 disabled:bg-gray-200 disabled:text-gray-400 text-white px-4 py-2 rounded-lg flex-1 text-center"
                                 disabled={
                                     selectedScaleOptions.length === 0 ||
-                                    datasourceIdentifiers.some((identifier, identifierIdx) => 
+                                    datasourceIdentifiers.some((identifier, identifierIdx) =>
                                         selectedIdentifiers[identifierIdx] == null ||
                                         identifier.is_multiple && selectedIdentifiers[identifierIdx]?.length === 0
                                     )

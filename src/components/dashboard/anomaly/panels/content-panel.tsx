@@ -19,6 +19,7 @@ import Button from '@/components/system/Button/Button'
 import TableHistoricalAnomaly from '../table/table-historical-anomaly'
 import useUpdateEffect from '@/hooks/use-update-effect'
 import DownloadButton from '../button/downloadButton'
+import Skeleton from '@/components/system/Skeleton/Skeleton'
 
 interface TabContentProps {
     selectedDataSource: string
@@ -51,6 +52,7 @@ const TabContent: React.FC<TabContentProps> = ({
     })
     const [datasourceIdentifiers, setDatasourceIdentifiers] = useState<Identifier[]>([])
     const [listIdentifiers, setListIdentifiers] = useState<string[][]>([])
+    const [isLoadingListIdentifier, setIsLoadingListIdentifier] = useState(true)
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
     const [filterSeverityOptions, setFilterSeverityOptions] = useState<{ id: number; label: string; type: string }[]>([]);
     const [hasErrorDatasourceIdentifier, setHasErrorDatasourceIdentifier] = useState<boolean>(false)
@@ -325,22 +327,24 @@ const TabContent: React.FC<TabContentProps> = ({
 
         const listIdentifiers: string[][] = []
         const errorListIdentifiers: boolean[] = []
-        datasourceIdentifiers.forEach((identifier, identifierIdx) => {
-            GetListIdentifier(
-                selectedDataSource,
-                identifier.key, {
+        const promiseListIdentifier = datasourceIdentifiers.map((identifier, identifierIdx) => {
+            return GetListIdentifier(selectedDataSource, identifier.key, {
                 start_time: startTime,
                 end_time: endTime,
             }).then(res => {
                 if (res.data) {
-                    listIdentifiers[identifierIdx] = res.data
-                    errorListIdentifiers[identifierIdx] = false
+                    listIdentifiers[identifierIdx] = res.data;
+                    errorListIdentifiers[identifierIdx] = false;
                 } else {
-                    errorListIdentifiers[identifierIdx] = true
+                    errorListIdentifiers[identifierIdx] = true;
                 }
-            })
-        })
-        setListIdentifiers(listIdentifiers)
+            });
+        });
+
+        // Wait for all requests to finish before setting state
+        await Promise.all(promiseListIdentifier);
+        setListIdentifiers(listIdentifiers);
+        setIsLoadingListIdentifier(false);  // Set loading to false after all requests are done
         setHasErrorListIdentifier(errorListIdentifiers)
     };
 
@@ -413,6 +417,7 @@ const TabContent: React.FC<TabContentProps> = ({
     }
 
     useEffect(() => {
+        setIsLoadingListIdentifier(true)
         setIsTableHeaderLoading(true);
         setIsTableLoading(true);
         setListIdentifiers([])
@@ -529,15 +534,20 @@ const TabContent: React.FC<TabContentProps> = ({
                         <div className='flex justify-between'>
                             <div className='flex flex-row gap-3'>
                                 {!handle.active && (
-                                    <FilterPanel
-                                        checkboxOptions={filterAnomalyOptions}
-                                        severityOptions={filterSeverityOptions}
-                                        datasourceIdentifiers={datasourceIdentifiers}
-                                        listIdentifiers={listIdentifiers}
-                                        hasErrorListIdentifier={hasErrorListIdentifier}
-                                        onApplyFilters={handleApplyFilters}
-                                        hasErrorFilterAnomaly={hasErrorFilterAnomaly}
-                                    />
+                                    isLoadingListIdentifier ?
+                                        <Skeleton
+                                            width={110}
+                                            height={44}
+                                        /> :
+                                        <FilterPanel
+                                            checkboxOptions={filterAnomalyOptions}
+                                            severityOptions={filterSeverityOptions}
+                                            datasourceIdentifiers={datasourceIdentifiers}
+                                            listIdentifiers={listIdentifiers}
+                                            hasErrorListIdentifier={hasErrorListIdentifier}
+                                            onApplyFilters={handleApplyFilters}
+                                            hasErrorFilterAnomaly={hasErrorFilterAnomaly}
+                                        />
                                 )}
                                 <DownloadButton
                                     onClick={handleDownload}

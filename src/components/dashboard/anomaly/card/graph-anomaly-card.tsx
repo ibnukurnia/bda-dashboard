@@ -352,7 +352,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             datasourceIdentifiers == null ||
             dataColumn?.columns == null || dataColumn?.columns?.length === 0
         ) return
-        
+
         const scale = dataColumn.columns.filter(dc => searchParams.getAll("anomaly").includes(dc.name))
         const identifiers = datasourceIdentifiers.map(identifier =>
             identifier.is_multiple ? searchParams.getAll(identifier.key) : searchParams.get(identifier.key))
@@ -367,7 +367,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                     identifier.is_multiple ? searchParams.getAll(identifier.key) : searchParams.get(identifier.key))
             })
         }
-        
+
         setCalledEffectOnParam(true)
     }, [searchParams, datasourceIdentifiers, dataColumn])
 
