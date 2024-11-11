@@ -430,7 +430,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                         currentSelectedIdentifiers={selectedFilter.identifiers}
                         scaleOptions={dataColumn.columns}
                         onApplyFilters={handleOnApplyFilter}
-                        disabled={isDataColumnLoading} // Pass the disabled prop based on loading state
                     />
                 )}
 
