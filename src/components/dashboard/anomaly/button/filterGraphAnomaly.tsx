@@ -1,16 +1,13 @@
 import useUpdateEffect from '@/hooks/use-update-effect';
+import { Identifier } from '@/modules/models/anomaly-predictions';
 import { GetListIdentifier } from '@/modules/usecases/anomaly-predictions';
 import { ColumnOption } from '@/types/anomaly';
 import { format } from 'date-fns';
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface FilterGraphAnomalyProps {
     selectedDataSource: string;
-    datasourceIdentifiers: {
-        title: string;
-        key: string;
-        is_multiple: boolean;
-    }[];
+    datasourceIdentifiers: Identifier[];
     timeRanges: Record<string, number>;
     selectedTimeRange: string;
     scaleOptions: ColumnOption[];

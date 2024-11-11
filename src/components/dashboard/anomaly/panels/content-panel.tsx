@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Column } from '@/modules/models/anomaly-predictions'
-import { DownloadCsvHistoricalLogAnomalies, GetClusterOption, GetDatasourceIdentifiers, GetHistoricalLogAnomalies, GetListIdentifier } from '@/modules/usecases/anomaly-predictions'
+import { Column, Identifier } from '@/modules/models/anomaly-predictions'
+import { DownloadCsvHistoricalLogAnomalies, GetDatasourceIdentifiers, GetHistoricalLogAnomalies, GetListIdentifier } from '@/modules/usecases/anomaly-predictions'
 import { Typography } from '@mui/material'
 import {
     ColumnDef,
@@ -49,11 +49,7 @@ const TabContent: React.FC<TabContentProps> = ({
         enabled: false,
         interval: null,
     })
-    const [datasourceIdentifiers, setDatasourceIdentifiers] = useState<{
-        title: string;
-        key: string;
-        is_multiple: boolean;
-    }[]>([])
+    const [datasourceIdentifiers, setDatasourceIdentifiers] = useState<Identifier[]>([])
     const [listIdentifiers, setListIdentifiers] = useState<string[][]>([])
     const [filterAnomalyOptions, setFilterAnomalyOptions] = useState<CheckboxOption[]>([])
     const [filterSeverityOptions, setFilterSeverityOptions] = useState<{ id: number; label: string; type: string }[]>([]);
@@ -604,7 +600,7 @@ const TabContent: React.FC<TabContentProps> = ({
                         <div className='card-style p-6'>
                             <GraphAnomalyCard
                                 selectedDataSource={selectedDataSource}
-                                datasourceIdentifiers={datasourceIdentifiers}
+                                datasourceIdentifiers={datasourceIdentifiers.filter(identifier => identifier.on_metric)}
                                 selectedTimeRangeKey={selectedTimeRange}
                                 timeRanges={PREDEFINED_TIME_RANGES}
                                 autoRefresh={graphAutoRefresh}
