@@ -235,7 +235,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     async function fetchMetricLog(startTime: string, endTime: string) {
         if (
             selectedFilter.scale.length === 0 ||
-            datasourceIdentifiers.some((identifier, identifierIdx) => 
+            datasourceIdentifiers.some((identifier, identifierIdx) =>
                 selectedFilter.identifiers[identifierIdx] == null ||
                 identifier.is_multiple && selectedFilter.identifiers[identifierIdx]?.length === 0
             )
@@ -344,8 +344,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             });
     }, [selectedDataSource]);
 
-
-
     useUpdateEffect(() => {
         fetchMetricLog(predefinedStartTime, predefinedEndTime);
     }, [currentZoomDateRange]);
@@ -385,7 +383,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         autoRefresh.interval,
         autoRefresh.enabled
     );
-
 
     return (
         <div className="flex flex-col gap-8">
