@@ -112,7 +112,6 @@ const Graph = ({
     maxXOnEmpty,
     minX,
     maxX,
-    animations,
 }: {
     data: MetricLogAnomalyResponse[];
     selectedGraphToggle: ToggleOption;
@@ -420,9 +419,9 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 </Typography>
             </div>
             <div className="flex gap-2 items-center">
-                {selectedFilter.identifiers[datasourceIdentifiers.length-1] &&
+                {selectedFilter.identifiers[datasourceIdentifiers.length - 1] &&
                     <Typography variant="subtitle1" color="white">
-                        {datasourceIdentifiers[datasourceIdentifiers.length-1].title}: {selectedFilter.identifiers[datasourceIdentifiers.length-1]}
+                        {datasourceIdentifiers[datasourceIdentifiers.length - 1].title}: {selectedFilter.identifiers[datasourceIdentifiers.length - 1]}
                     </Typography>
                 }
 

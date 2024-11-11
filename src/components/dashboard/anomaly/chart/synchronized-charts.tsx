@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import dynamic from 'next/dynamic';
+import React, { useEffect, useState } from 'react';
+import Chart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import './custom-chart-styles.css';
 import { MetricLogAnomalyResponse } from '@/modules/models/anomaly-predictions';
 import { formatDate } from 'date-fns';
-
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 const colors = [
     '#4E88FF', '#00D8FF', '#FF4EC7', '#00E396', '#F9C80E', '#8C54FF',
@@ -55,7 +53,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
         setZoomOutDisabled(false);
     }, [dataCharts]);
 
-    if (!dataCharts || dataCharts.length === 0) {
+    // Ensure data is not null or undefined for each chart before rendering
+    if (!dataCharts || dataCharts.length === 0 || dataCharts.some(chart => !chart.data || chart.data.length === 0)) {
         return (
             <div className="text-center text-2xl font-semibold text-white">
                 DATA IS NOT AVAILABLE
@@ -68,10 +67,15 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
             {dataCharts.map((metric, index) => {
                 console.log(`Metric ${index}: Title: ${metric.title}, Color: ${colors[index % colors.length]}`);
 
-                // Use useMemo to memorize the options and series per chart
-                const chartOptions: ApexOptions = useMemo(() => ({
+                // Create a deep copy of series data to avoid unintended mutations
+                const seriesData = metric.data.map(([date, number]) => ({
+                    x: date || new Date().getTime(), // Default to current time if date is missing
+                    y: number !== null && number !== undefined ? number : 0, // Default to 0 if number is missing
+                }));
+
+                const chartOptions: ApexOptions = {
                     chart: {
-                        id: `sync-${index}`,
+                        id: `sync-${Date.now()}-${index}`, // Unique ID with timestamp and index
                         group: 'log-anomaly',
                         type: 'line',
                         height: 160,
@@ -193,17 +197,16 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                     },
                     legend: { labels: { colors: 'white' } },
                     colors: [colors[index % colors.length]], // Ensure unique color per chart
-                }), [index, metric.title]); // Depend on index and title to avoid repeated color
+                };
 
-                // Use unique key for series to ensure ApexCharts recognizes unique series data
-                const series = useMemo(() => [{
+                const series = [{
                     name: metric.title,
-                    data: metric.data.map(([date, number]) => ({ x: date, y: number })),
-                }], [metric.title, metric.data]);
+                    data: seriesData,
+                }];
 
                 return (
                     <Chart
-                        key={`chart-${index}`} // Unique key per chart
+                        key={`chart-${Date.now()}-${index}`} // Unique key per chart
                         options={chartOptions}
                         series={series}
                         type="line"

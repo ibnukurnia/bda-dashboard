@@ -20,8 +20,22 @@ export const TAB_DATA_SOURCE = [
     textLabel: "Utilization",
     children: [
       {
-        namespace: "k8s_prometheus",
         textLabel: "OCP",
+        children: [
+          {
+            namespace: "k8s_prometheus",
+            textLabel: "OCP",
+          },
+          {
+            namespace: "cluster_operator",
+            textLabel: "OCP Cluster Operator",
+          },
+          {
+            namespace: "cluster_pod_capacity",
+            textLabel: "OCP Cluster Pod Capacity",
+          },
+
+        ],
       },
       {
         namespace: "k8s_db",
@@ -181,6 +195,8 @@ export const NAMESPACE_LABELS: Record<string, string> = {
   'apm': "Log APM Brimo",
   'brimo': "Log Transaksi Brimo",
   'k8s_prometheus': "OCP",
+  'cluster_operator': 'OCP Cluster Operator',
+  'cluster_pod_capacity': 'OCP Cluster Pod Capacity',
   'k8s_db': "Database",
   'redis': "Redis Cluster",
   'redis_node': 'Redis Node',
