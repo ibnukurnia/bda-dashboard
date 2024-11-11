@@ -28,7 +28,7 @@ export const SECTIONS_CONFIG = {
     waf: 'prtg_waf',
   },
   compute: {
-    storage: 'compute_storage',
+    storage: 'compute_store',
     host: 'compute_host',
     vm: 'compute_vm',
   },
