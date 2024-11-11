@@ -236,7 +236,10 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     async function fetchMetricLog(startTime: string, endTime: string) {
         if (
             selectedFilter.scale.length === 0 ||
-            datasourceIdentifiers.length !== selectedFilter.identifiers.length
+            datasourceIdentifiers.some((identifier, identifierIdx) => 
+                selectedFilter.identifiers[identifierIdx] == null ||
+                identifier.is_multiple && selectedFilter.identifiers[identifierIdx]?.length === 0
+            )
         ) return
 
         if (abortControllerRef.current) {

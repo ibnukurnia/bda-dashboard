@@ -292,8 +292,10 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                 className="bg-blue-600 hover:bg-blue-800 disabled:bg-gray-200 disabled:text-gray-400 text-white px-4 py-2 rounded-lg flex-1 text-center"
                                 disabled={
                                     selectedScaleOptions.length === 0 ||
-                                    datasourceIdentifiers.length !== selectedIdentifiers.length ||
-                                    datasourceIdentifiers.some((identifier, identifierIdx) => identifier.is_multiple && selectedIdentifiers[identifierIdx].length === 0)
+                                    datasourceIdentifiers.some((identifier, identifierIdx) => 
+                                        selectedIdentifiers[identifierIdx] == null ||
+                                        identifier.is_multiple && selectedIdentifiers[identifierIdx]?.length === 0
+                                    )
                                 }
                                 onClick={handleApply}
                             >
