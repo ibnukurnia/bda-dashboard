@@ -95,9 +95,11 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         setHasErrorListIdentifier(errorListIdentifiers)
     };
 
+    console.log(searchValues);
+    
     // // Filter services based on the search input
     const filteredListIdentifiers = listIdentifiers.map((list, listIdx) => list?.filter(item =>
-        item.toLowerCase().includes(searchValues[listIdx].toLowerCase())
+        item.toLowerCase().includes(searchValues[listIdx]?.toLowerCase())
     ) ?? []);
 
     const togglePanel = () => {
