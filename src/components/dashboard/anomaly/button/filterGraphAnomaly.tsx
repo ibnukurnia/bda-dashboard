@@ -1,3 +1,4 @@
+import Skeleton from '@/components/system/Skeleton/Skeleton';
 import useUpdateEffect from '@/hooks/use-update-effect';
 import { Identifier } from '@/modules/models/anomaly-predictions';
 import { GetListIdentifier } from '@/modules/usecases/anomaly-predictions';
@@ -11,12 +12,12 @@ interface FilterGraphAnomalyProps {
     timeRanges: Record<string, number>;
     selectedTimeRange: string;
     scaleOptions: ColumnOption[];
-    currentSelectedIdentifiers: (string | string[])[];
+    currentSelectedIdentifiers: (null | string | string[])[];
     currentSelectedScales: ColumnOption[];
     disabled?: boolean; // New prop to disable the button
     onApplyFilters: (
         selectedScales: ColumnOption[],
-        selectedIdentifiers: (string | string[])[],
+        selectedIdentifiers: (null | string | string[])[],
     ) => void; // Separate filters for anomalies and services
 }
 
@@ -34,8 +35,9 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     const [isOpen, setIsOpen] = useState(false);
     const [isLoadingFilterOption, setIsLoadingFilterOption] = useState(true);
     const [listIdentifiers, setListIdentifiers] = useState<string[][]>([])
+    const [isLoadingListIdentifier, setIsLoadingListIdentifier] = useState(true)
     const [hasErrorListIdentifier, setHasErrorListIdentifier] = useState<boolean[]>([])
-    const [selectedIdentifiers, setSelectedIdentifiers] = useState<(string | string[])[]>(currentSelectedIdentifiers)
+    const [selectedIdentifiers, setSelectedIdentifiers] = useState<(null | string | string[])[]>(currentSelectedIdentifiers)
     const [selectedScaleOptions, setSelectedScaleOptions] = useState<ColumnOption[]>(currentSelectedScales);
     const [searchValues, setSearchValues] = useState<string[]>(Array.from({ length: datasourceIdentifiers.length }, () => ""))
     const panelRef = useRef<HTMLDivElement>(null);
@@ -77,40 +79,27 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
         const { startTime, endTime } = getTimeRange();
         // console.log("Time range:", { startTime, endTime });
 
-        const listIdentifiers: string[][] = [];
-        const errorListIdentifiers: boolean[] = [];
+        const listIdentifiers: string[][] = []
+        const errorListIdentifiers: boolean[] = []
+        const promiseListIdentifier = datasourceIdentifiers.map((identifier, identifierIdx) => {
+            return GetListIdentifier(selectedDataSource, identifier.key, {
+                start_time: startTime,
+                end_time: endTime,
+            }).then(res => {
+                if (res.data) {
+                    listIdentifiers[identifierIdx] = res.data;
+                    errorListIdentifiers[identifierIdx] = false;
+                } else {
+                    errorListIdentifiers[identifierIdx] = true;
+                }
+            });
+        });
 
-        await Promise.all(
-            datasourceIdentifiers.map((identifier, identifierIdx) => {
-                // console.log(`Fetching data for identifier: ${identifier.key} (index: ${identifierIdx})`);
-                return GetListIdentifier(selectedDataSource, identifier.key, {
-                    start_time: startTime,
-                    end_time: endTime,
-                })
-                    .then(res => {
-                        if (res.data) {
-                            listIdentifiers[identifierIdx] = res.data;
-                            errorListIdentifiers[identifierIdx] = false;
-                            // console.log(`Data received for ${identifier.key}:`, res.data);
-                        } else {
-                            errorListIdentifiers[identifierIdx] = true;
-                            // console.warn(`No data found for ${identifier.key}`);
-                        }
-                    })
-                    .catch(error => {
-                        errorListIdentifiers[identifierIdx] = true;
-                        console.error(`Error fetching data for ${identifier.key}:`, error);
-                    });
-            })
-        );
-
-        // console.log("All identifiers processed. Final listIdentifiers:", listIdentifiers);
-        // console.log("Error states for each identifier:", errorListIdentifiers);
-
+        // Wait for all requests to finish before setting state
+        await Promise.all(promiseListIdentifier);
         setListIdentifiers(listIdentifiers);
-        setHasErrorListIdentifier(errorListIdentifiers);
-        setIsLoadingFilterOption(false); // End loading after all requests are completed
-        // console.log("Finished loading filter options.");
+        setIsLoadingListIdentifier(false);  // Set loading to false after all requests are done
+        setHasErrorListIdentifier(errorListIdentifiers)
     };
 
 
@@ -174,6 +163,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     };
 
     useEffect(() => {
+        setIsLoadingListIdentifier(true)
         loadFiltersOptions()
     }, [datasourceIdentifiers, selectedTimeRange])
 
@@ -206,6 +196,15 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     useUpdateEffect(() => {
         setSearchValues(Array.from({ length: datasourceIdentifiers.length }, () => ""))
     }, [listIdentifiers])
+
+    if (isLoadingListIdentifier) {
+        return (
+            <Skeleton
+                width={110}
+                height={44}
+            />
+        )
+    }
 
     return (
         <div className="flex">
