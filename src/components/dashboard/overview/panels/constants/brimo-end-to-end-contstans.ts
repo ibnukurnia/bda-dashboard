@@ -28,7 +28,7 @@ export const SECTIONS_CONFIG = {
     waf: 'prtg_waf',
   },
   compute: {
-    storage: 'compute_storage',
+    storage: 'compute_store',
     host: 'compute_host',
     vm: 'compute_vm',
   },
@@ -36,9 +36,9 @@ export const SECTIONS_CONFIG = {
     f5: 'f5',
     ivat: 'ivat',
     dwdm: 'solarwinds_dwdm',
-    dns_domain: 'dns_domain',
+    dns_domain: 'dns_rt',
     dns_infobox: 'dns_infoblox',
     internal: 'solarwinds_internal',
-    isp: 'isp',
+    isp: 'isp_node',
   },
 }

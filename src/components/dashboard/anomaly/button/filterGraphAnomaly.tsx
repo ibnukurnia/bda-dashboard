@@ -1,16 +1,13 @@
 import useUpdateEffect from '@/hooks/use-update-effect';
+import { Identifier } from '@/modules/models/anomaly-predictions';
 import { GetListIdentifier } from '@/modules/usecases/anomaly-predictions';
 import { ColumnOption } from '@/types/anomaly';
 import { format } from 'date-fns';
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface FilterGraphAnomalyProps {
     selectedDataSource: string;
-    datasourceIdentifiers: {
-        title: string;
-        key: string;
-        is_multiple: boolean;
-    }[];
+    datasourceIdentifiers: Identifier[];
     timeRanges: Record<string, number>;
     selectedTimeRange: string;
     scaleOptions: ColumnOption[];
@@ -295,8 +292,10 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                 className="bg-blue-600 hover:bg-blue-800 disabled:bg-gray-200 disabled:text-gray-400 text-white px-4 py-2 rounded-lg flex-1 text-center"
                                 disabled={
                                     selectedScaleOptions.length === 0 ||
-                                    datasourceIdentifiers.length !== selectedIdentifiers.length ||
-                                    datasourceIdentifiers.some((identifier, identifierIdx) => identifier.is_multiple && selectedIdentifiers[identifierIdx].length === 0)
+                                    datasourceIdentifiers.some((identifier, identifierIdx) => 
+                                        selectedIdentifiers[identifierIdx] == null ||
+                                        identifier.is_multiple && selectedIdentifiers[identifierIdx]?.length === 0
+                                    )
                                 }
                                 onClick={handleApply}
                             >

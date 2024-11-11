@@ -31,12 +31,14 @@ export interface Column {
   comment: string;
 }
 
+export interface Identifier {
+  key: string;
+  title: string;
+  is_multiple: boolean;
+  on_metric: boolean;
+}
 export interface DatasourceIdentifiers {
-  identifiers: {
-    key: string;
-    title: string;
-    is_multiple: boolean;
-  }[];
+  identifiers: Identifier[];
 }
 
 export interface AnomalyOptionResponse {
