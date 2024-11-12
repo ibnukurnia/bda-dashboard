@@ -454,12 +454,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 </Typography>
             </div>
             <div className="flex gap-2 items-center">
-                {selectedFilter.identifiers[datasourceIdentifiersMetricOnly.length - 1] &&
-                    <Typography variant="subtitle1" color="white">
-                        {datasourceIdentifiersMetricOnly[datasourceIdentifiersMetricOnly.length - 1].title}: {selectedFilter.identifiers[datasourceIdentifiersMetricOnly.length - 1]}
-                    </Typography>
-                }
-
                 {dataMetric.length !== 0 &&
                     <div className="ml-auto">
                         <Toggle
@@ -474,7 +468,11 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 selectedGraphToggle={selectedGraphToggle}
                 scaleCount={selectedFilter.scale.length}
                 isFieldRequired={
-                    selectedFilter.scale.length === 0
+                    selectedFilter.scale.length === 0 ||
+                    datasourceIdentifiersMetricOnly.some((identifier, identifierIdx) =>
+                        selectedFilter.identifiers[identifierIdx] == null ||
+                        identifier.is_multiple && selectedFilter.identifiers[identifierIdx]?.length === 0
+                    )
                 }
                 isLoading={initialLoading}
                 isEmpty={dataMetric.length === 0}
