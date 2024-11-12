@@ -162,6 +162,7 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
             max: dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : undefined,
         },
         yaxis: dataCharts.map((metric, index) => ({
+            min: 0,
             title: {
                 text: metric.title,
                 style: {
