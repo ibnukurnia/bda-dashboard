@@ -87,7 +87,7 @@ const MainPageRootCauseAnalysis = () => {
               anomalyCount: is.total,
               tooltips: is.tooltips,
               nlps: is.nlp,
-              detail_params: is.detail_params,
+              detail_params: is.detail_params, 
               children: is.impacted.map(i => ({
                 name: i,
               }))

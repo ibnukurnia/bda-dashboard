@@ -185,11 +185,7 @@ const RCATree: React.FC<RCATreeProps> = ({
                 hasDetail={i === 1}
                 fieldname={expNode.node.children_fieldname}
                 toUppercase={i === 1}
-                queryParams={{
-                  time_range: timeRange,
-                  data_source: expandedNodes[0].node.namespace ?? expandedNodes[0].node.name,
-                  anomaly: expandedNodes[1]?.node.namespace ?? expandedNodes[1]?.node.name,
-                }}
+                time_range={timeRange}
                 fullScreenHandle={fullScreenHandle}
                 maxCount={expNode.node.anomalyCount ?? 0}
                 isLoading={isLoading}

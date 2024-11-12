@@ -18,7 +18,8 @@ interface NodeProps {
   fieldname?: string;
   toUppercase?: boolean;
   cluster?: string;
-  detailParams: Param[];
+  detailParams?: Param[];
+  time_range?: string;
   tooltips?: {
     status_code: string;
     total: number;
@@ -44,6 +45,7 @@ const Node: React.FC<NodeProps> = ({
   toUppercase,
   cluster,
   detailParams,
+  time_range,
   tooltips,
   nlps,
   handleSelectNLP,
@@ -196,7 +198,7 @@ const Node: React.FC<NodeProps> = ({
           }
           {hasDetail &&
             <Link
-              href={{ pathname: '/dashboard/anomaly-detection', query: mappedDetailParam }}
+              href={{ pathname: '/dashboard/anomaly-detection', query: { ...mappedDetailParam, time_range: time_range } }}
               passHref
               rel="noopener noreferrer"
               className='flex gap-0 items-center rounded-lg'

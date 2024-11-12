@@ -28,11 +28,7 @@ interface ScrollableNodeListProps {
   hasDetail?: boolean;
   fieldname?: string;
   toUppercase?: boolean;
-  queryParams?: {
-    time_range: string;
-    data_source: string;
-    anomaly: string;
-  };
+  time_range?: string;
   fullScreenHandle: FullScreenHandle; // From react-full-screen
   maxCount: number;
   isLoading: boolean;
@@ -53,7 +49,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
   hasDetail,
   fieldname,
   toUppercase,
-  queryParams,
+  time_range,
   fullScreenHandle, // Use handle from react-full-screen
   maxCount,
   isLoading,
@@ -228,6 +224,7 @@ const ScrollableNodeList: React.FC<ScrollableNodeListProps> = ({
               toUppercase={toUppercase}
               cluster={node.cluster}
               detailParams={node.detail_params}
+              time_range={time_range}
               tooltips={node.tooltips}
               nlps={node.nlps}
               handleSelectNLP={handleSelectNLP}

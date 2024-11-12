@@ -10,5 +10,5 @@ export interface TreeNodeType {
     children?: TreeNodeType[];
     tooltips?: Tooltip[]
     nlps?: NLP[];
-    detail_params: Param[];
+    detail_params?: Param[];
   }
