@@ -55,7 +55,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
     // // Filter services based on the search input
     const filteredListIdentifiers = listIdentifiers.map((list, listIdx) => list?.filter(item =>
-        item.toLowerCase().includes(searchValues[listIdx].toLowerCase())
+        item.toLowerCase().includes(searchValues[listIdx]?.toLowerCase())
     ) ?? []);
 
     const togglePanel = () => {
