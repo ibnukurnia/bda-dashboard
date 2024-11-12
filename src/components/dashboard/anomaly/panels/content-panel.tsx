@@ -341,6 +341,8 @@ const TabContent: React.FC<TabContentProps> = ({
                 } else {
                     errorListIdentifiers[identifierIdx] = true;
                 }
+            }).catch(() => {
+                errorListIdentifiers[identifierIdx] = true;
             });
         });
 

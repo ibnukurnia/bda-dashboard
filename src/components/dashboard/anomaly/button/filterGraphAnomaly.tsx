@@ -86,6 +86,8 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                 } else {
                     errorListIdentifiers[identifierIdx] = true;
                 }
+            }).catch(() => {
+                errorListIdentifiers[identifierIdx] = true;
             });
         });
 
@@ -264,39 +266,39 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                                 {datasourceIdentifiers.map((identifier, identifierIdx) =>
                                     <div className="flex flex-col" key={identifier.key}>
                                         <h3 className="font-semibold mb-3 text-lg">{identifier.title}</h3>
-                                        {listIdentifiers[identifierIdx]?.length > 0 ?
-                                            <>
-                                                {listIdentifiers[identifierIdx]?.length > 10 &&
-                                                    <input
-                                                        className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                                        placeholder={`Search ${identifier.title}`}
-                                                        value={searchValues[identifierIdx]}
-                                                        onChange={(e) => handleSearch(identifierIdx, e.target.value)}
-                                                    />
-                                                }
-                                                <div className="overflow-y-auto max-h-40">
-                                                    {filteredListIdentifiers[identifierIdx].map(item => (
-                                                        <label key={item} className="flex items-center justify-between mb-2">
-                                                            <div className="flex items-center">
-                                                                <input
-                                                                    type={identifier.is_multiple ? "checkbox" : "radio"}
-                                                                    value={item}
-                                                                    checked={
-                                                                        selectedIdentifiers[identifierIdx] != null && (typeof selectedIdentifiers[identifierIdx] === "string" ?
-                                                                            selectedIdentifiers[identifierIdx] === item :
-                                                                            selectedIdentifiers[identifierIdx].includes(item))
-                                                                    }
-                                                                    onChange={() => handleSelectedChange(identifierIdx, identifier.is_multiple, item)}
-                                                                    className="mr-2"
-                                                                />
-                                                                {item}
-                                                            </div>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </>
-                                            : <p>No {identifier.title} available</p>
+                                        {listIdentifiers[identifierIdx]?.length > 5 &&
+                                            <input
+                                                className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                                placeholder={`Search ${identifier.title}`}
+                                                value={searchValues[identifierIdx]}
+                                                onChange={(e) => handleSearch(identifierIdx, e.target.value)}
+                                            />
                                         }
+                                        <div className="overflow-y-auto max-h-40">
+                                            {hasErrorListIdentifier[identifierIdx] ? (
+                                                <p className="text-red-500 whitespace-nowrap">An error occurred.<br />Please try again later.</p>
+                                            ) : filteredListIdentifiers[identifierIdx]?.length > 0 ? (
+                                                filteredListIdentifiers[identifierIdx].map(item => (
+                                                    <label key={item} className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type={identifier.is_multiple ? "checkbox" : "radio"}
+                                                                value={item}
+                                                                checked={
+                                                                    selectedIdentifiers[identifierIdx] != null && (typeof selectedIdentifiers[identifierIdx] === "string" ?
+                                                                        selectedIdentifiers[identifierIdx] === item :
+                                                                        selectedIdentifiers[identifierIdx].includes(item))
+                                                                }
+                                                                onChange={() => handleSelectedChange(identifierIdx, identifier.is_multiple, item)}
+                                                                className="mr-2"
+                                                            />
+                                                            {item}
+                                                        </div>
+                                                    </label>
+                                                ))
+                                            ) : <p>No {identifier.title} available</p>
+                                            }
+                                        </div>
                                     </div>
                                 )}
 

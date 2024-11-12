@@ -246,7 +246,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                         <h2 className="text-xl font-semibold text-center mb-2">Multiple Filter</h2>
 
                         {/* Responsive Grid Section */}
-                        <div className={`grid gap-4 w-full`} style={{ gridTemplateColumns: `repeat(${2 + listIdentifiers.length}, 1fr)` }}>
+                        <div className={`grid gap-4 w-full`} style={{ gridTemplateColumns: `repeat(${2 + datasourceIdentifiers.length}, 1fr)` }}>
 
                             <div className='flex flex-col gap-3'> {/* Anomaly Section */}
                                 <div className="flex flex-col gap-3">
@@ -265,7 +265,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     </div>
                                     <div className="overflow-y-auto max-h-36">
                                         {hasErrorFilterAnomaly ? (
-                                            <p className="text-red-500 whitespace-break-spaces">An error occurred. Please try again later.</p>
+                                            <p className="text-red-500 whitespace-break-spaces">An error occurred.<br/>Please try again later.</p>
                                         ) : checkboxOptions.length > 0 ? (
                                             checkboxOptions.map((option) => (
                                                 <label key={option.id} className="flex items-center justify-between mb-1">
@@ -380,7 +380,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     </div>
 
                                     {/* Search input for services */}
-                                    {listIdentifiers[identifierIdx]?.length > 10 &&
+                                    {listIdentifiers[identifierIdx]?.length > 5 &&
                                         <input
                                             className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
                                             placeholder={`Search ${identifier.title}`}
@@ -392,7 +392,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     {/* Services with filtered results */}
                                     <div className="overflow-y-auto max-h-40">
                                         {hasErrorListIdentifier[identifierIdx] ? (
-                                            <p className="text-red-500 whitespace-nowrap">An error occurred while fetching services. Please try again later.</p>
+                                            <p className="text-red-500 whitespace-nowrap">An error occurred.<br/>Please try again later.</p>
                                         ) : filteredListIdentifiers[identifierIdx]?.length > 0 ? (
                                             filteredListIdentifiers[identifierIdx].map((item, itemIdx) => (
                                                 <label key={itemIdx} className="flex items-center justify-between mb-1">
