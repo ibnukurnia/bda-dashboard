@@ -239,7 +239,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     async function fetchMetricLog(startTime: string, endTime: string) {
         if (
             selectedFilter.scale.length === 0 ||
-            datasourceIdentifiers.some((identifier, identifierIdx) =>
+            datasourceIdentifiersMetricOnly.some((identifier, identifierIdx) =>
                 selectedFilter.identifiers[identifierIdx] == null ||
                 identifier.is_multiple && selectedFilter.identifiers[identifierIdx]?.length === 0
             )
@@ -252,7 +252,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
-        const payloadSelectedIdentifier = datasourceIdentifiers.reduce<Record<string, null | string | string[]>>((acc, identifier, idx) => {
+        const payloadSelectedIdentifier = datasourceIdentifiersMetricOnly.reduce<Record<string, null | string | string[]>>((acc, identifier, idx) => {
             acc[identifier.key] = selectedFilter.identifiers[idx]
             return acc
         }, {})
@@ -454,9 +454,9 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 </Typography>
             </div>
             <div className="flex gap-2 items-center">
-                {selectedFilter.identifiers[datasourceIdentifiers.length - 1] &&
+                {selectedFilter.identifiers[datasourceIdentifiersMetricOnly.length - 1] &&
                     <Typography variant="subtitle1" color="white">
-                        {datasourceIdentifiers[datasourceIdentifiers.length - 1].title}: {selectedFilter.identifiers[datasourceIdentifiers.length - 1]}
+                        {datasourceIdentifiersMetricOnly[datasourceIdentifiersMetricOnly.length - 1].title}: {selectedFilter.identifiers[datasourceIdentifiersMetricOnly.length - 1]}
                     </Typography>
                 }
 
