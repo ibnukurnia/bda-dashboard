@@ -18,8 +18,8 @@ const TooltipNode: React.FC<TooltipNodeProps> = ({
 
   return (
     <Tooltip
-      key={anchorId}
-      anchorSelect={anchorId}
+      key={`#${anchorId}`}
+      anchorSelect={`#${anchorId}`}
       className="py-3 px-4 !bg-[#1A223D] !border-white !rounded-xl"
       noArrow
       style={{
@@ -39,45 +39,46 @@ const TooltipNode: React.FC<TooltipNodeProps> = ({
           {service_alias}
         </Typography>
         <table>
-          {tooltips.map(tooltip => (
-            <tr
-              key={tooltip.status_code}
-            >
-              <td
-                className="w-[1%] whitespace-nowrap"
+          <tbody>
+            {tooltips.map(tooltip => (
+              <tr
+                key={tooltip.status_code}
               >
-                <Typography
-                  fontWeight={600}
-                  fontSize={10}
-                  color={'white'}
-                  align="left"
+                <td
+                  className="w-[1%] whitespace-nowrap"
                 >
-                  Response Code {tooltip.status_code}
-                </Typography>
-              </td>
-              <td>
-                <Typography
-                  fontWeight={600}
-                  fontSize={10}
-                  color={'white'}
-                  align="left"
-                >
-                  :
-                </Typography>
-              </td>
-              <td>
-                <Typography
-                  fontWeight={600}
-                  fontSize={10}
-                  color={'white'}
-                  align="right"
-                >
-                  {tooltip.total}
-                </Typography>
-              </td>
-            </tr>
-          ))}
-
+                  <Typography
+                    fontWeight={600}
+                    fontSize={10}
+                    color={'white'}
+                    align="left"
+                  >
+                    Response Code {tooltip.status_code}
+                  </Typography>
+                </td>
+                <td>
+                  <Typography
+                    fontWeight={600}
+                    fontSize={10}
+                    color={'white'}
+                    align="left"
+                  >
+                    :
+                  </Typography>
+                </td>
+                <td>
+                  <Typography
+                    fontWeight={600}
+                    fontSize={10}
+                    color={'white'}
+                    align="right"
+                  >
+                    {tooltip.total}
+                  </Typography>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     </Tooltip>

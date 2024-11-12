@@ -87,7 +87,7 @@ const Node: React.FC<NodeProps> = ({
     if (index === 0) {
       return `${key}-${value}`;
     }
-    return `${acc}|${key}-${value}`
+    return `${acc}--${key}-${value}`
   }, "");
 
   const mappedDetailParam = detailParams?.reduce((acc: { [key: string]: string }, { key, value }) => {
