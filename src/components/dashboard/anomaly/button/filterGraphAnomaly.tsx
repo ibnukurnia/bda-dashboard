@@ -32,7 +32,6 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     onApplyFilters,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [isLoadingFilterOption, setIsLoadingFilterOption] = useState(true);
     const [listIdentifiers, setListIdentifiers] = useState<string[][]>([])
     const [isLoadingListIdentifier, setIsLoadingListIdentifier] = useState(true)
     const [hasErrorListIdentifier, setHasErrorListIdentifier] = useState<boolean[]>([])
@@ -72,11 +71,7 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
     };
 
     const loadFiltersOptions = async () => {
-        // console.log("Starting to load filter options...");
-        setIsLoadingFilterOption(true); // Start loading before fetch
-
         const { startTime, endTime } = getTimeRange();
-        // console.log("Time range:", { startTime, endTime });
 
         const listIdentifiers: string[][] = []
         const errorListIdentifiers: boolean[] = []

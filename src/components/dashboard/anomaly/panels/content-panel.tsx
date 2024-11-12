@@ -298,9 +298,7 @@ const TabContent: React.FC<TabContentProps> = ({
         console.error('Error fetching data:', error)
     }
 
-    const loadFiltersOptions = async () => {
-        const { startTime, endTime } = getTimeRange();
-
+    const loadAnomalyOptions = async () => {
         try {
             const response = await fetchAnomalyOption(selectedDataSource);
             if (response.data?.columns) {
@@ -325,6 +323,11 @@ const TabContent: React.FC<TabContentProps> = ({
             { id: 3, label: 'Medium', type: 'severity' }
         ]);
 
+    };
+
+    const loadIdentifierOptions = async () => {
+        const { startTime, endTime } = getTimeRange();
+
         const listIdentifiers: string[][] = []
         const errorListIdentifiers: boolean[] = []
         const promiseListIdentifier = datasourceIdentifiers.map((identifier, identifierIdx) => {
@@ -346,7 +349,7 @@ const TabContent: React.FC<TabContentProps> = ({
         setListIdentifiers(listIdentifiers);
         setIsLoadingListIdentifier(false);  // Set loading to false after all requests are done
         setHasErrorListIdentifier(errorListIdentifiers)
-    };
+    }
 
     const handleChangePage = (page: number) => {
         setIsTableLoading(true); // Set loading to true before making the API call
@@ -435,18 +438,20 @@ const TabContent: React.FC<TabContentProps> = ({
 
         GetDatasourceIdentifiers(selectedDataSource)
             .then(res => {
-                if (res.data?.identifiers && res.data?.identifiers.length > 0) {
-                    setDatasourceIdentifiers(res.data?.identifiers)
+                if (res.data?.identifiers) {
+                    setDatasourceIdentifiers(res.data?.identifiers ?? [])
                     setHasErrorDatasourceIdentifier(false)
                 } else {
                     setHasErrorDatasourceIdentifier(true)
                 }
             })
+            
+        loadAnomalyOptions()
     }, [selectedDataSource]);
 
     useUpdateEffect(() => {
-        loadFiltersOptions()
-    }, [datasourceIdentifiers])
+        loadIdentifierOptions()
+    }, [datasourceIdentifiers, timeRange])
 
     useUpdateEffect(() => {
         if (isTableHeaderLoading || pauseEffectSearchParam) {
@@ -468,10 +473,6 @@ const TabContent: React.FC<TabContentProps> = ({
     }, [
         searchParams, datasourceIdentifiers
     ]);
-
-    useUpdateEffect(() => {
-        loadFiltersOptions()
-    }, [timeRange])
 
     useEffect(() => {
         // Update the time difference every second
@@ -610,7 +611,7 @@ const TabContent: React.FC<TabContentProps> = ({
                         <div className='card-style p-6'>
                             <GraphAnomalyCard
                                 selectedDataSource={selectedDataSource}
-                                datasourceIdentifiers={datasourceIdentifiers.filter(identifier => identifier.on_metric)}
+                                datasourceIdentifiers={datasourceIdentifiers}
                                 selectedTimeRangeKey={selectedTimeRange}
                                 timeRanges={PREDEFINED_TIME_RANGES}
                                 autoRefresh={graphAutoRefresh}

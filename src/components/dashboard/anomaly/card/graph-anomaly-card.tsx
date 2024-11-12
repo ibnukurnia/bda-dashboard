@@ -177,6 +177,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     },
 }) => {
     const searchParams = useSearchParams();
+    const [datasourceIdentifiersMetricOnly, setDatasourceIdentifiersMetricOnly] = useState<Identifier[]>([])
     const [calledEffectOnParam, setCalledEffectOnParam] = useState(false)
     const [selectedTimeRangeKey, setSelectedTimeRangeKey] = useState<string>('Last 15 minutes');
     const [dataColumn, setDataColumn] = useState<AnomalyOptionResponse>({ columns: [] });
@@ -353,14 +354,18 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     }, [selectedDataSource]);
 
     useEffect(() => {
+        setDatasourceIdentifiersMetricOnly(datasourceIdentifiers.filter(identifier => identifier.on_metric))
+    }, [datasourceIdentifiers])
+
+    useEffect(() => {
         if (
             calledEffectOnParam ||
-            datasourceIdentifiers == null ||
+            datasourceIdentifiersMetricOnly == null ||
             dataColumn?.columns == null || dataColumn?.columns?.length === 0
         ) return
 
         const scale = dataColumn.columns.filter(dc => searchParams.getAll("anomaly").includes(dc.name))
-        const identifiers = datasourceIdentifiers.map(identifier =>
+        const identifiers = datasourceIdentifiersMetricOnly.map(identifier =>
             identifier.is_multiple ? searchParams.getAll(identifier.key) : searchParams.get(identifier.key))
 
         if (
@@ -369,13 +374,13 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         ) {
             setSelectedFilter({
                 scale: dataColumn.columns.filter(dc => searchParams.getAll("anomaly").includes(dc.name)),
-                identifiers: datasourceIdentifiers.map(identifier =>
+                identifiers: datasourceIdentifiersMetricOnly.map(identifier =>
                     identifier.is_multiple ? searchParams.getAll(identifier.key) : searchParams.get(identifier.key))
             })
         }
 
         setCalledEffectOnParam(true)
-    }, [searchParams, datasourceIdentifiers, dataColumn])
+    }, [searchParams, datasourceIdentifiersMetricOnly, dataColumn])
 
     useUpdateEffect(() => {
         fetchMetricLog(predefinedStartTime, predefinedEndTime);
@@ -423,7 +428,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 {!isFullScreen && (
                     <FilterGraphAnomaly
                         selectedDataSource={selectedDataSource}
-                        datasourceIdentifiers={datasourceIdentifiers}
+                        datasourceIdentifiers={datasourceIdentifiersMetricOnly}
                         selectedTimeRange={selectedTimeRangeKey}
                         timeRanges={CUSTOM_TIME_RANGES}
                         currentSelectedScales={selectedFilter.scale}
