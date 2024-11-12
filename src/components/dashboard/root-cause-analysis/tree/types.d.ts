@@ -1,10 +1,5 @@
-import { NLP } from "@/modules/models/root-cause-analysis";
+import { NLP, Tooltip } from "@/modules/models/root-cause-analysis";
 
-// types.ts
-type Tooltip = {
-  status_code: string;
-  total: number;
-}
 export interface TreeNodeType {
     name: string;
     cluster?: string;
@@ -15,4 +10,5 @@ export interface TreeNodeType {
     children?: TreeNodeType[];
     tooltips?: Tooltip[]
     nlps?: NLP[];
+    detail_params: Param[];
   }

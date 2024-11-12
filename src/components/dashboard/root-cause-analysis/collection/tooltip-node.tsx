@@ -1,12 +1,11 @@
 import React from "react";
 import { Tooltip } from "react-tooltip";
 import { Typography } from "@mui/material";
+import { Param } from "@/modules/models/root-cause-analysis";
 
 
 interface TooltipNodeProps {
-  type: string;
-  anomaly: string;
-  cluster: string;
+  anchorId: string;
   service_alias: string;
   tooltips: {
     status_code: string;
@@ -14,17 +13,15 @@ interface TooltipNodeProps {
   }[];
 }
 const TooltipNode: React.FC<TooltipNodeProps> = ({
-  type,
-  anomaly,
-  cluster,
+  anchorId,
   service_alias,
   tooltips,
 }) => {
 
   return (
     <Tooltip
-      key={`#${type}-${cluster}-${anomaly}-${escapeAndRemoveSpaces(service_alias)}`}
-      anchorSelect={`#${type}-${cluster}-${anomaly}-${escapeAndRemoveSpaces(service_alias)}`}
+      key={anchorId}
+      anchorSelect={anchorId}
       className="py-3 px-4 !bg-[#1A223D] !border-white !rounded-xl"
       noArrow
       style={{

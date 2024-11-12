@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import ProgressBar from '../bar/progress-bar';
 import { Typography } from '@mui/material';
 import Link from 'next/link';
-import { NLP } from '@/modules/models/root-cause-analysis';
+import { NLP, Param } from '@/modules/models/root-cause-analysis';
 import TooltipNode from '../collection/tooltip-node';
 import { getUniqueCaseDatasourceNamespace } from '../helper';
 
@@ -17,13 +17,8 @@ interface NodeProps {
   hasDetail?: boolean;
   fieldname?: string;
   toUppercase?: boolean;
-  queryParams?: {
-    time_range?: string;
-    data_source?: string;
-    anomaly?: string;
-    cluster?: string;
-    service?: string;
-  };
+  cluster?: string;
+  detailParams: Param[];
   tooltips?: {
     status_code: string;
     total: number;
@@ -47,19 +42,14 @@ const Node: React.FC<NodeProps> = ({
   hasDetail,
   fieldname,
   toUppercase,
-  queryParams,
+  cluster,
+  detailParams,
   tooltips,
   nlps,
   handleSelectNLP,
 }) => {
   const [containerWidth, setContainerWidth] = useState(0)
   const containerRef = useRef<HTMLButtonElement>(null)
-  queryParams = {
-    ...queryParams,
-    data_source: queryParams?.data_source && queryParams.anomaly ?
-      getUniqueCaseDatasourceNamespace(queryParams?.data_source, queryParams.anomaly) :
-      queryParams?.data_source,
-  }
 
   useEffect(() => {
     window.addEventListener('resize', handleContainerWidth);
@@ -91,11 +81,17 @@ const Node: React.FC<NodeProps> = ({
     }
   }
 
-  const filteredQueryParams = Object.fromEntries(
-    Object.entries(queryParams ?? {})
-      .filter(([_, value]) => value != null)
-  );
+  const anchorId = detailParams?.reduce((acc: string, { key, value }, index) => {
+    if (index === 0) {
+      return `${key}-${value}`;
+    }
+    return `${acc}|${key}-${value}`
+  }, "");
 
+  const mappedDetailParam = detailParams?.reduce((acc: { [key: string]: string }, { key, value }) => {
+    acc[key] = value;
+    return acc;
+  }, {});
 
   return (
     <button
@@ -108,7 +104,7 @@ const Node: React.FC<NodeProps> = ({
         {tooltips != null &&
           <div className="flex flex-col">
             <a
-              id={`${queryParams?.data_source}-${queryParams?.cluster}-${queryParams?.anomaly}-${escapeAndRemoveSpaces(title)}`}
+              id={anchorId}
               className='mt-[2.5px]'
               data-tooltip-place={'top-start'}
             >
@@ -117,9 +113,7 @@ const Node: React.FC<NodeProps> = ({
               </svg>
             </a>
             <TooltipNode
-              type={queryParams?.data_source ?? "DS"}
-              anomaly={queryParams?.anomaly ?? "ANOMALY"}
-              cluster={queryParams?.cluster ?? "CLUSTER"}
+              anchorId={anchorId}
               service_alias={title}
               tooltips={tooltips}
             />
@@ -168,9 +162,9 @@ const Node: React.FC<NodeProps> = ({
               {hasDetail && "Fungsi:"} {fungsi}
             </Typography>
           }
-          {queryParams?.cluster &&
+          {cluster &&
             <Typography
-              title={queryParams?.cluster}
+              title={cluster}
               color={'white'}
               fontWeight={expanded ? 700 : 400}
               fontSize={14}
@@ -184,7 +178,7 @@ const Node: React.FC<NodeProps> = ({
                 maxWidth: '100%', // Adjust as needed
               }}
             >
-              {hasDetail && "Site:"} {toUppercase ? queryParams?.cluster?.toUpperCase() : queryParams?.cluster}
+              {hasDetail && "Site:"} {toUppercase ? cluster?.toUpperCase() : cluster}
             </Typography>
           }
         </div>
@@ -202,7 +196,7 @@ const Node: React.FC<NodeProps> = ({
           }
           {hasDetail &&
             <Link
-              href={{ pathname: '/dashboard/anomaly-detection', query: filteredQueryParams }}
+              href={{ pathname: '/dashboard/anomaly-detection', query: mappedDetailParam }}
               passHref
               rel="noopener noreferrer"
               className='flex gap-0 items-center rounded-lg'

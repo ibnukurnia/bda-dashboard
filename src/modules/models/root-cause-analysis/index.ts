@@ -4,9 +4,13 @@ type Route = {
   impacted_services: ImpactedService[]
   total: number
 }
-type Tooltip = {
+export type Tooltip = {
   status_code: string
   total: number
+}
+export type Param = {
+  key: string
+  value: string
 }
 export type NLP = {
   resolution: string
@@ -24,6 +28,7 @@ type ImpactedService = {
   function: string
   tooltips: Tooltip[]
   nlp?: NLP[]
+  detail_params: Param[]
 }
 export interface RootCauseAnalysisTreeResponse {
   source: string
