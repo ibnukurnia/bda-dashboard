@@ -63,22 +63,14 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
         );
     }
 
-    const discreteMarkers = dataCharts.flatMap((metric, index) => {
-        return metric.anomalies.map((anomaly) => {
-            const dataPointIndex = metric.data.findIndex(d => d[0] === anomaly[0]);
-
-            // Log to verify marker configuration
-            console.log(`Marker config: title: ${metric.title}, seriesIndex: ${index}, anomaly time: ${anomaly[0]}, dataPointIndex: ${dataPointIndex}, visible: ${dataPointIndex !== -1}`);
-
-            return {
-                seriesIndex: index,
-                dataPointIndex,
-                fillColor: '#FF0000',
-                strokeColor: '#FF0000',
-                size: 6,
-            };
-        }).filter(marker => marker.dataPointIndex !== -1);
-    }
+    const discreteMarkers = dataCharts.map(metric =>
+        metric.anomalies.map(a => ({
+            seriesIndex: 0,
+            dataPointIndex: metric.data.findIndex(d => d[0] === a[0]),
+            fillColor: '#FF0000',
+            strokeColor: '#FF0000',
+            size: 4,
+        }))
     );
 
     return (
@@ -188,7 +180,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         hover: {
                             size: 6, // Size of the marker when hovered
                         },
-                        discrete: discreteMarkers,
+                        discrete: discreteMarkers[index],
                     },
                     grid: { row: { colors: ['transparent', 'transparent'], opacity: 1.5 }, padding: { top: -20 } },
                     legend: { labels: { colors: 'white' } },
