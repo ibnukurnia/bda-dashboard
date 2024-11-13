@@ -601,6 +601,7 @@ const TabContent: React.FC<TabContentProps> = ({
                             <GraphAnomalyCard
                                 selectedDataSource={selectedDataSource}
                                 datasourceIdentifiers={datasourceIdentifiers}
+                                isLoadingListIdentifier={isLoadingListIdentifier}
                                 selectedTimeRangeKey={selectedTimeRange}
                                 timeRanges={PREDEFINED_TIME_RANGES}
                                 autoRefresh={graphAutoRefresh}

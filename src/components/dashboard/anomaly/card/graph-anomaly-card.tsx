@@ -157,6 +157,7 @@ const Graph = ({
 interface GraphicAnomalyCardProps {
     selectedDataSource: string;
     datasourceIdentifiers: Identifier[];
+    isLoadingListIdentifier: boolean;
     selectedTimeRangeKey: string;
     timeRanges: Record<string, number>;
     isFullScreen: boolean;
@@ -169,6 +170,7 @@ interface GraphicAnomalyCardProps {
 const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     selectedDataSource,
     datasourceIdentifiers,
+    isLoadingListIdentifier,
     timeRanges,
     isFullScreen,
     autoRefresh = {
@@ -177,7 +179,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     },
 }) => {
     const searchParams = useSearchParams();
-    const [datasourceIdentifiersMetricOnly, setDatasourceIdentifiersMetricOnly] = useState<Identifier[]>([])
+    const [datasourceIdentifiersMetricOnly, setDatasourceIdentifiersMetricOnly] = useState<Identifier[]>(datasourceIdentifiers.filter(identifier => identifier.on_metric))
     const [calledEffectOnParam, setCalledEffectOnParam] = useState(false)
     const [selectedTimeRangeKey, setSelectedTimeRangeKey] = useState<string>('Last 15 minutes');
     const [dataColumn, setDataColumn] = useState<AnomalyOptionResponse>({ columns: [] });
@@ -360,9 +362,12 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     useEffect(() => {
         if (
             calledEffectOnParam ||
-            datasourceIdentifiersMetricOnly == null ||
+            isLoadingListIdentifier ||
+            datasourceIdentifiers == null ||
             dataColumn?.columns == null || dataColumn?.columns?.length === 0
         ) return
+
+        const datasourceIdentifiersMetricOnly = datasourceIdentifiers.filter(identifier => identifier.on_metric)
 
         const scale = dataColumn.columns.filter(dc => searchParams.getAll("anomaly").includes(dc.name))
         const identifiers = datasourceIdentifiersMetricOnly.map(identifier =>
@@ -380,7 +385,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         }
 
         setCalledEffectOnParam(true)
-    }, [searchParams, datasourceIdentifiersMetricOnly, dataColumn])
+    }, [searchParams, isLoadingListIdentifier, datasourceIdentifiers, dataColumn])
 
     useUpdateEffect(() => {
         fetchMetricLog(predefinedStartTime, predefinedEndTime);
