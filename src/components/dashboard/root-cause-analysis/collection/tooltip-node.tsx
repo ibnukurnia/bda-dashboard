@@ -86,12 +86,3 @@ const TooltipNode: React.FC<TooltipNodeProps> = ({
 };
 
 export default TooltipNode;
-
-function escapeAndRemoveSpaces(stringToEscape: string) {
-  return stringToEscape.replace(/[\(\)\s\.]/g, match => {
-    if (match === '(') return '';
-    if (match === ')') return '';
-    if (match === '.') return '_';
-    return ''; // remove spaces
-  });
-}

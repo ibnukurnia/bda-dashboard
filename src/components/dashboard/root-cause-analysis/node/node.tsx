@@ -4,7 +4,6 @@ import { Typography } from '@mui/material';
 import Link from 'next/link';
 import { NLP, Param } from '@/modules/models/root-cause-analysis';
 import TooltipNode from '../collection/tooltip-node';
-import { getUniqueCaseDatasourceNamespace } from '../helper';
 
 interface NodeProps {
   percentage: number; // Accepts a number between 0 and 100
@@ -221,12 +220,3 @@ const Node: React.FC<NodeProps> = ({
 };
 
 export default Node;
-
-function escapeAndRemoveSpaces(stringToEscape: string) {
-  return stringToEscape.replace(/[\(\)\s\.]/g, match => {
-    if (match === '(') return '';
-    if (match === ')') return '';
-    if (match === '.') return '_';
-    return ''; // remove spaces
-  });
-}

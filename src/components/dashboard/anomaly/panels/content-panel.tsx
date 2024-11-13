@@ -33,11 +33,9 @@ const TabContent: React.FC<TabContentProps> = ({
     const router = useRouter();
     const searchParams = useSearchParams();
     const timeRange = searchParams.get("time_range")
-    const timeRangeGraphic = searchParams.get("time_range")
     const selectedAnomalyOptions = searchParams.getAll("anomaly")
     const selectedOperationOptions = searchParams.get("operation") as string;
     const selectedSeverityOptions = searchParams.getAll("severity").map(Number);
-    const [pauseEffectSearchParam, setPauseEffectSearchParam] = useState(false)
 
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
@@ -423,20 +421,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
     useEffect(() => {
         setIsLoadingListIdentifier(true)
-        setIsTableHeaderLoading(true);
-        setIsTableLoading(true);
         setListIdentifiers([])
-        const page = 1 // Reset to the first page when page size changes
-        setPagination((prev) => ({
-            ...prev,
-            pageIndex: page,
-        }));
-
-        fetchHistoricalAnomalyRecords({
-            logType: selectedDataSource,
-            page: 1,
-            limit: pagination.pageSize,
-        });
 
         GetDatasourceIdentifiers(selectedDataSource)
             .then(res => {
@@ -449,6 +434,11 @@ const TabContent: React.FC<TabContentProps> = ({
             })
             
         loadAnomalyOptions()
+    }, [selectedDataSource])
+    
+    useUpdateEffect(() => {
+        setIsTableHeaderLoading(true);
+        setIsTableLoading(true);
     }, [selectedDataSource]);
 
     useUpdateEffect(() => {
@@ -456,10 +446,7 @@ const TabContent: React.FC<TabContentProps> = ({
     }, [datasourceIdentifiers, timeRange])
 
     useUpdateEffect(() => {
-        if (isTableHeaderLoading || pauseEffectSearchParam) {
-            setPauseEffectSearchParam(false)
-            return
-        }
+        setIsTableLoading(true);
 
         const page = 1 // Reset to the first page when page size changes
         setPagination((prev) => ({
