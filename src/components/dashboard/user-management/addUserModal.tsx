@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CreateUser } from '@/modules/usecases/user-management';
 
 interface AddUserModalProps {
     onClose: () => void;
@@ -6,10 +7,17 @@ interface AddUserModalProps {
 
 const AddUserModal: React.FC<AddUserModalProps> = ({ onClose }) => {
     const [pnNumber, setPnNumber] = useState<string>('');
+    const [role, setRole] = useState<string>('admin'); // Default role set to 'admin'
 
-    const handleAddUser = () => {
-        // Implement your logic for adding a user here
-        console.log('PN Number:', pnNumber);
+    const handleAddUser = async () => {
+        try {
+            const response = await CreateUser({ pn: pnNumber, roles: role });
+            console.log('User created successfully:', response);
+            // Optionally close the modal after success
+            onClose();
+        } catch (error) {
+            console.error('Error creating user:', error);
+        }
     };
 
     return (
@@ -18,7 +26,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose }) => {
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                     Add New User
                 </h2>
-                {/* Close Button */}
                 <button
                     onClick={onClose}
                     className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
@@ -41,17 +48,32 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose }) => {
                 </button>
             </div>
 
-            <div>
-                <label className="block text-sm font-medium text-gray-700">
-                    PN Number
-                </label>
-                <input
-                    type="text"
-                    placeholder="Input PN Number..."
-                    value={pnNumber}
-                    onChange={(e) => setPnNumber(e.target.value)}
-                    className="mt-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white w-full"
-                />
+            <div className='flex flex-col gap-4'>
+                <div className='flex flex-col gap-1'>
+                    <label className="block text-sm font-medium text-white">
+                        PN Number
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="Input PN Number..."
+                        value={pnNumber}
+                        onChange={(e) => setPnNumber(e.target.value)}
+                        className="mt-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white w-full"
+                    />
+                </div>
+                <div className='flex flex-col gap-1'>
+                    <label className="block text-sm font-medium text-white">
+                        Roles
+                    </label>
+                    <select
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        className="mt-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white w-full"
+                    >
+                        <option value="admin">Admin</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                </div>
             </div>
 
             <div className="flex justify-end">

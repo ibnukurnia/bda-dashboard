@@ -89,6 +89,61 @@ const post = async <T extends object, K>(endpoint: string, body: T): Promise<Api
   }
 }
 
+const put = async <T extends object, K>(endpoint: string, body: T): Promise<ApiResponse<K>> => {
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: 'PUT',
+    headers: {
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  const resJson: ApiResponse<K> = (await response.json()) as ApiResponse<K>
+
+  interceptor(resJson.status)
+
+  if (!resJson.valid) {
+    throw {
+      status: resJson.status,
+      message: resJson.message,
+    } as ErrorResponse
+  }
+
+  return {
+    status: resJson.status,
+    message: resJson.message,
+    data: resJson.data,
+    valid: resJson.valid,
+  }
+}
+
+const del = async <K>(endpoint: string, p0: { withAuth: boolean }): Promise<ApiResponse<K>> => {
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
+  const resJson: ApiResponse<K> = (await response.json()) as ApiResponse<K>;
+
+  interceptor(resJson.status);
+
+  if (!resJson.valid) {
+    throw {
+      status: resJson.status,
+      message: resJson.message,
+    } as ErrorResponse;
+  }
+
+  return {
+    status: resJson.status,
+    message: resJson.message,
+    data: resJson.data,
+    valid: resJson.valid,
+  };
+};
+
 const downloadFile = async (endpoint: string, mimeType: string, filename: string, option?: RequestOption): Promise<void> => {
   const headers: Record<string, string> = {
     Accept: mimeType,
@@ -159,4 +214,4 @@ const interceptor = (status: number) => {
   }
 }
 
-export { get, post, downloadFile }
+export { get, post, put, del, downloadFile }
