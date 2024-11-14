@@ -22,10 +22,15 @@ const CellValue: React.FC<CellValueProps> = ({
       <span
         className={`${highlights?.[rowIndex]?.includes(cell.column.id) ? 'blinking text-[#FF4E42] font-bold' : ''} ml-auto`}
       >
-        {cell.column.id === "error_rate" ?
+        {(cell.column.id === "error_rate" ||
+          cell.column.id === "in_mbps" ||
+          cell.column.id === "out_mbps" ||
+          cell.column.id === "percent_in_mbps" ||
+          cell.column.id === "percent_out_mbps") ?
           (cell.getValue() as number).toString().replace('.', ',') :
           formatNumberWithCommas(cell.getValue() as number)}
       </span>
+
     )
   }
 
@@ -101,7 +106,6 @@ const TableBodyWrapper: React.FC<TableBodyWrapperProps> = ({
   )
   return children
 }
-
 
 interface TableHistoricalAnomalyProps {
   data: any[]

@@ -83,54 +83,36 @@ const DynamicUpdatingChart = ({ series, title, subtitle, startTime, endTime, spi
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
-            second: '2-digit', // Add seconds to the tooltip display
-            hour12: false, // For 24-hour format, set to true for 12-hour AM/PM format
+            second: '2-digit',
+            hour12: false, // For 24-hour format
           });
         },
       },
-
     },
-
-
     xaxis: {
-      // Set min and max based on user-selected start and end time
       min: new Date(startTime).getTime(),
       max: new Date(endTime).getTime(),
       type: 'datetime',
       labels: {
         formatter(value) {
           const date = new Date(value);
-          const formattedTime = date.toLocaleTimeString('en-US', {
+          return date.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
-            hour12: false, // For 24-hour format, set to true for 12-hour AM/PM format
+            hour12: false,
           });
-          return formattedTime;
         },
         style: {
-          colors: 'white', // White color for x-axis text
+          colors: 'white',
         },
-        rotate: 0,
-        hideOverlappingLabels: true,
-        trim: true,
       },
       crosshairs: { show: false },
       axisBorder: { show: false },
     },
     yaxis: {
-      min: 0,
-      max(max) {
-        if (title?.toLowerCase()?.includes('apm')) {
-          return max;
-        } else if (max >= 5) {
-          return max + 1;
-        } else {
-          return 5;
-        }
-      },
       labels: {
         style: {
-          colors: 'white', // White color for y-axis text
+          colors: 'white',
         },
         formatter(val) {
           return title?.toLowerCase()?.includes('apm') ? val?.toFixed(4) : val?.toFixed(0);
@@ -160,11 +142,9 @@ const DynamicUpdatingChart = ({ series, title, subtitle, startTime, endTime, spi
     },
   };
 
-
-
   return (
     <div ref={chartRef}>
-      {isVisible ?
+      {isVisible ? (
         <Fragment>
           <Chart
             options={options}
@@ -176,29 +156,17 @@ const DynamicUpdatingChart = ({ series, title, subtitle, startTime, endTime, spi
           <p className="text-white text-sm ml-3">
             Last Spike: {spike ?? '-'}
           </p>
-        </Fragment> :
+        </Fragment>
+      ) : (
         <div className={`chart-section-col flex flex-col gap-2`}>
-          <Skeleton
-            height={12}
-            width={"75px"}
-          />
-          <Skeleton
-            height={12}
-            width={"75px"}
-          />
-          <Skeleton
-            variant="rounded"
-            width={"100%"}
-            height={230}
-          />
-          <Skeleton
-            height={20}
-            width={"125px"}
-          />
+          <Skeleton height={12} width={"75px"} />
+          <Skeleton height={12} width={"75px"} />
+          <Skeleton variant="rounded" width={"100%"} height={230} />
+          <Skeleton height={20} width={"125px"} />
         </div>
-      }
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default DynamicUpdatingChart
+export default DynamicUpdatingChart;

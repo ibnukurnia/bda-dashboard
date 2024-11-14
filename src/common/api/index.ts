@@ -1,5 +1,3 @@
-import { useRouter } from 'next/navigation'
-
 import { paths } from '@/paths'
 
 import { ApiResponse, ErrorResponse } from './type'
