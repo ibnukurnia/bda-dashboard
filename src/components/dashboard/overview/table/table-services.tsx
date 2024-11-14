@@ -2,32 +2,6 @@ import styles from './table-services.module.css';
 import Link from 'next/link';
 import { TopServiceData } from '@/modules/models/overviews';
 
-const LABELS_TO_NAMESPACE: Record<string, string> = {
-  "Log APM BRImo": 'apm',
-  "Log Transaksi BRImo": 'brimo',
-  "OCP": 'k8s_prometheus',
-  "Database": 'k8s_db',
-  "Redis": 'redis',
-  "Compute Vm": 'compute_vm',
-  "Compute Host": 'compute_host',
-  "Compute Datastore": 'compute_store',
-  "Compute Store": 'compute_store',
-  "Compute Storage": 'compute_storage',
-  "IVAT": 'ivat',
-  "Solarwinds": 'solarwinds',
-  "DNS Response Time": 'dns_rt',
-  "F5": 'f5',
-  "PANW": 'panw',
-  "FORTI": 'forti',
-  "WAF": 'waf',
-  "PRTG": 'prtg',
-  "PRTG Traffic": 'prtg_traffic',
-  "PRTG Firewall": 'prtg_firewall',
-  "PRTG SSLO": 'prtg_sslo',
-  "PRTG WAF": 'prtg_waf',
-  "Zabbix": 'zabbix',
-};
-
 interface TableServicesProps {
   tableHeader: string[];
   dataKeys: string[];
@@ -82,7 +56,7 @@ const TableServices = ({ tableHeader, dataKeys, data, selectedDataSource, queryP
                               pathname: '/dashboard/root-cause-analysis',
                               query: {
                                 ...queryParams,
-                                data_source: selectedDataSource ?? LABELS_TO_NAMESPACE[sdt?.[cdk]],
+                                data_source: selectedDataSource ?? sdt.data_source,
                               },
                             }}
                             passHref
