@@ -140,6 +140,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
       })
       .catch(_ => {
         setIsError(true)
+        setIsLoading(false)
       })
 
     GetHealthScoreOverview(paramsTime)
@@ -150,6 +151,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
       })
       .catch(_ => {
         setIsError(true)
+        setIsLoading(false)
       })
   }
 
