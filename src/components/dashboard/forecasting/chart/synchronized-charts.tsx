@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Typography } from '@mui/material'
 import { ApexOptions } from 'apexcharts'
+import { format } from 'date-fns'
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
@@ -33,18 +34,9 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
   const todayMaxTime = todayZero + 1000 * 60 * 60 * 24
 
-  const [zoomX, setZoomX] = useState({
+  const [xaxisRange, setXaxisRange] = useState<{ min: number; max: number }>({
     min: minZoom ?? today.getTime() - 1000 * 60 * 60 * 2,
     max: maxZoom ?? today.getTime() + 1000 * 60 * 60 * 2,
-  })
-
-  const [xaxisRange, setXaxisRange] = useState<{ min: number; max?: number }>({
-    min: zoomX.min,
-    max: zoomX.max,
-  });
-  const [yaxisRange, setYaxisRange] = useState<{ min: number; max?: number }>({
-    min: 0,
-    max: undefined,
   });
 
   // Format numbers to include commas, e.g., 1000 -> 1,000
@@ -77,6 +69,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
       },
       zoom: {
         enabled: true,
+        type: 'x',
+        autoScaleYaxis: true,
       },
       events: {
         beforeResetZoom() {
@@ -84,7 +78,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
             min: today.getTime() - 1000 * 60 * 60 * 2,
             max: today.getTime() + 1000 * 60 * 60 * 2,
           }
-          updateAxisRanges(resResetZoom.min, resResetZoom.max);
 
           return {
             xaxis: resResetZoom,
@@ -97,7 +90,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
             max: xaxis.max > todayMaxTime ? todayMaxTime : xaxis.max,
           }
           
-          updateAxisRanges(res.min, res.max);
           setZoom && setZoom({ minZoom: res.min, maxZoom: res.max })
 
           return {
@@ -118,15 +110,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
       type: 'datetime',
       labels: {
         formatter(value, _, __) {
-          const date = new Date(value)
-          return date.toLocaleDateString('id-ID', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-          })
+          return format(new Date(value), 'yyyy-MM-dd HH:mm');
         },
         style: {
           colors: 'white', // White color for x-axis text
@@ -139,8 +123,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
       axisBorder: { show: false },
     },
     yaxis: {
-      min: yaxisRange.min,
-      max: yaxisRange.max,
+      min: 0,
       labels: {
         style: {
           colors: 'white', // White color for y-axis text
@@ -205,31 +188,16 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   }, [dataCharts])
   const chartSeries = resDataChart.map((item) => ({ name: item.title, data: item.data }))
 
-  const updateAxisRanges = useCallback((zoomedMin: number, zoomedMax: number) => {
-    
-    const selectedData = chartSeries.flatMap(s =>
-      s.data.filter(([timestamp]) => new Date(timestamp).getTime() >= zoomedMin && new Date(timestamp).getTime() <= zoomedMax)
-    );
-    
-    if (selectedData.length) {
-      const selectedYValues = selectedData.map(([_, value]) => value);
-      const maxY = Math.max(...selectedYValues) * 1.1;
-
-      setYaxisRange(prev => ({ ...prev, max: maxY }));
-    }
-    setXaxisRange(({ min: zoomedMin, max: zoomedMax }))
-  }, [chartSeries]);
-
   useLayoutEffect(() => {
     if (minZoom !== undefined && maxZoom !== undefined) {
-      setZoomX({ min: minZoom, max: maxZoom })
+      setXaxisRange({ min: minZoom, max: maxZoom })
     }
   }, [minZoom, maxZoom])
 
   useEffect(() => {
     const min = today.getTime() - 1000 * 60 * 60 * 2
     const max = today.getTime() + 1000 * 60 * 60 * 2
-    setZoomX({ min, max })
+    setXaxisRange({ min, max })
     setZoom && setZoom({ minZoom: min, maxZoom: max })
   }, [selectedDate])
 
