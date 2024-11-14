@@ -72,6 +72,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         );
     };
 
+    const handleAnomalyReset = () => {
+        setSelectedAnomalyOptions([])
+    }
+
     const handleSeverityChange = (id: number) => {
         if (selectedAnomalyOptions.length > 0) {
             // If anomaly is selected, do not allow severity selection
@@ -81,6 +85,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             prev.includes(id) ? prev.filter((option) => option !== id) : [...prev, id]
         );
     };
+
+    const handleSeverityReset = () => {
+        setSelectedSeverityOptions([])
+    }
 
     const handleOperationChange = (operation: string) => {
         setSelectedOperation(operation);
@@ -100,6 +108,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             return newNestedArr
         })
     };
+
+    const handleSelectedReset = (identifierIndex: number) => {
+        setSelectedListIdentifiers(prev => {
+            const newNestedArr = [...prev]
+            newNestedArr[identifierIndex] = []
+            return newNestedArr
+        })
+    }
 
     const handleApply = () => {
         onApplyFilters({
@@ -125,7 +141,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
     const handleSearch = (identifierIndex: number, value: string) => {
         setSearchValues(prev => {
-            const newArr = [ ...prev ]
+            const newArr = [...prev]
             newArr[identifierIndex] = value
             return newArr
         });
@@ -213,7 +229,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     useUpdateEffect(() => {
         setSearchValues(Array.from({ length: datasourceIdentifiers.length }, () => ""))
     }, [listIdentifiers])
-    
+
     return (
         <div className="flex self-start z-99999">
             <button
@@ -255,33 +271,40 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                         <p className="text-sm text-gray-600">
                                             Selected Anomalies: <span className="text-blue-600">{selectedAnomalyOptions.length}</span>
                                         </p>
-                                        <button
-                                            onClick={handleSelectAllAnomalies}
-                                            className="text-blue-500 text-sm text-left "
-                                            disabled={selectedSeverityOptions.length > 0}
-                                        >
-                                            {selectedAnomalyOptions.length === checkboxOptions.length ? 'Unselect All' : 'Select All'}
-                                        </button>
                                     </div>
                                     <div className="overflow-y-auto max-h-36">
                                         {hasErrorFilterAnomaly ? (
-                                            <p className="text-red-500 whitespace-break-spaces">An error occurred.<br/>Please try again later.</p>
+                                            <p className="text-red-500 whitespace-break-spaces">An error occurred.<br />Please try again later.</p>
                                         ) : checkboxOptions.length > 0 ? (
-                                            checkboxOptions.map((option) => (
-                                                <label key={option.id} className="flex items-center justify-between mb-1">
+                                            <>
+                                                <label className="flex items-center justify-between mb-1">
                                                     <div className="flex items-center">
                                                         <input
                                                             type="checkbox"
-                                                            value={option.id}
-                                                            checked={selectedAnomalyOptions.includes(option.id)}
-                                                            onChange={() => handleAnomalyChange(option.id)}
+                                                            value={`All Anomalies`}
+                                                            checked={selectedAnomalyOptions.length === 0 || selectedAnomalyOptions.length === checkboxOptions?.length}
+                                                            onChange={handleAnomalyReset}
                                                             className="mr-2"
-                                                            disabled={selectedSeverityOptions.length > 0}
                                                         />
-                                                        {option.label}
+                                                        {`All Anomalies`}
                                                     </div>
                                                 </label>
-                                            ))
+                                                {checkboxOptions.map((option) => (
+                                                    <label key={option.id} className="flex items-center justify-between mb-1">
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                value={option.id}
+                                                                checked={selectedAnomalyOptions.includes(option.id)}
+                                                                onChange={() => handleAnomalyChange(option.id)}
+                                                                className="mr-2"
+                                                                disabled={selectedSeverityOptions.length > 0}
+                                                            />
+                                                            {option.label}
+                                                        </div>
+                                                    </label>
+                                                ))}
+                                            </>
                                         ) : (
                                             <p>No options available</p>
                                         )}
@@ -333,31 +356,38 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     <p className="text-sm text-gray-600">
                                         Selected Severities: <span className="text-blue-600">{selectedSeverityOptions.length}</span>
                                     </p>
-                                    <button
-                                        onClick={handleSelectAllSeverities}
-                                        className="text-blue-500 text-sm text-left"
-                                        disabled={selectedAnomalyOptions.length > 0}
-                                    >
-                                        {selectedSeverityOptions.length === severityOptions.length ? 'Unselect All' : 'Select All'}
-                                    </button>
                                 </div>
                                 <div className="overflow-y-auto max-h-40">
                                     {severityOptions.length > 0 ? (
-                                        severityOptions.map((option) => (
-                                            <label key={option.id} className="flex items-center justify-between mb-1">
+                                        <>
+                                            <label className="flex items-center justify-between mb-1">
                                                 <div className="flex items-center">
                                                     <input
                                                         type="checkbox"
-                                                        value={option.id}
-                                                        checked={selectedSeverityOptions.includes(option.id)}
-                                                        onChange={() => handleSeverityChange(option.id)}
+                                                        value={`All Severities`}
+                                                        checked={selectedSeverityOptions.length === 0 || selectedSeverityOptions.length === severityOptions?.length}
+                                                        onChange={handleSeverityReset}
                                                         className="mr-2"
-                                                        disabled={selectedAnomalyOptions.length > 0}
                                                     />
-                                                    {option.label}
+                                                    {`All Severities`}
                                                 </div>
                                             </label>
-                                        ))
+                                            {severityOptions.map((option) => (
+                                                <label key={option.id} className="flex items-center justify-between mb-1">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            value={option.id}
+                                                            checked={selectedSeverityOptions.includes(option.id)}
+                                                            onChange={() => handleSeverityChange(option.id)}
+                                                            className="mr-2"
+                                                            disabled={selectedAnomalyOptions.length > 0}
+                                                        />
+                                                        {option.label}
+                                                    </div>
+                                                </label>
+                                            ))}
+                                        </>
                                     ) : (
                                         <p>No options available</p>
                                     )}
@@ -371,12 +401,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                         <p className="text-sm text-gray-600">
                                             Selected {identifier.title}: <span className="text-blue-600">{selectedListIdentifiers[identifierIdx]?.length}</span>
                                         </p>
-
-
-                                        {/* Select All Services button */}
-                                        <button onClick={() => handleSelectAll(identifierIdx)} className="text-blue-500 text-sm text-left">
-                                            {selectedListIdentifiers[identifierIdx]?.length === listIdentifiers[identifierIdx]?.length ? 'Unselect All' : 'Select All'}
-                                        </button>
                                     </div>
 
                                     {/* Search input for services */}
@@ -392,25 +416,40 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     {/* Services with filtered results */}
                                     <div className="overflow-y-auto max-h-40">
                                         {hasErrorListIdentifier[identifierIdx] ? (
-                                            <p className="text-red-500 whitespace-nowrap">An error occurred.<br/>Please try again later.</p>
-                                        ) : filteredListIdentifiers[identifierIdx]?.length > 0 ? (
-                                            filteredListIdentifiers[identifierIdx].map((item, itemIdx) => (
-                                                <label key={itemIdx} className="flex items-center justify-between mb-1">
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={item}
-                                                            checked={selectedListIdentifiers[identifierIdx]?.includes(item)}
-                                                            onChange={() => handleSelectedChange(identifierIdx, item)}
-                                                            className="mr-2"
-                                                        />
-                                                        {item}
-                                                    </div>
-                                                </label>
-                                            ))
-                                        ) : (
-                                            <p>No {identifier.title} Available</p>
-                                        )}
+                                            <p className="text-red-500 whitespace-nowrap">An error occurred.<br />Please try again later.</p>
+                                        ) :
+                                            filteredListIdentifiers[identifierIdx]?.length > 0 ? (
+                                                <>
+                                                    <label className="flex items-center justify-between mb-1">
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                value={`All ${identifier.title}`}
+                                                                checked={selectedListIdentifiers[identifierIdx].length === 0 || selectedListIdentifiers[identifierIdx].length === listIdentifiers[identifierIdx]?.length}
+                                                                onChange={() => handleSelectedReset(identifierIdx)}
+                                                                className="mr-2"
+                                                            />
+                                                            {`All ${identifier.title}`}
+                                                        </div>
+                                                    </label>
+                                                    {filteredListIdentifiers[identifierIdx].map((item, itemIdx) => (
+                                                        <label key={itemIdx} className="flex items-center justify-between mb-1">
+                                                            <div className="flex items-center">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    value={item}
+                                                                    checked={selectedListIdentifiers[identifierIdx]?.includes(item)}
+                                                                    onChange={() => handleSelectedChange(identifierIdx, item)}
+                                                                    className="mr-2"
+                                                                />
+                                                                {item}
+                                                            </div>
+                                                        </label>
+                                                    ))}
+                                                </>
+                                            ) : (
+                                                <p>No {identifier.title} Available</p>
+                                            )}
                                     </div>
 
                                 </div>
