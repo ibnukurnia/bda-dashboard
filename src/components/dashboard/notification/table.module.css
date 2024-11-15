@@ -13,12 +13,12 @@ thead.table_header {
   background-color: #060f2c;
 }
 
-tr:hover.row_hover td:first-child {
+/* tr:hover.row_hover td:first-child {
   --tw-bg-opacity: 1;
-  background-color: rgb(56 62 84 / var(--tw-bg-opacity))
+  background-color: rgb(56 62 84 / var(--tw-bg-opacity)) */
     /* #383e54 */
-  ;
-}
+  /* ;
+} */
 
 .scrollbar::-webkit-scrollbar {
   width: 8px;
