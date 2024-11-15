@@ -93,15 +93,15 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   const minValue = Math.min(...chartSeries[0].data.map(data => data[1] as number))
   const firstThreshold = 0.01
   const secondThreshold = 0.1
-  
+
   const getLineColorStops = () => {
     const colorStops: ApexColorStop[] = [];
     const addColorStop = (offset: number, color: string) => colorStops.push({ offset, color, opacity: 1 });
-  
+
     if (maxValue >= secondThreshold) {
       addColorStop(0, "#ef5350");
       addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ef5350");
-  
+
       if (minValue <= firstThreshold) {
         addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ffa726");
       }
@@ -110,27 +110,27 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     } else {
       addColorStop(100, "#008ffb");
     }
-  
+
     if (maxValue >= firstThreshold) {
       addColorStop(100 - (((firstThreshold - minValue) / (maxValue - minValue)) * 100), "#ffa726");
     }
-  
+
     if (minValue <= firstThreshold) {
       addColorStop(100 - (((firstThreshold - minValue) / (maxValue - minValue)) * 100), "#008ffb");
       addColorStop(100, "#008ffb");
     }
-  
+
     return colorStops
   }
 
   const getAreaColorStops = () => {
     const colorStops: ApexColorStop[] = [];
     const addColorStop = (offset: number, color: string) => colorStops.push({ offset, color, opacity: 1 });
-  
+
     // Option 1
     // if (maxValue >= secondThreshold) {
     //   addColorStop(0, "#ef5350");
-  
+
     //   if (minValue <= firstThreshold) {
     //     addColorStop(100 - (secondThreshold / maxValue) * 100, "#ffa726");
     //   }
@@ -139,13 +139,13 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     // } else {
     //   addColorStop(0, "#008ffb");
     // }
-  
+
     // if (maxValue >= firstThreshold) {
     //   addColorStop(100 - (firstThreshold / maxValue) * 100, "#ffa726");
     // }
-  
+
     // addColorStop(100, "#008ffb");
-  
+
     // Option 2
     // if (maxValue >= secondThreshold) {
     //   addColorStop(0, "#ef5350");
@@ -154,18 +154,18 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     // } else {
     //   addColorStop(0, "#008ffb");
     // }
-  
+
     // if (maxValue >= firstThreshold) {
     //   addColorStop(100 - (((secondThreshold + firstThreshold) / 2) / maxValue) * 100, "#ffa726");
     // }
-  
+
     // addColorStop(100, "#008ffb");
 
     // Option 3
     if (maxValue >= secondThreshold) {
       addColorStop(0, "#ef5350");
       addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ef5350");
-  
+
       if (minValue <= firstThreshold) {
         addColorStop(100 - (secondThreshold / maxValue) * 100, "#ffa726");
       }
@@ -174,24 +174,24 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     } else {
       addColorStop(0, "#008ffb");
     }
-  
+
     if (maxValue >= firstThreshold) {
       addColorStop(100 - (firstThreshold / maxValue) * 100, "#ffa726");
     }
-  
+
     if (minValue <= firstThreshold) {
       addColorStop(100 - (firstThreshold / maxValue) * 100, "#008ffb");
     }
-  
+
     addColorStop(100, "#008ffb");
 
     // Set decreasing opacity for each stop based on its position
     const stepSize = 100 / (colorStops.length - 1);
     colorStops.forEach((stop, index) => (stop.opacity = (100 - stepSize * index) / 100));
-  
+
     return colorStops;
   };
-  
+
   const chartOptions: ApexOptions = {
     chart: {
       animations: {
@@ -312,40 +312,42 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
         opacity: 0.5,
       },
     },
-    annotations: withAlertThreshold ? {
-      yaxis: [
-        {
-          y: firstThreshold,
-          borderColor: '#FF802D',
-          borderWidth: 2,
-          strokeDashArray: 4,
-          label: {
+    ...(withAlertThreshold && {
+      annotations: {
+        yaxis: [
+          {
+            y: firstThreshold,
             borderColor: '#FF802D',
-            style: {
-              color: '#fff',
-              background: '#FF802D',
+            borderWidth: 2,
+            strokeDashArray: 4,
+            label: {
+              borderColor: '#FF802D',
+              style: {
+                color: '#fff',
+                background: '#FF802D',
+              },
+              text: 'Alert Threshold',
+              offsetY: 7,
             },
-            text: 'Alert Threshold',
-            offsetY: 7,
           },
-        },
-        {
-          y: secondThreshold,
-          borderColor: '#ff4d4d',
-          borderWidth: 2,
-          strokeDashArray: 4,
-          label: {
+          {
+            y: secondThreshold,
             borderColor: '#ff4d4d',
-            style: {
-              color: '#fff',
-              background: '#ff4d4d',
+            borderWidth: 2,
+            strokeDashArray: 4,
+            label: {
+              borderColor: '#ff4d4d',
+              style: {
+                color: '#fff',
+                background: '#ff4d4d',
+              },
+              text: 'Alert Threshold',
+              offsetY: 7,
             },
-            text: 'Alert Threshold',
-            offsetY: 7,
           },
-        },
-      ],
-    } : undefined,
+        ],
+      },
+    }),
     legend: {
       labels: {
         colors: 'white',
