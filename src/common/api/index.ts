@@ -61,33 +61,77 @@ const get = async <T>(endpoint: string, option?: RequestOption): Promise<ApiResp
   }
 }
 
-const post = async <T extends object, K>(endpoint: string, body: T): Promise<ApiResponse<K>> => {
-  const response = await fetch(`${API_URL}${endpoint}`, {
+const post = async <T extends object, K>(
+  endpoint: string,
+  option?: RequestOption & { data?: T }
+): Promise<ApiResponse<K>> => {
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    // 'Content-Type': 'application/json', // Ensure JSON Content-Type
+  };
+
+  if (option?.withAuth) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('No token found for authenticated request');
+      return {
+        status: 401,
+        message: 'unauthorized',
+        valid: false,
+        data: null,
+      };
+    }
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  // Debug: Log request details
+  console.log('POST Request Details:', {
+    url: `${API_URL}${endpoint}`,
+    headers,
+    body: option?.data || {}, // Log the request body
+  });
+
+  const response: Response = await fetch(`${API_URL}${endpoint}`, {
     method: 'POST',
-    headers: {
-      Accept: 'application/json',
-    },
-    body: JSON.stringify(body),
-  })
+    headers,
+    signal: option?.signal,
+    body: JSON.stringify(option?.data || {}),
+  });
 
-  const resJson: ApiResponse<K> = (await response.json()) as ApiResponse<K>
+  // Debug: Log raw response
+  console.log('POST Raw Response:', response);
 
-  interceptor(resJson.status)
+  // Check if response is JSON parsable
+  try {
+    const resJson: ApiResponse<K> = (await response.json()) as ApiResponse<K>;
 
-  if (!resJson.valid) {
-    throw {
+    // Debug: Log parsed JSON response
+    console.log('POST Response JSON:', resJson);
+
+    interceptor(resJson.status);
+
+    if (!resJson.valid) {
+      console.error('Invalid response received:', resJson);
+      throw {
+        status: resJson.status,
+        message: resJson.message,
+      } as ErrorResponse;
+    }
+
+    return {
       status: resJson.status,
       message: resJson.message,
-    } as ErrorResponse
+      data: resJson.data,
+      valid: resJson.valid,
+    };
+  } catch (error) {
+    console.error('Error parsing JSON response:', error);
+    throw {
+      status: response.status,
+      message: response.statusText,
+    };
   }
-
-  return {
-    status: resJson.status,
-    message: resJson.message,
-    data: resJson.data,
-    valid: resJson.valid,
-  }
-}
+};
 
 const put = async <T extends object, K>(endpoint: string, body: T): Promise<ApiResponse<K>> => {
   const response = await fetch(`${API_URL}${endpoint}`, {
@@ -117,13 +161,33 @@ const put = async <T extends object, K>(endpoint: string, body: T): Promise<ApiR
   }
 }
 
-const del = async <K>(endpoint: string, p0: { withAuth: boolean }): Promise<ApiResponse<K>> => {
-  const response = await fetch(`${API_URL}${endpoint}`, {
+const del = async <K>(endpoint: string, option?: { withAuth: boolean }): Promise<ApiResponse<K>> => {
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+  };
+
+  // Add Authorization header if `withAuth` is true
+  if (option?.withAuth) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        status: 401,
+        message: 'unauthorized',
+        valid: false,
+        data: null,
+      };
+    }
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response: Response = await fetch(`${API_URL}${endpoint}`, {
     method: 'DELETE',
-    headers: {
-      Accept: 'application/json',
-    },
+    headers,
   });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete resource: ${response.statusText}`);
+  }
 
   const resJson: ApiResponse<K> = (await response.json()) as ApiResponse<K>;
 

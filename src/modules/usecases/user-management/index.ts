@@ -8,15 +8,15 @@ const GetUsersList = async () => {
     return response;
 };
 
-const CreateUser = async (params: { pn: string; roles: string }) => {
+const CreateUser = async (params: { personal_number: string; role: string }) => {
     const response: ApiResponse<any> = await post('users-management', {
-        data: params,  // Send params in the request body
-        withAuth: true,
+        data: params,  // Send `personal_number` and `role` in the body
+        withAuth: true, // Indicate that the request requires authorization
     });
     return response;
 };
 
-const UpdateUser = async (params: { pn: string; roles: string }) => {
+const UpdateUser = async (params: { personal_number: string; roles: string }) => {
     const response: ApiResponse<any> = await put('users-management', {
         data: params,  // Send params in the request body
         withAuth: true,
@@ -24,12 +24,13 @@ const UpdateUser = async (params: { pn: string; roles: string }) => {
     return response;
 };
 
-const DeleteUser = async (pn: string) => {
-    const response: ApiResponse<any> = await del(`users-management/${pn}`, {
-        withAuth: true,
+const DeleteUser = async (personal_number: string): Promise<ApiResponse<any>> => {
+    const response: ApiResponse<any> = await del(`users-management/${personal_number}`, {
+        withAuth: true, // Include Authorization header
     });
     return response;
 };
+
 
 export {
     GetUsersList,

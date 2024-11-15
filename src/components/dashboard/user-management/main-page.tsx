@@ -1,30 +1,25 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import type { Metadata } from 'next';
-import AddUserModal from '@/components/dashboard/user-management/addUserModal'; // Assuming your modal is in the same directory
-import DeleteUserModal from '@/components/dashboard/user-management/deleteUserModal'; // Assuming your modal is in the same directory
+import AddUserModal from '@/components/dashboard/user-management/addUserModal';
+import DeleteUserModal from '@/components/dashboard/user-management/deleteUserModal';
 import { GetUsersList } from '@/modules/usecases/user-management';
-
-export const metadata = { title: 'User Management' } satisfies Metadata;
-
-interface User {
-    id: string;
-    name: string;
-    role: string;
-}
+import Skeleton from '@/components/system/Skeleton/Skeleton';
 
 const UserManagementPage: React.FC = () => {
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
-    const [userList, setUserList] = useState<User[]>([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [userList, setUserList] = useState<Record<string, any>[]>([]);
+    const [headers, setHeaders] = useState<string[]>([]);
+    const [selectedUserPn, setSelectedUserPn] = useState<string | null>(null);
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
 
     const openModal = () => {
         setIsModalOpen(true);
     };
 
-    const openDeleteModal = () => {
+    const openDeleteModal = (pn: string) => {
+        setSelectedUserPn(pn);
         setIsDeleteModalOpen(true);
     };
 
@@ -33,19 +28,33 @@ const UserManagementPage: React.FC = () => {
     };
 
     const closeDeleteModal = () => {
+        setSelectedUserPn(null);
         setIsDeleteModalOpen(false);
     };
 
-    useEffect(() => {
-        GetUsersList()
-            .then((res) => {
-                setUserList(res.data); // Ensure `res.data` matches the `User[]` structure
-            })
-            .catch(() => {
-                setUserList([]);
-            });
-    }, []);
+    const fetchUsers = async () => {
+        try {
+            setIsLoadingUsers(true);
+            const response = await GetUsersList();
+            const data = response.data || [];
+            setUserList(data);
 
+            // Dynamically extract headers from the first object in the data
+            if (data.length > 0) {
+                setHeaders(Object.keys(data[0]));
+            }
+        } catch (error) {
+            console.error('Failed to fetch users:', error);
+            setUserList([]);
+            setHeaders([]);
+        } finally {
+            setIsLoadingUsers(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
     return (
         <div className="min-h-screen bg-[#0816358F] text-white p-8 flex flex-col gap-4">
@@ -71,59 +80,100 @@ const UserManagementPage: React.FC = () => {
             </div>
 
             <table className="table-auto w-full rounded-lg">
-                <thead className="border-b ">
-                    <tr className="text-left text-gray-300">
-                        <th className="px-6 py-3">Name</th>
-                        <th className="px-6 py-3">Role</th>
-                        <th className="px-6 py-3">Action</th>
+                <thead className="border-b">
+                    <tr className="text-left text-gray-300 uppercase">
+                        {headers.map((header) => (
+                            <th key={header} className="px-6 py-3">
+                                {isLoadingUsers ? (
+                                    <Skeleton className="m-auto" width={120} height={20} />
+                                ) : (
+                                    header.replace('_', ' ')
+                                )}
+                            </th>
+                        ))}
+                        <th className="px-6 py-3">
+                            {isLoadingUsers ? (
+                                <Skeleton className="m-auto" width={80} height={20} />
+                            ) : (
+                                'Action'
+                            )}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
-                    {userList.map((user) => (
-                        <tr key={user.id} className="border-b">
-                            <td className="px-6 py-4 flex items-center">{user.name}</td>
-                            <td className="px-6 py-4">{user.role}</td>
-                            <td className="px-6 py-4">
-                                <button
-                                    className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded flex items-center"
-                                    onClick={() => openDeleteModal()}
-                                >
-                                    <svg
-                                        className="w-4 h-4 mr-1"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
+                    {isLoadingUsers ? (
+                        // Skeleton loader for each row and column
+                        Array(5) // Adjust the number of rows as needed
+                            .fill(0)
+                            .map((_, rowIndex) => (
+                                <tr key={rowIndex} className="border-b">
+                                    {headers.concat(['Action']).map((_, colIndex) => (
+                                        <td key={colIndex} className="px-6 py-4">
+                                            <Skeleton className="m-auto" width={120} height={20} />
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))
+                    ) : userList.length > 0 ? (
+                        userList.map((user) => (
+                            <tr key={user.pn || user.id} className="border-b">
+                                {headers.map((header) => (
+                                    <td key={header} className="px-6 py-4">
+                                        {user[header] === '' || user[header] == null ? '-' : user[header]} {/* Handle empty strings, null, or undefined */}
+                                    </td>
+                                ))}
+                                <td className="px-6 py-4">
+                                    <button
+                                        className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded flex items-center"
+                                        onClick={() => openDeleteModal(user.pn)}
                                     >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M19 7l-1 12H6L5 7h14zm-9 4v5m4-5v5m5-11H5V4h14v2z"
-                                        />
-                                    </svg>
-                                    Delete User
-                                </button>
+                                        <svg
+                                            className="w-4 h-4 mr-1"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M19 7l-1 12H6L5 7h14zm-9 4v5m4-5v5m5-11H5V4h14v2z"
+                                            />
+                                        </svg>
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan={headers.length + 1} className="text-center py-4">
+                                No users found.
                             </td>
                         </tr>
-                    ))}
+                    )}
                 </tbody>
-
-
             </table>
 
-            {/* Modal for adding a new user */}
+
+
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                    <AddUserModal onClose={closeModal} />
+                    <AddUserModal
+                        onClose={closeModal}
+                        onAddSuccess={() => fetchUsers()}
+                    />
                 </div>
-
             )}
 
-            {/* Modal for delete user */}
             {isDeleteModalOpen && (
                 <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                    <DeleteUserModal onClose={closeDeleteModal} />
+                    <DeleteUserModal
+                        onClose={closeDeleteModal}
+                        personalNumber={selectedUserPn}
+                        onDeleteSuccess={() => fetchUsers()}
+                    />
                 </div>
             )}
         </div>

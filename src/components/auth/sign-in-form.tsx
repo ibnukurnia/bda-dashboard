@@ -45,21 +45,20 @@ export function SignInForm() {
       setIsPending(true);
 
       try {
-        await LoginUsecase(values);
-        // console.log(values);
-        router.push('/dashboard');
+        await LoginUsecase(values); // Perform login
+        router.push('/dashboard'); // Navigate to dashboard
+        await checkSession?.(); // Check session after successful login
+        router.refresh(); // Refresh the router
       } catch (error) {
         const errString = handleError(error);
-        setError('root', { type: 'server', message: errString });
-        return;
+        setError('root', { type: 'server', message: errString }); // Display server error
       } finally {
-        setIsPending(false);
-        await checkSession?.();
-        router.refresh();
+        setIsPending(false); // Reset loading state
       }
     },
-    [checkSession, router, errors]
+    [checkSession, router]
   );
+
 
   return (
     <Stack spacing={4}>
