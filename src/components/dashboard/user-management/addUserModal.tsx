@@ -90,7 +90,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) =>
                             className="mt-1 p-2 border-gray-600 rounded-md shadow-sm focus:outline-none bg-gray-700 text-white w-full"
                         >
                             <option value="Admin">Admin</option>
-                            <option value="viewer">Viewer</option>
+                            <option value="Viewer">Viewer</option>
                         </select>
                     </div>
                 </div>

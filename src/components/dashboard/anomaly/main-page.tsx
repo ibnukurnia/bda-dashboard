@@ -2,7 +2,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-// import { Box, Stack, Typography } from '@mui/material'
 import './main-page.css'
 import { useSearchParams } from 'next/navigation';
 import TabsWithDropdown from './button/tabs-with-dropdown';
