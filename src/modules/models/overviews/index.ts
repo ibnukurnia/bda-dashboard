@@ -52,6 +52,10 @@ interface Overviews {
   alert_attempt: number
 }
 
+interface Param {
+  key: string
+  value: string
+}
 export interface TopFiveLatestCritical {
   datasource: string
   source_alias: string
@@ -62,6 +66,7 @@ export interface TopFiveLatestCritical {
   anomaly: string
   anomaly_identifier: string
   total: number
+  detail_params: Param[]
 }
 
 export interface AmountAbuseResponse {
