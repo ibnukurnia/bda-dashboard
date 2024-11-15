@@ -308,7 +308,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
 
       {
         isNotifDetailsOpen && (
-          <div ref={notifRef} className="flex flex-col fixed w-fit right-4 self-end top-24 mt-2 bg-[#081635] border border-gray-600 rounded-lg shadow-lg z-20">
+          <div ref={notifRef} className="flex flex-col fixed w-fit right-4 self-end top-24 mt-2 bg-[#081635] border border-gray-600 rounded-lg shadow-lg z-[99999]">
             <div className="flex flex-col gap-4 p-4">
               {isLoading ? (
                 <div className="text-white">Loading...</div>
