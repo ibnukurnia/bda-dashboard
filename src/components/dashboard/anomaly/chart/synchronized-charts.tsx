@@ -138,15 +138,6 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                         enabled: true,
                         shared: true,
                         intersect: false,
-                        y: {
-                            formatter: (value) => {
-                                const formatter = new Intl.NumberFormat('en-US', {
-                                    minimumFractionDigits: metric.title.includes("Error Rate") ? 6 : 2,
-                                    maximumFractionDigits: metric.title.includes("Error Rate") ? 6 : 2,
-                                });
-                                return formatter.format(value);
-                            },
-                        },
                         x: {
                             formatter: (value) => formatDate(new Date(value), "yyyy-MM-dd HH:mm:ss"),
                         },
@@ -171,7 +162,45 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                     },
                     yaxis: {
                         min: 0,
-                        labels: { style: { colors: 'white' } },
+                        labels: {
+                            formatter: (value: number) => {
+                                // Check if the metric title or scale indicates it's "error rate"
+                                if (metric.title.includes("Error Rate")) {
+                                    const errorRateFormatter = new Intl.NumberFormat('id-ID', {
+                                        minimumFractionDigits: 6, // Show 6 decimal places for error rate
+                                        maximumFractionDigits: 6,
+                                    });
+                                    return errorRateFormatter.format(value); // Format with five decimal places
+                                }
+            
+                                // Check if the metric title or scale indicates it's "amount"
+                                if (metric.title.includes("Amount")) {
+                                    const rupiahFormatter = new Intl.NumberFormat('id-ID', {
+                                        style: 'currency',
+                                        currency: 'IDR',
+                                        minimumFractionDigits: 2, // Show 2 decimal places
+                                        maximumFractionDigits: 2, // Limit to 2 decimal places
+                                    });
+                                    return rupiahFormatter.format(value).replace("Rp", "Rp."); // Add dot after "Rp."
+                                }
+            
+                                // Handle small decimal numbers (less than 1 but greater than 0)
+                                if (value < 1 && value > 0) {
+                                    return value.toString(); // Show full precision for small decimal values
+                                }
+            
+                                // Format larger numbers with thousands separators and two decimal places
+                                const numberFormatter = new Intl.NumberFormat('id-ID', {
+                                    minimumFractionDigits: 2, // Show 2 decimal places
+                                    maximumFractionDigits: 2, // Limit to 2 decimal places
+                                });
+            
+                                return numberFormatter.format(value); // Format with thousands separators
+                            },
+                            style: {
+                                colors: 'white', // White color for axis text
+                            },
+                        },
                         axisBorder: { show: true, color: 'white', width: 2 },
                     },
                     stroke: { curve: 'smooth', width: 4 },

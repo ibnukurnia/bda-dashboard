@@ -173,8 +173,8 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
             labels: {
                 formatter: (value: number) => {
                     // Check if the metric title or scale indicates it's "error rate"
-                    if (metric.title === "Error Rate DC || Error Rate ODC") {
-                        const errorRateFormatter = new Intl.NumberFormat('en-US', {
+                    if (metric.title.includes("Error Rate")) {
+                        const errorRateFormatter = new Intl.NumberFormat('id-ID', {
                             minimumFractionDigits: 6, // Show 6 decimal places for error rate
                             maximumFractionDigits: 6,
                         });
@@ -182,7 +182,7 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                     }
 
                     // Check if the metric title or scale indicates it's "amount"
-                    if (metric.title === "Amount (Rp) DC") {
+                    if (metric.title.includes("Amount")) {
                         const rupiahFormatter = new Intl.NumberFormat('id-ID', {
                             style: 'currency',
                             currency: 'IDR',
@@ -198,7 +198,7 @@ const MultipleScaleChart: React.FC<MultipleScaleChartProps> = ({
                     }
 
                     // Format larger numbers with thousands separators and two decimal places
-                    const numberFormatter = new Intl.NumberFormat('en-US', {
+                    const numberFormatter = new Intl.NumberFormat('id-ID', {
                         minimumFractionDigits: 2, // Show 2 decimal places
                         maximumFractionDigits: 2, // Limit to 2 decimal places
                     });
