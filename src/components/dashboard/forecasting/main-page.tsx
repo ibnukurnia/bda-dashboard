@@ -132,6 +132,7 @@ const MainPageForecasting = () => {
         maxZoom={zoomLevel.maxZoom}
         minZoom={zoomLevel.minZoom}
         selectedDate={filter.selectedDate}
+        withAlertThreshold={filter.sourceData === "error_rate"}
       />
     )
   }, [graphData])

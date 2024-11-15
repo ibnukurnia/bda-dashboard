@@ -191,9 +191,10 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                               pathname: '/dashboard/anomaly-detection',
                               query: {
                                 ...queryParams,
-                                data_source: data[row.index].source_alias,
-                                anomaly: data[row.index].anomaly_identifier,
-                                service: data[row.index].identifier,
+                                ...data[row.index].detail_params?.reduce((acc: { [key: string]: string }, { key, value }) => {
+                                  acc[key] = value;
+                                  return acc;
+                                }, {})
                               },
                             }}
                             passHref

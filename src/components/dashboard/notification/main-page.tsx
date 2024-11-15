@@ -6,7 +6,6 @@ import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel,
 import Pagination from '@/components/system/Pagination/Pagination';
 import './main-page.css'
 import styles from './table.module.css'
-import Link from 'next/link';
 import { Typography } from '@mui/material';
 import Skeleton from '@/components/system/Skeleton/Skeleton';
 import { format } from 'date-fns';
@@ -199,30 +198,30 @@ const AnomalyNotificationPage = () => {
                                         {table.getRowModel().rows.map((row) => (
                                             <tr
                                                 key={row.id}
-                                                className={`${styles.row_hover} hover:bg-white hover:bg-opacity-20 text-gray-100`}
+                                                className={`${styles.row_hover} text-gray-100`}
                                             >
                                                 {row.getVisibleCells().map((cell, idx) => (
                                                     <td key={cell.id} className={`whitespace-nowrap ${idx === 0 ? styles.first_child : ""}`}>
-                                                        <Link
+                                                        <div
                                                             className='w-full h-full flex px-4 py-4 items-center rounded-full gap-x-2'
-                                                            href={{
-                                                                pathname: '/dashboard/anomaly-detection',
-                                                                query: {
-                                                                    data_source: data[row.index].source_identifier,
-                                                                    time_range: `${data[row.index].timestamp_identifier} - ${plusAMinute(data[row.index].timestamp_identifier)}`,
-                                                                    anomaly: data[row.index].anomaly_identifier,
-                                                                    ...((data[row.index].site_identifier != null && data[row.index].site_identifier.length > 0) && { cluster: data[row.index].site_identifier }), // Only include cluster if it's not null or undefined
-                                                                    service: data[row.index].identifier,
-                                                                },
-                                                            }}
-                                                            passHref
+                                                            // href={{
+                                                            //     pathname: '/dashboard/anomaly-detection',
+                                                            //     query: {
+                                                            //         data_source: data[row.index].source_identifier,
+                                                            //         time_range: `${data[row.index].timestamp_identifier} - ${plusAMinute(data[row.index].timestamp_identifier)}`,
+                                                            //         anomaly: data[row.index].anomaly_identifier,
+                                                            //         ...((data[row.index].site_identifier != null && data[row.index].site_identifier.length > 0) && { cluster: data[row.index].site_identifier }), // Only include cluster if it's not null or undefined
+                                                            //         service: data[row.index].identifier,
+                                                            //     },
+                                                            // }}
+                                                            // passHref
                                                         >
                                                             {typeof cell.getValue() === 'number' ? (
                                                                 <span className='ml-auto'>{formatWithDotsAndComma(cell.getValue() as number)}</span> // Format number with commas
                                                             ) : (
                                                                 <span>{cell.getValue() as string}</span> // Display non-numeric values
                                                             )}
-                                                        </Link>
+                                                        </div>
                                                     </td>
                                                 ))}
                                             </tr>

@@ -18,6 +18,7 @@ interface SynchronizedChartsProps {
   maxZoom?: number
   setZoom?: (params?: { minZoom?: number; maxZoom?: number }) => void
   selectedDate: string | Date
+  withAlertThreshold?: boolean
 }
 
 const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
@@ -29,6 +30,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   maxZoom,
   setZoom,
   selectedDate,
+  withAlertThreshold,
 }) => {
   const today = new Date(selectedDate)
   const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
@@ -52,6 +54,144 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     return formatNumber(val)
   }
 
+  const resDataChart = useMemo(() => {
+    if (dataCharts.length > 0) {
+      if (dataCharts?.[1]) {
+        // Step 1: Get all unique timestamps
+        const allTimestamps = Array.from(
+          new Set(dataCharts.flatMap(entry => entry.data.map(([timestamp]) => timestamp)))
+        ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+
+        // Step 2: Fill missing timestamps for each dataset
+        return dataCharts.map(entry => {
+          const dataMap = new Map(entry.data.map(([timestamp, value]) => [timestamp, value]));
+          const filledData = allTimestamps.map(timestamp => [
+            timestamp,
+            dataMap.has(timestamp) ? dataMap.get(timestamp) : null
+          ]);
+
+          return {
+            title: entry.title,
+            data: filledData
+          };
+        });
+      }
+
+      return dataCharts
+    }
+
+    return []
+  }, [dataCharts])
+
+  const chartSeries = resDataChart.map((item, index) => ({
+    name: item.title,
+    data: item.data,
+    type: withAlertThreshold && index === 0 ? "area" : "line"
+  }))
+
+  const maxValue = Math.max(...chartSeries[0].data.map(data => data[1] as number))
+  const minValue = Math.min(...chartSeries[0].data.map(data => data[1] as number))
+  const firstThreshold = 0.01
+  const secondThreshold = 0.1
+  
+  const getLineColorStops = () => {
+    const colorStops: ApexColorStop[] = [];
+    const addColorStop = (offset: number, color: string) => colorStops.push({ offset, color, opacity: 1 });
+  
+    if (maxValue >= secondThreshold) {
+      addColorStop(0, "#ef5350");
+      addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ef5350");
+  
+      if (minValue <= firstThreshold) {
+        addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ffa726");
+      }
+    } else if (maxValue >= firstThreshold) {
+      addColorStop(0, "#ffa726");
+    } else {
+      addColorStop(100, "#008ffb");
+    }
+  
+    if (maxValue >= firstThreshold) {
+      addColorStop(100 - (((firstThreshold - minValue) / (maxValue - minValue)) * 100), "#ffa726");
+    }
+  
+    if (minValue <= firstThreshold) {
+      addColorStop(100 - (((firstThreshold - minValue) / (maxValue - minValue)) * 100), "#008ffb");
+      addColorStop(100, "#008ffb");
+    }
+  
+    return colorStops
+  }
+
+  const getAreaColorStops = () => {
+    const colorStops: ApexColorStop[] = [];
+    const addColorStop = (offset: number, color: string) => colorStops.push({ offset, color, opacity: 1 });
+  
+    // Option 1
+    // if (maxValue >= secondThreshold) {
+    //   addColorStop(0, "#ef5350");
+  
+    //   if (minValue <= firstThreshold) {
+    //     addColorStop(100 - (secondThreshold / maxValue) * 100, "#ffa726");
+    //   }
+    // } else if (maxValue >= firstThreshold) {
+    //   addColorStop(0, "#ffa726");
+    // } else {
+    //   addColorStop(0, "#008ffb");
+    // }
+  
+    // if (maxValue >= firstThreshold) {
+    //   addColorStop(100 - (firstThreshold / maxValue) * 100, "#ffa726");
+    // }
+  
+    // addColorStop(100, "#008ffb");
+  
+    // Option 2
+    // if (maxValue >= secondThreshold) {
+    //   addColorStop(0, "#ef5350");
+    // } else if (maxValue >= firstThreshold) {
+    //   addColorStop(0, "#ffa726");
+    // } else {
+    //   addColorStop(0, "#008ffb");
+    // }
+  
+    // if (maxValue >= firstThreshold) {
+    //   addColorStop(100 - (((secondThreshold + firstThreshold) / 2) / maxValue) * 100, "#ffa726");
+    // }
+  
+    // addColorStop(100, "#008ffb");
+
+    // Option 3
+    if (maxValue >= secondThreshold) {
+      addColorStop(0, "#ef5350");
+      addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ef5350");
+  
+      if (minValue <= firstThreshold) {
+        addColorStop(100 - (secondThreshold / maxValue) * 100, "#ffa726");
+      }
+    } else if (maxValue >= firstThreshold) {
+      addColorStop(0, "#ffa726");
+    } else {
+      addColorStop(0, "#008ffb");
+    }
+  
+    if (maxValue >= firstThreshold) {
+      addColorStop(100 - (firstThreshold / maxValue) * 100, "#ffa726");
+    }
+  
+    if (minValue <= firstThreshold) {
+      addColorStop(100 - (firstThreshold / maxValue) * 100, "#008ffb");
+    }
+  
+    addColorStop(100, "#008ffb");
+
+    // Set decreasing opacity for each stop based on its position
+    const stepSize = 100 / (colorStops.length - 1);
+    colorStops.forEach((stop, index) => (stop.opacity = (100 - stepSize * index) / 100));
+  
+    return colorStops;
+  };
+  
   const chartOptions: ApexOptions = {
     chart: {
       animations: {
@@ -89,7 +229,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
             min: xaxis.min < todayZero ? todayZero : xaxis.min,
             max: xaxis.max > todayMaxTime ? todayMaxTime : xaxis.max,
           }
-          
+
           setZoom && setZoom({ minZoom: res.min, maxZoom: res.max })
 
           return {
@@ -97,6 +237,9 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
           }
         },
       },
+    },
+    dataLabels: {
+      enabled: false,
     },
     tooltip: {
       enabled: true,
@@ -140,7 +283,25 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     stroke: {
       curve: 'smooth',
       width: 2,
+      ...(withAlertThreshold && {
+        fill: {
+          type: ["gradient", "solid"],
+          gradient: {
+            type: 'vertical',
+            colorStops: getLineColorStops(),
+          }
+        }
+      })
     },
+    ...(withAlertThreshold && {
+      fill: {
+        type: ["gradient", "solid"],
+        gradient: {
+          type: "vertical",
+          colorStops: getAreaColorStops(),
+        },
+      },
+    }),
     grid: {
       borderColor: '#bdbdbd',
       row: {
@@ -151,42 +312,46 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
         opacity: 0.5,
       },
     },
+    annotations: withAlertThreshold ? {
+      yaxis: [
+        {
+          y: firstThreshold,
+          borderColor: '#FF802D',
+          borderWidth: 2,
+          strokeDashArray: 4,
+          label: {
+            borderColor: '#FF802D',
+            style: {
+              color: '#fff',
+              background: '#FF802D',
+            },
+            text: 'Alert Threshold',
+            offsetY: 7,
+          },
+        },
+        {
+          y: secondThreshold,
+          borderColor: '#ff4d4d',
+          borderWidth: 2,
+          strokeDashArray: 4,
+          label: {
+            borderColor: '#ff4d4d',
+            style: {
+              color: '#fff',
+              background: '#ff4d4d',
+            },
+            text: 'Alert Threshold',
+            offsetY: 7,
+          },
+        },
+      ],
+    } : undefined,
     legend: {
       labels: {
         colors: 'white',
       },
     },
   }
-
-  const resDataChart = useMemo(() => {
-    if (dataCharts.length > 0) {
-      if (dataCharts?.[1]) {
-        // Step 1: Get all unique timestamps
-        const allTimestamps = Array.from(
-          new Set(dataCharts.flatMap(entry => entry.data.map(([timestamp]) => timestamp)))
-        ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-
-        // Step 2: Fill missing timestamps for each dataset
-        return dataCharts.map(entry => {
-          const dataMap = new Map(entry.data.map(([timestamp, value]) => [timestamp, value]));
-          const filledData = allTimestamps.map(timestamp => [
-            timestamp,
-            dataMap.has(timestamp) ? dataMap.get(timestamp) : null
-          ]);
-
-          return {
-            title: entry.title,
-            data: filledData
-          };
-        });
-      }
-
-      return dataCharts
-    }
-
-    return []
-  }, [dataCharts])
-  const chartSeries = resDataChart.map((item) => ({ name: item.title, data: item.data }))
 
   useLayoutEffect(() => {
     if (minZoom !== undefined && maxZoom !== undefined) {

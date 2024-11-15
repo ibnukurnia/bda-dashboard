@@ -308,27 +308,27 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
 
       {
         isNotifDetailsOpen && (
-          <div ref={notifRef} className="flex flex-col fixed w-fit right-4 self-end top-24 mt-2 bg-[#081635] border border-gray-600 rounded-lg shadow-lg z-20">
+          <div ref={notifRef} className="flex flex-col fixed w-fit right-4 self-end top-24 mt-2 bg-[#081635] border border-gray-600 rounded-lg shadow-lg z-[99999]">
             <div className="flex flex-col gap-4 p-4">
               {isLoading ? (
                 <div className="text-white">Loading...</div>
               ) : (
                 notifications.slice(0, 5).map((notif, index) => (
-                  <Link
+                  <div
                     key={index}
-                    className="bg-[#1f2a48] hover:bg-opacity-50 p-4 rounded-lg flex flex-col gap-5"
-                    href={{
-                      pathname: '/dashboard/anomaly-detection',
-                      query: {
-                        data_source: notif.source_identifier,
-                        time_range: `${notif.timestamp_identifier} - ${plusAMinute(notif.timestamp_identifier)}`,
-                        anomaly: notif.anomaly_identifier,
-                        ...((notif.site_identifier != null && notif.site_identifier.length > 0) && { cluster: notif.site_identifier }), // Only include cluster if it's not null or undefined
-                        service: notif.identifier,
-                      },
-                    }}
-                    passHref
-                    onClick={() => setIsNotifDetailsOpen(false)}
+                    className="bg-[#1f2a48] p-4 rounded-lg flex flex-col gap-5"
+                    // href={{
+                    //   pathname: '/dashboard/anomaly-detection',
+                    //   query: {
+                    //     data_source: notif.source_identifier,
+                    //     time_range: `${notif.timestamp_identifier} - ${plusAMinute(notif.timestamp_identifier)}`,
+                    //     anomaly: notif.anomaly_identifier,
+                    //     ...((notif.site_identifier != null && notif.site_identifier.length > 0) && { cluster: notif.site_identifier }), // Only include cluster if it's not null or undefined
+                    //     service: notif.identifier,
+                    //   },
+                    // }}
+                    // passHref
+                    // onClick={() => setIsNotifDetailsOpen(false)}
                   >
                     <div className="flex flex-row items-center justify-between gap-6">
                       <div>
@@ -352,7 +352,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
                         </span> {notif.identifier}
                       </p>
                     </div>
-                  </Link>
+                  </div>
                 ))
               )}
             </div>
