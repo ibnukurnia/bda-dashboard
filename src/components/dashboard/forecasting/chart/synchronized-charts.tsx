@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic'
 import { Typography } from '@mui/material'
 import { ApexOptions } from 'apexcharts'
 import { format } from 'date-fns'
+import { formatWithDotsAndComma } from '@/helper'
 
 // Dynamically import ApexCharts to avoid server-side rendering issues
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
@@ -45,14 +46,14 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   })
 
   // Format a number with commas for better readability
-  const formatNumber = (val: number) => val?.toLocaleString('en-US')
+  const formatNumber = (val: number) => val?.toLocaleString('id-ID')
 
   // Add currency formatting for specific data (e.g., sales volume)
   const formatWithCurrency = (val: number, title?: string) => {
     if (title?.trim() === 'sales_volume') {
       return `Rp. ${formatNumber(val)}`
     }
-    return formatNumber(val)
+    return val ? formatWithDotsAndComma(val) : val?.toString()
   }
 
   // Process the input chart data to ensure all timestamps are aligned across datasets
@@ -89,8 +90,16 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   }))
 
   // Determine the maximum and minimum values for the data series
-  const maxValue = Math.max(...chartSeries[0].data.map(data => data[1] as number))
-  const minValue = Math.min(...chartSeries[0].data.map(data => data[1] as number))
+  const minValue = chartSeries[0].data.reduce((min, data) => {
+    if (data[1] === null) return min
+    if (min === null || data[1] < min) return data[1]
+    return min
+  }, null)
+  const maxValue = chartSeries[0].data.reduce((max, data) => {
+    if (data[1] === null) return max
+    if (max === null || data[1] > max) return data[1]
+    return max
+  }, null)
 
   // Thresholds for color transitions in the chart
   const firstThreshold = 0.01
@@ -105,11 +114,29 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     if (maxValue >= secondThreshold) {
       addColorStop(0, "#ef5350") // Red for exceeding second threshold
       addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ef5350")
+      
+      if (minValue >= firstThreshold) {
+        addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ffa726");
+      }
     } else if (maxValue >= firstThreshold) {
       addColorStop(0, "#ffa726") // Orange for exceeding first threshold
     } else {
       addColorStop(0, "#008ffb") // Blue for normal range
     }
+
+    if (maxValue >= firstThreshold && minValue <= firstThreshold) {
+      addColorStop(100 - (((firstThreshold - minValue) / (maxValue - minValue)) * 100), "#ffa726");
+    }
+
+    if (minValue >= firstThreshold) {
+      addColorStop(100, "#ffa726");
+    }
+
+    if (minValue <= firstThreshold) {
+      addColorStop(100 - (((firstThreshold - minValue) / (maxValue - minValue)) * 100), "#008ffb");
+      addColorStop(100, "#008ffb");
+    }
+
     return colorStops
   }
 
@@ -154,7 +181,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     // Option 3
     if (maxValue >= secondThreshold) {
       addColorStop(0, "#ef5350");
-      addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ef5350");
+      addColorStop(100 - (secondThreshold / maxValue) * 100, "#ef5350");
 
       if (minValue <= firstThreshold) {
         addColorStop(100 - (secondThreshold / maxValue) * 100, "#ffa726");
