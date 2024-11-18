@@ -1,7 +1,5 @@
-export interface User {
-  id: string;
-  name?: string;
-  avatar?: string;
-  email?: string;
-  [key: string]: unknown;
+export type UserRole = 'Admin' | 'Viewer'
+export type User = {
+  username: string
+  role: UserRole
 }

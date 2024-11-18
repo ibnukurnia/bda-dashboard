@@ -14,6 +14,7 @@ import { navIcons } from './nav-icons';
 import { useUser } from '@/hooks/use-user';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { canViewFeature } from '@/lib/feature-flags';
 // import router from 'next/dist/client/router';
 
 interface SideNavProps {
@@ -99,10 +100,13 @@ export function SideNav({ isOpen }: SideNavProps): React.ReactElement {
 }
 
 function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pathname: string }): React.ReactElement {
+  const { user } = useUser();
   const children = items.reduce((acc: React.ReactNode[], curr: NavItemConfig): React.ReactNode[] => {
     const { key, ...item } = curr;
 
-    acc.push(<NavItem key={key} pathname={pathname} {...item} />);
+    if (user && canViewFeature(item.featureFlag, user)) {
+      acc.push(<NavItem key={key} pathname={pathname} {...item} />);
+    }
 
     return acc;
   }, []);
