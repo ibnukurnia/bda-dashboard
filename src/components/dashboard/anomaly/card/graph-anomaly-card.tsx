@@ -1,4 +1,4 @@
-import { AnomalyOptionResponse, ClusterOptionResponse, Identifier, MetricLogAnomalyResponse } from "@/modules/models/anomaly-predictions";
+import { AnomalyOptionResponse, Identifier, MetricLogAnomalyResponse } from "@/modules/models/anomaly-predictions";
 import { GetColumnOption, GetMetricLogAnomalies } from "@/modules/usecases/anomaly-predictions";
 import { useEffect, useRef, useState } from "react";
 import { Typography } from "@mui/material";
@@ -15,11 +15,13 @@ import Skeleton from "@/components/system/Skeleton/Skeleton";
 import DropdownTime from "../button/dropdown-time";
 import { useSearchParams } from "next/navigation";
 
+// Define initial filter values for scales and identifiers
 const initialFilter = {
     scale: [],
     identifiers: [],
 }
 
+// Predefined time range values in minutes
 const CUSTOM_TIME_RANGES: Record<string, number> = {
     'Last 5 minutes': 5,
     'Last 10 minutes': 10,
@@ -30,10 +32,12 @@ const CUSTOM_TIME_RANGES: Record<string, number> = {
     'Last 6 hours': 360,
 }
 
+// Toggle options for displaying multiple or single-scale charts
 const toggleList: ToggleOption[] = [
     {
         id: "multi-scale",
         icon: (
+            // Icon for multiple-scale chart view
             <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="12" height="12" x="0" y="0" viewBox="0 0 438.536 438.536">
                 <g>
                     <path d="M414.41 24.123C398.333 8.042 378.963 0 356.315 0H82.228C59.58 0 40.21 8.042 24.126 24.123 8.045 40.207.003 59.576.003 82.225v274.084c0 22.647 8.042 42.018 24.123 58.102 16.084 16.084 35.454 24.126 58.102 24.126h274.084c22.648 0 42.018-8.042 58.095-24.126 16.084-16.084 24.126-35.454 24.126-58.102V82.225c-.001-22.649-8.043-42.021-24.123-58.102z" fill="#ffffff">
@@ -45,6 +49,7 @@ const toggleList: ToggleOption[] = [
     {
         id: "single-scale",
         icon: (
+            // Icon for single-scale chart view
             <svg id="fi_8867520" height="12" width="12" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
                 <g>
                     <path d="m40.421 296.421c-22.289 0-40.421-18.132-40.421-40.421s18.132-40.421 40.421-40.421h431.158c22.289 0 40.421 18.132 40.421 40.421s-18.132 40.421-40.421 40.421z" fill="#ffffff">
@@ -59,6 +64,7 @@ const toggleList: ToggleOption[] = [
     }
 ]
 
+// GraphWrapper handles display states such as loading, empty data, or missing required fields
 const GraphWrapper = ({
     children,
     selectedGraphToggle = toggleList[0],
@@ -73,38 +79,40 @@ const GraphWrapper = ({
     isLoading?: boolean;
     isEmpty?: boolean;
     isFieldRequired?: boolean;
-
 }) => {
-    if (isFieldRequired) return (
-        <Typography variant="subtitle1" color="white" align="center">
-            Please select a filter to view the data.
-        </Typography>
-    )
+    if (isFieldRequired) {
+        // Message when a required filter is not selected
+        return (
+            <Typography variant="subtitle1" color="white" align="center">
+                Please select a filter to view the data.
+            </Typography>
+        )
+    }
     if (isLoading) {
+        // Display skeleton loading based on the selected toggle view
         if (toggleList.indexOf(selectedGraphToggle) === 0) {
-            return <Skeleton
-                height={600}
-            />
+            return <Skeleton height={600} />
         }
         if (toggleList.indexOf(selectedGraphToggle) === 1) {
             return Array.from(Array(scaleCount), (_, i) => (
-                <Skeleton
-                    key={i}
-                    width={300}
-                />
+                <Skeleton key={i} width={300} />
             ))
         }
     }
-    if (isEmpty) return (
-        <div className="text-center py-4">
-            <Typography variant="subtitle1" color="white" align="center">
-                Data is not available.
-            </Typography>
-        </div>
-    )
+    if (isEmpty) {
+        // Message when no data is available
+        return (
+            <div className="text-center py-4">
+                <Typography variant="subtitle1" color="white" align="center">
+                    Data is not available.
+                </Typography>
+            </div>
+        )
+    }
     return children
 }
 
+// Graph renders either MultipleScaleChart or SynchronizedCharts based on toggle selection
 const Graph = ({
     data,
     selectedGraphToggle = toggleList[0],
@@ -123,8 +131,8 @@ const Graph = ({
     maxX?: number;
     animations?: boolean;
 }) => {
-
     if (toggleList.indexOf(selectedGraphToggle) === 0) {
+        // Render for multiple-scale charts
         return (
             <MultipleScaleChart
                 dataCharts={data}
@@ -139,6 +147,7 @@ const Graph = ({
         )
     }
     if (toggleList.indexOf(selectedGraphToggle) === 1) {
+        // Render for synchronized single-scale charts
         return (
             <SynchronizedCharts
                 dataCharts={data}
@@ -149,11 +158,11 @@ const Graph = ({
                 maxXOnEmpty={maxXOnEmpty}
                 minX={minX}
                 maxX={maxX}
-
             />
         )
     }
 }
+
 interface GraphicAnomalyCardProps {
     selectedDataSource: string;
     datasourceIdentifiers: Identifier[];
@@ -445,6 +454,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
 
                 <div className="flex flex-row gap-2 self-end items-center">
+                {/* Dropdown to select a time range */}
                     <DropdownTime
                         timeRanges={CUSTOM_TIME_RANGES}
                         onRangeChange={handleRangeChange}
@@ -461,6 +471,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             <div className="flex gap-2 items-center">
                 {dataMetric.length !== 0 &&
                     <div className="ml-auto">
+                        {/* Toggle between multi-scale and single-scale charts */}
                         <Toggle
                             defaultToggle={selectedGraphToggle}
                             handleSelect={handleSelectToggle}
@@ -469,6 +480,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                     </div>
                 }
             </div>
+
+            {/* Graph display wrapper for managing loading and empty states */}
             <GraphWrapper
                 selectedGraphToggle={selectedGraphToggle}
                 scaleCount={selectedFilter.scale.length}
@@ -482,6 +495,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 isLoading={initialLoading}
                 isEmpty={dataMetric.length === 0}
             >
+                {/* Render the appropriate chart based on the selected toggle */}
                 <Graph
                     data={dataMetric}
                     selectedGraphToggle={selectedGraphToggle}
