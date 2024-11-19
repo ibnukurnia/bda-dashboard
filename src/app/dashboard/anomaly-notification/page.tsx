@@ -7,9 +7,9 @@ export const metadata = { title: `Notification` } satisfies Metadata
 
 const NotificationPage = () => {
     return (
-        <div>
+        <>
             <AnomalyNotificationPage />
-        </div>
+        </>
     );
 };
 

@@ -111,24 +111,48 @@ const post = async <T extends object, K>(
   };
 };
 
-const put = async <T extends object, K>(endpoint: string, body: T): Promise<ApiResponse<K>> => {
-  const response = await fetch(`${API_URL}${endpoint}`, {
+const put = async <K>(
+  endpoint: string,
+  option?: { withAuth: boolean; data?: any }
+): Promise<ApiResponse<K>> => {
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    // 'Content-Type': 'application/json', // Ensure Content-Type is properly set
+  };
+
+  // Add Authorization header if `withAuth` is true
+  if (option?.withAuth) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        status: 401,
+        message: 'unauthorized',
+        valid: false,
+        data: null,
+      };
+    }
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response: Response = await fetch(`${API_URL}${endpoint}`, {
     method: 'PUT',
-    headers: {
-      Accept: 'application/json',
-    },
-    body: JSON.stringify(body),
-  })
+    headers,
+    body: JSON.stringify(option?.data || {}), // Ensure the body is properly set
+  });
 
-  const resJson: ApiResponse<K> = (await response.json()) as ApiResponse<K>
+  if (!response.ok) {
+    throw new Error(`Failed to update resource: ${response.statusText}`);
+  }
 
-  interceptor(resJson.status)
+  const resJson: ApiResponse<K> = (await response.json()) as ApiResponse<K>;
+
+  interceptor(resJson.status);
 
   if (!resJson.valid) {
     throw {
       status: resJson.status,
       message: resJson.message,
-    } as ErrorResponse
+    } as ErrorResponse;
   }
 
   return {
@@ -136,8 +160,10 @@ const put = async <T extends object, K>(endpoint: string, body: T): Promise<ApiR
     message: resJson.message,
     data: resJson.data,
     valid: resJson.valid,
-  }
-}
+  };
+};
+
+
 
 const del = async <K>(endpoint: string, option?: { withAuth: boolean }): Promise<ApiResponse<K>> => {
   const headers: Record<string, string> = {

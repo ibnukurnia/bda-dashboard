@@ -224,107 +224,105 @@ const FilterGraphAnomaly: React.FC<FilterGraphAnomalyProps> = ({
                 </svg>
                 Filter
             </button>
-            {
-                isOpen && (
-                    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[9999]">
-                        <div
-                            ref={panelRef}
-                            className="bg-white rounded-lg p-6 w-full max-w-max mx-auto flex flex-col gap-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                        >
-                            <h2 className="text-xl font-semibold mb-10 text-center">Select Filter</h2>
+            {isOpen && (
+                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[9999]">
+                    <div
+                        ref={panelRef}
+                        className="bg-white rounded-lg p-6 w-full max-w-max mx-auto flex flex-col gap-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                    >
+                        <h2 className="text-xl font-semibold mb-10 text-center">Select Filter</h2>
 
-                            <div
-                                className={`grid gap-4`}
-                                style={{
-                                    gridTemplateColumns: `repeat(${1 + listIdentifiers.length}, 1fr)`
-                                }}
-                            >
-                                <div className="flex flex-col">
-                                    <h3 className="font-semibold mb-3 text-lg">Scale</h3>
+                        <div
+                            className={`grid gap-4`}
+                            style={{
+                                gridTemplateColumns: `repeat(${1 + listIdentifiers.length}, 1fr)`
+                            }}
+                        >
+                            <div className="flex flex-col">
+                                <h3 className="font-semibold mb-3 text-lg">Scale</h3>
+                                <div className="overflow-y-auto max-h-40">
+                                    {scaleOptions.length > 0 ? (
+                                        scaleOptions.map((option) => (
+                                            <label key={option.name} className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={option.name}
+                                                        checked={selectedScaleOptions.some(selected => selected.name === option.name)}
+                                                        onChange={() => handleScaleChange(option)}
+                                                        className="mr-2"
+                                                    />
+                                                    {option.comment}
+                                                </div>
+                                            </label>
+                                        ))
+                                    ) : (
+                                        <p>No options available</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {datasourceIdentifiers.map((identifier, identifierIdx) =>
+                                <div className="flex flex-col" key={identifier.key}>
+                                    <h3 className="font-semibold mb-3 text-lg">{identifier.title}</h3>
+                                    {listIdentifiers[identifierIdx]?.length > 5 &&
+                                        <input
+                                            className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
+                                            placeholder={`Search ${identifier.title}`}
+                                            value={searchValues[identifierIdx]}
+                                            onChange={(e) => handleSearch(identifierIdx, e.target.value)}
+                                        />
+                                    }
                                     <div className="overflow-y-auto max-h-40">
-                                        {scaleOptions.length > 0 ? (
-                                            scaleOptions.map((option) => (
-                                                <label key={option.name} className="flex items-center justify-between mb-2">
+                                        {hasErrorListIdentifier[identifierIdx] ? (
+                                            <p className="text-red-500 whitespace-nowrap">An error occurred.<br />Please try again later.</p>
+                                        ) : filteredListIdentifiers[identifierIdx]?.length > 0 ? (
+                                            filteredListIdentifiers[identifierIdx].map(item => (
+                                                <label key={item} className="flex items-center justify-between mb-2">
                                                     <div className="flex items-center">
                                                         <input
-                                                            type="checkbox"
-                                                            value={option.name}
-                                                            checked={selectedScaleOptions.some(selected => selected.name === option.name)}
-                                                            onChange={() => handleScaleChange(option)}
+                                                            type={identifier.is_multiple ? "checkbox" : "radio"}
+                                                            value={item}
+                                                            checked={
+                                                                selectedIdentifiers[identifierIdx] != null && (typeof selectedIdentifiers[identifierIdx] === "string" ?
+                                                                    selectedIdentifiers[identifierIdx] === item :
+                                                                    selectedIdentifiers[identifierIdx].includes(item))
+                                                            }
+                                                            onChange={() => handleSelectedChange(identifierIdx, identifier.is_multiple, item)}
                                                             className="mr-2"
                                                         />
-                                                        {option.comment}
+                                                        {item}
                                                     </div>
                                                 </label>
                                             ))
-                                        ) : (
-                                            <p>No options available</p>
-                                        )}
+                                        ) : <p>No {identifier.title} available</p>
+                                        }
                                     </div>
                                 </div>
+                            )}
 
-                                {datasourceIdentifiers.map((identifier, identifierIdx) =>
-                                    <div className="flex flex-col" key={identifier.key}>
-                                        <h3 className="font-semibold mb-3 text-lg">{identifier.title}</h3>
-                                        {listIdentifiers[identifierIdx]?.length > 5 &&
-                                            <input
-                                                className="w-full text-black border border-gray-300 bg-light-700 hover:bg-light-800 focus:outline-none font-medium rounded-lg text-sm flex justify-between items-center p-2 mb-2"
-                                                placeholder={`Search ${identifier.title}`}
-                                                value={searchValues[identifierIdx]}
-                                                onChange={(e) => handleSearch(identifierIdx, e.target.value)}
-                                            />
-                                        }
-                                        <div className="overflow-y-auto max-h-40">
-                                            {hasErrorListIdentifier[identifierIdx] ? (
-                                                <p className="text-red-500 whitespace-nowrap">An error occurred.<br />Please try again later.</p>
-                                            ) : filteredListIdentifiers[identifierIdx]?.length > 0 ? (
-                                                filteredListIdentifiers[identifierIdx].map(item => (
-                                                    <label key={item} className="flex items-center justify-between mb-2">
-                                                        <div className="flex items-center">
-                                                            <input
-                                                                type={identifier.is_multiple ? "checkbox" : "radio"}
-                                                                value={item}
-                                                                checked={
-                                                                    selectedIdentifiers[identifierIdx] != null && (typeof selectedIdentifiers[identifierIdx] === "string" ?
-                                                                        selectedIdentifiers[identifierIdx] === item :
-                                                                        selectedIdentifiers[identifierIdx].includes(item))
-                                                                }
-                                                                onChange={() => handleSelectedChange(identifierIdx, identifier.is_multiple, item)}
-                                                                className="mr-2"
-                                                            />
-                                                            {item}
-                                                        </div>
-                                                    </label>
-                                                ))
-                                            ) : <p>No {identifier.title} available</p>
-                                            }
-                                        </div>
-                                    </div>
-                                )}
-
-                            </div>
-                            <div className="flex justify-between mt-10 space-x-4">
-                                <button className="bg-white text-blue-600 border border-primary-blue px-4 py-2 rounded-lg flex-1 text-center" onClick={handleReset}>
-                                    RESET
-                                </button>
-                                <button
-                                    className="bg-blue-600 hover:bg-blue-800 disabled:bg-gray-200 disabled:text-gray-400 text-white px-4 py-2 rounded-lg flex-1 text-center"
-                                    disabled={
-                                        selectedScaleOptions.length === 0 ||
-                                        datasourceIdentifiers.some((identifier, identifierIdx) =>
-                                            selectedIdentifiers[identifierIdx] == null ||
-                                            identifier.is_multiple && selectedIdentifiers[identifierIdx]?.length === 0
-                                        )
-                                    }
-                                    onClick={handleApply}
-                                >
-                                    TERAPKAN
-                                </button>
-                            </div>
-                        </div >
+                        </div>
+                        <div className="flex justify-between mt-10 space-x-4">
+                            <button className="bg-white text-blue-600 border border-primary-blue px-4 py-2 rounded-lg flex-1 text-center" onClick={handleReset}>
+                                RESET
+                            </button>
+                            <button
+                                className="bg-blue-600 hover:bg-blue-800 disabled:bg-gray-200 disabled:text-gray-400 text-white px-4 py-2 rounded-lg flex-1 text-center"
+                                disabled={
+                                    selectedScaleOptions.length === 0 ||
+                                    datasourceIdentifiers.some((identifier, identifierIdx) =>
+                                        selectedIdentifiers[identifierIdx] == null ||
+                                        identifier.is_multiple && selectedIdentifiers[identifierIdx]?.length === 0
+                                    )
+                                }
+                                onClick={handleApply}
+                            >
+                                TERAPKAN
+                            </button>
+                        </div>
                     </div >
-                )
-            }
+                </div >
+            )}
         </div >
     );
 };
