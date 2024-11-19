@@ -10,6 +10,9 @@ import { navIcons } from './nav-icons';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import type { NavItemConfig } from '@/types/nav';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { canViewFeature } from '@/lib/feature-flags';
+// import router from 'next/dist/client/router';
 
 interface SideNavProps {
   isOpen: boolean;
@@ -82,6 +85,17 @@ export function SideNav({ isOpen }: SideNavProps): React.ReactElement {
 }
 
 function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pathname: string }): React.ReactElement {
+  const { user } = useUser();
+  const children = items.reduce((acc: React.ReactNode[], curr: NavItemConfig): React.ReactNode[] => {
+    const { key, ...item } = curr;
+
+    if (user && canViewFeature(item.featureFlag, user)) {
+      acc.push(<NavItem key={key} pathname={pathname} {...item} />);
+    }
+
+    return acc;
+  }, []);
+
   return (
     <Stack component="ul" gap="28px" sx={{ listStyle: 'none', m: 0, p: 0 }}>
       {items.map(({ key, ...item }) => (

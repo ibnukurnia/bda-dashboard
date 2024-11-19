@@ -1,12 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { notFound, usePathname, useRouter } from 'next/navigation';
 import Alert from '@mui/material/Alert';
 
 import { paths } from '@/paths';
 import { logger } from '@/lib/default-logger';
 import { useUser } from '@/hooks/use-user';
+import { canViewFeature } from '@/lib/feature-flags';
+import { navItems } from '../dashboard/layout/config';
 
 export interface AuthGuardProps {
   children: React.ReactNode;
@@ -14,6 +16,7 @@ export interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | null {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, error, isLoading } = useUser();
   const [isChecking, setIsChecking] = React.useState<boolean>(true);
 
@@ -49,6 +52,12 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
 
   if (error) {
     return <Alert color="error">{error}</Alert>;
+  }
+
+  const currentPage = navItems.find(item => item.href === pathname)
+  
+  if (user && currentPage && !canViewFeature(currentPage?.featureFlag, user)) {
+    return notFound()
   }
 
   return <React.Fragment>{children}</React.Fragment>;

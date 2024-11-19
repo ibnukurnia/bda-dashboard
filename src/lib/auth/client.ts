@@ -8,14 +8,6 @@ function generateToken(): string {
   return Array.from(arr, (v) => v.toString(16).padStart(2, '0')).join('')
 }
 
-const user = {
-  id: 'USR-000',
-  avatar: '/assets/avatar.png',
-  firstName: 'Davin',
-  lastName: 'W',
-  email: 'sofia@devias.io',
-} satisfies User
-
 export interface SignUpParams {
   firstName: string
   lastName: string
@@ -84,12 +76,16 @@ class AuthClient {
     if (!token) {
       return { data: null }
     }
-
-    return { data: user }
+    
+    const username = localStorage.getItem('username')
+    const role = localStorage.getItem('role')
+    return { data: { username: username, role: role } as User }
   }
 
   async signOut(): Promise<{ error?: string }> {
     localStorage.removeItem('token')
+    localStorage.removeItem('username')
+    localStorage.removeItem('role')
     localStorage.removeItem('filter')
 
     return {}

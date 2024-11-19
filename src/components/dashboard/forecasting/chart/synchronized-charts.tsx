@@ -4,6 +4,7 @@ import { Typography } from '@mui/material'
 import { ApexOptions } from 'apexcharts'
 import { format } from 'date-fns'
 
+// Dynamically import ApexCharts to avoid server-side rendering issues
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
 interface SynchronizedChartsProps {
@@ -32,105 +33,94 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
   selectedDate,
   withAlertThreshold,
 }) => {
+  // Initialize date and time range for the chart
   const today = new Date(selectedDate)
-  const todayZero = new Date(today?.getFullYear(), today?.getMonth(), today?.getDate()).getTime()
+  const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
   const todayMaxTime = todayZero + 1000 * 60 * 60 * 24
 
+  // State to manage the x-axis range
   const [xaxisRange, setXaxisRange] = useState<{ min: number; max: number }>({
-    min: minZoom ?? today.getTime() - 1000 * 60 * 60 * 2,
-    max: maxZoom ?? today.getTime() + 1000 * 60 * 60 * 2,
-  });
+    min: minZoom ?? today.getTime() - 1000 * 60 * 60 * 2, // Default range: 2 hours before current time
+    max: maxZoom ?? today.getTime() + 1000 * 60 * 60 * 2, // Default range: 2 hours after current time
+  })
 
-  // Format numbers to include commas, e.g., 1000 -> 1,000
-  const formatNumber = (val: number) => {
-    return val?.toLocaleString('en-US')
-  }
+  // Format a number with commas for better readability
+  const formatNumber = (val: number) => val?.toLocaleString('en-US')
 
-  // Function to check service name and apply currency formatting
+  // Add currency formatting for specific data (e.g., sales volume)
   const formatWithCurrency = (val: number, title?: string) => {
-    if (title?.trim() === 'sales_volume') { // Replace 'x' with the actual service name you want to check for
+    if (title?.trim() === 'sales_volume') {
       return `Rp. ${formatNumber(val)}`
     }
     return formatNumber(val)
   }
 
+  // Process the input chart data to ensure all timestamps are aligned across datasets
   const resDataChart = useMemo(() => {
     if (dataCharts.length > 0) {
       if (dataCharts?.[1]) {
-        // Step 1: Get all unique timestamps
         const allTimestamps = Array.from(
           new Set(dataCharts.flatMap(entry => entry.data.map(([timestamp]) => timestamp)))
-        ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+        ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
 
-        // Step 2: Fill missing timestamps for each dataset
         return dataCharts.map(entry => {
-          const dataMap = new Map(entry.data.map(([timestamp, value]) => [timestamp, value]));
+          const dataMap = new Map(entry.data.map(([timestamp, value]) => [timestamp, value]))
           const filledData = allTimestamps.map(timestamp => [
             timestamp,
             dataMap.has(timestamp) ? dataMap.get(timestamp) : null
-          ]);
+          ])
 
           return {
             title: entry.title,
             data: filledData
-          };
-        });
+          }
+        })
       }
-
       return dataCharts
     }
-
     return []
   }, [dataCharts])
 
+  // Create series for the chart with type based on `withAlertThreshold` prop
   const chartSeries = resDataChart.map((item, index) => ({
     name: item.title,
     data: item.data,
     type: withAlertThreshold && index === 0 ? "area" : "line"
   }))
 
+  // Determine the maximum and minimum values for the data series
   const maxValue = Math.max(...chartSeries[0].data.map(data => data[1] as number))
   const minValue = Math.min(...chartSeries[0].data.map(data => data[1] as number))
+
+  // Thresholds for color transitions in the chart
   const firstThreshold = 0.01
   const secondThreshold = 0.1
-  
+
+  // Generate gradient color stops for line charts
   const getLineColorStops = () => {
-    const colorStops: ApexColorStop[] = [];
-    const addColorStop = (offset: number, color: string) => colorStops.push({ offset, color, opacity: 1 });
-  
+    const colorStops: ApexColorStop[] = []
+    const addColorStop = (offset: number, color: string) => colorStops.push({ offset, color, opacity: 1 })
+
+    // Add gradient stops based on thresholds
     if (maxValue >= secondThreshold) {
-      addColorStop(0, "#ef5350");
-      addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ef5350");
-  
-      if (minValue <= firstThreshold) {
-        addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ffa726");
-      }
+      addColorStop(0, "#ef5350") // Red for exceeding second threshold
+      addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ef5350")
     } else if (maxValue >= firstThreshold) {
-      addColorStop(0, "#ffa726");
+      addColorStop(0, "#ffa726") // Orange for exceeding first threshold
     } else {
-      addColorStop(100, "#008ffb");
+      addColorStop(0, "#008ffb") // Blue for normal range
     }
-  
-    if (maxValue >= firstThreshold) {
-      addColorStop(100 - (((firstThreshold - minValue) / (maxValue - minValue)) * 100), "#ffa726");
-    }
-  
-    if (minValue <= firstThreshold) {
-      addColorStop(100 - (((firstThreshold - minValue) / (maxValue - minValue)) * 100), "#008ffb");
-      addColorStop(100, "#008ffb");
-    }
-  
     return colorStops
   }
 
   const getAreaColorStops = () => {
     const colorStops: ApexColorStop[] = [];
     const addColorStop = (offset: number, color: string) => colorStops.push({ offset, color, opacity: 1 });
-  
+
     // Option 1
     // if (maxValue >= secondThreshold) {
     //   addColorStop(0, "#ef5350");
-  
+
     //   if (minValue <= firstThreshold) {
     //     addColorStop(100 - (secondThreshold / maxValue) * 100, "#ffa726");
     //   }
@@ -139,13 +129,13 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     // } else {
     //   addColorStop(0, "#008ffb");
     // }
-  
+
     // if (maxValue >= firstThreshold) {
     //   addColorStop(100 - (firstThreshold / maxValue) * 100, "#ffa726");
     // }
-  
+
     // addColorStop(100, "#008ffb");
-  
+
     // Option 2
     // if (maxValue >= secondThreshold) {
     //   addColorStop(0, "#ef5350");
@@ -154,18 +144,18 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     // } else {
     //   addColorStop(0, "#008ffb");
     // }
-  
+
     // if (maxValue >= firstThreshold) {
     //   addColorStop(100 - (((secondThreshold + firstThreshold) / 2) / maxValue) * 100, "#ffa726");
     // }
-  
+
     // addColorStop(100, "#008ffb");
 
     // Option 3
     if (maxValue >= secondThreshold) {
       addColorStop(0, "#ef5350");
       addColorStop(100 - (((secondThreshold - minValue) / (maxValue - minValue)) * 100), "#ef5350");
-  
+
       if (minValue <= firstThreshold) {
         addColorStop(100 - (secondThreshold / maxValue) * 100, "#ffa726");
       }
@@ -174,30 +164,28 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     } else {
       addColorStop(0, "#008ffb");
     }
-  
+
     if (maxValue >= firstThreshold) {
       addColorStop(100 - (firstThreshold / maxValue) * 100, "#ffa726");
     }
-  
+
     if (minValue <= firstThreshold) {
       addColorStop(100 - (firstThreshold / maxValue) * 100, "#008ffb");
     }
-  
+
     addColorStop(100, "#008ffb");
 
     // Set decreasing opacity for each stop based on its position
     const stepSize = 100 / (colorStops.length - 1);
     colorStops.forEach((stop, index) => (stop.opacity = (100 - stepSize * index) / 100));
-  
+
     return colorStops;
   };
-  
+
+  // Configure chart options
   const chartOptions: ApexOptions = {
     chart: {
-      animations: {
-        enabled: false,
-      },
-      group: 'social',
+      animations: { enabled: false }, // Disable animations for synchronized charts
       type: 'line',
       height: 160,
       toolbar: {
@@ -209,7 +197,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
       },
       zoom: {
         enabled: true,
-        type: 'x',
+        type: 'x', // Enable horizontal zoom
         autoScaleYaxis: true,
       },
       events: {
@@ -312,40 +300,42 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
         opacity: 0.5,
       },
     },
-    annotations: withAlertThreshold ? {
-      yaxis: [
-        {
-          y: firstThreshold,
-          borderColor: '#FF802D',
-          borderWidth: 2,
-          strokeDashArray: 4,
-          label: {
+    ...(withAlertThreshold && {
+      annotations: {
+        yaxis: [
+          {
+            y: firstThreshold,
             borderColor: '#FF802D',
-            style: {
-              color: '#fff',
-              background: '#FF802D',
+            borderWidth: 2,
+            strokeDashArray: 4,
+            label: {
+              borderColor: '#FF802D',
+              style: {
+                color: '#fff',
+                background: '#FF802D',
+              },
+              text: 'Alert Threshold',
+              offsetY: 7,
             },
-            text: 'Alert Threshold',
-            offsetY: 7,
           },
-        },
-        {
-          y: secondThreshold,
-          borderColor: '#ff4d4d',
-          borderWidth: 2,
-          strokeDashArray: 4,
-          label: {
+          {
+            y: secondThreshold,
             borderColor: '#ff4d4d',
-            style: {
-              color: '#fff',
-              background: '#ff4d4d',
+            borderWidth: 2,
+            strokeDashArray: 4,
+            label: {
+              borderColor: '#ff4d4d',
+              style: {
+                color: '#fff',
+                background: '#ff4d4d',
+              },
+              text: 'Alert Threshold',
+              offsetY: 7,
             },
-            text: 'Alert Threshold',
-            offsetY: 7,
           },
-        },
-      ],
-    } : undefined,
+        ],
+      },
+    }),
     legend: {
       labels: {
         colors: 'white',
@@ -353,12 +343,14 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     },
   }
 
+  // Synchronize x-axis range when `minZoom` or `maxZoom` changes
   useLayoutEffect(() => {
     if (minZoom !== undefined && maxZoom !== undefined) {
       setXaxisRange({ min: minZoom, max: maxZoom })
     }
   }, [minZoom, maxZoom])
 
+  // Reset x-axis range when the selected date changes
   useEffect(() => {
     const min = today.getTime() - 1000 * 60 * 60 * 2
     const max = today.getTime() + 1000 * 60 * 60 * 2
@@ -366,6 +358,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     setZoom && setZoom({ minZoom: min, maxZoom: max })
   }, [selectedDate])
 
+  // Render the chart or a message if no data is available
   return (
     <div className="flex flex-col gap-4">
       {resDataChart.every((series) => series.data.length === 0) ?
