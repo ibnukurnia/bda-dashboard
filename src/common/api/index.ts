@@ -84,13 +84,6 @@ const post = async <T extends object, K>(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  // Debug: Log request details
-  console.log('POST Request Details:', {
-    url: `${API_URL}${endpoint}`,
-    headers,
-    body: option?.data || {}, // Log the request body
-  });
-
   const response: Response = await fetch(`${API_URL}${endpoint}`, {
     method: 'POST',
     headers,
@@ -98,39 +91,24 @@ const post = async <T extends object, K>(
     body: JSON.stringify(option?.data || {}),
   });
 
-  // Debug: Log raw response
-  console.log('POST Raw Response:', response);
+  const resJson: ApiResponse<K> = (await response.json()) as ApiResponse<K>;
 
-  // Check if response is JSON parsable
-  try {
-    const resJson: ApiResponse<K> = (await response.json()) as ApiResponse<K>;
+  interceptor(resJson.status);
 
-    // Debug: Log parsed JSON response
-    console.log('POST Response JSON:', resJson);
-
-    interceptor(resJson.status);
-
-    if (!resJson.valid) {
-      console.error('Invalid response received:', resJson);
-      throw {
-        status: resJson.status,
-        message: resJson.message,
-      } as ErrorResponse;
-    }
-
-    return {
+  if (!resJson.valid) {
+    console.error('Invalid response received:', resJson);
+    throw {
       status: resJson.status,
       message: resJson.message,
-      data: resJson.data,
-      valid: resJson.valid,
-    };
-  } catch (error) {
-    console.error('Error parsing JSON response:', error);
-    throw {
-      status: response.status,
-      message: response.statusText,
-    };
+    } as ErrorResponse;
   }
+
+  return {
+    status: resJson.status,
+    message: resJson.message,
+    data: resJson.data,
+    valid: resJson.valid,
+  };
 };
 
 const put = async <T extends object, K>(endpoint: string, body: T): Promise<ApiResponse<K>> => {
