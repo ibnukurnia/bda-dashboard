@@ -6,6 +6,7 @@ const LoginUsecase = async (request: LoginRequest) => {
   if (response.valid) {
     localStorage.setItem('token', response.data?.token as string);
     localStorage.setItem('username', response.data?.username as string);
+    localStorage.setItem('role', response.data?.role as string);
   }
   return response;
 };
