@@ -6,7 +6,7 @@ import { redirect, RedirectType } from 'next/navigation';
 import { validDataSource, validTimeRange } from '@/helper';
 import { DEFAULT_DATA_SOURCE_NAMESPACE, DEFAULT_TIME_RANGE } from '@/constants';
 
-export const metadata = { title: `Anomaly Prediction` } satisfies Metadata;
+export const metadata = { title: `Anomaly Detection` } satisfies Metadata;
 
 interface PageProps {
     searchParams: { [key: string]: string | undefined }; // Proper type for searchParams

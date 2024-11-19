@@ -1,22 +1,27 @@
-import { useState } from 'react';
-import { CreateUser } from '@/modules/usecases/user-management';
+import { useEffect, useRef, useState } from 'react';
+import { UpdateUser } from '@/modules/usecases/user-management';
 
-interface AddUserModalProps {
+interface UpdateUserModalProps {
     onClose: () => void;
-    onAddSuccess: () => void; // Callback to refresh the user list or provide feedback
+    personalNumber: string | null; // Pass the user's personal number
+    onUpdateSuccess: () => void; // Callback to refresh the user list or provide feedback
 }
 
-const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) => {
-    const [pnNumber, setPnNumber] = useState<string>('');
+const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ onClose, onUpdateSuccess, personalNumber }) => {
     const [role, setRole] = useState<string>('Admin'); // Default role set to 'Admin'
     const [isAdding, setIsAdding] = useState(false);
+    const modalRef = useRef<HTMLDivElement>(null);
 
-    const handleAddUser = async () => {
+    console.log('personal Number:', personalNumber)
+
+    const handleUpdateUser = async () => {
+        if (!personalNumber) return; // Ensure personal number exists
+
         setIsAdding(true); // Indicate addition in progress
         try {
-            const response = await CreateUser({ personal_number: pnNumber, role });
+            const response = await UpdateUser({ personal_number: personalNumber, role });
             console.log('User created successfully:', response);
-            onAddSuccess(); // Refresh the user list
+            onUpdateSuccess(); // Refresh the user list
             onClose(); // Close the modal after success
         } catch (error) {
             console.error('Error creating user:', error);
@@ -25,20 +30,27 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) =>
         }
     };
 
-    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (e.target === e.currentTarget) {
-            onClose(); // Close the modal when clicking outside
+    // Close modal when clicking outside
+    const handleOutsideClick = (e: MouseEvent) => {
+        if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+            onClose();
         }
     };
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+        };
+    }, []);
 
     return (
         <div
             className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50"
-            onClick={handleBackdropClick} // Close modal on backdrop click
         >
             <div className="bg-[#1A223D] shadow-md rounded-lg p-6 flex flex-col gap-6 w-96">
                 <div className="flex flex-row justify-between">
-                    <h2 className="text-lg font-semibold text-white">Add New User</h2>
+                    <h2 className="text-lg font-semibold text-white">Update Roles</h2>
                     <button
                         onClick={onClose}
                         className="text-gray-400 hover:text-white"
@@ -63,26 +75,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) =>
 
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-1">
-                        <label className="block text-sm font-medium text-white">PN Number</label>
-                        <input
-                            type="text"
-                            placeholder="Input PN Number..."
-                            value={pnNumber}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                if (/^\d*$/.test(value)) {
-                                    setPnNumber(value);
-                                }
-                            }}
-                            className="p-2 border-gray-600 rounded-md shadow-sm focus:outline-none bg-gray-700 text-white w-full"
-                        />
-                        {pnNumber !== '' && !/^\d+$/.test(pnNumber) && (
-                            <span className="text-red-500 text-xs mt-1">
-                                PN Number should contain only numbers.
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex flex-col gap-1">
                         <label className="block text-sm font-medium text-white">Roles</label>
                         <select
                             value={role}
@@ -97,11 +89,11 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) =>
 
                 <div className="flex justify-end">
                     <button
-                        onClick={handleAddUser}
+                        onClick={handleUpdateUser}
                         className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                         disabled={isAdding}
                     >
-                        {isAdding ? 'Adding...' : 'Add User'}
+                        {isAdding ? 'Adding...' : 'Update User'}
                     </button>
                 </div>
             </div>
@@ -109,4 +101,4 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) =>
     );
 };
 
-export default AddUserModal;
+export default UpdateUserModal;
