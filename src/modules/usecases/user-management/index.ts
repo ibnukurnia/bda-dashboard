@@ -1,9 +1,10 @@
 import { get, post, put, del } from '@/common/api';
 import { ApiResponse } from '@/common/api/type';
 
-const GetUsersList = async () => {
+const GetUsersList = async (params?: any) => {
     const response: ApiResponse<any> = await get('users-management', {
         withAuth: true,
+        queries: params,
     });
     return response;
 };
@@ -31,10 +32,28 @@ const DeleteUser = async (personal_number: string): Promise<ApiResponse<any>> =>
     return response;
 };
 
+const AllowUser = async (toggle_allow_all_user: boolean) => {
+    const response: ApiResponse<any> = await get(`users-management/setting?toggle_allow_all_user=${toggle_allow_all_user}`, {
+        withAuth: true,
+    });
+    return response;
+};
+
+const SortUserList = async (order: string, sort: string) => {
+    const response: ApiResponse<any> = await get(`users-management?order=${order}&sort=${sort}`, {
+        withAuth: true,
+    });
+    return response;
+};
+
+
+
 
 export {
     GetUsersList,
     CreateUser,
     UpdateUser,
-    DeleteUser
+    DeleteUser,
+    AllowUser,
+    SortUserList
 };

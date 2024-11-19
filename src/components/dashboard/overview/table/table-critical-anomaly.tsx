@@ -264,7 +264,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id} className='text-left'>
                       {headerGroup.headers.map((header) => (
-                    <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
+                        <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
                           <button
                             className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100`}
                             onClick={header.column.getToggleSortingHandler()}
