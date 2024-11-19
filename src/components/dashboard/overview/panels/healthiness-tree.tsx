@@ -233,7 +233,7 @@ const HealthinessTree: React.FC<HealthinessTreeProps> = ({
 
   const getTopLeftCurvedLinkWidth = () => {
     if (!securityExpanded) return 212
-    return 106
+    return 148
   }
   const getSecurityLinkWidth = () => {
     if (securityExpanded && computeExpanded) return 40
