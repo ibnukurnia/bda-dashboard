@@ -1,11 +1,22 @@
 import { get } from '@/common/api'
 import { ApiResponse } from '@/common/api/type';
-import { RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis';
+import { RootCauseAnalysisSearchIncidentResponse, RootCauseAnalysisTreeResponse } from '@/modules/models/root-cause-analysis';
 
 const GetRootCauseAnalysisTree = async (params: { start_time: string; end_time: string }) => {
   let endPoint = `rca`
 
   const response: ApiResponse<RootCauseAnalysisTreeResponse[]> = await get(endPoint, {
+    withAuth: true,
+    queries: params,
+  })
+
+  return response
+}
+
+const GetRootCauseAnalysisSearchIncident = async (params: { search: string; }) => {
+  let endPoint = `search-incident`
+
+  const response: ApiResponse<RootCauseAnalysisSearchIncidentResponse[]> = await get(endPoint, {
     withAuth: true,
     queries: params,
   })
@@ -25,5 +36,6 @@ const GetRootCauseAnalysisTableData = async (params: { page: number; limit: numb
 
 export {
   GetRootCauseAnalysisTree,
+  GetRootCauseAnalysisSearchIncident,
   GetRootCauseAnalysisTableData,
 }

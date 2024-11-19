@@ -20,6 +20,7 @@ import { DEFAULT_TIME_RANGE, PREDEFINED_TIME_RANGES } from '@/constants'
 import RCATreeWrapper from './wrapper/rca-tree-wrapper'
 import { TreeNodeType } from './tree/types'
 import CollapsibleNLP from './collapsible/collapsible-nlp'
+import NLPPanel from './panel/nlp-panel'
 
 const MainPageRootCauseAnalysis = () => {
   // States for managing various data and UI behavior
@@ -179,22 +180,9 @@ const MainPageRootCauseAnalysis = () => {
             </RCATreeWrapper>
           </div>
         </div>
-        {nlpData && (
-          <div className="rounded-lg p-6 w-full flex flex-col gap-[15px] card-style">
-            <Typography fontWeight={700} fontSize={'18px'} color={'white'}>
-              Related Incident
-            </Typography>
-            {nlpData.nlps.map((data, idx) => (
-              <CollapsibleNLP
-                key={data.name}
-                title={`${nlpData.data_source} - ${nlpData.service}`}
-                data={data}
-                badge={idx === 0 ? "most_related" : "additional"}
-                isOpen={idx === 0}
-              />
-            ))}
-          </div>
-        )}
+        <NLPPanel
+          nlpData={nlpData}
+        />
       </FullScreen>
     </div>
   )

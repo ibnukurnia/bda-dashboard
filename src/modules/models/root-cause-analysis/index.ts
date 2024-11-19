@@ -35,3 +35,11 @@ export interface RootCauseAnalysisTreeResponse {
   type: string
   routes: Route[]
 }
+export interface RootCauseAnalysisSearchIncidentResponse {
+  action_item: string
+  resolusi_root_cause: string
+  nama_insiden: string
+  deskripsi_insiden: string
+  lesson_learned: string
+}
+
