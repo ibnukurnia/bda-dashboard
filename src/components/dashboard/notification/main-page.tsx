@@ -181,9 +181,9 @@ const AnomalyNotificationPage = () => {
                 {/* Table container */}
                 <div className={`w-full max-h-[65dvh] overflow-x-auto ${styles.scrollbar}`}>
                     <div className="min-w-full">
-                        <table className="table-auto divide-y divide-gray-200 w-full">
+                        <table className="table-auto divide-y w-full">
                             {/* Table header */}
-                            <thead className="sticky top-0 z-[16] border-b border-gray-700 bg-[#060F2C]">
+                            <thead className="sticky top-0 z-[16] border-b border-white bg-[#060F2C]">
                                 <TableHeaderWrapper isLoading={isLoadingHeader}>
                                     <Fragment>
                                         {table.getHeaderGroups().map((headerGroup) => (
@@ -205,7 +205,7 @@ const AnomalyNotificationPage = () => {
                             </thead>
 
                             {/* Table body */}
-                            <tbody className="divide-y !divide-gray-200 text-gray-600">
+                            <tbody className="divide-y divide-gray-200 text-gray-600">
                                 <TableBodyWrapper
                                     pageSize={10}
                                     columnSize={

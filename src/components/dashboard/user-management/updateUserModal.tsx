@@ -4,22 +4,24 @@ import { UpdateUser } from '@/modules/usecases/user-management';
 interface UpdateUserModalProps {
     onClose: () => void;
     personalNumber: string | null; // Pass the user's personal number
+    personalName: string | null; // Pass the user's personal number
     onUpdateSuccess: () => void; // Callback to refresh the user list or provide feedback
 }
 
-const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ onClose, onUpdateSuccess, personalNumber }) => {
+const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ onClose, onUpdateSuccess, personalNumber, personalName }) => {
+    const [userName, setUserName] = useState(personalName || '');
     const [role, setRole] = useState<string>('Admin'); // Default role set to 'Admin'
     const [isAdding, setIsAdding] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
 
-    // console.log('personal Number:', personalNumber)
+    console.log('personal Number:', personalNumber, personalName)
 
     const handleUpdateUser = async () => {
         if (!personalNumber) return; // Ensure personal number exists
 
         setIsAdding(true); // Indicate addition in progress
         try {
-            const response = await UpdateUser({ personal_number: personalNumber, role });
+            const response = await UpdateUser({ personal_number: personalNumber, username: userName, role });
             console.log('User created successfully:', response);
             onUpdateSuccess(); // Refresh the user list
             onClose(); // Close the modal after success
@@ -74,6 +76,22 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ onClose, onUpdateSucc
                 </div>
 
                 <div className="flex flex-col gap-4">
+
+                    <div className="flex flex-col gap-1">
+                        <label className="block text-sm font-medium text-white">Username</label>
+                        <input
+                            type="text"
+                            placeholder="Input Username"
+                            value={userName} // Use the userName state for input value
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^a-zA-Z ]/g, ''); // Remove non-alphanumeric characters and spaces
+                                setUserName(value);
+                            }}
+                            className="p-2 border-gray-600 rounded-md shadow-sm focus:outline-none bg-gray-700 text-white w-full"
+
+                        />
+                    </div>
+
                     <div className="flex flex-col gap-1">
                         <label className="block text-sm font-medium text-white">Roles</label>
                         <select

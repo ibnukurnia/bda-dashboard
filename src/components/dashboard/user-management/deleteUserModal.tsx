@@ -4,10 +4,11 @@ import { DeleteUser } from '@/modules/usecases/user-management';
 interface DeleteModalProps {
     onClose: () => void;
     personalNumber: string | null; // Pass the user's personal number
+    personalName: string | null; // Pass the user's personal number
     onDeleteSuccess: () => void; // Callback to refresh user list or provide feedback
 }
 
-const DeleteUserModal: React.FC<DeleteModalProps> = ({ onClose, personalNumber, onDeleteSuccess }) => {
+const DeleteUserModal: React.FC<DeleteModalProps> = ({ onClose, personalNumber, personalName, onDeleteSuccess }) => {
     const [isDeleting, setIsDeleting] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
 

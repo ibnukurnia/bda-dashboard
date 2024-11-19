@@ -103,6 +103,7 @@ const UserManagementPage: React.FC = () => {
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedUserPn, setSelectedUserPn] = useState<string | null>(null);
+    const [selectedUserName, setSelectedUserName] = useState<string | null>(null);
     const [isToggled, setIsToggled] = useState(true);
     const [pagination, setPagination] = useState({
         pageIndex: 1, // Current page index (starts at 1)
@@ -125,13 +126,15 @@ const UserManagementPage: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const openDeleteModal = (pn: string) => {
+    const openDeleteModal = (pn: string, username: string) => {
         setSelectedUserPn(pn);
+        setSelectedUserName(username);
         setIsDeleteModalOpen(true);
     };
 
-    const openUpdateModal = (pn: string) => {
+    const openUpdateModal = (pn: string, username: string) => {
         setSelectedUserPn(pn);
+        setSelectedUserName(username);
         setIsUpdateModalOpen(true);
     };
 
@@ -177,7 +180,6 @@ const UserManagementPage: React.FC = () => {
             throw error; // Re-throw the error to be handled by the caller
         }
     };
-
 
     const handleSort = async (columnId: string) => {
         // Get the current sort state for the clicked column
@@ -279,9 +281,9 @@ const UserManagementPage: React.FC = () => {
             {/* Table container */}
             <div className={`w-full max-h-[65dvh] overflow-x-auto ${styles.scrollbar}`}>
                 <div className="min-w-full">
-                    <table className="table-auto divide-y divide-gray-200 w-full">
+                    <table className="table-auto w-full">
                         {/* Table header */}
-                        <thead className="sticky top-0 z-[16] border-b border-gray-700 bg-[#060F2C]">
+                        <thead className="sticky top-0 z-1 border-b border-white bg-[#060F2C]">
                             <TableHeaderWrapper isLoading={isLoadingHeader}>
                                 <Fragment>
                                     {table.getHeaderGroups().map((headerGroup) => (
@@ -321,7 +323,7 @@ const UserManagementPage: React.FC = () => {
                         </thead>
 
                         {/* Table body */}
-                        <tbody className="divide-y !divide-gray-200 text-gray-600">
+                        <tbody className="divide-y divide-gray-200 text-gray-600">
                             <TableBodyWrapper
                                 pageSize={10}
                                 columnSize={
@@ -347,13 +349,13 @@ const UserManagementPage: React.FC = () => {
                                                 <div className="flex flex-row gap-2">
                                                     <button
                                                         className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded"
-                                                        onClick={() => openUpdateModal(row.original.pn)}
+                                                        onClick={() => openUpdateModal(row.original.pn, row.original.username)}
                                                     >
                                                         Update
                                                     </button>
                                                     <button
                                                         className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded"
-                                                        onClick={() => openDeleteModal(row.original.pn)}
+                                                        onClick={() => openDeleteModal(row.original.pn, row.original.username)}
                                                     >
                                                         Delete
                                                     </button>
@@ -396,6 +398,7 @@ const UserManagementPage: React.FC = () => {
                     <UpdateUserModal
                         onClose={closeUpdateModal}
                         personalNumber={selectedUserPn}
+                        personalName={selectedUserName}
                         onUpdateSuccess={() => fetchUsers()}
                     />
                 </div>
@@ -406,6 +409,7 @@ const UserManagementPage: React.FC = () => {
                     <DeleteUserModal
                         onClose={closeDeleteModal}
                         personalNumber={selectedUserPn}
+                        personalName={selectedUserName}
                         onDeleteSuccess={() => fetchUsers()}
                     />
                 </div>
