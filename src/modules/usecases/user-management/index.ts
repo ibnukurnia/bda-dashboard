@@ -9,7 +9,7 @@ const GetUsersList = async (params?: any) => {
     return response;
 };
 
-const CreateUser = async (params: { personal_number: string; username: string, role: string }) => {
+const CreateUser = async (params: { personal_number: string; role: string }) => {
     const response: ApiResponse<any> = await post('users-management', {
         data: params,  // Send `personal_number` and `role` in the body
         withAuth: true, // Indicate that the request requires authorization
