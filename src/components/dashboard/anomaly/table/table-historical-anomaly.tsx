@@ -116,6 +116,8 @@ interface TableHistoricalAnomalyProps {
   pagination: PaginationState
   handleChangePage: (page: number) => void
   handlePageSizeChange: (size: number) => void
+  currentSort: string | null; // Current sort column
+  handleSortChange: (columnKey: string | null) => void // Sorting handler
   isLoadingHeader: boolean
   isLoading: boolean
 }
@@ -128,8 +130,10 @@ const TableHistoricalAnomaly = ({
   pagination,
   handleChangePage,
   handlePageSizeChange,
+  handleSortChange,
   isLoadingHeader,
   isLoading,
+  currentSort
 }: TableHistoricalAnomalyProps) => {
   const table = useReactTable({
     data,
@@ -156,21 +160,18 @@ const TableHistoricalAnomaly = ({
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map((header) => (
-                        <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
+                        <th key={header.id} colSpan={header.colSpan} className="p-2">
                           <button
-                            className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100 `}
-                            onClick={header.column.getToggleSortingHandler()}
+                            className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''
+                              } w-full px-3 m-auto text-gray-100`}
+                            onClick={() => handleSortChange(header.id)} // Use the parent's handler
                           >
                             {typeof header.column.columnDef.header === 'function'
-                              ? header.column.columnDef.header({} as any) // Pass a dummy context
+                              ? header.column.columnDef.header({} as any)
                               : header.column.columnDef.header}
                             {header.column.getCanSort() && (
                               <Fragment>
-                                {{
-                                  asc: '🔼',
-                                  desc: '🔽',
-                                  undefined: '🔽', // Default icon for unsorted state
-                                }[header.column.getIsSorted() as string] || '🔽'}
+                                {currentSort === header.id ? '🔼' : '🔽'} {/* Show sorting icon */}
                               </Fragment>
                             )}
                           </button>

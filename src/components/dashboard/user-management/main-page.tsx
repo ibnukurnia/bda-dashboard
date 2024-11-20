@@ -171,7 +171,7 @@ const UserManagementPage: React.FC = () => {
             console.log('API response:', response);
 
             // Update the isToggled state based on the API response
-            setIsToggled(response.data.allow_all_user); // Assuming the response structure is correct
+            setIsToggled(response.data.user_management); // Assuming the response structure is correct
 
             // Handle the API response, e.g., update UI, show notifications
         } catch (error) {

@@ -32,8 +32,8 @@ const DeleteUser = async (personal_number: string): Promise<ApiResponse<any>> =>
     return response;
 };
 
-const AllowUser = async (toggle_allow_all_user: boolean) => {
-    const response: ApiResponse<any> = await get(`users-management/setting?toggle_allow_all_user=${toggle_allow_all_user}`, {
+const AllowUser = async (toggle_user_management: boolean) => {
+    const response: ApiResponse<any> = await get(`users-management/setting?toggle_user_management=${toggle_user_management}`, {
         withAuth: true,
     });
     return response;

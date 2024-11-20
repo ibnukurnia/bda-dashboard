@@ -30,6 +30,7 @@ const TabContent: React.FC<TabContentProps> = ({
     selectedDataSource,
     selectedTimeRange,
 }) => {
+    const [currentSort, setCurrentSort] = useState<string | null>(null);
     const router = useRouter();
     const searchParams = useSearchParams();
     const timeRange = searchParams.get("time_range")
@@ -288,12 +289,39 @@ const TabContent: React.FC<TabContentProps> = ({
         }
     };
 
+    const handleSortChange = (columnKey: string | null) => {
+        if (!columnKey) {
+            setCurrentSort(null); // Clear sort when columnKey is null
+        } else {
+            if (currentSort === columnKey) {
+                // If already sorted by the same column, reset the sort
+                setCurrentSort(null); // Clear the sort
+            } else {
+                setCurrentSort(columnKey); // Set the new sort column
+            }
+        }
+
+        // If currentSort has a value, send it, otherwise send undefined
+        const sortBy = currentSort ? currentSort : undefined;
+
+        fetchHistoricalAnomalyRecords({
+            logType: selectedDataSource, // Replace with your log type state
+            page: pagination.pageIndex, // Replace with your pagination state
+            limit: pagination.pageSize,
+            sort_by: sortBy, // Send undefined if no sort, otherwise send the column key
+            timeRange: selectedTimeRange, // Replace with your time range state
+            anomalies: selectedAnomalyOptions,
+            operation: selectedOperationOptions,
+            severities: selectedSeverityOptions,
+        });
+    };
+
+
 
     // Function to handle API errors
     const handleApiError = (error: any) => {
         console.error('Error fetching data:', error)
     }
-
 
     // Function fo fetch anomaly filter option
     const loadAnomalyOptions = async () => {
@@ -595,7 +623,10 @@ const TabContent: React.FC<TabContentProps> = ({
                             isLoading={isTableLoading}
                             pagination={pagination}
                             totalRows={totalRows}
+                            currentSort={currentSort} // Pass current sort
+                            handleSortChange={handleSortChange} // Pass sort handler
                         />
+
                     </div>
                     {(selectedDataSource !== 'panw' && selectedDataSource !== 'forti' && selectedDataSource !== 'waf') && (
                         <div className='card-style p-6'>
