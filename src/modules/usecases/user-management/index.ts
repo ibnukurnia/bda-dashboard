@@ -17,7 +17,7 @@ const CreateUser = async (params: { personal_number: string; role: string }) => 
     return response;
 };
 
-const UpdateUser = async (params: { personal_number: string; username: string, role: string }) => {
+const UpdateUser = async (params: { personal_number: string; role: string }) => {
     const response: ApiResponse<any> = await put('users-management', {
         data: params,  // Send params in the request body
         withAuth: true,
@@ -32,8 +32,8 @@ const DeleteUser = async (personal_number: string): Promise<ApiResponse<any>> =>
     return response;
 };
 
-const AllowUser = async (toggle_allow_all_user: boolean) => {
-    const response: ApiResponse<any> = await get(`users-management/setting?toggle_allow_all_user=${toggle_allow_all_user}`, {
+const AllowUser = async (toggle_user_management: boolean) => {
+    const response: ApiResponse<any> = await get(`users-management/setting?toggle_user_management=${toggle_user_management}`, {
         withAuth: true,
     });
     return response;

@@ -161,25 +161,6 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
     },
   })
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  useDebounce(() => {
-    setIsTableLoading(true)
-    setPauseEffectPagination(true)
-    setPagination(prev => ({ ...prev, pageIndex: 1 }))
-    fetchData(1)
-  }, 500, [timeRange, dataSource, severity])
-
-  useUpdateEffect(() => {
-    if (pauseEffectPagination) {
-      setPauseEffectPagination(false)
-    }
-    setIsTableLoading(true)
-    fetchData()
-  }, [pagination])
-
   function fetchData(
     page?: number,
     customTimeRange?: string
@@ -249,6 +230,25 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
 
     return { startTime, endTime }
   }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  useDebounce(() => {
+    setIsTableLoading(true)
+    setPauseEffectPagination(true)
+    setPagination(prev => ({ ...prev, pageIndex: 1 }))
+    fetchData(1)
+  }, 500, [timeRange, dataSource, severity])
+
+  useUpdateEffect(() => {
+    if (pauseEffectPagination) {
+      setPauseEffectPagination(false)
+    }
+    setIsTableLoading(true)
+    fetchData()
+  }, [pagination])
 
   return (
     <div className="rounded-lg w-full flex flex-col gap-3">

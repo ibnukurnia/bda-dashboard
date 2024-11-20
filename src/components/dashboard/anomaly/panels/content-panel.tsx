@@ -30,13 +30,13 @@ const TabContent: React.FC<TabContentProps> = ({
     selectedDataSource,
     selectedTimeRange,
 }) => {
+    const [currentSort, setCurrentSort] = useState<string | null>(null);
     const router = useRouter();
     const searchParams = useSearchParams();
     const timeRange = searchParams.get("time_range")
     const selectedAnomalyOptions = searchParams.getAll("anomaly")
     const selectedOperationOptions = searchParams.get("operation") as string;
     const selectedSeverityOptions = searchParams.getAll("severity").map(Number);
-
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
     const [timeDifference, setTimeDifference] = useState<string>('Refreshed just now');
     const [refreshInterval, setRefreshInterval] = useState<number | null>(null);
@@ -216,79 +216,104 @@ const TabContent: React.FC<TabContentProps> = ({
 
     };
 
+    //Function to fetch table historical data
     const fetchHistoricalAnomalyRecords = async (payload: {
-        logType: string,
-        page: number,
-        limit: number,
-        timeRange?: string,
-        anomalies?: string[],
-        operation?: string, // Add the selectedOperation parameter here
-        severities?: number[],
+        logType: string;
+        page: number;
+        limit: number;
+        timeRange?: string;
+        anomalies?: string[];
+        operation?: string; // Add the selectedOperation parameter here
+        severities?: number[];
+        sort_by?: string; // Add sort_by as optional
     }) => {
         setIsTableLoading(true);
 
-        // Now pass the validTimeRange to getTimeRange
+        // Extract start and end time based on the time range
         const { startTime, endTime } = getTimeRange(payload.timeRange);
 
-        const payloadSelectedListIdentifier = datasourceIdentifiers.reduce<Record<string, string[]>>((acc, identifier, idx) => {
-            acc[identifier.key] = searchParams.getAll(identifier.key)
-            return acc
-        }, {})
-
-        const logAnomaliesPromise = GetHistoricalLogAnomalies({
+        // Dynamically construct the payload for GetHistoricalLogAnomalies
+        const apiPayload: any = {
             type: payload.logType,
             limit: payload.limit,
             page: payload.page,
             filters: payload.anomalies ?? selectedAnomalyOptions,
             severity: payload.severities ?? selectedSeverityOptions,
-            operation: payload.operation ?? selectedOperationOptions,// Default to OR if undefined
+            operation: payload.operation ?? selectedOperationOptions, // Default to selectedOperationOptions if undefined
             start_time: startTime,
             end_time: endTime,
-            ...payloadSelectedListIdentifier
-        });
+            ...datasourceIdentifiers.reduce<Record<string, string[]>>((acc, identifier) => {
+                acc[identifier.key] = searchParams.getAll(identifier.key);
+                return acc;
+            }, {}),
+            ...(payload.sort_by ? { sort_by: payload.sort_by } : {}), // Include sort_by only if it's provided
+        };
 
-        // Handle the result of the API call
-        logAnomaliesPromise
-            .then((result) => {
-                if (result.data) {
-                    const { columns, rows, total_pages, total_rows, highlights } = result.data;
+        // Call the API
+        try {
+            const result = await GetHistoricalLogAnomalies(apiPayload);
+            if (result.data) {
+                const { columns, rows, total_pages, total_rows, highlights } = result.data;
 
-                    // Update the total number of rows based on the API response
-                    setTotalRows(total_rows);
+                // Update state with API results
+                setTotalRows(total_rows);
 
-                    // Map the columns from the API response to the format required by the table
-                    const newColumns = columns.map((column: any) => ({
-                        id: column.key,
-                        header: column.title,
-                        accessorKey: column.key,
-                    }));
-                    setColumns(newColumns);
+                // Map columns to the format required by the table
+                const newColumns = columns.map((column: any) => ({
+                    id: column.key,
+                    header: column.title,
+                    accessorKey: column.key,
+                }));
+                setColumns(newColumns);
 
-                    // Map the rows from the API response to the format required by the table
-                    const newData = rows.map((row: any) => {
-                        const mappedRow: any = {};
-                        columns.forEach((col: any) => {
-                            mappedRow[col.key] = row[col.key];
-                        });
-                        return mappedRow;
+                // Map rows to the format required by the table
+                const newData = rows.map((row: any) => {
+                    const mappedRow: any = {};
+                    columns.forEach((col: any) => {
+                        mappedRow[col.key] = row[col.key];
                     });
+                    return mappedRow;
+                });
+                setData(newData);
+                setHighlights(highlights);
 
-                    // Update the table data
-                    setData(newData);
-                    setHighlights(highlights);
+                setLastRefreshTime(new Date());
+            } else {
+                console.warn("API response data is null or undefined");
+            }
+        } catch (error) {
+            handleApiError(error);
+        } finally {
+            setIsTableHeaderLoading(false);
+            setIsTableLoading(false);
+        }
+    };
 
-                    setLastRefreshTime(new Date());
-                } else {
-                    console.warn('API response data is null or undefined');
-                }
-            })
-            .catch((error) => {
-                handleApiError(error);
-            })
-            .finally(() => {
-                setIsTableHeaderLoading(false);
-                setIsTableLoading(false);
-            });
+    const handleSortChange = (columnKey: string | null) => {
+        if (!columnKey) {
+            setCurrentSort(null); // Clear sort when columnKey is null
+        } else {
+            if (currentSort === columnKey) {
+                // If already sorted by the same column, reset the sort
+                setCurrentSort(null); // Clear the sort
+            } else {
+                setCurrentSort(columnKey); // Set the new sort column
+            }
+        }
+
+        // If currentSort has a value, send it, otherwise send undefined
+        const sortBy = currentSort ? currentSort : undefined;
+
+        fetchHistoricalAnomalyRecords({
+            logType: selectedDataSource, // Replace with your log type state
+            page: pagination.pageIndex, // Replace with your pagination state
+            limit: pagination.pageSize,
+            sort_by: sortBy, // Send undefined if no sort, otherwise send the column key
+            timeRange: selectedTimeRange, // Replace with your time range state
+            anomalies: selectedAnomalyOptions,
+            operation: selectedOperationOptions,
+            severities: selectedSeverityOptions,
+        });
     };
 
     // Function to handle API errors
@@ -296,6 +321,7 @@ const TabContent: React.FC<TabContentProps> = ({
         console.error('Error fetching data:', error)
     }
 
+    // Function fo fetch anomaly filter option
     const loadAnomalyOptions = async () => {
         try {
             const response = await fetchAnomalyOption(selectedDataSource);
@@ -323,6 +349,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
     };
 
+    // Function fo fetch identifier filter option
     const loadIdentifierOptions = async () => {
         const { startTime, endTime } = getTimeRange();
 
@@ -432,10 +459,10 @@ const TabContent: React.FC<TabContentProps> = ({
                     setHasErrorDatasourceIdentifier(true)
                 }
             })
-            
+
         loadAnomalyOptions()
     }, [selectedDataSource])
-    
+
     useUpdateEffect(() => {
         setIsTableHeaderLoading(true);
         setIsTableLoading(true);
@@ -594,7 +621,10 @@ const TabContent: React.FC<TabContentProps> = ({
                             isLoading={isTableLoading}
                             pagination={pagination}
                             totalRows={totalRows}
+                            currentSort={currentSort} // Pass current sort
+                            handleSortChange={handleSortChange} // Pass sort handler
                         />
+
                     </div>
                     {(selectedDataSource !== 'panw' && selectedDataSource !== 'forti' && selectedDataSource !== 'waf') && (
                         <div className='card-style p-6'>
