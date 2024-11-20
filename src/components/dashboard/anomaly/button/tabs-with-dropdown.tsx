@@ -74,7 +74,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
   return (
     <div className="flex flex-row justify-between">
       {/* Container for the tabs and dropdowns */}
-      <div className="flex flex-row container-button-x" ref={dropdownRef}>
+      <div className="flex flex-row container-button-x xl:gap-7" ref={dropdownRef}>
         {TAB_DATA_SOURCE.map((ds, i) => (
           <div className="container-button relative inline-block z-50" key={ds.textLabel}>
             {/* Tab button */}
@@ -107,7 +107,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
 
             {/* Dropdown container */}
             {showDropdown === i && (
-              <div className="absolute mt-4 w-full bg-[#05061e] border-2 border-[#004889] rounded shadow-lg z-10">
+              <div className="absolute mt-4 bg-[#05061e] border-2 border-[#004889] rounded shadow-lg z-10">
                 {ds.children &&
                   ds.children.map((child, childIndex) => (
                     <div key={child.textLabel} className="relative">
@@ -116,7 +116,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
                         onClick={() =>
                           child.children ? handleSecondLevelClick(i, childIndex) : handleDropdownClick(child.namespace)
                         }
-                        className="text-white block w-full text-left px-3 lg:px-5 py-4 text-sm transition duration-300 ease-in-out flex justify-between items-center"
+                        className="flex flex-row justify-between w-max text-white px-3 xl:px-6 py-4 text-sm transition duration-300 ease-in-out"
                       >
                         {child.textLabel}
                         {child.children && (
@@ -136,13 +136,13 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
 
                       {/* Second-level dropdown */}
                       {child.children && showSecondLevelDropdown[i] === childIndex && (
-                        <div className="px-4 lg:px-6 bg-[#05061e] rounded shadow-lg z-10">
+                        <div className="px-4 xl:px-5 bg-[#05061e] rounded z-10 ">
 
                           {child.children.map((subChild) => (
                             <button
                               key={subChild.namespace}
                               onClick={() => handleDropdownClick(subChild.namespace)}
-                              className={`block w-full text-left px-2 py-3 text-sm  ${subChild.namespace === selectedDataSource ? 'text-blue-400' : 'text-[#fff]'
+                              className={`w-max block w-full text-left px-2 py-3 text-sm ${subChild.namespace === selectedDataSource ? 'text-blue-400' : 'text-[#fff]'
                                 } transition duration-300 ease-in-out`}
                             >
                               {subChild.textLabel}
