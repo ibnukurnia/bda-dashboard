@@ -2,12 +2,9 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import './main-page.css'
-import { Maximize } from 'react-feather'
-import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import Button from '@/components/system/Button/Button'
 import DropdownTime from './button/dropdown-time'
 import AutoRefreshButton from '../anomaly/button/refreshButton'
-
 import BRImoEndToEndPanel, { BRImoEndToEndPanelHandle } from './panels/brimo-end-to-end-panel'
 import LatestAnomalyPanel, { LatestAnomalyPanelHandle } from './panels/latest-anomaly-panel'
 import AnomalyAmountPanel, { AnomalyAmountPanelHandle } from './panels/anomaly-amount-panel'
@@ -15,6 +12,8 @@ import TopCriticalPanel, { TopCriticalPanelHandle } from './panels/top-critical-
 import AnomalyOverviewPanel, { AnomalyOverviewPanelHandle } from './panels/anomaly-overview-panel'
 import DynamicChartPanel, { DynamicChartPanelHandle } from './panels/dynamic-chart-panel'
 import useUpdateEffect from '@/hooks/use-update-effect'
+import { Maximize } from 'react-feather'
+import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import { handleStartEnd } from '@/helper'
 
 const defaultTimeRanges: Record<string, number> = {

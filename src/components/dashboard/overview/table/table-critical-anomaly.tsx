@@ -130,6 +130,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
   dataSource,
   severity,
 }, ref) => {
+  const [currentSort, setCurrentSort] = useState<string | null>(null);
   const [isLoadingHeader, setIsLoadingHeader] = useState(true)
   const [isTableLoading, setIsTableLoading] = useState(true)
   const [data, setData] = useState<any>([])
@@ -161,25 +162,31 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
     },
   })
 
-  function fetchData(
-    page?: number,
-    customTimeRange?: string
-  ) {
-    const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange)
+  function fetchData(page?: number, customTimeRange?: string) {
+    const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange);
 
-    GetLatestCritical({
+    // Build the API request payload
+    const params: any = {
       start_time: startTime,
       end_time: endTime,
       data_source: dataSource,
       severity: severity.map(s => s.id),
       page: page ?? pagination.pageIndex,
-      limit: pagination.pageSize
-    })
+      limit: pagination.pageSize,
+    };
+
+    // Add sort_by to the params only if currentSort is truthy
+    if (currentSort) {
+      params.sort_by = currentSort; // Only include if sort is applied
+    }
+
+    // Call GetLatestCritical API with the constructed parameters
+    GetLatestCritical(params)
       .then(result => {
         if (result?.data) {
           const { columns, rows, total_rows } = result.data;
 
-          // Update the total number of pages based on the API response
+          // Update the total number of rows based on the API response
           setTotalRows(total_rows);
 
           // Map the columns from the API response to the format required by the table
@@ -206,13 +213,31 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
         }
       })
       .catch((error) => {
-        console.error('Error fetching data latest critical:', error)
+        console.error('Error fetching data latest critical:', error);
       })
       .finally(() => {
         setIsLoadingHeader(false);
         setIsTableLoading(false);
       });
   }
+
+  const handleSortChange = (columnKey: string | null) => {
+
+
+    if (!columnKey) {
+      setCurrentSort(null); // Clear sort when columnKey is null
+    } else {
+      if (currentSort === columnKey) {
+        // If already sorted by the same column, reset the sort
+        setCurrentSort(null); // Clear the sort
+      } else {
+        setCurrentSort(columnKey); // Set the new sort column
+      }
+    }
+
+    // Call fetchData with the updated sort parameter
+    fetchData(pagination.pageIndex); // Pass pagination and timeRange, as needed
+  };
 
   const handleStartEnd = (time: string) => {
     const timeSplit = time.split(' - ')
@@ -267,11 +292,12 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
                         <th key={header.id} colSpan={header.colSpan} className={`${styles.first_child} p-2`}>
                           <button
                             className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100`}
-                            onClick={header.column.getToggleSortingHandler()}
+                            onClick={() => handleSortChange(header.column.id)} // Call handleSortChange with the column's ID
                           >
                             {typeof header.column.columnDef.header === 'function'
-                              ? header.column.columnDef.header({} as any) // Pass a dummy context
+                              ? header.column.columnDef.header({} as any) // Pass a dummy context if the header is a function
                               : header.column.columnDef.header}
+
                             {header.column.getCanSort() && (
                               <Fragment>
                                 {{
@@ -282,6 +308,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
                               </Fragment>
                             )}
                           </button>
+
                         </th>
                       ))}
                     </tr>

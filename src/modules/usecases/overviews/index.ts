@@ -55,7 +55,7 @@ const GetChartsOverview = async (params?: any) => {
   return response
 }
 
-const GetDataSourceAnomalyOverview   = async () => {
+const GetDataSourceAnomalyOverview = async () => {
   const response: ApiResponse<DataSourceAnomalyOverviewResponse[]> = await get('overview/top-services/list-data-source', {
     withAuth: true,
   });
@@ -108,7 +108,7 @@ const GetHealthScoreOverview = async (params?: { start_time: string | Date; end_
   return response
 }
 
-const GetDataSourceLatestAnomaly  = async (params?: { start_time: string | Date; end_time: string | Date }) => {
+const GetDataSourceLatestAnomaly = async (params?: { start_time: string | Date; end_time: string | Date }) => {
   const response: ApiResponse<any> = await get('latest-critical/list-data-source', {
     withAuth: true,
     queries: params,
@@ -125,6 +125,7 @@ const GetLatestCritical = async (params?: {
   severity: number[]
   limit: number
   page: number
+  sort_by: string
 }) => {
   const response: ApiResponse<PaginatedResponse> = await get('latest-critical', {
     withAuth: true,
