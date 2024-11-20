@@ -14,8 +14,6 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ onClose, onUpdateSucc
     const [isAdding, setIsAdding] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
 
-    console.log('personal Number:', personalNumber, personalName)
-
     const handleUpdateUser = async () => {
         if (!personalNumber) return; // Ensure personal number exists
 

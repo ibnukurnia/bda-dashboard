@@ -85,7 +85,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
         title = 'Overview';
         break;
       case '/dashboard/anomaly-detection':
-        title = 'Anomaly Detection';
+        title = 'Anomaly Prediction';
         break;
       case '/dashboard/forecasting':
         title = 'Forecasting';
@@ -317,18 +317,18 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
                   <div
                     key={index}
                     className="bg-[#1f2a48] p-4 rounded-lg flex flex-col gap-5"
-                    // href={{
-                    //   pathname: '/dashboard/anomaly-detection',
-                    //   query: {
-                    //     data_source: notif.source_identifier,
-                    //     time_range: `${notif.timestamp_identifier} - ${plusAMinute(notif.timestamp_identifier)}`,
-                    //     anomaly: notif.anomaly_identifier,
-                    //     ...((notif.site_identifier != null && notif.site_identifier.length > 0) && { cluster: notif.site_identifier }), // Only include cluster if it's not null or undefined
-                    //     service: notif.identifier,
-                    //   },
-                    // }}
-                    // passHref
-                    // onClick={() => setIsNotifDetailsOpen(false)}
+                  // href={{
+                  //   pathname: '/dashboard/anomaly-detection',
+                  //   query: {
+                  //     data_source: notif.source_identifier,
+                  //     time_range: `${notif.timestamp_identifier} - ${plusAMinute(notif.timestamp_identifier)}`,
+                  //     anomaly: notif.anomaly_identifier,
+                  //     ...((notif.site_identifier != null && notif.site_identifier.length > 0) && { cluster: notif.site_identifier }), // Only include cluster if it's not null or undefined
+                  //     service: notif.identifier,
+                  //   },
+                  // }}
+                  // passHref
+                  // onClick={() => setIsNotifDetailsOpen(false)}
                   >
                     <div className="flex flex-row items-center justify-between gap-6">
                       <div>
