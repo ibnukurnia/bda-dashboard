@@ -316,8 +316,6 @@ const TabContent: React.FC<TabContentProps> = ({
         });
     };
 
-
-
     // Function to handle API errors
     const handleApiError = (error: any) => {
         console.error('Error fetching data:', error)
