@@ -21,6 +21,14 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
   const dropdownRef = useRef<HTMLDivElement | null>(null)
   const dropdownContainerRef = useRef<HTMLDivElement | null>(null)
 
+  const maxTimeRange = Math.max(...Object.values(timeRanges));
+  const getLabelByValue = (value: number): string | undefined => {
+    const fullLabel = Object.keys(timeRanges).find(
+      key => timeRanges[key] === value
+    );
+    return fullLabel?.replace('Last ', ''); // Remove the "Last " prefix
+  };
+
   const toggleDropdown = () => {
     setIsOpen(!isOpen)
   }
@@ -59,7 +67,7 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
 
     // Regular validation logic for max 2-hour range
     if (
-      new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60 * 2 ||
+      new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * maxTimeRange ||
       new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() < 0 ||
       new Date(customRangeEnd).getTime() === new Date(customRangeStart).getTime()
     ) {
@@ -77,8 +85,8 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
     }
 
     // Existing validation checks
-    if (new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * 60 * 2) {
-      setValidationMessage('Maximum range of time that can be selected is 2 hours')
+    if (new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() > 1000 * 60 * maxTimeRange) {
+      setValidationMessage(`Maximum range of time that can be selected is ${getLabelByValue(maxTimeRange)}`)
     } else if (new Date(customRangeEnd).getTime() - new Date(customRangeStart).getTime() < 0) {
       setValidationMessage('Invalid time selected')
     } else if (new Date(customRangeEnd).getTime() === new Date(customRangeStart).getTime()) {
