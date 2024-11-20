@@ -4,188 +4,204 @@ export const DEFAULT_DATA_SOURCE_NAMESPACE = "apm"
 
 export const TAB_DATA_SOURCE = [
   {
-    textLabel: "Logs",
+    textLabel: 'Apps',
     children: [
       {
-        namespace: "apm",
-        textLabel: "Log APM Brimo",
+        namespace: 'apm',
+        textLabel: 'Log APM Brimo',
       },
       {
-        namespace: "brimo",
-        textLabel: "Log Transaksi Brimo",
+        namespace: 'brimo',
+        textLabel: 'Log Transaksi Brimo',
       },
     ],
   },
   {
-    textLabel: "Utilization",
+    textLabel: 'Platform',
     children: [
       {
-        textLabel: "OCP",
-        children: [
-          {
-            namespace: "k8s_prometheus",
-            textLabel: "OCP",
-          },
-          {
-            namespace: "cluster_operator",
-            textLabel: "OCP Cluster Operator",
-          },
-          {
-            namespace: "cluster_pod_capacity",
-            textLabel: "OCP Cluster Pod Capacity",
-          },
-
-        ],
+        namespace: 'k8s_prometheus',
+        textLabel: 'OCP',
       },
       {
-        namespace: "k8s_db",
-        textLabel: "Database",
+        namespace: 'cluster_operator',
+        textLabel: 'OCP Cluster Operator',
       },
       {
-        textLabel: "Redis",
-        children: [
-          {
-            namespace: "redis_node",
-            textLabel: "Redis Node",
-          },
-          {
-            namespace: "redis",
-            textLabel: "Redis Cluster",
-          },
-
-        ],
-
-      },
-      {
-        namespace: "compute_vm",
-        textLabel: "Compute VM",
-      },
-      {
-        namespace: "compute_host",
-        textLabel: "Compute Host",
-      },
-      {
-        namespace: "compute_store",
-        textLabel: "Compute Datastore",
+        namespace: 'cluster_pod_capacity',
+        textLabel: 'OCP Cluster Pod Capacity',
       },
     ],
   },
   {
-    textLabel: "Network",
+    textLabel: 'Database',
     children: [
       {
-        textLabel: "Ivat",
-        namespace: "ivat"
+        namespace: 'k8s_db',
+        textLabel: 'Database',
       },
-
       {
-        textLabel: "Solarwinds", // New group for PANW, FORTI, and WAF
+        textLabel: 'Redis',
         children: [
           {
-            namespace: "solarwinds_dwdm",
-            textLabel: "DWDM",
+            namespace: 'redis_node',
+            textLabel: 'Redis Node',
           },
           {
-            namespace: "solarwinds_internal",
-            textLabel: "Internal",
-          },
-          {
-            namespace: "dns_infoblox",
-            textLabel: "DNS Infloblox",
-          },
-          {
-            namespace: "isp_node",
-            textLabel: "ISP Node",
+            namespace: 'redis',
+            textLabel: 'Redis Cluster',
           },
         ],
       },
-
-      {
-        textLabel: "SolarWinds Traffic", // New group for PANW, FORTI, and WAF
-        children: [
-          {
-            namespace: "solarwinds_traffic_dwdm",
-            textLabel: "DWDM",
-          },
-          {
-            namespace: "solarwinds_traffic_internal",
-            textLabel: "Internal",
-          },
-          {
-            namespace: "isp_traffic",
-            textLabel: "ISP Traffic",
-          }
-        ],
-      },
-      {
-
-        textLabel: "Domain",
-        namespace: "dns_rt"
-      },
-      {
-
-        textLabel: "F5",
-        namespace: "f5"
-      }
-    ]
+    ],
   },
   {
-    textLabel: "Security",
+    textLabel: "Compute",
     children: [
       {
-        textLabel: "Log Security", // New group for PANW, FORTI, and WAF
+        namespace: 'compute_vm',
+        textLabel: 'VM',
+      },
+      {
+        namespace: 'compute_host',
+        textLabel: 'Host',
+      },
+      {
+        namespace: 'compute_store',
+        textLabel: 'Datastore',
+      },
+    ],
+  },
+  {
+    textLabel: 'Network',
+    children: [
+      {
+        textLabel: 'IVAT',
+        namespace: 'ivat',
+      },
+
+      {
+        textLabel: 'Perangkat DWDM',
         children: [
           {
-            namespace: "panw",
-            textLabel: "PANW",
+            namespace: 'solarwinds_dwdm',
+            textLabel: 'Node',
           },
           {
-            namespace: "forti",
-            textLabel: "FORTI",
+            namespace: 'solarwinds_traffic_dwdm',
+            textLabel: 'Interface',
+          },
+        ],
+      },
+
+      {
+        textLabel: 'Perangkat Internal',
+        children: [
+          {
+            namespace: 'solarwinds_internal',
+            textLabel: 'Node',
           },
           {
-            namespace: "waf",
-            textLabel: "WAF",
+            namespace: 'solarwinds_traffic_internal',
+            textLabel: 'Interface',
+          },
+        ],
+      },
+
+      {
+        textLabel: 'Perangkat Internet',
+        children: [
+          {
+            namespace: 'isp_node',
+            textLabel: 'Node',
+          },
+          {
+            namespace: 'isp_traffic',
+            textLabel: 'Interface',
           },
         ],
       },
       {
-        textLabel: "PRTG", // New group for PANW, FORTI, and WAF
+        textLabel: 'Perangkat F5',
+        namespace: 'f5',
+      },
+      {
+        textLabel: 'DNS',
         children: [
           {
-            namespace: "prtg_sslo",
-            textLabel: "SSLO",
+            textLabel: 'Domain Nslookup',
+            namespace: 'dns_rt',
           },
           {
-            namespace: "prtg_waf",
-            textLabel: "WAF",
+            namespace: 'dns_infoblox',
+            textLabel: 'Infoblox (Query rate & Latency)',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    textLabel: 'Security',
+    children: [
+      {
+        textLabel: 'Log Security',
+        children: [
+          {
+            namespace: 'panw',
+            textLabel: 'PANW',
           },
           {
-            namespace: "prtg_firewall",
-            textLabel: "Firewall",
+            namespace: 'forti',
+            textLabel: 'FORTI',
+          },
+          {
+            namespace: 'waf',
+            textLabel: 'WAF',
           },
         ],
       },
       {
-        textLabel: "PRTG Traffic", // New group for PANW, FORTI, and WAF
+        textLabel: 'Perangkat SSLO',
         children: [
           {
-            namespace: "prtg_traffic_sslo",
-            textLabel: "SSLO",
+            namespace: 'prtg_sslo',
+            textLabel: 'Utilization',
           },
           {
-            namespace: "prtg_traffic_waf",
-            textLabel: "WAF",
-          },
-          {
-            namespace: "prtg_traffic_firewall",
-            textLabel: "Firewall",
+            namespace: 'prtg_traffic_sslo',
+            textLabel: 'Interface',
           },
         ],
       },
       {
-        textLabel: "Zabbix",
-        namespace: "zabbix",
+        textLabel: 'Perangkat WAF',
+        children: [
+          {
+            namespace: 'prtg_waf',
+            textLabel: 'Utilization',
+          },
+          {
+            namespace: 'prtg_traffic_waf',
+            textLabel: 'Interface',
+          },
+        ],
+      },
+      {
+        textLabel: 'Perangkat Firewall',
+        children: [
+          {
+            namespace: 'prtg_firewall',
+            textLabel: 'Utilization',
+          },
+          {
+            namespace: 'prtg_traffic_firewall',
+            textLabel: 'Interface',
+          },
+        ],
+      },
+      {
+        textLabel: 'Respones Time (Erangel)',
+        namespace: 'zabbix',
       },
     ],
   },
