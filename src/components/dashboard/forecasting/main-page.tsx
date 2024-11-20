@@ -28,7 +28,7 @@ const MainPageForecasting = () => {
     sourceData: null,
     serviceName: null,
     selectedDate: '',
-    selectedMethod: 'XGboost', // Default method
+    selectedMethod: 'XGBoost', // Default method
   });
 
   // State for persisting filter values in local storage
@@ -114,7 +114,7 @@ const MainPageForecasting = () => {
   // Use interval to periodically fetch data if conditions are met
   useInterval(
     fetchData,
-    3000,
+    60000,
     filter.sourceData != null &&
     filter.serviceName != null &&
     filter.selectedDate != null &&
