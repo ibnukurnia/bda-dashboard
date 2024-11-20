@@ -7,10 +7,9 @@ interface DropdownTimeProps {
   timeRanges: Record<string, number>
   onRangeChange: (rangeKey: string) => void
   selectedRange: string // Receive selectedRange as a prop
-  onCustomRangeSelected: (isCustom: boolean) => void;
 }
 
-const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, selectedRange, onCustomRangeSelected }) => {
+const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, selectedRange }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isCustomRange, setIsCustomRange] = useState(false)
   const [customRangeStart, setCustomRangeStart] = useState<string>(format(new Date(), "yyyy-MM-dd'T'HH:mm"))
@@ -34,11 +33,9 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
   const handleRangeChange = (rangeKey: string) => {
     if (rangeKey === 'Custom') {
       setIsCustomRange(true);
-      onCustomRangeSelected(true); // Notify parent about custom range
     } else {
       onRangeChange(rangeKey);
       setIsCustomRange(false);
-      onCustomRangeSelected(false); // Notify parent that it's a predefined range
       setIsOpen(false);
     }
   };
@@ -50,7 +47,6 @@ const DropdownTime: React.FC<DropdownTimeProps> = ({ timeRanges, onRangeChange, 
       const customRangeLabel = `${formattedStart} - ${formattedEnd}`;
 
       onRangeChange(customRangeLabel);
-      onCustomRangeSelected(true); // Custom range is applied, so notify parent
       setIsCustomRange(false);
       setIsOpen(false);
     }
