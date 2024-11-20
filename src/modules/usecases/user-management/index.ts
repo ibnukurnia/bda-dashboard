@@ -17,7 +17,7 @@ const CreateUser = async (params: { personal_number: string; role: string }) => 
     return response;
 };
 
-const UpdateUser = async (params: { personal_number: string; username: string, role: string }) => {
+const UpdateUser = async (params: { personal_number: string; role: string }) => {
     const response: ApiResponse<any> = await put('users-management', {
         data: params,  // Send params in the request body
         withAuth: true,

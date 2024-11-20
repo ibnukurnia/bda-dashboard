@@ -73,6 +73,7 @@ interface TableBodyWrapperProps {
   columnSize: number
   children: JSX.Element
 }
+
 const TableBodyWrapper: React.FC<TableBodyWrapperProps> = ({
   isLoading,
   isEmpty,

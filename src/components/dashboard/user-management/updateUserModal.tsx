@@ -9,7 +9,7 @@ interface UpdateUserModalProps {
 }
 
 const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ onClose, onUpdateSuccess, personalNumber, personalName }) => {
-    const [userName, setUserName] = useState(personalName || '');
+    // const [userName, setUserName] = useState(personalName || '');
     const [role, setRole] = useState<string>('Admin'); // Default role set to 'Admin'
     const [isAdding, setIsAdding] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
@@ -19,7 +19,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ onClose, onUpdateSucc
 
         setIsAdding(true); // Indicate addition in progress
         try {
-            const response = await UpdateUser({ personal_number: personalNumber, username: userName, role });
+            const response = await UpdateUser({ personal_number: personalNumber, role });
             console.log('User created successfully:', response);
             onUpdateSuccess(); // Refresh the user list
             onClose(); // Close the modal after success
@@ -74,7 +74,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ onClose, onUpdateSucc
                 </div>
 
                 <div className="flex flex-col gap-4">
-
+                    {/* 
                     <div className="flex flex-col gap-1">
                         <label className="block text-sm font-medium text-white">Username</label>
                         <input
@@ -88,7 +88,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ onClose, onUpdateSucc
                             className="p-2 border-gray-600 rounded-md shadow-sm focus:outline-none bg-gray-700 text-white w-full"
 
                         />
-                    </div>
+                    </div> */}
 
                     <div className="flex flex-col gap-1">
                         <label className="block text-sm font-medium text-white">Roles</label>

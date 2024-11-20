@@ -9,13 +9,13 @@ interface AddUserModalProps {
 const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) => {
     const [pnNumber, setPnNumber] = useState<string>('');
     const [role, setRole] = useState<string>('Admin'); // Default role set to 'Admin'
-    const [isAdding, setIsAdding] = useState(false);
+    const [isAdding, setIsAdding] = useState(false); // State to tract progress os adding user
 
     const handleAddUser = async () => {
         setIsAdding(true); // Indicate addition in progress
         try {
             const response = await CreateUser({ personal_number: pnNumber, role });
-            console.log('User created successfully:', response);
+            // console.log('User created successfully:', response);
             onAddSuccess(); // Refresh the user list
             onClose(); // Close the modal after success
         } catch (error) {

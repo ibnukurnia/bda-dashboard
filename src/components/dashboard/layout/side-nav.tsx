@@ -3,19 +3,15 @@
 import * as React from 'react';
 import RouterLink from 'next/link';
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
+import Link from 'next/link';
 import type { NavItemConfig } from '@/types/nav';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { navItems } from './config';
 import { navIcons } from './nav-icons';
-// import { authClient } from '@/lib/auth/client';
-// import { logger } from '@/lib/default-logger';
 import { useUser } from '@/hooks/use-user';
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { canViewFeature } from '@/lib/feature-flags';
-// import router from 'next/dist/client/router';
 
 interface SideNavProps {
   isOpen: boolean;
@@ -23,7 +19,6 @@ interface SideNavProps {
 
 export function SideNav({ isOpen }: SideNavProps): React.ReactElement {
   const pathname = usePathname();
-  const { checkSession } = useUser();
 
   // const handleSignOut = React.useCallback(async (): Promise<void> => {
   //   try {

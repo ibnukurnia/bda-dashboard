@@ -17,6 +17,7 @@ const GetHistoricalLogAnomalies = async (payload: {
   filters: string[]
   operation: string // Ensure this is correctly passed
   severity: number[]
+  sort_by: string
 }) => {
   const response: ApiResponse<PaginatedResponse> = await get('anomaly-predictions', {
     withAuth: true,
@@ -113,13 +114,13 @@ const GetListIdentifier = async (datasource: string, key: string, payload: {
   return response
 }
 
-const GetFetchAnomalyOption = async (): Promise<ApiResponse<AnomalyOptionResponse>> => {
-  const response: ApiResponse<AnomalyOptionResponse> = await get('anomaly-predictions/filter-column', {
-    withAuth: true,
-  })
+// const GetFetchAnomalyOption = async (): Promise<ApiResponse<AnomalyOptionResponse>> => {
+//   const response: ApiResponse<AnomalyOptionResponse> = await get('anomaly-predictions/filter-column', {
+//     withAuth: true,
+//   })
 
-  return response
-}
+//   return response
+// }
 
 const GetColumnOption = async (table: string): Promise<ApiResponse<AnomalyOptionResponse>> => {
   const response: ApiResponse<AnomalyOptionResponse> = await get(

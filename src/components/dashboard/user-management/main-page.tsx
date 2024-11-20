@@ -110,7 +110,7 @@ const UserManagementPage: React.FC = () => {
         pageSize: 10, // Number of rows per page
     });
 
-    const table = useReactTable({
+    const table = useReactTable<Users>({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
@@ -181,6 +181,7 @@ const UserManagementPage: React.FC = () => {
         }
     };
 
+    //function to sort by hit BE
     const handleSort = async (columnId: string) => {
         // Get the current sort state for the clicked column
         const currentSortValue = currentSort[columnId] || 'asc'; // Default to 'asc' if not sorted
@@ -213,7 +214,7 @@ const UserManagementPage: React.FC = () => {
                 const mappedColumns: ColumnDef<Users, any>[] = columns.map((column: any) => ({
                     id: column.key,
                     header: column.title,
-                    accessorKey: column.key,
+                    accessorKey: column.key as keyof Users,
                 }));
 
 
@@ -240,13 +241,12 @@ const UserManagementPage: React.FC = () => {
         fetchUsers(pagination.pageIndex);
     }, [pagination.pageIndex, pagination.pageSize]);
 
+    // Fetch data of user & current data of toggle allow user
     useEffect(() => {
         fetchUsers();
-    }, []);
-
-    useEffect(() => {
         getToggleUser();
     }, []);
+
 
     return (
         <div className="min-h-screen bg-[#0816358F] text-white p-8 flex flex-col gap-4">
@@ -255,14 +255,14 @@ const UserManagementPage: React.FC = () => {
                 <div className="flex justify-end mb-4 gap-4 ">
                     <div className='flex content-center'>
                         <label className="inline-flex items-center cursor-pointer">
-                            <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300 mr-2">Allow All Users</span>
+                            <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300 mr-2">User Management</span>
                             <input type="checkbox" value="" className="sr-only peer" checked={isToggled} onChange={(e) => handleToggle()} />
                             <div className="relative w-11 h-6 rounded-full bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                         </label>
                     </div>
                     <button
                         onClick={openModal}
-                        className="bg-[#3078FF] hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded flex items-center"
+                        className="bg-[#3078FF] hover:bg-blue-600 text-sm text-white font-semibold py-2 px-3 rounded flex items-center"
                     >
                         <svg
                             className="w-4 h-4 mr-2"
@@ -340,8 +340,9 @@ const UserManagementPage: React.FC = () => {
                                             {row.getVisibleCells().map((cell, idx) => (
                                                 <td key={cell.id} className={`whitespace-nowrap ${idx === 0 ? styles.first_child : ""}`}>
                                                     <div className="w-full h-full flex px-4 py-4 items-center rounded-full gap-x-2">
-                                                        {cell.getValue()}  {/* Assuming 'getValue' is your accessor function name */}
+                                                        {cell.getValue() as string | number | null} {/* Example with multiple possible types */}
                                                     </div>
+
                                                 </td>
                                             ))}
                                             {/* Add the "Action" column cell */}
