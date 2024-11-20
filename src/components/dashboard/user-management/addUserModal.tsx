@@ -8,14 +8,13 @@ interface AddUserModalProps {
 
 const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) => {
     const [pnNumber, setPnNumber] = useState<string>('');
-    const [userName, setUserName] = useState<string>('');
     const [role, setRole] = useState<string>('Admin'); // Default role set to 'Admin'
     const [isAdding, setIsAdding] = useState(false);
 
     const handleAddUser = async () => {
         setIsAdding(true); // Indicate addition in progress
         try {
-            const response = await CreateUser({ personal_number: pnNumber, username: userName, role });
+            const response = await CreateUser({ personal_number: pnNumber, role });
             console.log('User created successfully:', response);
             onAddSuccess(); // Refresh the user list
             onClose(); // Close the modal after success
@@ -80,24 +79,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) =>
                         {pnNumber !== '' && !/^\d+$/.test(pnNumber) && (
                             <span className="text-red-500 text-xs mt-1">
                                 PN Number should contain only numbers.
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="block text-sm font-medium text-white">Username</label>
-                        <input
-                            type="text"
-                            placeholder="Input Username"
-                            value={userName}
-                            onChange={(e) => {
-                                const value = e.target.value.replace(/[^a-zA-Z ]/g, ''); // Remove non-alphanumeric characters and spaces
-                                setUserName(value);
-                            }}
-                            className="p-2 border-gray-600 rounded-md shadow-sm focus:outline-none bg-gray-700 text-white w-full"
-                        />
-                        {userName !== '' && !/^\d+$/.test(userName) && (
-                            <span className="text-red-500 text-xs mt-1">
-                                Username Must be string
                             </span>
                         )}
                     </div>
