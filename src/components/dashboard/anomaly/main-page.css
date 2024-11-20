@@ -19,6 +19,14 @@
     background: transparent;
 }
 
+@media (min-width: 1024px) {
+    .container-button>button {
+        gap: 0px;
+        padding: 12px 15px;
+    }
+}
+
+
 .container-button button.active {
     background: linear-gradient(99.22deg, #F28E0F 34.1%, #FFFFFF 189.57%);
 }
