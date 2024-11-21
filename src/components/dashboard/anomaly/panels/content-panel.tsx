@@ -626,7 +626,7 @@ const TabContent: React.FC<TabContentProps> = ({
                         />
 
                     </div>
-                    {(selectedDataSource !== 'panw' && selectedDataSource !== 'forti' && selectedDataSource !== 'waf') && (
+                    {(selectedDataSource !== 'panw' && selectedDataSource !== 'forti' && selectedDataSource !== 'waf' && selectedDataSource !== "cluster_operator") && (
                         <div className='card-style p-6'>
                             <GraphAnomalyCard
                                 selectedDataSource={selectedDataSource}

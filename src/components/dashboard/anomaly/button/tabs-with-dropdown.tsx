@@ -74,13 +74,14 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
   return (
     <div className="flex flex-row justify-between">
       {/* Container for the tabs and dropdowns */}
-      <div className="flex flex-row gap-6 container-button-x p-3" ref={dropdownRef}>
+      <div className="flex flex-row container-button-x xl:gap-7" ref={dropdownRef}>
         {TAB_DATA_SOURCE.map((ds, i) => (
           <div className="container-button relative inline-block z-50" key={ds.textLabel}>
             {/* Tab button */}
             <button
               onClick={() => handleTabClick(i)}
-              className={`flex items-center px-4 py-2 border rounded text-white ${activeTab?.textLabel === ds.textLabel ? 'active' : 'bg-transparent'} transition duration-300 ease-in-out`}
+              className={`flex items-center px-4 py-2 border rounded text-white ${activeTab?.textLabel === ds.textLabel ? 'active' : 'bg-transparent'
+                } transition duration-300 ease-in-out`}
             >
               {/* Optional icon */}
               {ds.children && (
@@ -104,51 +105,50 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
               )}
             </button>
 
-            {/* First-level dropdown */}
+            {/* Dropdown container */}
             {showDropdown === i && (
-              <div className="absolute mt-4 w-full bg-[#05061e] border-2 border-[#004889] rounded shadow-lg z-10">
+              <div className="absolute mt-4 bg-[#05061e] border-2 border-[#004889] rounded shadow-lg z-10">
                 {ds.children &&
                   ds.children.map((child, childIndex) => (
                     <div key={child.textLabel} className="relative">
-                      {/* Second-level dropdown trigger */}
-                      {child.children ? (
-                        <div>
-                          <button
-                            onClick={() => handleSecondLevelClick(i, childIndex)}
-                            className="text-white block w-full text-left px-5 py-4 text-sm transition duration-300 ease-in-out flex justify-between items-center"
+                      {/* First-level dropdown item */}
+                      <button
+                        onClick={() =>
+                          child.children ? handleSecondLevelClick(i, childIndex) : handleDropdownClick(child.namespace)
+                        }
+                        className="flex flex-row justify-between w-max text-white px-3 xl:px-6 py-4 text-sm transition duration-300 ease-in-out"
+                      >
+                        {child.textLabel}
+                        {child.children && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="currentColor"
+                            className={`size-5 transition-transform ${showSecondLevelDropdown[i] === childIndex ? 'rotate-180' : 'rotate-0'
+                              }`}
                           >
-                            {child.textLabel}
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                            </svg>
-                          </button>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                          </svg>
+                        )}
+                      </button>
 
-                          {/* Second-level dropdown */}
-                          {showSecondLevelDropdown[i] === childIndex && (
-                            <div className="absolute left-full top-0 mt-0 ml-2 bg-[#05061e] border-2 border-[#004889] rounded shadow-lg z-10 w-48">
-                              {child.children.map((subChild) => (
-                                <button
-                                  key={subChild.namespace}
-                                  onClick={() => handleDropdownClick(subChild.namespace)}
-                                  className={`block w-full text-left px-5 py-4 text-sm ${subChild.namespace === selectedDataSource
-                                    ? 'text-blue-400'
-                                    : 'text-[#fff]'
-                                    } transition duration-300 ease-in-out`}
-                                >
-                                  {subChild.textLabel}
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                      {/* Second-level dropdown */}
+                      {child.children && showSecondLevelDropdown[i] === childIndex && (
+                        <div className="px-4 xl:px-5 bg-[#05061e] rounded z-10 ">
+
+                          {child.children.map((subChild) => (
+                            <button
+                              key={subChild.namespace}
+                              onClick={() => handleDropdownClick(subChild.namespace)}
+                              className={`w-max block w-full text-left px-2 py-3 text-sm ${subChild.namespace === selectedDataSource ? 'text-blue-400' : 'text-[#fff]'
+                                } transition duration-300 ease-in-out`}
+                            >
+                              {subChild.textLabel}
+                            </button>
+                          ))}
                         </div>
-                      ) : (
-                        // First-level dropdown item without children
-                        <button
-                          onClick={() => handleDropdownClick(child.namespace)}
-                          className={`text-black block w-full text-left px-5 py-4 text-sm ${child.namespace === selectedDataSource ? 'text-blue-400' : 'text-white'} transition duration-300 ease-in-out`}
-                        >
-                          {child.textLabel}
-                        </button>
                       )}
                     </div>
                   ))}
@@ -158,6 +158,8 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
         ))}
       </div>
     </div>
+
+
   );
 };
 

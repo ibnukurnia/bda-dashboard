@@ -2,7 +2,6 @@
     background-color: transparent;
     padding: 8px;
     border: 2px solid #004889;
-    width: fit-content;
     border-radius: 50px;
 
 }
@@ -13,11 +12,19 @@
     color: white;
     font-weight: 600;
     padding: 12px 44px;
-    gap: 10px;
+    gap: 24px;
     border-radius: 50px;
     border: 1px;
     background: transparent;
 }
+
+@media (min-width: 1024px) {
+    .container-button>button {
+        gap: 0px;
+        padding: 12px 15px;
+    }
+}
+
 
 .container-button button.active {
     background: linear-gradient(99.22deg, #F28E0F 34.1%, #FFFFFF 189.57%);
