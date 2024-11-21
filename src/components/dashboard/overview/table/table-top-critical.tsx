@@ -146,7 +146,7 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                   {headerGroup.headers.map((header, idx) => (
                     <th key={header.id} colSpan={header.colSpan} className={`${idx === 0 ? styles.first_child : ""} p-2`}>
                       <button
-                        className={`${header.column.getCanSort() ? 'cursor-pointer select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100 `}
+                        className={`${header.column.getCanSort() ? 'select-none uppercase font-semibold' : ''} w-full px-3 m-auto text-gray-100 `}
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {typeof header.column.columnDef.header === 'function'
@@ -178,26 +178,26 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                   {table.getRowModel().rows.map((row, i) => (
                     <tr
                       key={row.id}
-                      className={`${styles.row_hover} bg-[#060f2c] hover:bg-[#383e54] text-gray-100`}
+                      className={`bg-[#060f2c] text-gray-100`}
                     >
                       {row.getVisibleCells().map((cell, j) => (
                         <td
                           key={cell.id}
                           className={`${j === 0 ? styles.first_child : ""} ${i !== table.getRowModel().rows.length - 1 ? "border-b border-b-[#e5e7eb]" : ""} ${i === 0 ? "border-t border-t-[#e5e7eb]" : ""} whitespace-nowrap`}
                         >
-                          <Link
+                          <div
                             className='w-full h-full flex px-3 py-1 text-sm items-center rounded-full gap-x-2'
-                            href={{
-                              pathname: '/dashboard/anomaly-detection',
-                              query: {
-                                ...queryParams,
-                                ...data[row.index].detail_params?.reduce((acc: { [key: string]: string }, { key, value }) => {
-                                  acc[key] = value;
-                                  return acc;
-                                }, {})
-                              },
-                            }}
-                            passHref
+                            // href={{
+                            //   pathname: '/dashboard/anomaly-detection',
+                            //   query: {
+                            //     ...queryParams,
+                            //     ...data[row.index].detail_params?.reduce((acc: { [key: string]: string }, { key, value }) => {
+                            //       acc[key] = value;
+                            //       return acc;
+                            //     }, {})
+                            //   },
+                            // }}
+                            // passHref
                           >
                             {table.getHeaderGroups()[0].headers[j]?.id === "identifier_alias" ?
                               <div className='flex flex-col'>
@@ -209,7 +209,7 @@ const TableTopCritical = ({ data, isLoading, queryParams }: TableTopCriticalProp
                                 cell={cell}
                               />
                             }
-                          </Link>
+                          </div>
                         </td>
                       ))}
                     </tr>
