@@ -28,7 +28,7 @@ const Pagination: React.FC<PaginationProps> = ({
   useEffect(() => {
     setTempPage(currentPage)
   }, [currentPage])
-  
+
   const handleNext = () => {
     if (currentPage < totalPages) {
       setTempPage(currentPage + 1)

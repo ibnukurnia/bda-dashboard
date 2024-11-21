@@ -162,7 +162,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
     },
   })
 
-  function fetchData(page?: number, customTimeRange?: string) {
+  function fetchData(page?: number, customTimeRange?: string, sortBy?: string) {
     const { startTime, endTime } = handleStartEnd(customTimeRange ?? timeRange);
 
     // Build the API request payload
@@ -170,19 +170,17 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
       start_time: startTime,
       end_time: endTime,
       data_source: dataSource,
-      severity: severity.map(s => s.id),
+      severity: severity.map((s) => s.id),
       page: page ?? pagination.pageIndex,
       limit: pagination.pageSize,
+      sort_by: sortBy || currentSort || undefined, // Use explicitly passed sortBy, fallback to currentSort
     };
 
-    // Add sort_by to the params only if currentSort is truthy
-    if (currentSort) {
-      params.sort_by = currentSort; // Only include if sort is applied
-    }
+    console.log(params.sort_by, 'sort_by used in fetchData');
 
     // Call GetLatestCritical API with the constructed parameters
     GetLatestCritical(params)
-      .then(result => {
+      .then((result) => {
         if (result?.data) {
           const { columns, rows, total_rows } = result.data;
 
@@ -222,22 +220,22 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
   }
 
   const handleSortChange = (columnKey: string | null) => {
+    setCurrentSort((prevSort) => {
+      const newSort = prevSort === columnKey ? null : columnKey;
+      console.log(newSort, "newSort being set");
+      return newSort;
+    });
 
-
-    if (!columnKey) {
-      setCurrentSort(null); // Clear sort when columnKey is null
-    } else {
-      if (currentSort === columnKey) {
-        // If already sorted by the same column, reset the sort
-        setCurrentSort(null); // Clear the sort
-      } else {
-        setCurrentSort(columnKey); // Set the new sort column
-      }
-    }
-
-    // Call fetchData with the updated sort parameter
-    fetchData(pagination.pageIndex); // Pass pagination and timeRange, as needed
+    // Fetch data in a `useEffect` tied to `currentSort`
   };
+
+
+  useEffect(() => {
+    if (currentSort !== null) {
+      console.log(currentSort, "currentSort changed, fetching data");
+      fetchData(undefined, undefined, currentSort);
+    }
+  }, [currentSort]);
 
   const handleStartEnd = (time: string) => {
     const timeSplit = time.split(' - ')
@@ -269,11 +267,13 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
 
   useUpdateEffect(() => {
     if (pauseEffectPagination) {
-      setPauseEffectPagination(false)
+      setPauseEffectPagination(false);
     }
-    setIsTableLoading(true)
-    fetchData()
-  }, [pagination])
+    setIsTableLoading(true);
+    console.log(currentSort, 'currentsort skeaerang')
+    // Pass currentSort explicitly as sortBy to fetchData
+    fetchData(undefined, undefined, currentSort ?? undefined);
+  }, [pagination]);
 
   return (
     <div className="rounded-lg w-full flex flex-col gap-3">
@@ -308,7 +308,6 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
                               </Fragment>
                             )}
                           </button>
-
                         </th>
                       ))}
                     </tr>

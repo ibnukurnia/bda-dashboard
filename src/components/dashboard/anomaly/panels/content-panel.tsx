@@ -536,7 +536,7 @@ const TabContent: React.FC<TabContentProps> = ({
     }, [autoRefresh, refreshInterval]);
 
     return (
-        <div className='flex flex-col gap-4'>
+        <div className='flex flex-col gap-6'>
             <div className='flex flex-row gap-2 self-end items-center'>
                 <AutoRefreshButton onRefresh={handleRefreshNow} onAutoRefreshChange={handleAutoRefreshChange} />
                 <Button onClick={handle.enter} >
