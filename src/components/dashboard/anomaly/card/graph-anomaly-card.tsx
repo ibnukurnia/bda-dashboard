@@ -281,11 +281,11 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
         return metricResultPromise
             .then((metricResult) => {
+                setLastTimeRangeParam({
+                    startTime: startTime,
+                    endTime: endTime,
+                });
                 if (metricResult.data) {
-                    setLastTimeRangeParam({
-                        startTime: startTime,
-                        endTime: endTime,
-                    });
                     setDataMetric(metricResult.data);
                 } else {
                     console.warn('API response data is null or undefined for metrics');
