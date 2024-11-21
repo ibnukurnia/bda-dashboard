@@ -78,7 +78,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
             {dataCharts.map((metric, index) => {
                 const seriesData = metric.data.map(([date, number]) => ({
                     x: date || new Date().getTime(),
-                    y: number !== null && number !== undefined ? number : 0,
+                    y: number,
                 }));
 
                 const chartOptions: ApexOptions = {

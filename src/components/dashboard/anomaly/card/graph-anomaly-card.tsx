@@ -286,6 +286,16 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                     endTime: endTime,
                 });
                 if (metricResult.data) {
+                    metricResult.data.forEach(data => {
+                        const keyStart = new Date(data.data[0][0])
+                        if (keyStart.getTime() > new Date(startTime).getTime()) {
+                            data.data.unshift([new Date(startTime), null])
+                        }
+                        const keyEnd = new Date(data.data[data.data.length-1][0])
+                        if (keyEnd.getTime() < new Date(endTime).getTime()) {
+                            data.data.push([new Date(endTime), null])
+                        }
+                    });
                     setDataMetric(metricResult.data);
                 } else {
                     console.warn('API response data is null or undefined for metrics');
