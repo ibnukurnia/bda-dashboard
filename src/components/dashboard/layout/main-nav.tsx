@@ -4,17 +4,16 @@ import * as React from 'react';
 import { usePathname } from 'next/navigation'; // Import usePathname from Next.js
 import { Button, Typography } from '@mui/material';
 import { GetNotificationList } from '@/modules/usecases/notification';
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Link from 'next/link'; // Import Link from Next.js
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
-import router from 'next/dist/client/router';
 import { logger } from '@/lib/default-logger';
 import { useEffect, useState } from 'react';
 import { MobileNav } from './mobile-nav';
+import router from 'next/dist/client/router';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Link from 'next/link'; // Import Link from Next.js
 import useInterval from '@/hooks/use-interval';
-import { format } from 'date-fns';
 
 
 interface Notification {
@@ -45,7 +44,7 @@ interface UserInfo {
 
 export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
   const [openNav, setOpenNav] = React.useState<boolean>(false);
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState<boolean>(false);
+  // const [isSidebarOpen, setIsSidebarOpen] = React.useState<boolean>(false);
   const [isNotifDetailsOpen, setIsNotifDetailsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isUserDetailsOpen, setIsUserDetailsOpen] = React.useState<boolean>(false);
@@ -133,11 +132,6 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
     }
   }, [checkSession]);
 
-  const handleToggleSideNav = () => {
-    toggleSideNav();
-    setIsSidebarOpen((prevState) => !prevState);
-  };
-
   // Toggle User Details Dropdown
   const toggleUserDetails = () => {
     setIsUserDetailsOpen((prev) => {
@@ -160,6 +154,7 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
     });
   };
 
+  // fetch notification data
   const fetchNotifications = async () => {
     try {
       const response = await GetNotificationList({
@@ -181,12 +176,6 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
     }
   };
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  useInterval(() => fetchNotifications(), 60000, true)
-
   // Close dropdowns if clicked outside
   const handleClickOutside = (event: MouseEvent) => {
     if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
@@ -196,6 +185,13 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
       setIsUserDetailsOpen(false);
     }
   };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  useInterval(() => fetchNotifications(), 60000, true)
+
 
   React.useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
@@ -214,11 +210,6 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
     };
   }, []);
 
-  const plusAMinute = (datetime: string) => {
-    const date = new Date(datetime)
-    date.setMinutes(date.getMinutes() + 1)
-    return format(date, 'yyyy-MM-dd HH:mm:ss')
-  }
 
   return (
     <React.Fragment>
@@ -229,7 +220,10 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
           position: 'sticky',
           top: 0,
           zIndex: '99',
-          padding: 2,
+          paddingTop: 2,
+          paddingBottom: 2,
+          paddingRight: 4,
+          paddingLeft: 4
         }}
       >
         <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', minHeight: '64px' }}>
@@ -306,67 +300,65 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
       )
       }
 
-      {
-        isNotifDetailsOpen && (
-          <div ref={notifRef} className="flex flex-col fixed w-fit right-4 self-end top-24 mt-2 bg-[#081635] border border-gray-600 rounded-lg shadow-lg z-[99999]">
-            <div className="flex flex-col gap-4 p-4">
-              {isLoading ? (
-                <div className="text-white">Loading...</div>
-              ) : (
-                notifications.slice(0, 5).map((notif, index) => (
-                  <div
-                    key={index}
-                    className="bg-[#1f2a48] p-4 rounded-lg flex flex-col gap-5"
-                  // href={{
-                  //   pathname: '/dashboard/anomaly-detection',
-                  //   query: {
-                  //     data_source: notif.source_identifier,
-                  //     time_range: `${notif.timestamp_identifier} - ${plusAMinute(notif.timestamp_identifier)}`,
-                  //     anomaly: notif.anomaly_identifier,
-                  //     ...((notif.site_identifier != null && notif.site_identifier.length > 0) && { cluster: notif.site_identifier }), // Only include cluster if it's not null or undefined
-                  //     service: notif.identifier,
-                  //   },
-                  // }}
-                  // passHref
-                  // onClick={() => setIsNotifDetailsOpen(false)}
-                  >
-                    <div className="flex flex-row items-center justify-between gap-6">
-                      <div>
-                        <p className="text-white font-semibold">Anomaly Detected!</p>
-                        <p className="text-gray-200 text-sm">{notif.timestamp}</p>
-                      </div>
-                      <span className="bg-red-600 text-white text-xs py-1 px-2 rounded-full">{notif.source}</span>
-                    </div>
+      {isNotifDetailsOpen && (
+        <div ref={notifRef} className="flex flex-col fixed w-fit right-4 self-end top-24 mt-2 bg-[#081635] border border-gray-600 rounded-lg shadow-lg z-[99999]">
+          <div className="flex flex-col gap-4 p-4">
+            {isLoading ? (
+              <div className="text-white">Loading...</div>
+            ) : (
+              notifications.slice(0, 5).map((notif, index) => (
+                <div
+                  key={index}
+                  className="bg-[#1f2a48] p-4 rounded-lg flex flex-col gap-5"
+                // href={{
+                //   pathname: '/dashboard/anomaly-detection',
+                //   query: {
+                //     data_source: notif.source_identifier,
+                //     time_range: `${notif.timestamp_identifier} - ${plusAMinute(notif.timestamp_identifier)}`,
+                //     anomaly: notif.anomaly_identifier,
+                //     ...((notif.site_identifier != null && notif.site_identifier.length > 0) && { cluster: notif.site_identifier }), // Only include cluster if it's not null or undefined
+                //     service: notif.identifier,
+                //   },
+                // }}
+                // passHref
+                // onClick={() => setIsNotifDetailsOpen(false)}
+                >
+                  <div className="flex flex-row items-center justify-between gap-6">
                     <div>
-                      <p className="text-gray-300 text-sm">
-                        <span className="text-yellow-500">
-                          <span className="inline-block mr-1">⚠</span> Anomaly:
-                        </span> {notif.anomaly_description}
-                      </p>
-                      <p className="text-gray-300 text-sm">
-                        <span className="text-gray-200">
-                          <svg className="w-4 h-4 inline-block mr-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 1 0-14 0 7 7 0 0 0 14 0z" />
-                          </svg>
-                          Identifier:
-                        </span> {notif.identifier}
-                      </p>
+                      <p className="text-white font-semibold">Anomaly Detected!</p>
+                      <p className="text-gray-200 text-sm">{notif.timestamp}</p>
                     </div>
+                    <span className="bg-red-600 text-white text-xs py-1 px-2 rounded-full">{notif.source}</span>
                   </div>
-                ))
-              )}
-            </div>
-            <div className="border-t border-gray-600">
-              <Link href="/dashboard/anomaly-notification" passHref onClick={() => setIsNotifDetailsOpen(false)}>
-                <Button className="w-full text-center py-3 text-blue-500 hover:bg-gray-800">
-                  View All Anomaly
-                </Button>
-              </Link>
-            </div>
+                  <div>
+                    <p className="text-gray-300 text-sm">
+                      <span className="text-yellow-500">
+                        <span className="inline-block mr-1">⚠</span> Anomaly:
+                      </span> {notif.anomaly_description}
+                    </p>
+                    <p className="text-gray-300 text-sm">
+                      <span className="text-gray-200">
+                        <svg className="w-4 h-4 inline-block mr-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 1 0-14 0 7 7 0 0 0 14 0z" />
+                        </svg>
+                        Identifier:
+                      </span> {notif.identifier}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-        )
+          <div className="border-t border-gray-600">
+            <Link href="/dashboard/anomaly-notification" passHref onClick={() => setIsNotifDetailsOpen(false)}>
+              <Button className="w-full text-center py-3 text-blue-500 hover:bg-gray-800">
+                View All Anomaly
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )
       }
-
 
       <MobileNav
         onClose={() => {

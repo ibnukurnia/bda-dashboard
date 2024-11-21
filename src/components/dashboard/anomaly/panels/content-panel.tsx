@@ -587,7 +587,7 @@ const TabContent: React.FC<TabContentProps> = ({
                         </div>
                         <div className='flex flex-col gap-2'>
                             <Typography variant="h5" component="h5" color="white">
-                                {`Historical ${NAMESPACE_LABELS[selectedDataSource] === 'Zabbix'
+                                {`${NAMESPACE_LABELS[selectedDataSource] === 'Zabbix'
                                     ? 'Zabbix Ping to Erangel'
                                     : NAMESPACE_LABELS[selectedDataSource]
                                     } Anomaly Records`}

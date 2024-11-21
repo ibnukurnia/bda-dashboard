@@ -287,11 +287,10 @@ const UserManagementPage: React.FC = () => {
                             <TableHeaderWrapper isLoading={isLoadingHeader}>
                                 <Fragment>
                                     {table.getHeaderGroups().map((headerGroup) => (
-                                        <tr key={headerGroup.id} className="text-left">
+                                        <tr key={headerGroup.id} className="">
                                             {headerGroup.headers.map((header) => (
                                                 <th
                                                     key={header.id}
-
                                                     colSpan={header.colSpan}
                                                     className={`${styles.first_child} p-2`}
                                                 >
@@ -299,7 +298,7 @@ const UserManagementPage: React.FC = () => {
                                                         className={`${header.column.getCanSort()
                                                             ? "cursor-pointer select-none uppercase font-semibold"
                                                             : ""
-                                                            } w-full px-3 m-auto text-gray-100`}
+                                                            } w-full px-3 m-auto text-gray-100 text-justify`} // Added text-justify here
                                                         onClick={() => {
                                                             handleSort(header.id);
                                                         }}
@@ -309,7 +308,7 @@ const UserManagementPage: React.FC = () => {
                                                             : header.column.columnDef.header}
                                                         {header.column.getCanSort() && (
                                                             <Fragment>
-                                                                {currentSort[header.id] === 'asc' ? '🔼' : currentSort[header.id] === 'desc' ? '🔽' : '🔼'}
+                                                                {currentSort[header.id] === "asc" ? "🔼" : currentSort[header.id] === "desc" ? "🔽" : "🔼"}
                                                             </Fragment>
                                                         )}
                                                     </button>

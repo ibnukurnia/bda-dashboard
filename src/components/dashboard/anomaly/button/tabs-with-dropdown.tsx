@@ -136,7 +136,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
 
                       {/* Second-level dropdown */}
                       {child.children && showSecondLevelDropdown[i] === childIndex && (
-                        <div className="px-4 xl:px-5 bg-[#05061e] rounded z-10 ">
+                        <div className="px-4 xl:px-7 bg-[#05061e] rounded z-10 ">
 
                           {child.children.map((subChild) => (
                             <button

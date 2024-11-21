@@ -20,9 +20,6 @@ const OverviewAlertStack: React.FC<OverviewAlertStackProps> = ({ pathname }) => 
         case '/dashboard/anomaly-detection':
             alert = 3;
             break;
-        // case '/situation':
-        //     alert = 1;
-        //     break;
         default:
             break;
     }
