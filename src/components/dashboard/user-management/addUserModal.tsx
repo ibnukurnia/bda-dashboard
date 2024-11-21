@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CreateUser } from '@/modules/usecases/user-management';
+import useUpdateEffect from '@/hooks/use-update-effect';
 
 interface AddUserModalProps {
     onClose: () => void;
@@ -8,8 +9,27 @@ interface AddUserModalProps {
 
 const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) => {
     const [pnNumber, setPnNumber] = useState<string>('');
-    const [role, setRole] = useState<string>('Admin'); // Default role set to 'Admin'
+    const [role, setRole] = useState<string>('Viewer'); // Default role set to 'Viewer'
     const [isAdding, setIsAdding] = useState(false); // State to tract progress os adding user
+    const [errorPnNumber, setErrorPnNumber] = useState<string | null>(null)
+
+    useUpdateEffect(() => {
+        if (pnNumber.length >= 8) {
+            setErrorPnNumber(null)
+        }
+    }, [pnNumber])
+    
+    const validatePnNumber = () => {
+        if (pnNumber !== '' && !/^\d+$/.test(pnNumber)) {
+            setErrorPnNumber('PN Number should contain only numbers.')
+            return
+        }
+        if (pnNumber.length < 8) {
+            setErrorPnNumber('PN Number must be at least 8 digits.')
+            return
+        }
+        setErrorPnNumber(null)
+    }
 
     const handleAddUser = async () => {
         setIsAdding(true); // Indicate addition in progress
@@ -74,11 +94,12 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) =>
                                     setPnNumber(value);
                                 }
                             }}
+                            onBlur={validatePnNumber}
                             className="p-2 border-gray-600 rounded-md shadow-sm focus:outline-none bg-gray-700 text-white w-full"
                         />
-                        {pnNumber !== '' && !/^\d+$/.test(pnNumber) && (
+                        {errorPnNumber && (
                             <span className="text-red-500 text-xs mt-1">
-                                PN Number should contain only numbers.
+                                {errorPnNumber}
                             </span>
                         )}
                     </div>
@@ -98,8 +119,8 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onAddSuccess }) =>
                 <div className="flex justify-end">
                     <button
                         onClick={handleAddUser}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                        disabled={isAdding}
+                        className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 ${isAdding || errorPnNumber != null || pnNumber.length < 8 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={isAdding || errorPnNumber != null || pnNumber.length < 8}
                     >
                         {isAdding ? 'Adding...' : 'Add User'}
                     </button>
