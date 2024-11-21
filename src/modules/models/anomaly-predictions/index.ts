@@ -12,11 +12,11 @@ export interface MetricLogAnomalyResponse {
   title: string,
   anomalies: [
     Date,
-    number,
+    number | null,
   ][],
   data: [
     Date,
-    number,
+    number | null,
   ][],
 }
 
