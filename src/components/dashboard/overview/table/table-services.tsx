@@ -106,7 +106,7 @@ const TableServices = ({ tableHeader, dataKeys, data, selectedDataSource, queryP
 export default TableServices;
 
 function escapeAndRemoveSpaces(stringToEscape: string) {
-  return stringToEscape.replace(/[\(\)\s\.]/g, match => {
+  return stringToEscape.replace(/[\(\)\s\.&]/g, match => {
     if (match === '(') return '';
     if (match === ')') return '';
     if (match === '.') return '_';
