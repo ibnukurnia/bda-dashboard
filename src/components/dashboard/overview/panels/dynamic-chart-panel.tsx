@@ -74,6 +74,7 @@ const DynamicChartPanel = forwardRef<DynamicChartPanelHandle, DynamicChartPanelP
       .finally(() => {
         setIsLoading(false);
         setFetchRequired(false)
+        console.log(chartData)
       });
   }
 
@@ -104,7 +105,7 @@ const DynamicChartPanel = forwardRef<DynamicChartPanelHandle, DynamicChartPanelP
                 title={item.title}
                 subtitle={item.sub}
                 series={item.data}
-                spike={item.last_spike}
+                spikes={item.spikes}  // This should already be in Spike[] format
                 id={id}
                 startTime={lastTimeRange.startTime}
                 endTime={lastTimeRange.endTime}

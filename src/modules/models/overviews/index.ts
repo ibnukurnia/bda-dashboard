@@ -107,6 +107,7 @@ export interface TopServicesResponse {
 export interface MetricsResponse {
   data: any[]
   last_spike: string
+  spikes: { title: string, value: string }[]
   sub: string
   title: string
 }

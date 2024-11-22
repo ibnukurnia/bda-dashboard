@@ -23,8 +23,7 @@ const MainPageAnomaly = () => {
     }
   }, []);
 
-  // Log the `dataSource` value before passing it to the children
-  console.log("PARENTS - Value of selectedDataSource being passed:", dataSource);
+
 
   return (
     <div className="flex flex-col gap-12">

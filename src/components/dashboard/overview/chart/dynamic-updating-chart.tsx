@@ -5,17 +5,22 @@ import Skeleton from '@/components/system/Skeleton/Skeleton'
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
-interface DynamicUpdatingChartProps {
-  series: any[]
-  title?: string
-  subtitle?: string
-  spike: string
-  id?: string | number
-  startTime: string // Add startTime prop
-  endTime: string // Add endTime prop
+interface Spike {
+  title: string;
+  value: string;
 }
 
-const DynamicUpdatingChart = ({ series, title, subtitle, startTime, endTime, spike }: DynamicUpdatingChartProps) => {
+interface DynamicUpdatingChartProps {
+  series: any[];
+  title?: string;
+  subtitle?: string;
+  spikes: Spike[];  // spikes is an array of Spike objects
+  id?: string | number;
+  startTime: string;
+  endTime: string;
+}
+
+const DynamicUpdatingChart = ({ series, title, subtitle, startTime, endTime, spikes }: DynamicUpdatingChartProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const chartRef = useRef(null);
 
@@ -153,9 +158,15 @@ const DynamicUpdatingChart = ({ series, title, subtitle, startTime, endTime, spi
             height={350}
             width={'100%'}
           />
-          <p className="text-white text-sm ml-3">
-            Last Spike: {spike ?? '-'}
-          </p>
+          {/* Loop through the spikes and render each spike's title and value */}
+          <div className="text-white text-sm ml-3">
+            {spikes.map((spike, index) => (
+              <p key={index} className="mb-1"> {/* Add margin-bottom */}
+                {spike.title}: {spike.value ?? '-'}
+              </p>
+            ))}
+          </div>
+
         </Fragment>
       ) : (
         <div className={`chart-section-col flex flex-col gap-2`}>
