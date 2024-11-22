@@ -25,7 +25,7 @@ const MainPageAnomaly = () => {
 
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-12">
       <TabsWithDropdown
         selectedDataSource={dataSource}
       />
