@@ -34,6 +34,8 @@ const DownloadCsvHistoricalLogAnomalies = async (payload: {
   filters: string[]
   operation: string // Ensure this is correctly passed
   severity: number[]
+  sort_by?: string
+
 }) => {
   const response: void = await downloadFile('anomaly-predictions/csv', 'text/csv', 'ops-vision_anomaly-history.csv', {
     withAuth: true,

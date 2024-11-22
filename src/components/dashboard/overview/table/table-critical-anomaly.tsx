@@ -222,7 +222,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
   const handleSortChange = (columnKey: string | null) => {
     setCurrentSort((prevSort) => {
       const newSort = prevSort === columnKey ? null : columnKey;
-      console.log(newSort, "newSort being set");
+      // console.log(newSort, "newSort being set");
       return newSort;
     });
 
@@ -232,7 +232,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
 
   useEffect(() => {
     if (currentSort !== null) {
-      console.log(currentSort, "currentSort changed, fetching data");
+      // console.log(currentSort, "currentSort changed, fetching data");
       fetchData(undefined, undefined, currentSort);
     }
   }, [currentSort]);
