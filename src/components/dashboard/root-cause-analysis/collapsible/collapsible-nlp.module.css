@@ -6,6 +6,7 @@
 .table td:nth-child(5) {
   width: 12%;
 }
+
 .table th:nth-child(2),
 .table th:nth-child(4),
 .table td:nth-child(2),
@@ -18,15 +19,18 @@
   margin: 0;
   padding: 0 16px;
 }
+
 .typography ul {
   list-style: unset;
   margin: 0;
   padding: 0 16px;
 }
+
 .typography ol li {
   padding: 0;
   margin: 4px 0;
 }
+
 .typography ul li {
   padding: 0;
   margin: 4px 0;
