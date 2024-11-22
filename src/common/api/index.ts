@@ -212,7 +212,12 @@ const del = async <K>(endpoint: string, option?: { withAuth: boolean }): Promise
   };
 };
 
-const downloadFile = async (endpoint: string, mimeType: string, filename: string, option?: RequestOption): Promise<void> => {
+function getFilenameFromContentDisposition(contentDisposition?: string | null) {
+  if (!contentDisposition) return null
+  const match = contentDisposition.match(/filename="(.+?)"/);
+  return match ? match[1] : null;
+}
+const downloadFile = async (endpoint: string, mimeType: string, defaultFilename: string, option?: RequestOption): Promise<void> => {
   const headers: Record<string, string> = {
     Accept: mimeType,
   };
@@ -246,7 +251,7 @@ const downloadFile = async (endpoint: string, mimeType: string, filename: string
   const a = document.createElement('a');
   a.style.display = 'none';
   a.href = url;
-  a.download = filename; // You can set the filename here
+  a.download = getFilenameFromContentDisposition(response.headers.get('Content-Disposition')) ?? defaultFilename; // You can set the filename here
   document.body.appendChild(a);
   a.click();
   window.URL.revokeObjectURL(url);
