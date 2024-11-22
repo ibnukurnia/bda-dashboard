@@ -55,7 +55,7 @@ export function SideNav({ isOpen }: SideNavProps): React.ReactElement {
         '--NavItem-icon-color': 'var(--mui-palette-neutral-400)',
         '--NavItem-icon-active-color': 'var(--mui-palette-primary-contrastText)',
         '--NavItem-icon-disabled-color': 'var(--mui-palette-neutral-600)',
-        padding: '47px 20px',
+        padding: '28px 20px',
         bgcolor: '#08163580',
         color: 'var(--SideNav-color)',
         display: 'flex',

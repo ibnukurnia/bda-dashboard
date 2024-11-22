@@ -131,6 +131,7 @@ const TabContent: React.FC<TabContentProps> = ({
             timeRange: rangeKey,
             anomalies: filtersAnomaly,
             severities: filterSeverities,
+            sort_by: currentSort || undefined
         });
     };
 
@@ -176,6 +177,7 @@ const TabContent: React.FC<TabContentProps> = ({
                     logType: selectedDataSource,
                     page: pagination.pageIndex,     // Page number
                     limit: pagination.pageSize,      // Page size (limit)
+                    sort_by: currentSort || undefined
                 });
                 // console.log('Manual refresh triggered');
             } catch (error) {
@@ -212,6 +214,7 @@ const TabContent: React.FC<TabContentProps> = ({
             anomalies: selectedAnomalyOptions,
             operation: selectedOperationOptions,
             severities: selectedSeverityOptions,
+            sort_by: currentSort || undefined
         });
 
     };
@@ -231,6 +234,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
         // Extract start and end time based on the time range
         const { startTime, endTime } = getTimeRange(payload.timeRange);
+        // console.log('currentSort: ', currentSort)
 
         // Dynamically construct the payload for GetHistoricalLogAnomalies
         const apiPayload: any = {
@@ -290,31 +294,24 @@ const TabContent: React.FC<TabContentProps> = ({
     };
 
     const handleSortChange = (columnKey: string | null) => {
-        if (!columnKey) {
-            setCurrentSort(null); // Clear sort when columnKey is null
-        } else {
-            if (currentSort === columnKey) {
-                // If already sorted by the same column, reset the sort
-                setCurrentSort(null); // Clear the sort
-            } else {
-                setCurrentSort(columnKey); // Set the new sort column
-            }
-        }
-
-        // If currentSort has a value, send it, otherwise send undefined
-        const sortBy = currentSort ? currentSort : undefined;
-
-        fetchHistoricalAnomalyRecords({
-            logType: selectedDataSource, // Replace with your log type state
-            page: pagination.pageIndex, // Replace with your pagination state
-            limit: pagination.pageSize,
-            sort_by: sortBy, // Send undefined if no sort, otherwise send the column key
-            timeRange: selectedTimeRange, // Replace with your time range state
-            anomalies: selectedAnomalyOptions,
-            operation: selectedOperationOptions,
-            severities: selectedSeverityOptions,
+        setCurrentSort((prevSort) => {
+            const newSort = prevSort === columnKey ? null : columnKey;
+            // console.log(newSort, "newSort being set in handleSortChange");
+            return newSort;
         });
     };
+
+    useEffect(() => {
+        if (currentSort !== null) {
+            // console.log(currentSort, "currentSort changed, fetching historical data");
+            fetchHistoricalAnomalyRecords({
+                logType: selectedDataSource,
+                page: pagination.pageIndex,
+                limit: pagination.pageSize,
+                sort_by: currentSort, // Pass currentSort explicitly
+            });
+        }
+    }, [currentSort]);
 
     // Function to handle API errors
     const handleApiError = (error: any) => {
@@ -386,6 +383,7 @@ const TabContent: React.FC<TabContentProps> = ({
                 logType: selectedDataSource,
                 page: page,
                 limit: prev.pageSize,
+                sort_by: currentSort || undefined
             });
             return { ...prev, pageIndex: page };
         });
@@ -442,6 +440,7 @@ const TabContent: React.FC<TabContentProps> = ({
             start_time: startTime,
             end_time: endTime,
             operation: selectedOperationOptions,// Default to OR if undefined
+            sort_by: currentSort || undefined,
             ...payloadSelectedListIdentifier,
         }).finally(() => setIsDownloadingCsv(false))
     }
@@ -480,11 +479,11 @@ const TabContent: React.FC<TabContentProps> = ({
             ...prev,
             pageIndex: page,
         }));
-
         fetchHistoricalAnomalyRecords({
             logType: selectedDataSource,
             page: 1,
             limit: pagination.pageSize, // Use the current page size
+            sort_by: currentSort || undefined,
         });
     }, [
         searchParams, datasourceIdentifiers

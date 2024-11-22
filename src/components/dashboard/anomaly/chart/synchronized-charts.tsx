@@ -44,7 +44,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
     };
 
     useEffect(() => {
-        console.log("Data Charts:", dataCharts);
+        // console.log("Data Charts:", dataCharts);
     }, [dataCharts]);
 
     useEffect(() => {
@@ -110,7 +110,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                 };
                             },
                             beforeZoom: (chartContext, { xaxis }) => {
-                                console.log("Zoom selected range:", { min: xaxis.min, max: xaxis.max });
+                                // console.log("Zoom selected range:", { min: xaxis.min, max: xaxis.max });
                                 if (xaxis.min < chartContext.minX && xaxis.max > chartContext.maxX) {
                                     if (!zoomOutDisabled) {
                                         onZoomOut && onZoomOut(
@@ -172,7 +172,7 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                     });
                                     return errorRateFormatter.format(value); // Format with five decimal places
                                 }
-            
+
                                 // Check if the metric title or scale indicates it's "amount"
                                 if (metric.title.includes("Amount")) {
                                     const rupiahFormatter = new Intl.NumberFormat('id-ID', {
@@ -183,18 +183,18 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                                     });
                                     return rupiahFormatter.format(value).replace("Rp", "Rp."); // Add dot after "Rp."
                                 }
-            
+
                                 // Handle small decimal numbers (less than 1 but greater than 0)
                                 if (value < 1 && value > 0) {
                                     return value.toString(); // Show full precision for small decimal values
                                 }
-            
+
                                 // Format larger numbers with thousands separators and two decimal places
                                 const numberFormatter = new Intl.NumberFormat('id-ID', {
                                     minimumFractionDigits: 2, // Show 2 decimal places
                                     maximumFractionDigits: 2, // Limit to 2 decimal places
                                 });
-            
+
                                 return numberFormatter.format(value); // Format with thousands separators
                             },
                             style: {
@@ -217,8 +217,8 @@ const SynchronizedCharts: React.FC<SynchronizedChartsProps> = ({
                 };
 
                 // Log min and max values for x-axis
-                console.log(`X-axis min for ${metric.title}:`, dataCharts.every(series => series.data.length <= 0) ? minXOnEmpty : minX);
-                console.log(`X-axis max for ${metric.title}:`, dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : maxX);
+                // console.log(`X-axis min for ${metric.title}:`, dataCharts.every(series => series.data.length <= 0) ? minXOnEmpty : minX);
+                // console.log(`X-axis max for ${metric.title}:`, dataCharts.every(series => series.data.length <= 0) ? maxXOnEmpty : maxX);
 
                 const series = [{ name: metric.title, data: seriesData }];
 

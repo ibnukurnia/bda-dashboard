@@ -3,6 +3,7 @@ import styles from './collapsible-nlp.module.css';
 import { useState } from 'react';
 import parse from 'html-react-parser';
 import { NLP } from '@/modules/models/root-cause-analysis';
+import React from 'react';
 
 interface CollapsibleNLPProps {
   title: string; // The title of the collapsible section
@@ -30,9 +31,8 @@ const CollapsibleNLP = ({
       >
         {/* Expand/Collapse Icon */}
         <div
-          className={`w-[22px] h-[22px] flex items-center justify-center rounded-[4px] bg-[${
-            open ? '#306BFF1A' : '#FFF'
-          }] bg-opacity-[${open ? '0.1' : '0.03'}]`}
+          className={`w-[22px] h-[22px] flex items-center justify-center rounded-[4px] bg-[${open ? '#306BFF1A' : '#FFF'
+            }] bg-opacity-[${open ? '0.1' : '0.03'}]`}
         >
           {open ? (
             // Collapse Icon
@@ -133,18 +133,41 @@ const CollapsibleNLP = ({
                     className="py-[14px] px-[15px] w-[150px]"
                   >
                     <Typography
-                      className={`${styles.typography} whitespace-pre-wrap`}
+                      className={`${styles.typography} whitespace-pre-wrap force-color`}
                       fontWeight={500}
                       fontSize={'12px'}
                       lineHeight={'14.1px'}
                       color={'white'}
-                      align={
-                        !content || content === '-'
-                          ? 'center'
-                          : 'left'
-                      }
+                      align={content === '-' ? 'center' : 'left'}
                     >
-                      {parse(content || '-')}
+                      {parse(content || '-', {
+                        replace: (domNode) => {
+                          // If it's a valid HTML tag node (like <span>, <div>)
+                          if (domNode.type === 'tag') {
+                            // Recursively parse the child node's children or handle other content
+                            const validChildren = domNode.children
+                              .map((child) => {
+                                if (child.type === 'text') {
+                                  return child.data; // If it's a text node, return its content
+                                }
+
+                                if (child.type === 'tag') {
+                                  // Instead of directly passing the node to parse(), ensure it's a valid ReactNode
+                                  return parse(child.toString() || ''); // Convert the element to string before parsing
+                                }
+
+                                return null; // Skip invalid nodes
+                              })
+                              .filter(Boolean); // Remove `null` values from the children
+
+                            // Render the tag with valid children only
+                            return React.createElement(domNode.name, { className: 'parsed-content' }, ...validChildren);
+                          }
+
+                          // If it's not a valid tag node, return null
+                          return null;
+                        },
+                      })}
                     </Typography>
                   </td>
                 )

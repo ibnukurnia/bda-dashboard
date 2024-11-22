@@ -157,7 +157,7 @@ const UserManagementPage: React.FC = () => {
 
         try {
             const response = await AllowUser(true);
-            console.log('API response:', response);
+            // console.log('API response:', response);
             // Handle the API response, e.g., update UI, show notifications
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -168,7 +168,7 @@ const UserManagementPage: React.FC = () => {
     const getToggleUser = async () => {
         try {
             const response = await AllowUser(!isToggled);
-            console.log('API response:', response);
+            // console.log('API response:', response);
 
             // Update the isToggled state based on the API response
             setIsToggled(response.data.user_management); // Assuming the response structure is correct
@@ -181,8 +181,7 @@ const UserManagementPage: React.FC = () => {
         }
     };
 
-    //function to sort by hit BE
-    const handleSort = async (columnId: string) => {
+    const handleSort = (columnId: string) => {
         // Get the current sort state for the clicked column
         const currentSortValue = currentSort[columnId] || 'asc'; // Default to 'asc' if not sorted
 
@@ -190,10 +189,19 @@ const UserManagementPage: React.FC = () => {
         const newSort = currentSortValue === 'asc' ? 'desc' : 'asc';
 
         // Update state with the new sort value for the clicked column
-        setCurrentSort({ ...currentSort, [columnId]: newSort });
-
-        await fetchUsers(pagination.pageIndex, newSort, columnId); // Fetch users with sorting parameters
+        setCurrentSort({ [columnId]: newSort }); // Reset other sorts if only one column can be sorted
     };
+
+    // useEffect to trigger fetching only when sorting changes
+    useEffect(() => {
+        const activeSortColumn = Object.keys(currentSort)[0]; // Get the active sort column
+        const activeSortDirection = currentSort[activeSortColumn]; // Get the direction (asc/desc)
+
+        if (activeSortColumn && activeSortDirection) {
+            // Fetch data with the current sorting
+            fetchUsers(undefined, activeSortDirection, activeSortColumn); // Pass only sorting info
+        }
+    }, [currentSort]);
 
     const fetchUsers = async (page?: number, sort?: string, order?: string) => {
         try {
@@ -207,7 +215,7 @@ const UserManagementPage: React.FC = () => {
             });
 
             if (response?.data) {
-                console.log('API Response Data:', response.data);
+                // console.log('API Response Data:', response.data);
 
                 const { columns, rows, total_rows } = response.data;
 
@@ -221,8 +229,8 @@ const UserManagementPage: React.FC = () => {
                 setColumns(mappedColumns); // Set table columns
                 setTotalRows(total_rows); // Set total rows count
 
-                console.log('Mapped Columns:', mappedColumns);
-                console.log('Extracted Rows:', rows);
+                // console.log('Mapped Columns:', mappedColumns);
+                // console.log('Extracted Rows:', rows);
 
                 setData(rows as Users[]);
                 setIsError(false);
@@ -238,8 +246,18 @@ const UserManagementPage: React.FC = () => {
 
     // Fetch data whenever pageIndex or pageSize changes
     useEffect(() => {
-        fetchUsers(pagination.pageIndex);
+        const activeSortColumn = Object.keys(currentSort)[0]; // Get the active sort column
+        const activeSortDirection = currentSort[activeSortColumn]; // Get the direction (asc/desc)
+
+        // Fetch data with correct sort and order parameters
+        fetchUsers(
+            pagination.pageIndex,  // Current page
+            activeSortDirection,     // Column name (sort)
+            activeSortColumn   // Sort direction (asc/desc)
+        );
     }, [pagination.pageIndex, pagination.pageSize]);
+
+
 
     // Fetch data of user & current data of toggle allow user
     useEffect(() => {
