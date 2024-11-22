@@ -234,7 +234,7 @@ const TabContent: React.FC<TabContentProps> = ({
 
         // Extract start and end time based on the time range
         const { startTime, endTime } = getTimeRange(payload.timeRange);
-        console.log('currentSort: ', currentSort)
+        // console.log('currentSort: ', currentSort)
 
         // Dynamically construct the payload for GetHistoricalLogAnomalies
         const apiPayload: any = {
@@ -296,14 +296,14 @@ const TabContent: React.FC<TabContentProps> = ({
     const handleSortChange = (columnKey: string | null) => {
         setCurrentSort((prevSort) => {
             const newSort = prevSort === columnKey ? null : columnKey;
-            console.log(newSort, "newSort being set in handleSortChange");
+            // console.log(newSort, "newSort being set in handleSortChange");
             return newSort;
         });
     };
 
     useEffect(() => {
         if (currentSort !== null) {
-            console.log(currentSort, "currentSort changed, fetching historical data");
+            // console.log(currentSort, "currentSort changed, fetching historical data");
             fetchHistoricalAnomalyRecords({
                 logType: selectedDataSource,
                 page: pagination.pageIndex,
@@ -472,7 +472,6 @@ const TabContent: React.FC<TabContentProps> = ({
     }, [datasourceIdentifiers, timeRange])
 
     useUpdateEffect(() => {
-        console.log(currentSort, 'ini')
         setIsTableLoading(true);
 
         const page = 1 // Reset to the first page when page size changes

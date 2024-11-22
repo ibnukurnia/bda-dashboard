@@ -157,7 +157,7 @@ const UserManagementPage: React.FC = () => {
 
         try {
             const response = await AllowUser(true);
-            console.log('API response:', response);
+            // console.log('API response:', response);
             // Handle the API response, e.g., update UI, show notifications
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -168,7 +168,7 @@ const UserManagementPage: React.FC = () => {
     const getToggleUser = async () => {
         try {
             const response = await AllowUser(!isToggled);
-            console.log('API response:', response);
+            // console.log('API response:', response);
 
             // Update the isToggled state based on the API response
             setIsToggled(response.data.user_management); // Assuming the response structure is correct
@@ -215,7 +215,7 @@ const UserManagementPage: React.FC = () => {
             });
 
             if (response?.data) {
-                console.log('API Response Data:', response.data);
+                // console.log('API Response Data:', response.data);
 
                 const { columns, rows, total_rows } = response.data;
 
@@ -229,8 +229,8 @@ const UserManagementPage: React.FC = () => {
                 setColumns(mappedColumns); // Set table columns
                 setTotalRows(total_rows); // Set total rows count
 
-                console.log('Mapped Columns:', mappedColumns);
-                console.log('Extracted Rows:', rows);
+                // console.log('Mapped Columns:', mappedColumns);
+                // console.log('Extracted Rows:', rows);
 
                 setData(rows as Users[]);
                 setIsError(false);

@@ -176,7 +176,7 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
       sort_by: sortBy || currentSort || undefined, // Use explicitly passed sortBy, fallback to currentSort
     };
 
-    console.log(params.sort_by, 'sort_by used in fetchData');
+    // console.log(params.sort_by, 'sort_by used in fetchData');
 
     // Call GetLatestCritical API with the constructed parameters
     GetLatestCritical(params)
@@ -270,7 +270,6 @@ const TableCriticalAnomaly = forwardRef<TableCriticalAnomalyHandle, TableCritica
       setPauseEffectPagination(false);
     }
     setIsTableLoading(true);
-    console.log(currentSort, 'currentsort skeaerang')
     // Pass currentSort explicitly as sortBy to fetchData
     fetchData(undefined, undefined, currentSort ?? undefined);
   }, [pagination]);

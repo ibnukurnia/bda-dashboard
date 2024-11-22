@@ -20,7 +20,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ onClose, onUpdateSucc
         setIsAdding(true); // Indicate addition in progress
         try {
             const response = await UpdateUser({ personal_number: personalNumber, role });
-            console.log('User created successfully:', response);
+            // console.log('User created successfully:', response);
             onUpdateSuccess(); // Refresh the user list
             onClose(); // Close the modal after success
         } catch (error) {
