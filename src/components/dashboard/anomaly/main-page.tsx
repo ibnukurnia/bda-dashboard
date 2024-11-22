@@ -1,7 +1,7 @@
 // pages/tabs-page.tsx
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './main-page.css'
 import { useSearchParams } from 'next/navigation';
 import TabsWithDropdown from './button/tabs-with-dropdown';
@@ -23,6 +23,8 @@ const MainPageAnomaly = () => {
     }
   }, []);
 
+  // Log the `dataSource` value before passing it to the children
+  console.log("PARENTS - Value of selectedDataSource being passed:", dataSource);
 
   return (
     <div className="flex flex-col gap-12">
@@ -37,4 +39,4 @@ const MainPageAnomaly = () => {
   )
 }
 
-export default MainPageAnomaly
+export default MainPageAnomaly;

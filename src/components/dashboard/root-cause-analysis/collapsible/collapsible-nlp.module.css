@@ -35,3 +35,7 @@
   padding: 0;
   margin: 4px 0;
 }
+
+.parsed-content * {
+  color: white !important;
+}

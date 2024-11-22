@@ -251,6 +251,7 @@ export const SEVERITY_LABELS: Record<string, string> = {
 }
 
 export const DEFAULT_TIME_RANGE = 'Last 15 minutes'
+
 export const PREDEFINED_TIME_RANGES: Record<string, number> = {
   'Last 5 minutes': 5,
   'Last 10 minutes': 10,

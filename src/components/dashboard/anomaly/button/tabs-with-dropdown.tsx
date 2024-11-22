@@ -14,10 +14,8 @@ interface TabsWithDropdownProps {
 const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const [showDropdown, setShowDropdown] = useState(-1); // State to manage the visibility of first-level dropdowns
   const [showSecondLevelDropdown, setShowSecondLevelDropdown] = useState<{ [key: number]: number }>({}); // State to manage visibility of second-level dropdowns
-
   const dropdownRef = useRef<HTMLDivElement>(null); // Reference for detecting clicks outside the dropdown
 
   // Close all dropdowns when a click outside the component is detected
@@ -49,26 +47,43 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
 
   // Handle selection of a data source from the dropdown
   const handleDropdownClick = (dataSource: string) => {
+    console.log('Step 1: Data source selected:', dataSource);
+
+    // Get the current search parameters from the URL
     const currentParams = new URLSearchParams(searchParams?.toString() || '');
+    console.log('Step 2: Current search parameters before update:', currentParams.toString());
 
     // Update the data_source query parameter
     currentParams.set('data_source', dataSource);
+    console.log('Step 3: Updated search parameters with new data source:', currentParams.toString());
 
     // Remove unrelated query parameters
-    const currentParamKeys = searchParams.keys();
+    const currentParamKeys = Array.from(searchParams.keys());
+    console.log('Step 4: Existing query parameter keys:', currentParamKeys);
+
     currentParamKeys.forEach(key => {
-      if (!['data_source', 'time_range'].includes(key)) currentParams.delete(key);
+      if (!['data_source', 'time_range'].includes(key)) {
+        currentParams.delete(key);
+        console.log(`Step 5: Removed unrelated parameter: ${key}`);
+      }
     });
+
+    console.log('Step 6: Final search parameters:', currentParams.toString());
 
     // Generate the new URL
     const newUrl = `/dashboard/anomaly-detection?${currentParams.toString()}`;
+    console.log('Step 7: New URL generated:', newUrl);
 
     // Replace the current URL without re-rendering or adding to browser history
     router.replace(newUrl);
+    console.log('Step 8: Replaced URL using router.replace.');
 
     // Close all dropdowns
     setShowDropdown(-1);
+    console.log('Step 9: Primary dropdown closed (setShowDropdown).');
+
     setShowSecondLevelDropdown({});
+    console.log('Step 10: Secondary dropdown state cleared (setShowSecondLevelDropdown).');
   };
 
   return (
@@ -116,7 +131,7 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
                         onClick={() =>
                           child.children ? handleSecondLevelClick(i, childIndex) : handleDropdownClick(child.namespace)
                         }
-                        className="flex flex-row justify-between w-max text-white px-3 xl:px-6 py-4 text-sm transition duration-300 ease-in-out"
+                        className={`flex flex-row justify-between w-max px-3 xl:px-6 py-4 text-sm transition duration-300 ease-in-out ${child.namespace === selectedDataSource ? 'text-blue-400' : 'text-[#fff]'}`}
                       >
                         {child.textLabel}
                         {child.children && (
