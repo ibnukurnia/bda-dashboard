@@ -45,7 +45,7 @@ const DynamicChartPanel = forwardRef<DynamicChartPanelHandle, DynamicChartPanelP
     setFetchRequired(true)
     if (expanded) {
       setIsLoading(true)
-      fetchData()
+      fetchData(handleStartEnd(timeRange))
     }
   }, [timeRange])
 
