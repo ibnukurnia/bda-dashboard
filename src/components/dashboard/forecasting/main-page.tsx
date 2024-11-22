@@ -14,6 +14,30 @@ import useInterval from '@/hooks/use-interval'; // Custom hook for handling inte
 import { format, isToday } from 'date-fns'; // Utilities for working with dates
 import Skeleton from '@/components/system/Skeleton/Skeleton'; // Skeleton loader for loading states
 
+const ChartWrapper = ({
+  isLoading,
+  isError,
+  children,
+}: {
+  isLoading: boolean;
+  isError: boolean;
+  children: React.ReactNode;
+}) => {
+  if (isLoading) {
+    return (
+      <Skeleton width={'100%'} height={400} />
+    )
+  }
+  if (isError) {
+    return (
+      <span className="w-full text-center text-white content-center">
+        Terjadi kesalahan. Silakan refresh halaman ini atau coba beberapa saat lagi
+      </span>
+    )
+  }
+  return children
+}
+
 const MainPageForecasting = () => {
   // State for graph data
   const [graphData, setGraphData] = useState<any[]>([]);
@@ -36,6 +60,9 @@ const MainPageForecasting = () => {
 
   // State for chart loading
   const [chartLoading, setChartLoading] = useState(false);
+
+  // State for chart error
+  const [chartError, setChartError] = useState(false);
 
   // State for zoom level in charts
   const [zoomLevel, setZoomLevel] = useState({
@@ -73,10 +100,15 @@ const MainPageForecasting = () => {
       method: selectedMethod,
     })
       .then((res) => {
+        if (res.data == null) {
+          setChartError(true)
+          return
+        }
         setGraphData(res.data); // Update graph data
-        setChartLoading(false); // Hide loading indicator
+        setChartError(false)
       })
-      .catch(() => setChartLoading(false)); // Handle errors
+      .catch(() => setChartError(true)) // Handle errors
+      .finally(() => setChartLoading(false));
 
     // Persist filter values in local storage
     setFilterValue({ dataSource: selectedSource, service: selectedService, date: selectedDate });
@@ -106,8 +138,14 @@ const MainPageForecasting = () => {
       method: 'XGBoost',
     })
       .then((res) => {
-        setGraphData(res.data);
+        if (res.data == null) {
+          setChartError(true)
+          return
+        }
+        setGraphData(res.data); // Update graph data
+        setChartError(false)
       })
+      .catch(() => setChartError(true)) // Handle errors
       .finally(() => setChartLoading(false));
   }, []);
 
@@ -130,10 +168,15 @@ const MainPageForecasting = () => {
       method: filter.selectedMethod,
     })
       .then((res) => {
+        if (res.data == null) {
+          setChartError(true)
+          return
+        }
         setGraphData(res.data); // Update graph data
-        setChartLoading(false);
+        setChartError(false)
       })
-      .catch(() => setGraphData([])); // Handle errors
+      .catch(() => setChartError(true)) // Handle errors
+      .finally(() => setChartLoading(false));
   }
 
   // Memoized chart component to avoid unnecessary re-renders
@@ -191,10 +234,12 @@ const MainPageForecasting = () => {
                     <Typography variant="h6" component="h6" color="white" fontWeight={600}>
                       {`${filter.serviceName?.length ? filter.serviceName + ' - ' : ''} ${filter.sourceData}`}
                     </Typography>
-                    {/* Show chart or skeleton loader */}
-                    {chartLoading ?
-                      <Skeleton width={'100%'} height={400} /> : chartIntervalUpdate
-                    }
+                    <ChartWrapper
+                      isLoading={chartLoading}
+                      isError={chartError}
+                    >
+                      {chartIntervalUpdate}
+                    </ChartWrapper>
                   </div>
                 </div>
               );
