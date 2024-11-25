@@ -23,6 +23,7 @@ interface DynamicUpdatingChartProps {
 const DynamicUpdatingChart = ({ series, title, subtitle, startTime, endTime, spikes }: DynamicUpdatingChartProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const chartRef = useRef(null);
+  console.log(subtitle)
 
   useEffect(() => {
     const observer = new IntersectionObserver(

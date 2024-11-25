@@ -47,38 +47,34 @@ const TabsWithDropdown: React.FC<TabsWithDropdownProps> = ({ selectedDataSource 
 
   // Handle selection of a data source from the dropdown
   const handleDropdownClick = (dataSource: string) => {
-
+    // console.log("Dropdown item clicked:", dataSource);
 
     // Get the current search parameters from the URL
     const currentParams = new URLSearchParams(searchParams?.toString() || '');
 
     // Remove unrelated query parameters
     const currentParamKeys = Array.from(searchParams.keys());
-
     currentParamKeys.forEach(key => {
       if (!['data_source', 'time_range'].includes(key)) {
         currentParams.delete(key);
-
       }
     });
 
-
+    // Set the selected data source
+    currentParams.set('data_source', dataSource);
 
     // Generate the new URL
     const newUrl = `/dashboard/anomaly-detection?${currentParams.toString()}`;
-
+    // console.log("Navigating to URL:", newUrl);
 
     // Replace the current URL without re-rendering or adding to browser history
     router.replace(newUrl);
 
-
     // Close all dropdowns
     setShowDropdown(-1);
-
-
     setShowSecondLevelDropdown({});
-
   };
+
 
   return (
     <div className="flex flex-row justify-between">

@@ -15,6 +15,10 @@ const AnomalyAmountChart = ({
   data = [],
 }: AnomalyAmountChartProps) => {
   const validSeries = Array.isArray(data) ? data : [];
+
+  // Check if all `data` fields in the objects are null
+  const allDataNull = validSeries.every(s => s.data === null);
+
   const chartSeries = validSeries
     .filter(s => Array.isArray(s.data) && s.data.length > 0)
     .map(s => ({
@@ -52,7 +56,6 @@ const AnomalyAmountChart = ({
         tools: { pan: false, download: false },
         autoSelected: 'zoom',
       },
-
       zoom: {
         enabled: true,
         type: 'x',
@@ -106,6 +109,10 @@ const AnomalyAmountChart = ({
     grid: { borderColor: '#bdbdbd' },
     legend: { show: true, labels: { colors: 'white' } },
   };
+
+  if (allDataNull || chartSeries.length === 0) {
+    return <p className="text-center text-white">No data available</p>;
+  }
 
   return (
     <div ref={chartRef}>
