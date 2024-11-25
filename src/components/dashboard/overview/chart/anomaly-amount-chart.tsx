@@ -111,7 +111,7 @@ const AnomalyAmountChart = ({
   };
 
   if (allDataNull || chartSeries.length === 0) {
-    return <p className="text-center text-white">No data available</p>;
+    return <p className="text-center text-white">No data available.</p>;
   }
 
   return (

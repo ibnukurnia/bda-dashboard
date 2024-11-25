@@ -307,7 +307,8 @@ export function MainNav({ toggleSideNav }: MainNavProps): React.JSX.Element {
             {isLoading ? (
               <div className="text-white">Loading...</div>
             ) : notifications.length === 0 ? ( // Check if notifications array is empty
-              <div className="text-[#E6EDF5] text-center text-sm">Data is not available</div>
+              <div className="text-[#E6EDF5] text-center text-sm">No data available.
+              </div>
             ) : (
               notifications.slice(0, 5).map((notif, index) => (
                 <div
