@@ -268,7 +268,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             return acc
         }, {})
 
-        setDataMetric([])
         setIsLoading(true)
         const metricResultPromise = GetMetricLogAnomalies(
             {
