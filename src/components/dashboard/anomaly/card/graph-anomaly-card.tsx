@@ -71,6 +71,7 @@ const GraphWrapper = ({
     scaleCount,
     isLoading,
     isEmpty,
+    isError,
     isFieldRequired,
 }: {
     children: React.ReactNode;
@@ -78,6 +79,7 @@ const GraphWrapper = ({
     scaleCount: number,
     isLoading?: boolean;
     isEmpty?: boolean;
+    isError?: boolean;
     isFieldRequired?: boolean;
 }) => {
     if (isFieldRequired) {
@@ -98,6 +100,16 @@ const GraphWrapper = ({
                 <Skeleton key={i} width={300} />
             ))
         }
+    }
+    if (isError) {
+        // Message when fetching error
+        return (
+            <div className="text-center py-4">
+                <Typography variant="subtitle1" color="white" align="center">
+                    An error occurred.<br />Please try again later.
+                </Typography>
+            </div >
+        )
     }
     if (isEmpty) {
         // Message when no data is available
@@ -210,6 +222,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     }>(initialFilter);
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isError, setIsError] = useState(false)
     const abortControllerRef = useRef<AbortController | null>(null);
     // Determine the selected time range value in minutes
     const selectedTimeRange = timeRanges[selectedTimeRangeKey] ?? 15;
@@ -292,7 +305,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                             if (keyStart.getTime() > new Date(startTime).getTime()) {
                                 data.data.unshift([new Date(startTime), null])
                             }
-                            const keyEnd = new Date(data.data[data.data.length-1][0])
+                            const keyEnd = new Date(data.data[data.data.length - 1][0])
                             if (keyEnd.getTime() < new Date(endTime).getTime()) {
                                 data.data.push([new Date(endTime), null])
                             }
@@ -364,12 +377,15 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             .then((result) => {
                 if (result.data) {
                     setDataColumn({ columns: result.data.columns });
+                    setIsError(false)
                 } else {
+                    setIsError(true)
                     console.warn('API response data is null or undefined for column option');
                 }
             })
             .catch((error) => {
                 console.error('Error fetching column option:', error);
+                setIsError(true)
             })
             .finally(() => {
                 setIsDataColumnLoading(false); // End loading after fetch completes
@@ -468,7 +484,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
 
 
                 <div className="flex flex-row gap-2 self-end items-center">
-                {/* Dropdown to select a time range */}
+                    {/* Dropdown to select a time range */}
                     <DropdownTime
                         timeRanges={CUSTOM_TIME_RANGES}
                         onRangeChange={handleRangeChange}
@@ -508,6 +524,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 }
                 isLoading={isLoading}
                 isEmpty={dataMetric.length === 0}
+                isError={isError}
             >
                 {/* Render the appropriate chart based on the selected toggle */}
                 <Graph
