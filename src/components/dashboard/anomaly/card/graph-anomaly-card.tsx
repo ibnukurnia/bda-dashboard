@@ -268,7 +268,6 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             return acc
         }, {})
 
-        setIsLoading(true)
         const metricResultPromise = GetMetricLogAnomalies(
             {
                 type: selectedDataSource,
@@ -414,10 +413,12 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
     }, [currentZoomDateRange]);
 
     useUpdateEffect(() => {
+        setIsLoading(true)
         fetchMetricLog(customTime.startTime, customTime.endTime);
     }, [customTime]);
 
     useUpdateEffect(() => {
+        setIsLoading(true)
         if (dateRangeMode === "predefined") {
             fetchMetricLog(predefinedStartTime, predefinedEndTime);
         } else if (dateRangeMode === "custom") {
