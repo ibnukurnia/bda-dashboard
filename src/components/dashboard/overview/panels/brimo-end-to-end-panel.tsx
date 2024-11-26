@@ -192,7 +192,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
                   </Typography>
                 </div>
               }
-              <audio ref={audioRef} src='/assets/dashboard/overview/abuse-anomaly-alert.mp3' preload='auto' />
+              <audio ref={audioRef} src='/abuse-anomaly-alert.mp3' preload='auto' />
               {isLoading ?
                 <Skeleton
                   width={230}
