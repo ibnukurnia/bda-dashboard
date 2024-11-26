@@ -57,6 +57,33 @@ const calculateSeverity = (nodes: Node[]): number => {
   return Math.min(...nodes.filter(node => node.severity > 0).map(node => node.severity));
 };
 
+const audioCtx = new(window.AudioContext)();
+const volume = 10
+const frequency = 300
+const type = 'square'
+const duration = 1000
+
+function beep() {
+  let oscillator = audioCtx.createOscillator();
+  let gainNode = audioCtx.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  gainNode.gain.value = volume;
+  oscillator.frequency.value = frequency;
+  oscillator.type = type;
+
+  oscillator.start();
+
+  setTimeout(
+    function() {
+      oscillator.stop();
+    },
+    duration
+  );
+};
+
 interface BRImoEndToEndPanelProps {
   timeRange: string
 }
@@ -134,7 +161,8 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
         if (res.data == null) throw Error("Empty response data")
         setDetectAbuseAnomaly(res.data.is_abuse)
         if (res.data.is_abuse) {
-          audioRef.current?.play()
+          // audioRef.current?.play()
+          beep()
         }
         setIsError(false)
       })
@@ -192,7 +220,7 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
                   </Typography>
                 </div>
               }
-              <audio ref={audioRef} src='/abuse-anomaly-alert.mp3' preload='auto' />
+              {/* <audio ref={audioRef} src='/assets/dashboard/overview/abuse-anomaly-alert.mp3' preload='auto' /> */}
               {isLoading ?
                 <Skeleton
                   width={230}
