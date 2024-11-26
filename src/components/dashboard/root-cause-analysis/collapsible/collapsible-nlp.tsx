@@ -132,6 +132,7 @@ const CollapsibleNLP = ({
                     key={idx}
                     className="py-[14px] px-[15px] w-[150px]"
                   >
+
                     <Typography
                       className={`${styles.typography} whitespace-pre-wrap force-color`}
                       fontWeight={500}
@@ -142,33 +143,48 @@ const CollapsibleNLP = ({
                     >
                       {parse(content || '-', {
                         replace: (domNode) => {
-                          // If it's a valid HTML tag node (like <span>, <div>)
                           if (domNode.type === 'tag') {
-                            // Recursively parse the child node's children or handle other content
+                            // Process valid child nodes recursively
                             const validChildren = domNode.children
                               .map((child) => {
                                 if (child.type === 'text') {
-                                  return child.data; // If it's a text node, return its content
+                                  // Return plain text directly
+                                  return (child as any).data; // Use type assertion to access `data`
                                 }
 
                                 if (child.type === 'tag') {
-                                  // Instead of directly passing the node to parse(), ensure it's a valid ReactNode
-                                  return parse(child.toString() || ''); // Convert the element to string before parsing
+                                  // Serialize child node back into HTML-like content for parsing
+                                  const htmlContent = `<${child.name}${Object.entries((child as any).attribs || {})
+                                    .map(([key, value]) => ` ${key}="${value}"`)
+                                    .join('')}>${(child as any).children
+                                      ?.map((c: { type: string; data: any; }) => (c.type === 'text' ? c.data : ''))
+                                      .join('')}</${child.name}>`;
+
+                                  return parse(htmlContent); // Recursively parse serialized HTML string
                                 }
 
                                 return null; // Skip invalid nodes
                               })
-                              .filter(Boolean); // Remove `null` values from the children
+                              .filter(Boolean); // Remove null or undefined values
 
-                            // Render the tag with valid children only
-                            return React.createElement(domNode.name, { className: 'parsed-content' }, ...validChildren);
+                            // Create the React element with the valid children
+                            return React.createElement(
+                              domNode.name,
+                              { className: 'parsed-content' },
+                              ...validChildren
+                            );
                           }
 
-                          // If it's not a valid tag node, return null
-                          return null;
+                          if (domNode.type === 'text') {
+                            // Handle plain text nodes directly
+                            return domNode.data;
+                          }
+
+                          return null; // Skip unsupported nodes
                         },
                       })}
                     </Typography>
+
                   </td>
                 )
               )}

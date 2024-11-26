@@ -19,6 +19,7 @@ const AnomalyAmountChart = ({
   // Check if all `data` fields in the objects are null
   const allDataNull = validSeries.every(s => s.data === null);
 
+  // Transform valid series into chart-ready data, filtering out entries with no data.
   const chartSeries = validSeries
     .filter(s => Array.isArray(s.data) && s.data.length > 0)
     .map(s => ({
@@ -27,6 +28,7 @@ const AnomalyAmountChart = ({
       anomalies: Array.isArray(s.anomalies) ? s.anomalies.map((a: any) => [new Date(a[0]).getTime(), a[1]]) : [],
     }));
 
+  // Extract all timestamps from the data arrays in chartSeries into a single flat array.
   const allTimestamps = chartSeries.flatMap(s => s.data.map(d => d[0]));
   const minTimestamp = Math.min(...allTimestamps);
   const maxTimestamp = Math.max(...allTimestamps);
