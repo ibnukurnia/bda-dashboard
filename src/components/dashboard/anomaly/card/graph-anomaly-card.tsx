@@ -209,7 +209,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
         identifiers: (null | string | string[])[];
     }>(initialFilter);
     const [selectedGraphToggle, setSelectedGraphToggle] = useState(toggleList[0]);
-    const [initialLoading, setInitialLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const abortControllerRef = useRef<AbortController | null>(null);
     // Determine the selected time range value in minutes
     const selectedTimeRange = timeRanges[selectedTimeRangeKey] ?? 15;
@@ -268,6 +268,8 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
             return acc
         }, {})
 
+        setDataMetric([])
+        setIsLoading(true)
         const metricResultPromise = GetMetricLogAnomalies(
             {
                 type: selectedDataSource,
@@ -287,13 +289,15 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 });
                 if (metricResult.data) {
                     metricResult.data.forEach(data => {
-                        const keyStart = new Date(data.data[0][0])
-                        if (keyStart.getTime() > new Date(startTime).getTime()) {
-                            data.data.unshift([new Date(startTime), null])
-                        }
-                        const keyEnd = new Date(data.data[data.data.length-1][0])
-                        if (keyEnd.getTime() < new Date(endTime).getTime()) {
-                            data.data.push([new Date(endTime), null])
+                        if (data.data.length !== 0) {
+                            const keyStart = new Date(data.data[0][0])
+                            if (keyStart.getTime() > new Date(startTime).getTime()) {
+                                data.data.unshift([new Date(startTime), null])
+                            }
+                            const keyEnd = new Date(data.data[data.data.length-1][0])
+                            if (keyEnd.getTime() < new Date(endTime).getTime()) {
+                                data.data.push([new Date(endTime), null])
+                            }
                         }
                     });
                     setDataMetric(metricResult.data);
@@ -306,7 +310,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                 console.error('Error fetching metric anomalies:', error);
             })
             .finally(() => {
-                setInitialLoading(false);
+                setIsLoading(false);
             });
     }
 
@@ -502,7 +506,7 @@ const GraphAnomalyCard: React.FC<GraphicAnomalyCardProps> = ({
                         identifier.is_multiple && selectedFilter.identifiers[identifierIdx]?.length === 0
                     )
                 }
-                isLoading={initialLoading}
+                isLoading={isLoading}
                 isEmpty={dataMetric.length === 0}
             >
                 {/* Render the appropriate chart based on the selected toggle */}
