@@ -7,7 +7,10 @@ import { HealthScoreResponse } from '@/modules/models/overviews'
 import { formatNumberWithCommas, handleStartEnd } from '@/helper'
 import Skeleton from '@/components/system/Skeleton/Skeleton'
 import { GetAmountAbuseOverview, GetHealthScoreOverview } from '@/modules/usecases/overviews'
-import { HEALTHINESS_LEGEND, SECTIONS_CONFIG } from './constants/brimo-end-to-end-contstans'
+import { SECTIONS_CONFIG } from './constants/brimo-end-to-end-contstans'
+import BulletListIcon from '@/components/system/Icon/BulletListIcon'
+import TooltipHealthinessLegend from '../tooltip/tooltip-healthiness-legend'
+import WarningIcon from '@/components/system/Icon/WarningIcon'
 
 type Node = {
   dataSource: string;
@@ -245,36 +248,90 @@ const BRImoEndToEndPanel = forwardRef<BRImoEndToEndPanelHandle, BRImoEndToEndPan
                   </Typography>
                 </div>
               }
+              <a
+                id={`healthiness-legend`}
+                className='flex gap-2 items-center'
+                data-tooltip-place={'bottom-start'}
+              >
+                <BulletListIcon />
+                <Typography
+                  fontWeight={700}
+                  fontSize={'14px'}
+                  lineHeight={'17.07px'}
+                  color={'#3078FF'}
+                >
+                  Show Legend
+                </Typography>
+              </a>
+              <TooltipHealthinessLegend />
             </div>
           </div>
         </div>
-        <div className='px-4 py-[14px] flex gap-6 items-center rounded-[11px] bg-white bg-opacity-5'>
+        <div className='flex flex-col gap-[7px]'>
           <Typography
             fontWeight={700}
-            fontSize={12}
-            lineHeight={'14.63px'}
+            fontSize={11}
+            lineHeight={'13.41px'}
             color={'white'}
+            align='right'
           >
-            TOPOLOGY LEGEND
+            ⚠️ ALERT ERROR RATE PREDICTION
           </Typography>
-          <div className='flex gap-4'>
-            {HEALTHINESS_LEGEND.map(legend => (
-              <div key={legend.label} className='flex gap-2 items-center'>
-                <div className={`w-[12px] h-[12px] rounded-[4px]`}
-                  style={{
-                    backgroundColor: legend.color,
-                  }}
-                />
+          <div
+            className='mt-auto flex gap-[6px]'
+          >
+            <div className='px-4 py-[10px] flex gap-[10px] items-center rounded-[7px] bg-[#D3530033] bg-opacity-20'>
+              <WarningIcon color='#FF802D' />
+              <div className='flex gap-1'>
                 <Typography
-                  fontWeight={600}
-                  fontSize={14}
-                  lineHeight={'17.07px'}
+                  fontWeight={700}
+                  fontSize={13}
+                  lineHeight={'15.85px'}
                   color={'white'}
                 >
-                  {legend.label}
+                  4
+                </Typography>
+                <Typography
+                  fontWeight={400}
+                  fontSize={13}
+                  lineHeight={'15.85px'}
+                  color={'white'}
+                >
+                  errors with a threshold of 0.01%
                 </Typography>
               </div>
-            ))}
+            </div>
+            <div className='px-4 py-[10px] flex gap-[10px] items-center rounded-[7px] bg-[#D3530033] bg-opacity-20'>
+              <WarningIcon color='#D23636' />
+              <div className='flex gap-1'>
+                <Typography
+                  fontWeight={700}
+                  fontSize={13}
+                  lineHeight={'15.85px'}
+                  color={'white'}
+                >
+                  2
+                </Typography>
+                <Typography
+                  fontWeight={400}
+                  fontSize={13}
+                  lineHeight={'15.85px'}
+                  color={'white'}
+                >
+                  errors with a threshold of 0.1%
+                </Typography>
+              </div>
+              <div className='px-[10px] py-[3px] rounded-[18px] bg-[#D23636]'>
+                <Typography
+                  fontWeight={700}
+                  fontSize={10}
+                  lineHeight={'12.19px'}
+                  color={'white'}
+                >
+                  NEED ATTENTION!
+                </Typography>
+              </div>
+            </div>
           </div>
         </div>
       </div>
